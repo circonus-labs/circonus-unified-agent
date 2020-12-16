@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  circonus-unified-agent:
+      image: glinton/scratch
+      volumes:
+        - ./circonus-unified-agent.conf:/circonus-unified-agent.conf
+        - ../../../../circonus-unified-agent:/circonus-unified-agent
+        - ./dev/json_a.log:/var/log/test.log
+      entrypoint:
+        - /circonus-unified-agent
+        - --config
+        - /circonus-unified-agent.conf

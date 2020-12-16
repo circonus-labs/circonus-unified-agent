@@ -1,0 +1,4 @@
+[[outputs.file]]
+  files = ["stdout","/tmp/metrics.out"]
+  taginclude = ["org_id"]
+  file_tag = ["foo"]

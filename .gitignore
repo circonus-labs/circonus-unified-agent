@@ -1,0 +1,10 @@
+/.idea
+/build
+/circonus-unified-agent
+/circonus-unified-agent.exe
+/circonus-unified-agent*gz
+/vendor
+.DS_Store
+/dist
+/circonus-unified-agent.conf
+.envrc

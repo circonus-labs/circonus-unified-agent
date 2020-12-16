@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+  mysql:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: circonus
+      MYSQL_DATABASE: circonus
+      MYSQL_USER: circonus
+      MYSQL_PASSWORD: circonus
+  maria:
+    image: mariadb
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: circonus
+      MYSQL_DATABASE: circonus
+      MYSQL_USER: circonus
+      MYSQL_PASSWORD: circonus
+    command: mysqld --userstat=1
+  percona:
+    image: percona
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: circonus
+      MYSQL_DATABASE: circonus
+      MYSQL_USER: circonus
+      MYSQL_PASSWORD: circonus
+
+  circonus:
+    image: glinton/scratch
+    depends_on:
+      - mysql
+      - maria
+      - percona
+    volumes:
+      - ./circonus-unified-agent.conf:/circonus-unified-agent.conf
+      - ../../../../circonus-unified-agent:/circonus-unified-agent
+    entrypoint:
+      - /circonus-unified-agent
+      - --config
+      - /circonus-unified-agent.conf

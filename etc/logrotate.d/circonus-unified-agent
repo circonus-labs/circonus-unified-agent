@@ -1,0 +1,11 @@
+/var/log/circonus/circonus-unified-agent.log 
+{
+    rotate 6
+    daily
+    missingok
+    dateext
+    copytruncate
+    notifempty
+    compress
+}
+

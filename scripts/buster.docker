@@ -1,0 +1,15 @@
+FROM golang:1.15.2-buster as builder
+WORKDIR /go/src/github.com/circonus-labs/circonus-unified-agent
+
+COPY . /go/src/github.com/circonus-labs/circonus-unified-agent
+RUN make go-install
+
+FROM buildpack-deps:buster-curl
+COPY --from=builder /go/bin/* /usr/bin/
+COPY etc/circonus-unified-agent.conf /etc/circonus-unified-agent/circonus-unified-agent.conf
+
+EXPOSE 8125/udp 8092/udp 8094
+
+COPY scripts/docker-entrypoint.sh /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["circonus-unified-agent"]

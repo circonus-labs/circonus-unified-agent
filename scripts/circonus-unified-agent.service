@@ -1,0 +1,16 @@
+[Unit]
+Description=The plugin-driven server agent for reporting metrics into Circonus
+Documentation=https://github.com/circonus-labs/circonus-unified-agent
+After=network.target
+
+[Service]
+EnvironmentFile=-/opt/circonus/unified-agent/etc/circonus-unified-agent.env
+User=cua
+ExecStart=/opt/circonus/unified-agent/sbin/circonus-unified-agentd -config /opt/circonus/unified-agent/etc/circonus-unified-agent.conf -config-directory /opt/circonus/unified-agent/etc/config.d $CUA_OPTS
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartForceExitStatus=SIGPIPE
+KillMode=control-group
+
+[Install]
+WantedBy=multi-user.target

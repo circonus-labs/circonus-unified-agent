@@ -1,0 +1,16 @@
+version: '3'
+services:
+    mongodb:
+        image: mongo
+
+    circonus:
+        image: glinton/scratch
+        volumes:
+          - ./circonus-unified-agent.conf:/circonus-unified-agent.conf
+          - ../../../../circonus-unified-agent:/circonus-unified-agent
+        depends_on:
+          - mongodb
+        entrypoint:
+          - /circonus-unified-agent
+          - --config
+          - /circonus-unified-agent.conf

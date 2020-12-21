@@ -249,9 +249,10 @@ func (c *Circonus) buildNumerics(defaultDest *cgm.CirconusMetrics, m cua.Metric)
 		// no default and no plugin specific
 		return
 	}
+	tags := c.convertTags(m.Origin(), m.OriginInstance(), m.TagList())
 	for _, field := range m.FieldList() {
 		mn := strings.TrimSuffix(field.Key, "__value")
-		dest.AddGaugeWithTags(mn, c.convertTags(m.Origin(), m.OriginInstance(), m.TagList()), field.Value)
+		dest.AddGaugeWithTags(mn, tags, field.Value)
 	}
 }
 
@@ -262,9 +263,10 @@ func (c *Circonus) buildTexts(defaultDest *cgm.CirconusMetrics, m cua.Metric) {
 		// no default and no plugin specific
 		return
 	}
+	tags := c.convertTags(m.Origin(), m.OriginInstance(), m.TagList())
 	for _, field := range m.FieldList() {
 		mn := strings.TrimSuffix(field.Key, "__value")
-		dest.SetTextWithTags(mn, c.convertTags(m.Origin(), m.OriginInstance(), m.TagList()), field.Value.(string))
+		dest.SetTextWithTags(mn, tags, field.Value.(string))
 	}
 }
 
@@ -277,7 +279,7 @@ func (c *Circonus) buildHistogram(defaultDest *cgm.CirconusMetrics, m cua.Metric
 	}
 
 	mn := strings.TrimSuffix(m.Name(), "__value")
-	ctags := c.convertTags(m.Origin(), m.OriginInstance(), m.TagList())
+	tags := c.convertTags(m.Origin(), m.OriginInstance(), m.TagList())
 
 	for _, f := range m.FieldList() {
 		v, err := strconv.ParseFloat(f.Key, 64)
@@ -285,7 +287,7 @@ func (c *Circonus) buildHistogram(defaultDest *cgm.CirconusMetrics, m cua.Metric
 			continue
 		}
 
-		dest.RecordCountForValueWithTags(mn, ctags, v, f.Value.(int64))
+		dest.RecordCountForValueWithTags(mn, tags, v, f.Value.(int64))
 	}
 }
 
@@ -298,6 +300,7 @@ func (c *Circonus) convertTags(pluginName, pluginInstanceID string, tags []*cua.
 	}
 
 	ctags = make(cgm.Tags, len(tags))
+
 	if len(tags) > 0 {
 		for i, t := range tags {
 			if t.Key == "host" && c.CheckNamePrefix != "" {

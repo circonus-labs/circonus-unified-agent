@@ -132,4 +132,13 @@ type Metric interface {
 	//
 	// This method may be removed in the future and its use is discouraged.
 	IsAggregate() bool
+
+	// Origin gets the origin of the metric
+	Origin() string
+	// SetOrigin sets the origin of the metric
+	SetOrigin(string)
+	// OriginInstance gets the origin instance id
+	OriginInstance() string
+	// SetOriginInstance sets the origin instance id
+	SetOriginInstance(string)
 }

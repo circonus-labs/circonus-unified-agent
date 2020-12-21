@@ -9,7 +9,7 @@ This section is for developers who want to create a new aggregator plugin.
   register themselves.  See below for a quick example.
 * To be available within the agent itself, plugins must add themselves to the
   `github.com/circonus-labs/circonus-unified-agent/plugins/aggregators/all/all.go` file.
-- The `SampleConfig` function should return valid toml that describes how the
+* The `SampleConfig` function should return valid toml that describes how the
   plugin can be configured. This is included in `circonus-unified-agentd config`.  Please
   consult the [SampleConfig][] page for the latest style guidelines.
 * The `Description` function should say in one line what this aggregator does.
@@ -17,7 +17,7 @@ This section is for developers who want to create a new aggregator plugin.
   through it. This should be done using the builtin `HashID()` function of
   each metric.
 * When the `Reset()` function is called, all caches should be cleared.
-- Follow the recommended [CodeStyle][].
+* Follow the recommended [CodeStyle][].
 
 ### Aggregator Plugin Example
 

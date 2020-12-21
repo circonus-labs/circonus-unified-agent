@@ -3,6 +3,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"os"
 	"runtime"
@@ -10,6 +11,11 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/logger"
 	"github.com/kardianos/service"
 )
+
+var fService = flag.String("service", "", "operate on the service (windows only)")
+var fServiceName = flag.String("service-name", "circonus-unified-agent", "service name (windows only)")
+var fServiceDisplayName = flag.String("service-display-name", "Circonus Unified Agent Data Collector Service", "service display name (windows only)")
+var fRunAsConsole = flag.Bool("console", false, "run as console application (windows only)")
 
 func run(inputFilters, outputFilters, aggregatorFilters, processorFilters []string) {
 	if runtime.GOOS == "windows" && windowsRunAsService() {

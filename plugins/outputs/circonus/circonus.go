@@ -124,8 +124,6 @@ func (c *Circonus) Connect() error {
 func (c *Circonus) Write(metrics []cua.Metric) error {
 	if c.APIToken == "" {
 		return fmt.Errorf("Circonus API Token is required, dropping metrics")
-		// c.Log.Error("Circonus API Token is required")
-		// return nil
 	}
 
 	defaultDest := c.checks["*"]
@@ -177,10 +175,15 @@ func init() {
 // circonus specific methods
 //
 
-// getMetricDest returns cgm instance for the plugin identified by id
-func (c *Circonus) getMetricDest(defaultDest *cgm.CirconusMetrics, id string) *cgm.CirconusMetrics {
-	if c.OneCheck || id == "" {
+// getMetricDest returns cgm instance for the plugin identified by a plugin and plugin instance id
+func (c *Circonus) getMetricDest(defaultDest *cgm.CirconusMetrics, plugin, instanceID string) *cgm.CirconusMetrics {
+	if c.OneCheck || plugin == "" {
 		return defaultDest
+	}
+
+	id := plugin
+	if instanceID != "" {
+		id += ":" + instanceID
 	}
 
 	if d, ok := c.checks[id]; ok {
@@ -241,82 +244,42 @@ func (c *Circonus) initCheck(id string) error {
 
 // buildNumerics constructs numeric metrics from a cua metric.
 func (c *Circonus) buildNumerics(defaultDest *cgm.CirconusMetrics, m cua.Metric) {
-	fields := m.FieldList()
-	for _, field := range fields {
-		mn := m.Name() + "." + field.Key
-		inputPluginName := ""
-		mnp := strings.SplitN(mn, ".", 2)
-		if len(mnp) == 2 {
-			inputPluginName = mnp[0]
-			mn = mnp[1]
-		}
-
-		dest := c.getMetricDest(defaultDest, inputPluginName)
-		if dest == nil {
-			// no default and no plugin specific
-			return
-		}
-
-		if strings.HasSuffix(mn, "__value") {
-			mn = mn[:len(mn)-7]
-		}
-
-		dest.AddGaugeWithTags(mn, c.convertTags(inputPluginName, m.TagList()), field.Value)
+	dest := c.getMetricDest(defaultDest, m.Origin(), m.OriginInstance())
+	if dest == nil {
+		// no default and no plugin specific
+		return
+	}
+	for _, field := range m.FieldList() {
+		mn := strings.TrimSuffix(field.Key, "__value")
+		dest.AddGaugeWithTags(mn, c.convertTags(m.Origin(), m.OriginInstance(), m.TagList()), field.Value)
 	}
 }
 
 // buildTexts constructs text metrics from a cua metric.
 func (c *Circonus) buildTexts(defaultDest *cgm.CirconusMetrics, m cua.Metric) {
-	fields := m.FieldList()
-	for _, field := range fields {
-		mn := m.Name()
-		inputPluginName := ""
-		mnp := strings.SplitN(mn, ".", 2)
-		if len(mnp) == 2 {
-			inputPluginName = mnp[0]
-			mn = mnp[1]
-		}
-		mn += "." + field.Key
-
-		dest := c.getMetricDest(defaultDest, inputPluginName)
-		if dest == nil {
-			// no default and no plugin specific
-			return
-		}
-
-		if strings.HasSuffix(mn, "__value") {
-			mn = mn[:len(mn)-7]
-		}
-
-		dest.SetTextWithTags(mn, c.convertTags(inputPluginName, m.TagList()), field.Value.(string))
+	dest := c.getMetricDest(defaultDest, m.Origin(), m.OriginInstance())
+	if dest == nil {
+		// no default and no plugin specific
+		return
+	}
+	for _, field := range m.FieldList() {
+		mn := strings.TrimSuffix(field.Key, "__value")
+		dest.SetTextWithTags(mn, c.convertTags(m.Origin(), m.OriginInstance(), m.TagList()), field.Value.(string))
 	}
 }
 
 // buildHistogram constructs histogram metrics from a cua metric.
 func (c *Circonus) buildHistogram(defaultDest *cgm.CirconusMetrics, m cua.Metric) {
-
-	mn := m.Name()
-	inputPluginName := ""
-	mnp := strings.SplitN(mn, ".", 2)
-	if len(mnp) == 2 {
-		inputPluginName = mnp[0]
-		mn = mnp[1]
-	}
-
-	dest := c.getMetricDest(defaultDest, inputPluginName)
+	dest := c.getMetricDest(defaultDest, m.Origin(), m.OriginInstance())
 	if dest == nil {
 		// no default and no plugin specific
 		return
 	}
 
-	if strings.HasSuffix(mn, "__value") {
-		mn = mn[:len(mn)-7]
-	}
+	mn := strings.TrimSuffix(m.Name(), "__value")
+	ctags := c.convertTags(m.Origin(), m.OriginInstance(), m.TagList())
 
-	ctags := c.convertTags(inputPluginName, m.TagList())
-
-	fields := m.FieldList()
-	for _, f := range fields {
+	for _, f := range m.FieldList() {
 		v, err := strconv.ParseFloat(f.Key, 64)
 		if err != nil {
 			continue
@@ -327,19 +290,14 @@ func (c *Circonus) buildHistogram(defaultDest *cgm.CirconusMetrics, m cua.Metric
 }
 
 // convertTags reformats cua tags to cgm tags
-func (c *Circonus) convertTags(pluginName string, tags []*cua.Tag) cgm.Tags {
+func (c *Circonus) convertTags(pluginName, pluginInstanceID string, tags []*cua.Tag) cgm.Tags {
 	var ctags cgm.Tags
 
 	if len(tags) == 0 && pluginName == "" {
 		return ctags
 	}
 
-	numTags := len(tags)
-	if pluginName != "" {
-		numTags++
-	}
-
-	ctags = make(cgm.Tags, numTags)
+	ctags = make(cgm.Tags, len(tags))
 	if len(tags) > 0 {
 		for i, t := range tags {
 			if t.Key == "host" && c.CheckNamePrefix != "" {
@@ -351,8 +309,11 @@ func (c *Circonus) convertTags(pluginName string, tags []*cua.Tag) cgm.Tags {
 	}
 
 	if pluginName != "" {
-		ctags[len(tags)] = cgm.Tag{Category: "input_plugin", Value: pluginName}
+		ctags = append(ctags, cgm.Tag{Category: "input_plugin", Value: pluginName})
 	}
+	// if pluginInstanceID != "" {
+	// 	ctags = append(ctags, cgm.Tag{Category: "input_instance_id", Value: pluginInstanceID})
+	// }
 
 	return ctags
 }

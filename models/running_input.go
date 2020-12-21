@@ -57,6 +57,7 @@ func NewRunningInput(input cua.Input, config *InputConfig) *RunningInput {
 // InputConfig is the common config for all inputs.
 type InputConfig struct {
 	Name             string
+	InstanceID       string
 	Alias            string
 	Interval         time.Duration
 	CollectionJitter time.Duration
@@ -100,6 +101,9 @@ func (r *RunningInput) MakeMetric(metric cua.Metric) cua.Metric {
 		r.Config.MeasurementSuffix,
 		r.Config.Tags,
 		r.defaultTags)
+
+	m.SetOrigin(r.Config.Name)
+	m.SetOriginInstance(r.Config.InstanceID)
 
 	r.Config.Filter.Modify(metric)
 	if len(metric.FieldList()) == 0 {

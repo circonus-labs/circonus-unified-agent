@@ -685,13 +685,13 @@ func (c *Config) LoadDirectory(path string) error {
 
 // Try to find a default config file at these locations (in order):
 //   1. $CUA_CONFIG_PATH
-//   2. $HOME/.circonus-unified-agent/circonus-unified-agent.conf
-//   3. /etc/circonus-unified-agent/circonus-unified-agent.conf
+//   2. $HOME/.circonus/unified-agent/circonus-unified-agent.conf
+//   3. /opt/circonus/unified-agent/etc/circonus-unified-agent.conf
 //
 func getDefaultConfigPath() (string, error) {
 	envfile := os.Getenv("CUA_CONFIG_PATH")
-	homefile := os.ExpandEnv("${HOME}/.circonus-unified-agent/circonus-unified-agent.conf")
-	etcfile := "/etc/circonus-unified-agent/circonus-unified-agent.conf"
+	homefile := os.ExpandEnv("${HOME}/.circonus/unified-agent/circonus-unified-agent.conf")
+	etcfile := "/opt/circonus/unified-agent/etc/circonus-unified-agent.conf"
 	if runtime.GOOS == "windows" {
 		programFiles := os.Getenv("ProgramFiles")
 		if programFiles == "" { // Should never happen
@@ -1112,6 +1112,11 @@ func (c *Config) addInput(name string, table *ast.Table) error {
 		return err
 	}
 
+	// mgm:require an alias on all input plugins
+	if pluginConfig.Alias == "" {
+		return fmt.Errorf("input plugin missing required 'instance_id' setting")
+	}
+
 	rp := models.NewRunningInput(input, pluginConfig)
 	rp.SetDefaultTags(c.Tags)
 	c.Inputs = append(c.Inputs, rp)
@@ -1222,6 +1227,11 @@ func (c *Config) buildInput(name string, tbl *ast.Table) (*models.InputConfig, e
 	c.getFieldString(tbl, "name_suffix", &cp.MeasurementSuffix)
 	c.getFieldString(tbl, "name_override", &cp.NameOverride)
 	c.getFieldString(tbl, "alias", &cp.Alias)
+	// mgm:add `instance_id` backfill alias if it is empty
+	c.getFieldString(tbl, "instance_id", &cp.InstanceID)
+	if cp.Alias == "" {
+		cp.Alias = cp.InstanceID
+	}
 
 	cp.Tags = make(map[string]string)
 	if node, ok := tbl.Fields["tags"]; ok {
@@ -1405,7 +1415,7 @@ func (c *Config) buildOutput(name string, tbl *ast.Table) (*models.OutputConfig,
 
 func (c *Config) missingTomlField(typ reflect.Type, key string) error {
 	switch key {
-	case "alias", "carbon2_format", "collectd_auth_file", "collectd_parse_multivalue",
+	case "alias", "instance_id", "carbon2_format", "collectd_auth_file", "collectd_parse_multivalue",
 		"collectd_security_level", "collectd_typesdb", "collection_jitter", "csv_column_names",
 		"csv_column_types", "csv_comment", "csv_delimiter", "csv_header_row_count",
 		"csv_measurement_column", "csv_skip_columns", "csv_skip_rows", "csv_tag_columns",

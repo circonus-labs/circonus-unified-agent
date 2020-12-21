@@ -60,11 +60,6 @@ var fProcessorFilters = flag.String("processor-filter", "",
 	"filter the processors to enable, separator is :")
 var fUsage = flag.String("usage", "",
 	"print usage for a plugin, ie, 'circonus-unified-agent --usage mysql'")
-var fService = flag.String("service", "",
-	"operate on the service (windows only)")
-var fServiceName = flag.String("service-name", "circonus-unified-agent", "service name (windows only)")
-var fServiceDisplayName = flag.String("service-display-name", "Circonus Unified Agent Data Collector Service", "service display name (windows only)")
-var fRunAsConsole = flag.Bool("console", false, "run as console application (windows only)")
 var fPlugins = flag.String("plugin-directory", "",
 	"path to directory containing external plugins")
 var fRunOnce = flag.Bool("once", false, "run one gather and exit")

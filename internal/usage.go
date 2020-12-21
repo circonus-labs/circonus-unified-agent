@@ -44,8 +44,8 @@ Examples:
   # generate a config file:
   circonus-unified-agent config > circonus-unified-agent.conf
 
-  # generate config with only cpu input & influxdb output plugins defined
-  circonus-unified-agent --input-filter cpu --output-filter influxdb config
+  # generate config with only cpu input & circonus output plugins defined
+  circonus-unified-agent --input-filter cpu --output-filter circonus config
 
   # run a single collection, outputting metrics to stdout
   circonus-unified-agent --config circonus-unified-agent.conf --test
@@ -53,8 +53,8 @@ Examples:
   # run with all plugins defined in config file
   circonus-unified-agent --config circonus-unified-agent.conf
 
-  # run, enabling the cpu & memory input, and influxdb output plugins
-  circonus-unified-agent --config circonus-unified-agent.conf --input-filter cpu:mem --output-filter influxdb
+  # run, enabling the cpu & memory input, and circonus output plugins
+  circonus-unified-agent --config circonus-unified-agent.conf --input-filter cpu:mem --output-filter circonus
 
   # run with pprof
   circonus-unified-agent --config circonus-unified-agent.conf --pprof-addr localhost:6060

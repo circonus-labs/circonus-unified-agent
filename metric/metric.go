@@ -10,13 +10,14 @@ import (
 )
 
 type metric struct {
-	name   string
-	tags   []*cua.Tag
-	fields []*cua.Field
-	tm     time.Time
-
-	tp        cua.ValueType
-	aggregate bool
+	name           string
+	tags           []*cua.Tag
+	fields         []*cua.Field
+	tm             time.Time
+	tp             cua.ValueType
+	aggregate      bool
+	origin         string
+	originInstance string
 }
 
 func New(
@@ -68,12 +69,14 @@ func New(
 // removed.
 func FromMetric(other cua.Metric) cua.Metric {
 	m := &metric{
-		name:      other.Name(),
-		tags:      make([]*cua.Tag, len(other.TagList())),
-		fields:    make([]*cua.Field, len(other.FieldList())),
-		tm:        other.Time(),
-		tp:        other.Type(),
-		aggregate: other.IsAggregate(),
+		name:           other.Name(),
+		tags:           make([]*cua.Tag, len(other.TagList())),
+		fields:         make([]*cua.Field, len(other.FieldList())),
+		tm:             other.Time(),
+		tp:             other.Type(),
+		aggregate:      other.IsAggregate(),
+		origin:         other.Origin(),
+		originInstance: other.OriginInstance(),
 	}
 
 	for i, tag := range other.TagList() {
@@ -378,4 +381,18 @@ func convertField(v interface{}) interface{} {
 		return nil
 	}
 	return nil
+}
+
+func (m *metric) Origin() string {
+	return m.origin
+}
+func (m *metric) SetOrigin(origin string) {
+	m.origin = origin
+}
+
+func (m *metric) OriginInstance() string {
+	return m.originInstance
+}
+func (m *metric) SetOriginInstance(instanceID string) {
+	m.originInstance = instanceID
 }

@@ -29,13 +29,13 @@ var next5 = []cua.Metric{
 	testutil.TestMetric(101, "metric10"),
 }
 
-func reverse(metrics []cua.Metric) []cua.Metric {
-	result := make([]cua.Metric, 0, len(metrics))
-	for i := len(metrics) - 1; i >= 0; i-- {
-		result = append(result, metrics[i])
-	}
-	return result
-}
+// func reverse(metrics []cua.Metric) []cua.Metric {
+// 	result := make([]cua.Metric, 0, len(metrics))
+// 	for i := len(metrics) - 1; i >= 0; i-- {
+// 		result = append(result, metrics[i])
+// 	}
+// 	return result
+// }
 
 // Benchmark adding metrics.
 func BenchmarkRunningOutputAddWrite(b *testing.B) {

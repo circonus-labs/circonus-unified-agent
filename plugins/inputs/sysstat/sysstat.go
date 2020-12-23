@@ -285,7 +285,7 @@ func (s *Sysstat) parse(acc cua.Accumulator, option string, ts time.Time) error 
 					tags:   make(map[string]string),
 				}
 			}
-			g, _ := m[device]
+			g := m[device]
 			if len(g.tags) == 0 {
 				for k, v := range tags {
 					g.tags[k] = v

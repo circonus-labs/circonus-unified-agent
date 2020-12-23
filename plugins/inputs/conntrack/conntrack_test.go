@@ -47,11 +47,11 @@ func TestDefaultsUsed(t *testing.T) {
 	dfltFiles = []string{fname}
 
 	count := 1234321
-	ioutil.WriteFile(tmpFile.Name(), []byte(strconv.Itoa(count)), 0660)
+	_ = ioutil.WriteFile(tmpFile.Name(), []byte(strconv.Itoa(count)), 0660)
 	c := &Conntrack{}
 	acc := &testutil.Accumulator{}
 
-	c.Gather(acc)
+	_ = c.Gather(acc)
 	acc.AssertContainsFields(t, inputName, map[string]interface{}{
 		fname: float64(count)})
 }
@@ -62,7 +62,7 @@ func TestConfigsUsed(t *testing.T) {
 	assert.NoError(t, err)
 	defer os.Remove(tmpdir)
 
-	cntFile, err := ioutil.TempFile(tmpdir, "nf_conntrack_count")
+	cntFile, _ := ioutil.TempFile(tmpdir, "nf_conntrack_count")
 	maxFile, err := ioutil.TempFile(tmpdir, "nf_conntrack_max")
 	assert.NoError(t, err)
 	defer os.Remove(cntFile.Name())
@@ -75,12 +75,12 @@ func TestConfigsUsed(t *testing.T) {
 
 	count := 1234321
 	max := 9999999
-	ioutil.WriteFile(cntFile.Name(), []byte(strconv.Itoa(count)), 0660)
-	ioutil.WriteFile(maxFile.Name(), []byte(strconv.Itoa(max)), 0660)
+	_ = ioutil.WriteFile(cntFile.Name(), []byte(strconv.Itoa(count)), 0660)
+	_ = ioutil.WriteFile(maxFile.Name(), []byte(strconv.Itoa(max)), 0660)
 	c := &Conntrack{}
 	acc := &testutil.Accumulator{}
 
-	c.Gather(acc)
+	_ = c.Gather(acc)
 
 	fix := func(s string) string {
 		return strings.Replace(s, "nf_", "ip_", 1)

@@ -370,8 +370,8 @@ Vcore Voltage:
 
 	// Previous arguments are tests stuff, that looks like :
 	// /tmp/go-build970079519/…/_test/integration.test -test.run=TestHelperProcess --
-	cmd, args := args[3], args[4:]
-
+	// cmd, args := args[3], args[4:]
+	cmd := args[3]
 	if cmd == "sensors" {
 		fmt.Fprint(os.Stdout, mockData)
 	} else {

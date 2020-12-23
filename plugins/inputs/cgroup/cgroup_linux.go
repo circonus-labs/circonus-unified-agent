@@ -163,7 +163,7 @@ func (fd *fileData) parse(fields map[string]interface{}) error {
 // ======================================================================
 
 type fileFormat struct {
-	name    string
+	name    string //nolint:structcheck,unused
 	pattern string
 	parser  func(measurement string, fields map[string]interface{}, b []byte)
 }

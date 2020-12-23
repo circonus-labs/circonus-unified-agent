@@ -33,7 +33,7 @@ func setupNullDisk(t *testing.T) func() error {
 	udevPath = td
 	err = ioutil.WriteFile(td+"/b1:3", nullDiskInfo, 0644) // 1:3 is the 'null' device
 	if err != nil {
-		cleanFunc()
+		_ = cleanFunc()
 		t.Fatal(err)
 	}
 
@@ -42,7 +42,9 @@ func setupNullDisk(t *testing.T) func() error {
 
 func TestDiskInfo(t *testing.T) {
 	clean := setupNullDisk(t)
-	defer clean()
+	defer func() {
+		_ = clean()
+	}()
 
 	s := &DiskIO{}
 	di, err := s.diskInfo("null")
@@ -67,7 +69,9 @@ func TestDiskInfo(t *testing.T) {
 // DiskIOStats.diskName isn't a linux specific function, but dependent
 // functions are a no-op on non-Linux.
 func TestDiskIOStats_diskName(t *testing.T) {
-	defer setupNullDisk(t)()
+	defer func() {
+		_ = setupNullDisk(t)()
+	}()
 
 	tests := []struct {
 		templates []string
@@ -96,7 +100,9 @@ func TestDiskIOStats_diskName(t *testing.T) {
 // DiskIOStats.diskTags isn't a linux specific function, but dependent
 // functions are a no-op on non-Linux.
 func TestDiskIOStats_diskTags(t *testing.T) {
-	defer setupNullDisk(t)()
+	defer func() {
+		_ = setupNullDisk(t)()
+	}()
 
 	s := &DiskIO{
 		DeviceTags: []string{"MY_PARAM_2"},

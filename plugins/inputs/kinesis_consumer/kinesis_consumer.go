@@ -44,9 +44,9 @@ type (
 		cons   *consumer.Consumer
 		parser parsers.Parser
 		cancel context.CancelFunc
-		ctx    context.Context
-		acc    cua.TrackingAccumulator
-		sem    chan struct{}
+		// ctx    context.Context
+		acc cua.TrackingAccumulator
+		sem chan struct{}
 
 		checkpoint    consumer.Checkpoint
 		checkpoints   map[string]checkpoint
@@ -149,25 +149,32 @@ func (k *KinesisConsumer) connect(ac cua.Accumulator) error {
 		Token:       k.Token,
 		EndpointURL: k.EndpointURL,
 	}
-	configProvider := credentialConfig.Credentials()
+	configProvider, err := credentialConfig.Credentials()
+	if err != nil {
+		return err
+	}
 	client := kinesis.New(configProvider)
 
 	k.checkpoint = &noopCheckpoint{}
 	if k.DynamoDB != nil {
-		var err error
+		creds, err := (&internalaws.CredentialConfig{
+			Region:      k.Region,
+			AccessKey:   k.AccessKey,
+			SecretKey:   k.SecretKey,
+			RoleARN:     k.RoleARN,
+			Profile:     k.Profile,
+			Filename:    k.Filename,
+			Token:       k.Token,
+			EndpointURL: k.EndpointURL,
+		}).Credentials()
+		if err != nil {
+			return err
+		}
+
 		k.checkpoint, err = ddb.New(
 			k.DynamoDB.AppName,
 			k.DynamoDB.TableName,
-			ddb.WithDynamoClient(dynamodb.New((&internalaws.CredentialConfig{
-				Region:      k.Region,
-				AccessKey:   k.AccessKey,
-				SecretKey:   k.SecretKey,
-				RoleARN:     k.RoleARN,
-				Profile:     k.Profile,
-				Filename:    k.Filename,
-				Token:       k.Token,
-				EndpointURL: k.EndpointURL,
-			}).Credentials())),
+			ddb.WithDynamoClient(dynamodb.New(creds)),
 			ddb.WithMaxInterval(time.Second*10),
 		)
 		if err != nil {
@@ -284,7 +291,7 @@ func (k *KinesisConsumer) onDelivery(ctx context.Context) {
 				}
 
 				k.lastSeqNum = strToBint(sequenceNum)
-				k.checkpoint.Set(chk.streamName, chk.shardID, sequenceNum)
+				_ = k.checkpoint.Set(chk.streamName, chk.shardID, sequenceNum)
 			} else {
 				k.Log.Debug("Metric group failed to process")
 			}

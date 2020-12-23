@@ -62,7 +62,7 @@ func (b *Beanstalkd) Gather(acc cua.Accumulator) error {
 	for _, tube := range tubes {
 		wg.Add(1)
 		go func(tube string) {
-			b.gatherTubeStats(connection, tube, acc)
+			_ = b.gatherTubeStats(connection, tube, acc)
 			wg.Done()
 		}(tube)
 	}

@@ -1,4 +1,3 @@
-
 //line plugins/parsers/influx/machine.go.rl:1
 package influx
 
@@ -3314,9 +3313,12 @@ tr2:
 	( m.p)--
 
 	( m.cs) = 257;
-	{( m.p)++; goto _out }
+	{
+		( m.p)++
+		goto _out 
+	}
 
-	goto _again
+	// goto _again
 tr8:
 	( m.cs) = 0
 //line plugins/parsers/influx/machine.go.rl:39
@@ -3325,9 +3327,12 @@ tr8:
 	( m.p)--
 
 	( m.cs) = 257;
-	{( m.p)++; goto _out }
+	{
+		( m.p)++
+		goto _out 
+	}
 
-	goto _again
+	// goto _again
 tr33:
 	( m.cs) = 0
 //line plugins/parsers/influx/machine.go.rl:32
@@ -3336,9 +3341,12 @@ tr33:
 	( m.p)--
 
 	( m.cs) = 257;
-	{( m.p)++; goto _out }
+	{
+		( m.p)++
+		goto _out
+	}
 
-	goto _again
+	// goto _again
 tr37:
 	( m.cs) = 0
 //line plugins/parsers/influx/machine.go.rl:32

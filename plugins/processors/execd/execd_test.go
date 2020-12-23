@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/circonus-labs/circonus-unified-agent/config"
-	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/metric"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/parsers/influx"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/serializers"
@@ -32,7 +31,7 @@ func TestExternalProcessorWorks(t *testing.T) {
 
 	now := time.Now()
 	orig := now
-	metrics := []cua.Metric{}
+	// metrics := []cua.Metric{}
 	for i := 0; i < 10; i++ {
 		m, err := metric.New("test",
 			map[string]string{
@@ -44,17 +43,17 @@ func TestExternalProcessorWorks(t *testing.T) {
 			},
 			now)
 		require.NoError(t, err)
-		metrics = append(metrics, m)
+		// metrics = append(metrics, m)
 		now = now.Add(1)
 
-		e.Add(m, acc)
+		_ = e.Add(m, acc)
 	}
 
 	acc.Wait(1)
 	require.NoError(t, e.Stop())
 	acc.Wait(9)
 
-	metrics = acc.GetCUAMetrics()
+	metrics := acc.GetCUAMetrics()
 	m := metrics[0]
 
 	expected := testutil.MustMetric("test",

@@ -100,7 +100,7 @@ func TestService(t *testing.T) {
 		}
 		ks.SelectorInclude = v.include
 		ks.SelectorExclude = v.exclude
-		ks.createSelectorFilters()
+		_ = ks.createSelectorFilters()
 		acc := new(testutil.Accumulator)
 		for _, service := range ((v.handler.responseMap["/service/"]).(*v1.ServiceList)).Items {
 			err := ks.gatherService(*service, acc)
@@ -271,7 +271,7 @@ func TestServiceSelectorFilter(t *testing.T) {
 		}
 		ks.SelectorInclude = v.include
 		ks.SelectorExclude = v.exclude
-		ks.createSelectorFilters()
+		_ = ks.createSelectorFilters()
 		acc := new(testutil.Accumulator)
 		for _, service := range ((v.handler.responseMap["/service/"]).(*v1.ServiceList)).Items {
 			err := ks.gatherService(*service, acc)

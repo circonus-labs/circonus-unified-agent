@@ -18,7 +18,7 @@ import (
 )
 
 // Midnight 9/22/2015
-const baseTimeSeconds = 1442905200
+// const baseTimeSeconds = 1442905200
 
 const validJson = `
 {
@@ -39,19 +39,19 @@ const malformedJson = `
     "status": "green",
 `
 
-const lineProtocol = "cpu,host=foo,datacenter=us-east usage_idle=99,usage_busy=1\n"
-const lineProtocolEmpty = ""
-const lineProtocolShort = "ab"
+// const lineProtocol = "cpu,host=foo,datacenter=us-east usage_idle=99,usage_busy=1\n"
+// const lineProtocolEmpty = ""
+// const lineProtocolShort = "ab"
 
-const lineProtocolMulti = `
-cpu,cpu=cpu0,host=foo,datacenter=us-east usage_idle=99,usage_busy=1
-cpu,cpu=cpu1,host=foo,datacenter=us-east usage_idle=99,usage_busy=1
-cpu,cpu=cpu2,host=foo,datacenter=us-east usage_idle=99,usage_busy=1
-cpu,cpu=cpu3,host=foo,datacenter=us-east usage_idle=99,usage_busy=1
-cpu,cpu=cpu4,host=foo,datacenter=us-east usage_idle=99,usage_busy=1
-cpu,cpu=cpu5,host=foo,datacenter=us-east usage_idle=99,usage_busy=1
-cpu,cpu=cpu6,host=foo,datacenter=us-east usage_idle=99,usage_busy=1
-`
+// const lineProtocolMulti = `
+// cpu,cpu=cpu0,host=foo,datacenter=us-east usage_idle=99,usage_busy=1
+// cpu,cpu=cpu1,host=foo,datacenter=us-east usage_idle=99,usage_busy=1
+// cpu,cpu=cpu2,host=foo,datacenter=us-east usage_idle=99,usage_busy=1
+// cpu,cpu=cpu3,host=foo,datacenter=us-east usage_idle=99,usage_busy=1
+// cpu,cpu=cpu4,host=foo,datacenter=us-east usage_idle=99,usage_busy=1
+// cpu,cpu=cpu5,host=foo,datacenter=us-east usage_idle=99,usage_busy=1
+// cpu,cpu=cpu6,host=foo,datacenter=us-east usage_idle=99,usage_busy=1
+// `
 
 type CarriageReturnTest struct {
 	input  []byte

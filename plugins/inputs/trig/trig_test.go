@@ -19,7 +19,7 @@ func TestTrig(t *testing.T) {
 		sine := math.Sin((i*math.Pi)/5.0) * s.Amplitude
 		cosine := math.Cos((i*math.Pi)/5.0) * s.Amplitude
 
-		s.Gather(&acc)
+		_ = s.Gather(&acc)
 
 		fields := make(map[string]interface{})
 		fields["sine"] = sine

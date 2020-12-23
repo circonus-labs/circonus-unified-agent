@@ -277,7 +277,7 @@ func (t *TopK) push() []cua.Metric {
 	}
 
 	// The return value that will hold the returned metrics
-	var ret []cua.Metric = make([]cua.Metric, 0, 0)
+	var ret []cua.Metric = make([]cua.Metric, 0)
 
 	// Get the top K metrics for each field and add them to the return value
 	addedKeys := make(map[string]bool)

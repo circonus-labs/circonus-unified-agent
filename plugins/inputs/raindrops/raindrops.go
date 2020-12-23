@@ -116,7 +116,7 @@ func (r *Raindrops) gatherUrl(addr *url.URL, acc cua.Accumulator) error {
 		}
 		active_line_str, active_err = buf.ReadString('\n')
 		if active_err != nil {
-			iterate = false
+			// iterate = false
 			break
 		}
 		if strings.Compare(active_line_str, "\n") == 0 {

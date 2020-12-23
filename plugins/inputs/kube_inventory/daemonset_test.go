@@ -104,7 +104,7 @@ func TestDaemonSet(t *testing.T) {
 			SelectorInclude: selectInclude,
 			SelectorExclude: selectExclude,
 		}
-		ks.createSelectorFilters()
+		_ = ks.createSelectorFilters()
 		acc := new(testutil.Accumulator)
 		for _, dset := range ((v.handler.responseMap["/daemonsets/"]).(*v1.DaemonSetList)).Items {
 			err := ks.gatherDaemonSet(*dset, acc)
@@ -280,7 +280,7 @@ func TestDaemonSetSelectorFilter(t *testing.T) {
 		}
 		ks.SelectorInclude = v.include
 		ks.SelectorExclude = v.exclude
-		ks.createSelectorFilters()
+		_ = ks.createSelectorFilters()
 		acc := new(testutil.Accumulator)
 		for _, dset := range ((v.handler.responseMap["/daemonsets/"]).(*v1.DaemonSetList)).Items {
 			err := ks.gatherDaemonSet(*dset, acc)

@@ -156,7 +156,7 @@ func (d FieldDict) PopItem() (v starlark.Value, err error) {
 			return nil, fmt.Errorf("could not convert to starlark value")
 		}
 
-		return starlark.Tuple{sk, sv}, nil
+		return starlark.Tuple{sk, sv}, nil //nolint:staticcheck
 	}
 
 	return nil, errors.New("popitem(): field dictionary is empty")

@@ -44,7 +44,9 @@ func TestInputShimStdinSignalingWorks(t *testing.T) {
 	require.Equal(t, "measurement,tag=tag field=1i 1234000005678\n", out)
 
 	stdinWriter.Close()
-	go ioutil.ReadAll(r)
+	go func() {
+		_, _ = ioutil.ReadAll(r)
+	}()
 	// check that it exits cleanly
 	<-exited
 }
@@ -66,7 +68,7 @@ func runInputPlugin(t *testing.T, interval time.Duration, stdin io.Reader, stdou
 	if stderr != nil {
 		shim.stderr = stderr
 	}
-	shim.AddInput(inp)
+	_ = shim.AddInput(inp)
 	go func() {
 		err := shim.Run(interval)
 		require.NoError(t, err)

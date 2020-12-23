@@ -95,9 +95,9 @@ const sampleJSON = `
 `
 
 var (
-	zero           float64
-	err            error
-	pluginOutput   []pluginData
+	zero float64
+	// err            error
+	// pluginOutput   []pluginData
 	expectedOutput = []pluginData{
 		// 		{"object:f48698", "dummy", "input", nil, nil, nil},
 		// 		{"object:e27138", "dummy", "input", nil, nil, nil},
@@ -129,7 +129,7 @@ func Test_Gather(t *testing.T) {
 		fmt.Fprintf(w, "%s", string(sampleJSON))
 	}))
 
-	requestURL, err := url.Parse(fluentdTest.Endpoint)
+	requestURL, _ := url.Parse(fluentdTest.Endpoint)
 
 	ts.Listener, _ = net.Listen("tcp", fmt.Sprintf("%s:%s", requestURL.Hostname(), requestURL.Port()))
 
@@ -138,8 +138,8 @@ func Test_Gather(t *testing.T) {
 	defer ts.Close()
 
 	var acc testutil.Accumulator
-	err = fluentdTest.Gather(&acc)
 
+	err := fluentdTest.Gather(&acc)
 	if err != nil {
 		t.Error(err)
 	}

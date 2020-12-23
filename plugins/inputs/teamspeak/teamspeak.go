@@ -55,7 +55,7 @@ func (ts *Teamspeak) Gather(acc cua.Accumulator) error {
 	}
 
 	for _, vserver := range ts.VirtualServers {
-		ts.client.Use(vserver)
+		_ = ts.client.Use(vserver)
 
 		sm, err := ts.client.Server.Info()
 		if err != nil {

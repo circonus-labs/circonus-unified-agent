@@ -152,7 +152,7 @@ func (c *CouchDB) fetchAndInsertData(accumulator cua.Accumulator, host string) e
 
 	stats := Stats{}
 	decoder := json.NewDecoder(response.Body)
-	decoder.Decode(&stats)
+	_ = decoder.Decode(&stats)
 
 	fields := map[string]interface{}{}
 

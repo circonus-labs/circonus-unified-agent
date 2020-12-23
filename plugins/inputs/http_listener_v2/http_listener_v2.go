@@ -165,7 +165,10 @@ func (h *HTTPListenerV2) Start(acc cua.Accumulator) error {
 	h.wg.Add(1)
 	go func() {
 		defer h.wg.Done()
-		server.Serve(h.listener)
+		if err := server.Serve(h.listener); err != nil {
+			h.Log.Error(err)
+		}
+
 	}()
 
 	h.Log.Infof("Listening on %s", listener.Addr().String())
@@ -285,24 +288,24 @@ func (h *HTTPListenerV2) collectQuery(res http.ResponseWriter, req *http.Request
 func tooLarge(res http.ResponseWriter) {
 	res.Header().Set("Content-Type", "application/json")
 	res.WriteHeader(http.StatusRequestEntityTooLarge)
-	res.Write([]byte(`{"error":"http: request body too large"}`))
+	_, _ = res.Write([]byte(`{"error":"http: request body too large"}`))
 }
 
 func methodNotAllowed(res http.ResponseWriter) {
 	res.Header().Set("Content-Type", "application/json")
 	res.WriteHeader(http.StatusMethodNotAllowed)
-	res.Write([]byte(`{"error":"http: method not allowed"}`))
+	_, _ = res.Write([]byte(`{"error":"http: method not allowed"}`))
 }
 
-func internalServerError(res http.ResponseWriter) {
-	res.Header().Set("Content-Type", "application/json")
-	res.WriteHeader(http.StatusInternalServerError)
-}
+// func internalServerError(res http.ResponseWriter) {
+// 	res.Header().Set("Content-Type", "application/json")
+// 	res.WriteHeader(http.StatusInternalServerError)
+// }
 
 func badRequest(res http.ResponseWriter) {
 	res.Header().Set("Content-Type", "application/json")
 	res.WriteHeader(http.StatusBadRequest)
-	res.Write([]byte(`{"error":"http: bad request"}`))
+	_, _ = res.Write([]byte(`{"error":"http: bad request"}`))
 }
 
 func (h *HTTPListenerV2) authenticateIfSet(handler http.HandlerFunc, res http.ResponseWriter, req *http.Request) {

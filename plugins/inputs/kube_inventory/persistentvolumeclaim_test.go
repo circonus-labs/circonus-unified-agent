@@ -94,7 +94,7 @@ func TestPersistentVolumeClaim(t *testing.T) {
 			SelectorInclude: selectInclude,
 			SelectorExclude: selectExclude,
 		}
-		ks.createSelectorFilters()
+		_ = ks.createSelectorFilters()
 		acc := new(testutil.Accumulator)
 		for _, pvc := range ((v.handler.responseMap["/persistentvolumeclaims/"]).(*v1.PersistentVolumeClaimList)).Items {
 			err := ks.gatherPersistentVolumeClaim(*pvc, acc)
@@ -265,7 +265,7 @@ func TestPersistentVolumeClaimSelectorFilter(t *testing.T) {
 		}
 		ks.SelectorInclude = v.include
 		ks.SelectorExclude = v.exclude
-		ks.createSelectorFilters()
+		_ = ks.createSelectorFilters()
 		acc := new(testutil.Accumulator)
 		for _, pvc := range ((v.handler.responseMap["/persistentvolumeclaims/"]).(*v1.PersistentVolumeClaimList)).Items {
 			err := ks.gatherPersistentVolumeClaim(*pvc, acc)

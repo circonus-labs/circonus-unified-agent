@@ -369,7 +369,8 @@ OS RealTime Mod  | 0x00              | ok
 
 	// Previous arguments are tests stuff, that looks like :
 	// /tmp/go-build970079519/…/_test/integration.test -test.run=TestHelperProcess --
-	cmd, args := args[3], args[4:]
+	// cmd, args := args[3], args[4:]
+	cmd := args[3]
 
 	if cmd == "ipmitool" {
 		fmt.Fprint(os.Stdout, mockData)
@@ -562,7 +563,8 @@ Power Supply 1   | 03h | ok  | 10.1 | 110 Watts, Presence detected
 
 	// Previous arguments are tests stuff, that looks like :
 	// /tmp/go-build970079519/…/_test/integration.test -test.run=TestHelperProcess --
-	cmd, args := args[3], args[4:]
+	// cmd, args := args[3], args[4:]
+	cmd := args[3]
 
 	if cmd == "ipmitool" {
 		fmt.Fprint(os.Stdout, mockData)

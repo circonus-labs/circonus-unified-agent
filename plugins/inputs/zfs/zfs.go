@@ -13,9 +13,9 @@ type Zfs struct {
 	KstatMetrics   []string
 	PoolMetrics    bool
 	DatasetMetrics bool
-	sysctl         Sysctl
-	zpool          Zpool
-	zdataset       Zdataset
+	sysctl         Sysctl     //nolint:structcheck,unused
+	zpool          Zpool      //nolint:structcheck,unused
+	zdataset       Zdataset   //nolint:structcheck,unused
 	Log            cua.Logger `toml:"-"`
 }
 

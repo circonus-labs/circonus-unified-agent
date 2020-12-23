@@ -123,7 +123,7 @@ func (z *Zookeeper) gatherServer(ctx context.Context, address string, acc cua.Ac
 	// Apply deadline to connection
 	deadline, ok := ctx.Deadline()
 	if ok {
-		c.SetDeadline(deadline)
+		_ = c.SetDeadline(deadline)
 	}
 
 	fmt.Fprintf(c, "%s\n", "mntr")

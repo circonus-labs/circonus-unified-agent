@@ -84,6 +84,7 @@ func parseBoolBytes(b []byte) (bool, error) {
 //
 // It is unsafe, and is intended to prepare input to short-lived functions
 // that require strings.
+//nolint
 func unsafeBytesToString(in []byte) string {
 	src := *(*reflect.SliceHeader)(unsafe.Pointer(&in))
 	dst := reflect.StringHeader{

@@ -6,10 +6,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type conTest struct {
-	Got  string
-	Want *Connection
-}
+// type conTest struct {
+// 	Got  string
+// 	Want *Connection
+// }
 
 func TestNewConnection(t *testing.T) {
 	testData := []struct {

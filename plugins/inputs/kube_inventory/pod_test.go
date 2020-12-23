@@ -278,7 +278,7 @@ func TestPod(t *testing.T) {
 			SelectorInclude: selectInclude,
 			SelectorExclude: selectExclude,
 		}
-		ks.createSelectorFilters()
+		_ = ks.createSelectorFilters()
 		acc := new(testutil.Accumulator)
 		for _, pod := range ((v.handler.responseMap["/pods/"]).(*v1.PodList)).Items {
 			err := ks.gatherPod(*pod, acc)
@@ -527,7 +527,7 @@ func TestPodSelectorFilter(t *testing.T) {
 		}
 		ks.SelectorInclude = v.include
 		ks.SelectorExclude = v.exclude
-		ks.createSelectorFilters()
+		_ = ks.createSelectorFilters()
 		acc := new(testutil.Accumulator)
 		for _, pod := range ((v.handler.responseMap["/pods/"]).(*v1.PodList)).Items {
 			err := ks.gatherPod(*pod, acc)

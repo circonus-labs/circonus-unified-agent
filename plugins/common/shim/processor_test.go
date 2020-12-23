@@ -66,7 +66,9 @@ func TestProcessorShim(t *testing.T) {
 	require.True(t, ok)
 	require.Equal(t, "mom", val)
 
-	go ioutil.ReadAll(r)
+	go func() {
+		_, _ = ioutil.ReadAll(r)
+	}()
 	wg.Wait()
 }
 

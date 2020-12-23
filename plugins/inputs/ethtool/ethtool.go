@@ -23,13 +23,13 @@ type Ethtool struct {
 	Log cua.Logger `toml:"-"`
 
 	// the ethtool command
-	command Command
+	command Command //nolint:structcheck,unused
 }
 
 const (
 	pluginName    = "ethtool"
-	tagInterface  = "interface"
-	tagDriverName = "driver"
+	tagInterface  = "interface" //nolint:deadcode,varcheck
+	tagDriverName = "driver"    //nolint:deadcode,varcheck
 
 	sampleConfig = `
   ## List of interfaces to pull metrics for

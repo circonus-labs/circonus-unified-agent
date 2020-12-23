@@ -102,20 +102,29 @@ func hasQuit(ctx context.Context) bool {
 
 func (s *Shim) writeProcessedMetrics() error {
 	serializer := influx.NewSerializer()
-	for {
-		select {
-		case m, open := <-s.metricCh:
-			if !open {
-				return nil
-			}
-			b, err := serializer.Serialize(m)
-			if err != nil {
-				return fmt.Errorf("failed to serialize metric: %s", err)
-			}
-			// Write this to stdout
-			fmt.Fprint(s.stdout, string(b))
+	for m := range s.metricCh {
+		b, err := serializer.Serialize(m)
+		if err != nil {
+			return fmt.Errorf("failed to serialize metric: %s", err)
 		}
+		// Write this to stdout
+		fmt.Fprint(s.stdout, string(b))
 	}
+	// for {
+	// 	select {
+	// 	case m, open := <-s.metricCh:
+	// 		if !open {
+	// 			return nil
+	// 		}
+	// 		b, err := serializer.Serialize(m)
+	// 		if err != nil {
+	// 			return fmt.Errorf("failed to serialize metric: %s", err)
+	// 		}
+	// 		// Write this to stdout
+	// 		fmt.Fprint(s.stdout, string(b))
+	// 	}
+	// }
+	return nil
 }
 
 // LogName satisfies the MetricMaker interface

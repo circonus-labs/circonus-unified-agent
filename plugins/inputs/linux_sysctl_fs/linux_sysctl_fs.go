@@ -70,12 +70,12 @@ func (sfs *SysctlFS) Gather(acc cua.Accumulator) error {
 	fields := map[string]interface{}{}
 
 	for _, n := range []string{"aio-nr", "aio-max-nr", "dquot-nr", "dquot-max", "super-nr", "super-max"} {
-		sfs.gatherOne(n, fields)
+		_ = sfs.gatherOne(n, fields)
 	}
 
-	sfs.gatherList("inode-state", fields, "inode-nr", "inode-free-nr", "inode-preshrink-nr")
-	sfs.gatherList("dentry-state", fields, "dentry-nr", "dentry-unused-nr", "dentry-age-limit", "dentry-want-pages")
-	sfs.gatherList("file-nr", fields, "file-nr", "", "file-max")
+	_ = sfs.gatherList("inode-state", fields, "inode-nr", "inode-free-nr", "inode-preshrink-nr")
+	_ = sfs.gatherList("dentry-state", fields, "dentry-nr", "dentry-unused-nr", "dentry-age-limit", "dentry-want-pages")
+	_ = sfs.gatherList("file-nr", fields, "file-nr", "", "file-max")
 
 	acc.AddFields("linux_sysctl_fs", fields, nil)
 	return nil

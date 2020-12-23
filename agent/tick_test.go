@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var format = "2006-01-02T15:04:05.999Z07:00"
+// var format = "2006-01-02T15:04:05.999Z07:00"
 
 func TestAlignedTicker(t *testing.T) {
 	interval := 10 * time.Second
@@ -36,10 +36,8 @@ func TestAlignedTicker(t *testing.T) {
 
 	clock.Add(10 * time.Second)
 	for !clock.Now().After(until) {
-		select {
-		case tm := <-ticker.Elapsed():
-			actual = append(actual, tm.UTC())
-		}
+		tm := <-ticker.Elapsed()
+		actual = append(actual, tm.UTC())
 		clock.Add(10 * time.Second)
 	}
 

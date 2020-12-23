@@ -141,8 +141,7 @@ func runAndCompare(topk *TopK, metrics []cua.Metric, answer []cua.Metric, testID
 func TestTopkAggregatorsSmokeTests(t *testing.T) {
 
 	// Build the processor
-	var topk TopK
-	topk = *New()
+	topk := *New()
 	topk.Period = createDuration(1)
 	topk.Fields = []string{"a"}
 	topk.GroupBy = []string{"tag_name"}
@@ -164,8 +163,7 @@ func TestTopkAggregatorsSmokeTests(t *testing.T) {
 func TestTopkMeanAddAggregateFields(t *testing.T) {
 
 	// Build the processor
-	var topk TopK
-	topk = *New()
+	topk := *New()
 	topk.Period = createDuration(1)
 	topk.Aggregation = "mean"
 	topk.AddAggregateFields = []string{"a"}
@@ -194,8 +192,7 @@ func TestTopkMeanAddAggregateFields(t *testing.T) {
 func TestTopkSumAddAggregateFields(t *testing.T) {
 
 	// Build the processor
-	var topk TopK
-	topk = *New()
+	topk := *New()
 	topk.Period = createDuration(1)
 	topk.Aggregation = "sum"
 	topk.AddAggregateFields = []string{"a"}
@@ -224,8 +221,7 @@ func TestTopkSumAddAggregateFields(t *testing.T) {
 func TestTopkMaxAddAggregateFields(t *testing.T) {
 
 	// Build the processor
-	var topk TopK
-	topk = *New()
+	topk := *New()
 	topk.Period = createDuration(1)
 	topk.Aggregation = "max"
 	topk.AddAggregateFields = []string{"a"}
@@ -254,8 +250,7 @@ func TestTopkMaxAddAggregateFields(t *testing.T) {
 func TestTopkMinAddAggregateFields(t *testing.T) {
 
 	// Build the processor
-	var topk TopK
-	topk = *New()
+	topk := *New()
 	topk.Period = createDuration(1)
 	topk.Aggregation = "min"
 	topk.AddAggregateFields = []string{"a"}
@@ -284,8 +279,7 @@ func TestTopkMinAddAggregateFields(t *testing.T) {
 func TestTopkGroupby1(t *testing.T) {
 
 	// Build the processor
-	var topk TopK
-	topk = *New()
+	topk := *New()
 	topk.Period = createDuration(1)
 	topk.K = 3
 	topk.Aggregation = "sum"
@@ -310,8 +304,7 @@ func TestTopkGroupby1(t *testing.T) {
 func TestTopkGroupby2(t *testing.T) {
 
 	// Build the processor
-	var topk TopK
-	topk = *New()
+	topk := *New()
 	topk.Period = createDuration(1)
 	topk.K = 3
 	topk.Aggregation = "mean"
@@ -340,8 +333,7 @@ func TestTopkGroupby2(t *testing.T) {
 func TestTopkGroupby3(t *testing.T) {
 
 	// Build the processor
-	var topk TopK
-	topk = *New()
+	topk := *New()
 	topk.Period = createDuration(1)
 	topk.K = 1
 	topk.Aggregation = "min"
@@ -367,8 +359,7 @@ func TestTopkGroupby3(t *testing.T) {
 func TestTopkGroupbyFields1(t *testing.T) {
 
 	// Build the processor
-	var topk TopK
-	topk = *New()
+	topk := *New()
 	topk.Period = createDuration(1)
 	topk.K = 4 // This settings generate less than 3 groups
 	topk.Aggregation = "mean"
@@ -395,8 +386,7 @@ func TestTopkGroupbyFields1(t *testing.T) {
 func TestTopkGroupbyFields2(t *testing.T) {
 
 	// Build the processor
-	var topk TopK
-	topk = *New()
+	topk := *New()
 	topk.Period = createDuration(1)
 	topk.K = 2
 	topk.Aggregation = "sum"
@@ -424,8 +414,7 @@ func TestTopkGroupbyFields2(t *testing.T) {
 func TestTopkGroupbyMetricName1(t *testing.T) {
 
 	// Build the processor
-	var topk TopK
-	topk = *New()
+	topk := *New()
 	topk.Period = createDuration(1)
 	topk.K = 1
 	topk.Aggregation = "sum"
@@ -451,8 +440,7 @@ func TestTopkGroupbyMetricName1(t *testing.T) {
 func TestTopkGroupbyMetricName2(t *testing.T) {
 
 	// Build the processor
-	var topk TopK
-	topk = *New()
+	topk := *New()
 	topk.Period = createDuration(1)
 	topk.K = 2
 	topk.Aggregation = "sum"
@@ -480,8 +468,7 @@ func TestTopkGroupbyMetricName2(t *testing.T) {
 func TestTopkBottomk(t *testing.T) {
 
 	// Build the processor
-	var topk TopK
-	topk = *New()
+	topk := *New()
 	topk.Period = createDuration(1)
 	topk.K = 3
 	topk.Aggregation = "sum"
@@ -507,8 +494,7 @@ func TestTopkBottomk(t *testing.T) {
 func TestTopkGroupByKeyTag(t *testing.T) {
 
 	// Build the processor
-	var topk TopK
-	topk = *New()
+	topk := *New()
 	topk.Period = createDuration(1)
 	topk.K = 3
 	topk.Aggregation = "sum"

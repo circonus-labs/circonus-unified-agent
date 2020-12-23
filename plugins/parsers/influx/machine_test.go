@@ -264,7 +264,7 @@ func (t TokenType) String() string {
 	}
 }
 
-type Token struct {
+type Token struct { //nolint:unused
 	Name  TokenType
 	Value []byte
 }
@@ -1950,7 +1950,7 @@ type MockHandler struct {
 }
 
 func (h *MockHandler) SetMeasurement(name []byte) error {
-	h.TestingHandler.SetMeasurement(name)
+	_ = h.TestingHandler.SetMeasurement(name)
 	return h.SetMeasurementF(name)
 }
 
@@ -1963,7 +1963,7 @@ func (h *MockHandler) AddInt(name, value []byte) error {
 	if err != nil {
 		return err
 	}
-	h.TestingHandler.AddInt(name, value)
+	_ = h.TestingHandler.AddInt(name, value)
 	return nil
 }
 
@@ -1972,7 +1972,7 @@ func (h *MockHandler) AddUint(name, value []byte) error {
 	if err != nil {
 		return err
 	}
-	h.TestingHandler.AddUint(name, value)
+	_ = h.TestingHandler.AddUint(name, value)
 	return nil
 }
 

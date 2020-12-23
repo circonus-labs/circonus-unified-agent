@@ -12,7 +12,7 @@ const (
 	IPProtocolTCP uint8 = 6
 	IPProtocolUDP uint8 = 17
 
-	metricName = "sflow"
+	// metricName = "sflow"
 )
 
 var ETypeMap = map[uint16]string{

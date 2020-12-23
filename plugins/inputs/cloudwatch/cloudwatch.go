@@ -249,7 +249,7 @@ func (c *CloudWatch) Gather(acc cua.Accumulator) error {
 	return c.aggregateMetrics(acc, results)
 }
 
-func (c *CloudWatch) initializeCloudWatch() {
+func (c *CloudWatch) initializeCloudWatch() error {
 	credentialConfig := &internalaws.CredentialConfig{
 		Region:      c.Region,
 		AccessKey:   c.AccessKey,
@@ -260,7 +260,10 @@ func (c *CloudWatch) initializeCloudWatch() {
 		Token:       c.Token,
 		EndpointURL: c.EndpointURL,
 	}
-	configProvider := credentialConfig.Credentials()
+	configProvider, err := credentialConfig.Credentials()
+	if err != nil {
+		return err
+	}
 
 	cfg := &aws.Config{
 		HTTPClient: &http.Client{
@@ -283,6 +286,8 @@ func (c *CloudWatch) initializeCloudWatch() {
 
 	loglevel := aws.LogOff
 	c.client = cloudwatch.New(configProvider, cfg.WithLogLevel(loglevel))
+
+	return nil
 }
 
 type filteredMetric struct {

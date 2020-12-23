@@ -74,7 +74,7 @@ func TestKapacitor(t *testing.T) {
 
 func TestMissingStats(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(`{}`))
+		_, _ = w.Write([]byte(`{}`))
 	}))
 	defer server.Close()
 
@@ -83,7 +83,7 @@ func TestMissingStats(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	plugin.Gather(&acc)
+	_ = plugin.Gather(&acc)
 
 	require.False(t, acc.HasField("kapacitor_memstats", "alloc_bytes"))
 	require.True(t, acc.HasField("kapacitor", "num_tasks"))
@@ -104,7 +104,7 @@ func TestErrorHandling(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	plugin.Gather(&acc)
+	_ = plugin.Gather(&acc)
 	acc.WaitError(1)
 	require.Equal(t, uint64(0), acc.NMetrics())
 }
@@ -120,7 +120,7 @@ func TestErrorHandling404(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	plugin.Gather(&acc)
+	_ = plugin.Gather(&acc)
 	acc.WaitError(1)
 	require.Equal(t, uint64(0), acc.NMetrics())
 }

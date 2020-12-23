@@ -160,7 +160,7 @@ func (f *Fibaro) Gather(acc cua.Accumulator) error {
 	for _, device := range devices {
 		// skip device in some cases
 		if device.RoomID == 0 ||
-			device.Enabled == false ||
+			!device.Enabled ||
 			device.Properties.Dead == "true" ||
 			device.Type == "com.fibaro.zwaveDevice" {
 			continue

@@ -16,8 +16,8 @@ type ResultType uint64
 
 const (
 	Success ResultType = 0
-	Timeout            = 1
-	Error              = 2
+	Timeout ResultType = 1
+	Error   ResultType = 2
 )
 
 type DnsQuery struct {

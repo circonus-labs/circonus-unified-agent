@@ -9,7 +9,7 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/internal"
 )
 
-type empty struct{}
+// type empty struct{}
 
 type Ticker interface {
 	Elapsed() <-chan time.Time

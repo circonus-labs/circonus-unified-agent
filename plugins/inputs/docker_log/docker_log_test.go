@@ -138,7 +138,7 @@ func Test(t *testing.T) {
 				ContainerLogsF: func(ctx context.Context, containerID string, options types.ContainerLogsOptions) (io.ReadCloser, error) {
 					var buf bytes.Buffer
 					w := stdcopy.NewStdWriter(&buf, stdcopy.Stdout)
-					w.Write([]byte("2020-04-28T18:42:16.432691200Z hello from stdout"))
+					_, _ = w.Write([]byte("2020-04-28T18:42:16.432691200Z hello from stdout"))
 					return &Response{Reader: &buf}, nil
 				},
 			},

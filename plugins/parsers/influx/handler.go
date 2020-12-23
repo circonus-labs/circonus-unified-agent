@@ -12,7 +12,7 @@ import (
 
 // MetricHandler implements the Handler interface and produces cua.Metric.
 type MetricHandler struct {
-	err           error
+	// err           error
 	timePrecision time.Duration
 	timeFunc      TimeFunc
 	metric        cua.Metric

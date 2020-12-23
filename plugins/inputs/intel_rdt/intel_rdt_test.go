@@ -106,7 +106,6 @@ func TestCreateArgsCores(t *testing.T) {
 	assert.EqualValues(t, expected, result)
 
 	cores = []string{"1,2,3", "4,5,6"}
-	expected = "--mon-core="
 	expectedPrefix := "--mon-core="
 	expectedSubstring := "all:[1,2,3];mbt:[1,2,3];"
 	expectedSubstring2 := "all:[4,5,6];mbt:[4,5,6];"

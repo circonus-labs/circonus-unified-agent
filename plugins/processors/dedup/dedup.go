@@ -40,7 +40,7 @@ func (d *Dedup) cleanup() {
 		return
 	}
 	d.FlushTime = time.Now()
-	keep := make(map[uint64]cua.Metric, 0)
+	keep := make(map[uint64]cua.Metric)
 	for id, metric := range d.Cache {
 		if time.Since(metric.Time()) < d.DedupInterval.Duration {
 			keep[id] = metric

@@ -28,9 +28,9 @@ func toBoolPtr(b bool) *bool {
 	return &b
 }
 
-func toIntStrPtrS(s string) *intstr.IntOrString {
-	return &intstr.IntOrString{StrVal: &s}
-}
+// func toIntStrPtrS(s string) *intstr.IntOrString {
+// 	return &intstr.IntOrString{StrVal: &s}
+// }
 
 func toIntStrPtrI(i int32) *intstr.IntOrString {
 	return &intstr.IntOrString{IntVal: &i}

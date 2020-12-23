@@ -102,7 +102,7 @@ func TestStatefulSet(t *testing.T) {
 			SelectorInclude: selectInclude,
 			SelectorExclude: selectExclude,
 		}
-		ks.createSelectorFilters()
+		_ = ks.createSelectorFilters()
 		acc := new(testutil.Accumulator)
 		for _, ss := range ((v.handler.responseMap["/statefulsets/"]).(*v1.StatefulSetList)).Items {
 			err := ks.gatherStatefulSet(*ss, acc)
@@ -277,7 +277,7 @@ func TestStatefulSetSelectorFilter(t *testing.T) {
 		}
 		ks.SelectorInclude = v.include
 		ks.SelectorExclude = v.exclude
-		ks.createSelectorFilters()
+		_ = ks.createSelectorFilters()
 		acc := new(testutil.Accumulator)
 		for _, ss := range ((v.handler.responseMap["/statefulsets/"]).(*v1.StatefulSetList)).Items {
 			err := ks.gatherStatefulSet(*ss, acc)

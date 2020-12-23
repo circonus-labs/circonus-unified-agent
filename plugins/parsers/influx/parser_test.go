@@ -918,7 +918,9 @@ func TestStreamParserProducesAllAvailableMetrics(t *testing.T) {
 	parser := NewStreamParser(r)
 	parser.SetTimeFunc(DefaultTime)
 
-	go w.Write([]byte("metric value=1\nmetric2 value=1\n"))
+	go func() {
+		_, _ = w.Write([]byte("metric value=1\nmetric2 value=1\n"))
+	}()
 
 	_, err := parser.Next()
 	require.NoError(t, err)

@@ -428,7 +428,7 @@ func (a *Agent) testRunInputs(
 	}
 	wg.Wait()
 
-	internal.SleepContext(ctx, wait)
+	_ = internal.SleepContext(ctx, wait)
 
 	log.Printf("D! [agent] Stopping service inputs")
 	stopServiceInputs(unit.inputs)

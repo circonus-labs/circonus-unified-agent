@@ -16,7 +16,7 @@ import (
 func TestGather(t *testing.T) {
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("data"))
+		_, _ = w.Write([]byte("data"))
 	})
 	c, destroy := fakeHTTPClient(h)
 	defer destroy()
@@ -46,7 +46,7 @@ func TestGather(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			var acc testutil.Accumulator
 			n.Servers = test.servers
-			n.Gather(&acc)
+			_ = n.Gather(&acc)
 			if len(acc.Errors) != len(test.servers) {
 				t.Errorf("Number of servers mismatch. got=%d, want=%d",
 					len(acc.Errors), len(test.servers))
@@ -424,7 +424,7 @@ func TestSendRequest(t *testing.T) {
 			h := http.HandlerFunc(func(
 				w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(test.statusCode)
-				w.Write([]byte("data"))
+				_, _ = w.Write([]byte("data"))
 			})
 			c, destroy := fakeHTTPClient(h)
 			defer destroy()
@@ -438,7 +438,7 @@ func TestSendRequest(t *testing.T) {
 			if test.wantErr {
 				return
 			}
-			if bytes.Compare(resp, []byte("data")) != 0 {
+			if !bytes.Equal(resp, []byte("data")) {
 				t.Errorf(
 					"Response data mismatch. got=%q, want=%q", resp, "data")
 			}

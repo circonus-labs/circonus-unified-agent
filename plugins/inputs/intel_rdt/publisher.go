@@ -18,7 +18,7 @@ type Publisher struct {
 	BufferChanProcess chan processMeasurement
 	BufferChanCores   chan string
 	errChan           chan error
-	stopChan          chan bool
+	// stopChan          chan bool
 }
 
 func NewPublisher(acc cua.Accumulator, log cua.Logger, shortenedMetrics bool) Publisher {
@@ -55,7 +55,6 @@ func (p *Publisher) publishCores(measurement string) {
 		p.errChan <- err
 	}
 	p.addToAccumulatorCores(coresString, values, timestamp)
-	return
 }
 
 func (p *Publisher) publishProcess(measurement processMeasurement) {
@@ -64,7 +63,6 @@ func (p *Publisher) publishProcess(measurement processMeasurement) {
 		p.errChan <- err
 	}
 	p.addToAccumulatorProcesses(process, coresString, values, timestamp)
-	return
 }
 
 func parseCoresMeasurement(measurements string) (string, []float64, time.Time, error) {

@@ -221,7 +221,7 @@ func (h *InfluxDBListener) handleQuery() http.HandlerFunc {
 		res.Header().Set("Content-Type", "application/json")
 		res.Header().Set("X-Influxdb-Version", "1.0")
 		res.WriteHeader(http.StatusOK)
-		res.Write([]byte("{\"results\":[]}"))
+		_, _ = res.Write([]byte("{\"results\":[]}"))
 	}
 }
 
@@ -236,7 +236,7 @@ func (h *InfluxDBListener) handlePing() http.HandlerFunc {
 			res.Header().Set("Content-Type", "application/json")
 			res.WriteHeader(http.StatusOK)
 			b, _ := json.Marshal(map[string]string{"version": "1.0"}) // based on header set above
-			res.Write(b)
+			_, _ = res.Write(b)
 		} else {
 			res.WriteHeader(http.StatusNoContent)
 		}
@@ -338,7 +338,7 @@ func (h *InfluxDBListener) handleWrite() http.HandlerFunc {
 			var partialErrorString string
 			switch parseErrorCount {
 			case 1:
-				partialErrorString = fmt.Sprintf("%s", firstParseErrorStr)
+				partialErrorString = firstParseErrorStr
 			case 2:
 				partialErrorString = fmt.Sprintf("%s (and 1 other parse error)", firstParseErrorStr)
 			default:
@@ -358,7 +358,7 @@ func tooLarge(res http.ResponseWriter) {
 	res.Header().Set("X-Influxdb-Version", "1.0")
 	res.Header().Set("X-Influxdb-Error", "http: request body too large")
 	res.WriteHeader(http.StatusRequestEntityTooLarge)
-	res.Write([]byte(`{"error":"http: request body too large"}`))
+	_, _ = res.Write([]byte(`{"error":"http: request body too large"}`))
 }
 
 func badRequest(res http.ResponseWriter, errString string) {
@@ -369,7 +369,7 @@ func badRequest(res http.ResponseWriter, errString string) {
 	}
 	res.Header().Set("X-Influxdb-Error", errString)
 	res.WriteHeader(http.StatusBadRequest)
-	res.Write([]byte(fmt.Sprintf(`{"error":%q}`, errString)))
+	_, _ = res.Write([]byte(fmt.Sprintf(`{"error":%q}`, errString)))
 }
 
 func partialWrite(res http.ResponseWriter, errString string) {
@@ -377,7 +377,7 @@ func partialWrite(res http.ResponseWriter, errString string) {
 	res.Header().Set("X-Influxdb-Version", "1.0")
 	res.Header().Set("X-Influxdb-Error", errString)
 	res.WriteHeader(http.StatusBadRequest)
-	res.Write([]byte(fmt.Sprintf(`{"error":%q}`, errString)))
+	_, _ = res.Write([]byte(fmt.Sprintf(`{"error":%q}`, errString)))
 }
 
 func getPrecisionMultiplier(precision string) time.Duration {

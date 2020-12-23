@@ -40,7 +40,7 @@ func BenchmarkUDPHeader(b *testing.B) {
 
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
-		dc.decodeUDPHeader(octets)
+		_, _ = dc.decodeUDPHeader(octets)
 	}
 }
 

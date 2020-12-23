@@ -110,7 +110,7 @@ func TestDeployment(t *testing.T) {
 			SelectorInclude: selectInclude,
 			SelectorExclude: selectExclude,
 		}
-		ks.createSelectorFilters()
+		_ = ks.createSelectorFilters()
 		acc := new(testutil.Accumulator)
 		for _, deployment := range ((v.handler.responseMap["/deployments/"]).(*v1.DeploymentList)).Items {
 			err := ks.gatherDeployment(*deployment, acc)
@@ -295,7 +295,7 @@ func TestDeploymentSelectorFilter(t *testing.T) {
 		}
 		ks.SelectorInclude = v.include
 		ks.SelectorExclude = v.exclude
-		ks.createSelectorFilters()
+		_ = ks.createSelectorFilters()
 		acc := new(testutil.Accumulator)
 		for _, deployment := range ((v.handler.responseMap["/deployments/"]).(*v1.DeploymentList)).Items {
 			err := ks.gatherDeployment(*deployment, acc)

@@ -27,7 +27,9 @@ func TestGather(t *testing.T) {
 	}
 	defer l.Close()
 
-	go handleRequest(l, t)
+	go func(t *testing.T) {
+		handleRequest(l, t)
+	}(t)
 
 	var acc testutil.Accumulator
 	testConfig := Teamspeak{
@@ -61,7 +63,7 @@ func handleRequest(l net.Listener, t *testing.T) {
 	if err != nil {
 		t.Fatal("Error accepting test connection")
 	}
-	c.Write([]byte("TS3\n\r" + welcome + "\n\r"))
+	_, _ = c.Write([]byte("TS3\n\r" + welcome + "\n\r"))
 	for {
 		msg, _, err := bufio.NewReader(c).ReadLine()
 		if err != nil {
@@ -72,16 +74,16 @@ func handleRequest(l net.Listener, t *testing.T) {
 		if exists {
 			switch r {
 			case "":
-				c.Write([]byte(ok + "\n\r"))
+				_, _ = c.Write([]byte(ok + "\n\r"))
 			case "quit":
-				c.Write([]byte(ok + "\n\r"))
+				_, _ = c.Write([]byte(ok + "\n\r"))
 				c.Close()
 				return
 			default:
-				c.Write([]byte(r + "\n\r" + ok + "\n\r"))
+				_, _ = c.Write([]byte(r + "\n\r" + ok + "\n\r"))
 			}
 		} else {
-			c.Write([]byte(errorMsg + "\n\r"))
+			_, _ = c.Write([]byte(errorMsg + "\n\r"))
 		}
 	}
 }

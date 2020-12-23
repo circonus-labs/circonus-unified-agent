@@ -111,7 +111,7 @@ func startTestServer(t *testing.T) (net.Listener, error) {
 		defer tp.Close()
 
 		sendSuccessResponse := func(body string) {
-			tp.PrintfLine("OK %d\r\n%s", len(body), body)
+			_ = tp.PrintfLine("OK %d\r\n%s", len(body), body)
 		}
 
 		for {
@@ -133,7 +133,7 @@ func startTestServer(t *testing.T) (net.Listener, error) {
 			case "stats-tube test":
 				sendSuccessResponse(statsTubeTestResponse)
 			case "stats-tube unknown":
-				tp.PrintfLine("NOT_FOUND")
+				_ = tp.PrintfLine("NOT_FOUND")
 			default:
 				t.Log("Test server: unknown command")
 			}

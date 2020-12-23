@@ -245,14 +245,13 @@ func (r *IntelRDT) createArgsAndStartPQOS(ctx context.Context) {
 		args = append(args, processArg)
 		go r.readData(args, r.processesPIDsMap, ctx)
 	}
-	return
 }
 
 func (r *IntelRDT) readData(args []string, processesPIDsAssociation map[string]string, ctx context.Context) {
 	r.wg.Add(1)
 	defer r.wg.Done()
 
-	cmd := exec.Command(r.PqosPath, append(args)...)
+	cmd := exec.Command(r.PqosPath, args...)
 
 	cmdReader, err := cmd.StdoutPipe()
 	if err != nil {

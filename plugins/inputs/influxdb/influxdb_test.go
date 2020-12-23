@@ -182,7 +182,7 @@ func TestErrorHandling404(t *testing.T) {
 func TestErrorResponse(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
-		w.Write([]byte(`{"error": "unable to parse authentication credentials"}`))
+		_, _ = w.Write([]byte(`{"error": "unable to parse authentication credentials"}`))
 	}))
 	defer ts.Close()
 

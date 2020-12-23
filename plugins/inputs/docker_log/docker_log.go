@@ -68,7 +68,7 @@ const (
 	// Maximum bytes of a log line before it will be split, size is mirroring
 	// docker code:
 	// https://github.com/moby/moby/blob/master/daemon/logger/copier.go#L21
-	maxLineBytes = 16 * 1024
+	// maxLineBytes = 16 * 1024
 )
 
 var (
@@ -225,13 +225,15 @@ func (d *DockerLogs) Gather(acc cua.Accumulator) error {
 		}
 
 		ctx, cancel := context.WithCancel(context.Background())
-		d.addToContainerList(container.ID, cancel)
+		_ = d.addToContainerList(container.ID, cancel)
 
 		// Start a new goroutine for every new container that has logs to collect
 		d.wg.Add(1)
 		go func(container types.Container) {
 			defer d.wg.Done()
-			defer d.removeFromContainerList(container.ID)
+			defer func() {
+				_ = d.removeFromContainerList(container.ID)
+			}()
 
 			err = d.tailContainerLogs(ctx, acc, container, containerName)
 			if err != nil && err != context.Canceled {
@@ -421,7 +423,7 @@ func (d *DockerLogs) Start(cua.Accumulator) error {
 }
 
 func (d *DockerLogs) Stop() {
-	d.cancelTails()
+	_ = d.cancelTails()
 	d.wg.Wait()
 }
 

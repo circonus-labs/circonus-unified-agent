@@ -2,7 +2,6 @@ package sflow
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"io"
 	"net"
@@ -40,8 +39,8 @@ type SFlow struct {
 	addr    net.Addr
 	decoder *PacketDecoder
 	closer  io.Closer
-	cancel  context.CancelFunc
-	wg      sync.WaitGroup
+	// cancel  context.CancelFunc
+	wg sync.WaitGroup
 }
 
 // Description answers a description of this input plugin
@@ -86,7 +85,7 @@ func (s *SFlow) Start(acc cua.Accumulator) error {
 	s.addr = conn.LocalAddr()
 
 	if s.ReadBufferSize.Size > 0 {
-		conn.SetReadBuffer(int(s.ReadBufferSize.Size))
+		_ = conn.SetReadBuffer(int(s.ReadBufferSize.Size))
 	}
 
 	s.Log.Infof("Listening on %s://%s", s.addr.Network(), s.addr.String())

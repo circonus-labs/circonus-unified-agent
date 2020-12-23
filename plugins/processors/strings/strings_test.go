@@ -316,10 +316,10 @@ func TestFieldKeyConversions(t *testing.T) {
 				},
 			},
 			check: func(t *testing.T, actual cua.Metric) {
-				fv, ok := actual.GetField("Request")
+				_, ok := actual.GetField("Request")
 				require.False(t, ok)
 
-				fv, ok = actual.GetField("REQUEST")
+				fv, ok := actual.GetField("REQUEST")
 				require.True(t, ok)
 				require.Equal(t, "/mixed/CASE/paTH/?from=-1D&to=now", fv)
 			},
@@ -686,7 +686,7 @@ func TestTagKeyConversions(t *testing.T) {
 				require.True(t, ok)
 				require.Equal(t, "GET", tv)
 
-				tv, ok = actual.GetTag("S-ComputerName")
+				_, ok = actual.GetTag("S-ComputerName")
 				require.False(t, ok)
 
 				tv, ok = actual.GetTag("s-computername")
@@ -708,7 +708,7 @@ func TestTagKeyConversions(t *testing.T) {
 				require.True(t, ok)
 				require.Equal(t, "GET", tv)
 
-				tv, ok = actual.GetTag("S-ComputerName")
+				_, ok = actual.GetTag("S-ComputerName")
 				require.False(t, ok)
 
 				tv, ok = actual.GetTag("S-COMPUTERNAME")

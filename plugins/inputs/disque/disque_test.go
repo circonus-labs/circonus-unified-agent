@@ -39,7 +39,7 @@ func TestDisqueGeneratesMetrics(t *testing.T) {
 			}
 
 			fmt.Fprintf(c, "$%d\n", len(testOutput))
-			c.Write([]byte(testOutput))
+			_, _ = c.Write([]byte(testOutput))
 		}
 	}()
 
@@ -105,7 +105,7 @@ func TestDisqueCanPullStatsFromMultipleServers(t *testing.T) {
 			}
 
 			fmt.Fprintf(c, "$%d\n", len(testOutput))
-			c.Write([]byte(testOutput))
+			_, _ = c.Write([]byte(testOutput))
 		}
 	}()
 

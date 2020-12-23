@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
-	"github.com/circonus-labs/circonus-unified-agent/filter"
 	"github.com/circonus-labs/circonus-unified-agent/internal"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
 )
@@ -26,8 +25,8 @@ type NSD struct {
 	Server     string
 	ConfigFile string
 
-	filter filter.Filter
-	run    runner
+	// filter filter.Filter
+	run runner
 }
 
 var defaultBinary = "/usr/sbin/nsd-control"

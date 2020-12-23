@@ -10,15 +10,14 @@ import (
 	"time"
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
-	"github.com/circonus-labs/circonus-unified-agent/filter"
 	"github.com/circonus-labs/circonus-unified-agent/internal"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
 )
 
-// Mapping of ntpctl header names to tag keys
-var tagHeaders = map[string]string{
-	"st": "stratum",
-}
+// // Mapping of ntpctl header names to tag keys
+// var tagHeaders = map[string]string{
+// 	"st": "stratum",
+// }
 
 // Mapping of the ntpctl tag key to the index in the command output
 var tagI = map[string]int{
@@ -48,8 +47,8 @@ type Openntpd struct {
 	Timeout internal.Duration
 	UseSudo bool
 
-	filter filter.Filter
-	run    runner
+	// filter filter.Filter
+	run runner
 }
 
 var defaultBinary = "/usr/sbin/ntpctl"

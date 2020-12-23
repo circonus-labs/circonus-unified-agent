@@ -25,7 +25,7 @@ type DiskIO struct {
 
 	Log cua.Logger
 
-	infoCache    map[string]diskInfoCache
+	infoCache    map[string]diskInfoCache //nolint:structcheck,unused
 	deviceFilter filter.Filter
 	initialized  bool
 }
@@ -68,7 +68,7 @@ func (_ *DiskIO) SampleConfig() string {
 
 // hasMeta reports whether s contains any special glob characters.
 func hasMeta(s string) bool {
-	return strings.IndexAny(s, "*?[") >= 0
+	return strings.ContainsAny(s, "*?[")
 }
 
 func (s *DiskIO) init() error {

@@ -97,7 +97,7 @@ func (h mockHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
-	w.Write(b)
+	_, _ = w.Write(b)
 }
 
 func TestGatherNodeData(t *testing.T) {

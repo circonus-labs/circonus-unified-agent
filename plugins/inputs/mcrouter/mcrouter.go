@@ -213,7 +213,7 @@ func (m *Mcrouter) gatherServer(ctx context.Context, address string, acc cua.Acc
 	deadline, ok := ctx.Deadline()
 
 	if ok {
-		conn.SetDeadline(deadline)
+		_ = conn.SetDeadline(deadline)
 	}
 
 	// Read and write buffer

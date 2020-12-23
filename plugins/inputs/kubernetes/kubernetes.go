@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"strings"
 	"time"
 
@@ -65,7 +64,7 @@ var sampleConfig = `
 `
 
 const (
-	summaryEndpoint           = `%s/stats/summary`
+	// summaryEndpoint           = `%s/stats/summary`
 	defaultServiceAccountPath = "/run/secrets/kubernetes.io/serviceaccount/token"
 )
 
@@ -118,14 +117,14 @@ func (k *Kubernetes) Gather(acc cua.Accumulator) error {
 	return nil
 }
 
-func buildURL(endpoint string, base string) (*url.URL, error) {
-	u := fmt.Sprintf(endpoint, base)
-	addr, err := url.Parse(u)
-	if err != nil {
-		return nil, fmt.Errorf("Unable to parse address '%s': %s", u, err)
-	}
-	return addr, nil
-}
+// func buildURL(endpoint string, base string) (*url.URL, error) {
+// 	u := fmt.Sprintf(endpoint, base)
+// 	addr, err := url.Parse(u)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("Unable to parse address '%s': %s", u, err)
+// 	}
+// 	return addr, nil
+// }
 
 func (k *Kubernetes) gatherSummary(baseURL string, acc cua.Accumulator) error {
 	summaryMetrics := &SummaryMetrics{}

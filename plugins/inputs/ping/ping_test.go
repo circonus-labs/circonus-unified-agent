@@ -239,7 +239,7 @@ func TestPingGather(t *testing.T) {
 		pingHost: mockHostPinger,
 	}
 
-	acc.GatherError(p.Gather)
+	_ = acc.GatherError(p.Gather)
 	tags := map[string]string{"url": "localhost"}
 	fields := map[string]interface{}{
 		"packets_transmitted":   5,
@@ -281,7 +281,7 @@ func TestLossyPingGather(t *testing.T) {
 		pingHost: mockLossyHostPinger,
 	}
 
-	acc.GatherError(p.Gather)
+	_ = acc.GatherError(p.Gather)
 	tags := map[string]string{"url": "www.google.com"}
 	fields := map[string]interface{}{
 		"packets_transmitted":   5,
@@ -319,7 +319,7 @@ func TestBadPingGather(t *testing.T) {
 		pingHost: mockErrorHostPinger,
 	}
 
-	acc.GatherError(p.Gather)
+	_ = acc.GatherError(p.Gather)
 	tags := map[string]string{"url": "www.amazon.com"}
 	fields := map[string]interface{}{
 		"packets_transmitted": 2,
@@ -342,7 +342,7 @@ func TestFatalPingGather(t *testing.T) {
 		pingHost: mockFatalHostPinger,
 	}
 
-	acc.GatherError(p.Gather)
+	_ = acc.GatherError(p.Gather)
 	assert.False(t, acc.HasMeasurement("packets_transmitted"),
 		"Fatal ping should not have packet measurements")
 	assert.False(t, acc.HasMeasurement("packets_received"),
@@ -376,7 +376,7 @@ func TestErrorWithHostNamePingGather(t *testing.T) {
 				return param.out, errors.New("So very bad")
 			},
 		}
-		acc.GatherError(p.Gather)
+		_ = acc.GatherError(p.Gather)
 		assert.True(t, len(acc.Errors) > 0)
 		assert.Contains(t, acc.Errors, param.error)
 	}
@@ -392,7 +392,7 @@ func TestPingBinary(t *testing.T) {
 			return "", nil
 		},
 	}
-	acc.GatherError(p.Gather)
+	_ = acc.GatherError(p.Gather)
 }
 
 func mockHostResolver(ctx context.Context, ipv6 bool, host string) (*net.IPAddr, error) {
@@ -438,6 +438,6 @@ func TestDNSLookupError(t *testing.T) {
 		resolveHost: mockHostResolverError,
 	}
 
-	acc.GatherError(p.Gather)
+	_ = acc.GatherError(p.Gather)
 	assert.True(t, len(acc.Errors) > 0)
 }

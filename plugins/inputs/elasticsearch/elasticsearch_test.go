@@ -1,7 +1,6 @@
 package elasticsearch
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -54,7 +53,7 @@ func (t *transportMock) CancelRequest(_ *http.Request) {
 
 func checkIsMaster(es *Elasticsearch, server string, expected bool, t *testing.T) {
 	if es.serverInfo[server].isMaster() != expected {
-		msg := fmt.Sprintf("IsMaster set incorrectly")
+		msg := "IsMaster set incorrectly"
 		assert.Fail(t, msg)
 	}
 }
@@ -229,7 +228,7 @@ func TestGatherClusterStatsMaster(t *testing.T) {
 
 	IsMasterResultTokens := strings.Split(string(IsMasterResult), " ")
 	if masterID != IsMasterResultTokens[0] {
-		msg := fmt.Sprintf("catmaster is incorrect")
+		msg := "catmaster is incorrect"
 		assert.Fail(t, msg)
 	}
 
@@ -273,7 +272,7 @@ func TestGatherClusterStatsNonMaster(t *testing.T) {
 
 	IsNotMasterResultTokens := strings.Split(string(IsNotMasterResult), " ")
 	if masterID != IsNotMasterResultTokens[0] {
-		msg := fmt.Sprintf("catmaster is incorrect")
+		msg := "catmaster is incorrect"
 		assert.Fail(t, msg)
 	}
 

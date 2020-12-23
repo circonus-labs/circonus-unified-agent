@@ -49,7 +49,7 @@ func (s *Server) validateVersion() error {
 		return errors.New("could not determine the RethinkDB server version: process.version key missing")
 	}
 
-	versionRegexp := regexp.MustCompile("\\d.\\d.\\d")
+	versionRegexp := regexp.MustCompile(`\d.\d.\d`)
 	versionString := versionRegexp.FindString(s.serverStatus.Process.Version)
 	if versionString == "" {
 		return fmt.Errorf("could not determine the RethinkDB server version: malformed version string (%v)", s.serverStatus.Process.Version)

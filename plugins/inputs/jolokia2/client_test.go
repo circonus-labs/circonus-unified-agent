@@ -40,7 +40,7 @@ func TestJolokia2_ClientAuthRequest(t *testing.T) {
 	`, server.URL))
 
 	var acc testutil.Accumulator
-	plugin.Gather(&acc)
+	_ = plugin.Gather(&acc)
 
 	if username != "sally" {
 		t.Errorf("Expected to post with username %s, but was %s", "sally", username)
@@ -93,7 +93,7 @@ func TestJolokia2_ClientProxyAuthRequest(t *testing.T) {
 	`, server.URL))
 
 	var acc testutil.Accumulator
-	plugin.Gather(&acc)
+	_ = plugin.Gather(&acc)
 
 	if username != "sally" {
 		t.Errorf("Expected to post with username %s, but was %s", "sally", username)

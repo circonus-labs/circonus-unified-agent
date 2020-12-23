@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"sync"
 	"time"
@@ -39,13 +38,13 @@ type PubSubPush struct {
 	tlsint.ServerConfig
 	parsers.Parser
 
-	listener net.Listener
-	server   *http.Server
-	acc      cua.TrackingAccumulator
-	ctx      context.Context
-	cancel   context.CancelFunc
-	wg       *sync.WaitGroup
-	mu       *sync.Mutex
+	// listener net.Listener
+	server *http.Server
+	acc    cua.TrackingAccumulator
+	ctx    context.Context
+	cancel context.CancelFunc
+	wg     *sync.WaitGroup
+	mu     *sync.Mutex
 
 	undelivered map[cua.TrackingID]chan bool
 	sem         chan struct{}
@@ -171,9 +170,9 @@ func (p *PubSubPush) Start(acc cua.Accumulator) error {
 	go func() {
 		defer p.wg.Done()
 		if tlsConf != nil {
-			p.server.ListenAndServeTLS("", "")
+			_ = p.server.ListenAndServeTLS("", "")
 		} else {
-			p.server.ListenAndServe()
+			_ = p.server.ListenAndServe()
 		}
 	}()
 
@@ -183,7 +182,7 @@ func (p *PubSubPush) Start(acc cua.Accumulator) error {
 // Stop cleans up all resources
 func (p *PubSubPush) Stop() {
 	p.cancel()
-	p.server.Shutdown(p.ctx)
+	_ = p.server.Shutdown(p.ctx)
 	p.wg.Wait()
 }
 

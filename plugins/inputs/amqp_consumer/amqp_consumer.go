@@ -71,7 +71,7 @@ func (a *externalAuth) Mechanism() string {
 	return "EXTERNAL"
 }
 func (a *externalAuth) Response() string {
-	return fmt.Sprintf("\000")
+	return "\000"
 }
 
 const (
@@ -292,7 +292,7 @@ func (a *AMQPConsumer) connect(amqpConf *amqp.Config) (<-chan amqp.Delivery, err
 	}
 
 	if a.Exchange != "" {
-		var exchangeDurable = true
+		var exchangeDurable bool
 		switch a.ExchangeDurability {
 		case "transient":
 			exchangeDurable = false
@@ -409,7 +409,7 @@ func declareQueue(
 	var queue amqp.Queue
 	var err error
 
-	var queueDurable = true
+	var queueDurable bool
 	switch queueDurability {
 	case "transient":
 		queueDurable = false

@@ -12,7 +12,7 @@ func TestGather(t *testing.T) {
 	pa := PuppetAgent{
 		Location: "last_run_summary.yaml",
 	}
-	pa.Gather(&acc)
+	_ = pa.Gather(&acc)
 
 	tags := map[string]string{"location": "last_run_summary.yaml"}
 	fields := map[string]interface{}{

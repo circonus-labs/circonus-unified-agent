@@ -287,17 +287,17 @@ func (j *Jenkins) gatherJobs(acc cua.Accumulator) {
 	wg.Wait()
 }
 
-// wrap the tcp request with doGet
-// block tcp request if buffered channel is full
-func (j *Jenkins) doGet(tcp func() error) error {
-	j.semaphore <- struct{}{}
-	if err := tcp(); err != nil {
-		<-j.semaphore
-		return err
-	}
-	<-j.semaphore
-	return nil
-}
+// // wrap the tcp request with doGet
+// // block tcp request if buffered channel is full
+// func (j *Jenkins) doGet(tcp func() error) error {
+// 	j.semaphore <- struct{}{}
+// 	if err := tcp(); err != nil {
+// 		<-j.semaphore
+// 		return err
+// 	}
+// 	<-j.semaphore
+// 	return nil
+// }
 
 func (j *Jenkins) getJobDetail(jr jobRequest, acc cua.Accumulator) error {
 	if j.MaxSubJobDepth > 0 && jr.layer == j.MaxSubJobDepth {

@@ -396,7 +396,7 @@ func (r *RabbitMQ) requestJSON(u string, target interface{}) error {
 
 	defer resp.Body.Close()
 
-	json.NewDecoder(resp.Body).Decode(target)
+	_ = json.NewDecoder(resp.Body).Decode(target)
 
 	return nil
 }

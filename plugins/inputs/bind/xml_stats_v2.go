@@ -75,7 +75,7 @@ func addXMLv2Counter(acc cua.Accumulator, commonTags map[string]string, stats []
 			tags[k] = v
 		}
 
-		grouper.Add("bind_counter", tags, ts, c.Name, c.Value)
+		_ = grouper.Add("bind_counter", tags, ts, c.Name, c.Value)
 	}
 
 	//Add grouped metrics

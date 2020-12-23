@@ -31,7 +31,7 @@ func TestGatherQueuesMetrics(t *testing.T) {
 
 	queues := Queues{}
 
-	xml.Unmarshal([]byte(s), &queues)
+	_ = xml.Unmarshal([]byte(s), &queues)
 
 	records := make(map[string]interface{})
 	tags := make(map[string]string)
@@ -50,7 +50,7 @@ func TestGatherQueuesMetrics(t *testing.T) {
 	activeMQ := new(ActiveMQ)
 	activeMQ.Server = "localhost"
 	activeMQ.Port = 8161
-	activeMQ.Init()
+	_ = activeMQ.Init()
 
 	activeMQ.GatherQueuesMetrics(&acc, queues)
 	acc.AssertContainsTaggedFields(t, "activemq_queues", records, tags)
@@ -78,7 +78,7 @@ func TestGatherTopicsMetrics(t *testing.T) {
 
 	topics := Topics{}
 
-	xml.Unmarshal([]byte(s), &topics)
+	_ = xml.Unmarshal([]byte(s), &topics)
 
 	records := make(map[string]interface{})
 	tags := make(map[string]string)
@@ -97,7 +97,7 @@ func TestGatherTopicsMetrics(t *testing.T) {
 	activeMQ := new(ActiveMQ)
 	activeMQ.Server = "localhost"
 	activeMQ.Port = 8161
-	activeMQ.Init()
+	_ = activeMQ.Init()
 
 	activeMQ.GatherTopicsMetrics(&acc, topics)
 	acc.AssertContainsTaggedFields(t, "activemq_topics", records, tags)
@@ -113,7 +113,7 @@ func TestGatherSubscribersMetrics(t *testing.T) {
 
 	subscribers := Subscribers{}
 
-	xml.Unmarshal([]byte(s), &subscribers)
+	_ = xml.Unmarshal([]byte(s), &subscribers)
 
 	records := make(map[string]interface{})
 	tags := make(map[string]string)
@@ -138,7 +138,7 @@ func TestGatherSubscribersMetrics(t *testing.T) {
 	activeMQ := new(ActiveMQ)
 	activeMQ.Server = "localhost"
 	activeMQ.Port = 8161
-	activeMQ.Init()
+	_ = activeMQ.Init()
 
 	activeMQ.GatherSubscribersMetrics(&acc, subscribers)
 	acc.AssertContainsTaggedFields(t, "activemq_subscribers", records, tags)
@@ -152,13 +152,13 @@ func TestURLs(t *testing.T) {
 		switch r.URL.Path {
 		case "/admin/xml/queues.jsp":
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte("<queues></queues>"))
+			_, _ = w.Write([]byte("<queues></queues>"))
 		case "/admin/xml/topics.jsp":
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte("<topics></topics>"))
+			_, _ = w.Write([]byte("<topics></topics>"))
 		case "/admin/xml/subscribers.jsp":
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte("<subscribers></subscribers>"))
+			_, _ = w.Write([]byte("<subscribers></subscribers>"))
 		default:
 			w.WriteHeader(http.StatusNotFound)
 			t.Fatalf("unexpected path: " + r.URL.Path)

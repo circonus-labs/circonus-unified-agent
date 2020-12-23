@@ -190,15 +190,18 @@ func processPingOutput(out string) (int, int, int, float64, float64, float64, fl
 	return trans, recv, ttl, min, avg, max, stddev, err
 }
 
-func getPacketStats(line string, trans, recv int) (int, int, error) {
+func getPacketStats(line string, trans, recv int) (int, int, error) { //nolint:staticcheck
 	stats := strings.Split(line, ", ")
+
 	// Transmitted packets
 	trans, err := strconv.Atoi(strings.Split(stats[0], " ")[0])
 	if err != nil {
 		return trans, recv, err
 	}
+
 	// Received packets
 	recv, err = strconv.Atoi(strings.Split(stats[1], " ")[0])
+
 	return trans, recv, err
 }
 
@@ -208,8 +211,7 @@ func getTTL(line string) (int, error) {
 	return strconv.Atoi(ttlMatch[2])
 }
 
-func checkRoundTripTimeStats(line string, min, avg, max,
-	stddev float64) (float64, float64, float64, float64, error) {
+func checkRoundTripTimeStats(line string, min, avg, max, stddev float64) (float64, float64, float64, float64, error) { //nolint:staticcheck
 	stats := strings.Split(line, " ")[3]
 	data := strings.Split(stats, "/")
 

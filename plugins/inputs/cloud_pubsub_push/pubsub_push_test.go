@@ -157,7 +157,7 @@ func TestServeHTTP(t *testing.T) {
 			defer wg.Done()
 			for m := range d {
 				ro.AddMetric(m)
-				ro.Write()
+				_ = ro.Write()
 			}
 		}(test.status, dst)
 

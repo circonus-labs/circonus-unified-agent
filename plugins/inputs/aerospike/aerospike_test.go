@@ -127,7 +127,7 @@ func TestQuerySets(t *testing.T) {
 	// create a set
 	// test is the default namespace from aerospike
 	policy := as.NewClientPolicy()
-	client, err := as.NewClientWithPolicy(policy, testutil.GetLocalHost(), 3000)
+	client, _ := as.NewClientWithPolicy(policy, testutil.GetLocalHost(), 3000)
 
 	key, err := as.NewKey("test", "foo", 123)
 	require.NoError(t, err)
@@ -176,7 +176,7 @@ func TestSelectQuerySets(t *testing.T) {
 	// create a set
 	// test is the default namespace from aerospike
 	policy := as.NewClientPolicy()
-	client, err := as.NewClientWithPolicy(policy, testutil.GetLocalHost(), 3000)
+	client, _ := as.NewClientWithPolicy(policy, testutil.GetLocalHost(), 3000)
 
 	key, err := as.NewKey("test", "foo", 123)
 	require.NoError(t, err)

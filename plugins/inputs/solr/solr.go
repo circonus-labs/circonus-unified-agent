@@ -18,9 +18,9 @@ import (
 const mbeansPath = "/admin/mbeans?stats=true&wt=json&cat=CORE&cat=QUERYHANDLER&cat=UPDATEHANDLER&cat=CACHE"
 const adminCoresPath = "/solr/admin/cores?action=STATUS&wt=json"
 
-type node struct {
-	Host string `json:"host"`
-}
+// type node struct {
+// 	Host string `json:"host"`
+// }
 
 const sampleConfig = `
   ## specify a list of one or more Solr servers

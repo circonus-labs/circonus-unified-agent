@@ -178,12 +178,11 @@ func (r *Registry) set(key uint64, s Stat) {
 	}
 
 	r.stats[key][s.FieldName()] = s
-	return
 }
 
 func key(measurement string, tags map[string]string) uint64 {
 	h := fnv.New64a()
-	h.Write([]byte(measurement))
+	_, _ = h.Write([]byte(measurement))
 
 	tmp := make([]string, len(tags))
 	i := 0
@@ -194,7 +193,7 @@ func key(measurement string, tags map[string]string) uint64 {
 	sort.Strings(tmp)
 
 	for _, s := range tmp {
-		h.Write([]byte(s))
+		_, _ = h.Write([]byte(s))
 	}
 
 	return h.Sum64()

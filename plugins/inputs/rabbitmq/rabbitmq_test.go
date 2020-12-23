@@ -39,7 +39,7 @@ func TestRabbitMQGeneratesMetrics(t *testing.T) {
 			panic(fmt.Sprintf("could not read from data file %s", jsonFilePath))
 		}
 
-		w.Write(data)
+		_, _ = w.Write(data)
 	}))
 	defer ts.Close()
 

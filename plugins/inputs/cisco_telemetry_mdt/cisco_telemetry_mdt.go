@@ -111,7 +111,7 @@ func (c *CiscoTelemetryMDT) Start(acc cua.Accumulator) error {
 
 		c.wg.Add(1)
 		go func() {
-			c.grpcServer.Serve(c.listener)
+			_ = c.grpcServer.Serve(c.listener)
 			c.wg.Done()
 		}()
 
@@ -416,7 +416,7 @@ func (c *CiscoTelemetryMDT) parseContentField(grouper *metric.SeriesGrouper, fie
 			c.mutex.Unlock()
 		}
 
-		grouper.Add(measurement, tags, timestamp, name, value)
+		_ = grouper.Add(measurement, tags, timestamp, name, value)
 		return
 	}
 

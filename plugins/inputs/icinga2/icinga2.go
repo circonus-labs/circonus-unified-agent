@@ -171,7 +171,7 @@ func (i *Icinga2) Gather(acc cua.Accumulator) error {
 	defer resp.Body.Close()
 
 	result := Result{}
-	json.NewDecoder(resp.Body).Decode(&result)
+	_ = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
 		return err
 	}

@@ -100,7 +100,7 @@ func adjustValue(in interface{}) interface{} {
 }
 
 func (mapping *Mapping) mapValue(original string) (interface{}, bool) {
-	if mapped, found := mapping.ValueMappings[original]; found == true {
+	if mapped, found := mapping.ValueMappings[original]; found {
 		return mapped, true
 	}
 	if mapping.Default != nil {

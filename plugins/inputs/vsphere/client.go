@@ -115,7 +115,7 @@ func NewClient(ctx context.Context, u *url.URL, vs *VSphere) (*Client, error) {
 	}
 
 	vs.Log.Debugf("Creating client: %s", u.Host)
-	soapClient := soap.NewClient(u, tlsCfg.InsecureSkipVerify)
+	soapClient := soap.NewClient(u, tlsCfg.InsecureSkipVerify) //nolint:staticcheck
 
 	// Add certificate if we have it. Use it to log us in.
 	if tlsCfg != nil && len(tlsCfg.Certificates) > 0 {

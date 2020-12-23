@@ -42,8 +42,8 @@ func TestSuricataLarge(t *testing.T) {
 
 	c, err := net.Dial("unix", tmpfn)
 	require.NoError(t, err)
-	c.Write([]byte(data))
-	c.Write([]byte("\n"))
+	_, _ = c.Write([]byte(data))
+	_, _ = c.Write([]byte("\n"))
 	c.Close()
 
 	acc.Wait(1)
@@ -68,8 +68,8 @@ func TestSuricata(t *testing.T) {
 
 	c, err := net.Dial("unix", tmpfn)
 	require.NoError(t, err)
-	c.Write([]byte(ex2))
-	c.Write([]byte("\n"))
+	_, _ = c.Write([]byte(ex2))
+	_, _ = c.Write([]byte("\n"))
 	c.Close()
 
 	acc.Wait(1)
@@ -113,11 +113,11 @@ func TestThreadStats(t *testing.T) {
 
 	c, err := net.Dial("unix", tmpfn)
 	require.NoError(t, err)
-	c.Write([]byte(""))
-	c.Write([]byte("\n"))
-	c.Write([]byte("foobard}\n"))
-	c.Write([]byte(ex3))
-	c.Write([]byte("\n"))
+	_, _ = c.Write([]byte(""))
+	_, _ = c.Write([]byte("\n"))
+	_, _ = c.Write([]byte("foobard}\n"))
+	_, _ = c.Write([]byte(ex3))
+	_, _ = c.Write([]byte("\n"))
 	c.Close()
 	acc.Wait(1)
 
@@ -158,8 +158,8 @@ func TestSuricataInvalid(t *testing.T) {
 
 	c, err := net.Dial("unix", tmpfn)
 	require.NoError(t, err)
-	c.Write([]byte("sfjiowef"))
-	c.Write([]byte("\n"))
+	_, _ = c.Write([]byte("sfjiowef"))
+	_, _ = c.Write([]byte("\n"))
 	c.Close()
 
 	acc.WaitError(1)
@@ -197,8 +197,8 @@ func TestSuricataTooLongLine(t *testing.T) {
 
 	c, err := net.Dial("unix", tmpfn)
 	require.NoError(t, err)
-	c.Write([]byte(strings.Repeat("X", 20000000)))
-	c.Write([]byte("\n"))
+	_, _ = c.Write([]byte(strings.Repeat("X", 20000000)))
+	_, _ = c.Write([]byte("\n"))
 	c.Close()
 
 	acc.WaitError(1)
@@ -226,7 +226,7 @@ func TestSuricataEmptyJSON(t *testing.T) {
 		log.Println(err)
 
 	}
-	c.Write([]byte("\n"))
+	_, _ = c.Write([]byte("\n"))
 	c.Close()
 
 	acc.WaitError(1)
@@ -251,14 +251,14 @@ func TestSuricataDisconnectSocket(t *testing.T) {
 
 	c, err := net.Dial("unix", tmpfn)
 	require.NoError(t, err)
-	c.Write([]byte(ex2))
-	c.Write([]byte("\n"))
+	_, _ = c.Write([]byte(ex2))
+	_, _ = c.Write([]byte("\n"))
 	c.Close()
 
 	c, err = net.Dial("unix", tmpfn)
 	require.NoError(t, err)
-	c.Write([]byte(ex3))
-	c.Write([]byte("\n"))
+	_, _ = c.Write([]byte(ex3))
+	_, _ = c.Write([]byte("\n"))
 	c.Close()
 
 	acc.Wait(2)

@@ -30,7 +30,7 @@ func BenchmarkParse(b *testing.B) {
 	}
 
 	for i := 0; i < b.N; i++ {
-		p.Parse([]byte("servers.localhost.cpu.load 11 1435077219"))
+		_, _ = p.Parse([]byte("servers.localhost.cpu.load 11 1435077219"))
 	}
 }
 
@@ -452,7 +452,7 @@ func TestFilterMatchSingle(t *testing.T) {
 		t.Fatalf("unexpected error creating parser, got %v", err)
 	}
 
-	exp, err := metric.New("cpu_load",
+	exp, _ := metric.New("cpu_load",
 		map[string]string{"host": "localhost"},
 		map[string]interface{}{"value": float64(11)},
 		time.Unix(1435077219, 0))
@@ -737,7 +737,7 @@ func TestApplyTemplateField(t *testing.T) {
 		[]string{"current.* measurement.measurement.field"}, nil)
 	assert.NoError(t, err)
 
-	measurement, _, field, err := p.ApplyTemplate("current.users.logged_in")
+	measurement, _, field, _ := p.ApplyTemplate("current.users.logged_in")
 
 	assert.Equal(t, "current_users", measurement)
 
@@ -752,7 +752,7 @@ func TestApplyTemplateMultipleFieldsTogether(t *testing.T) {
 		[]string{"current.* measurement.measurement.field.field"}, nil)
 	assert.NoError(t, err)
 
-	measurement, _, field, err := p.ApplyTemplate("current.users.logged_in.ssh")
+	measurement, _, field, _ := p.ApplyTemplate("current.users.logged_in.ssh")
 
 	assert.Equal(t, "current_users", measurement)
 
@@ -767,7 +767,7 @@ func TestApplyTemplateMultipleFieldsApart(t *testing.T) {
 		[]string{"current.* measurement.measurement.field.method.field"}, nil)
 	assert.NoError(t, err)
 
-	measurement, _, field, err := p.ApplyTemplate("current.users.logged_in.ssh.total")
+	measurement, _, field, _ := p.ApplyTemplate("current.users.logged_in.ssh.total")
 
 	assert.Equal(t, "current_users", measurement)
 
@@ -782,7 +782,7 @@ func TestApplyTemplateGreedyField(t *testing.T) {
 		[]string{"current.* measurement.measurement.field*"}, nil)
 	assert.NoError(t, err)
 
-	measurement, _, field, err := p.ApplyTemplate("current.users.logged_in")
+	measurement, _, field, _ := p.ApplyTemplate("current.users.logged_in")
 
 	assert.Equal(t, "current_users", measurement)
 
@@ -802,7 +802,7 @@ func TestApplyTemplateOverSpecific(t *testing.T) {
 	)
 	assert.NoError(t, err)
 
-	measurement, tags, _, err := p.ApplyTemplate("net.server001.a.b 2")
+	measurement, tags, _, _ := p.ApplyTemplate("net.server001.a.b 2")
 	assert.Equal(t, "net", measurement)
 	assert.Equal(t,
 		map[string]string{"host": "server001", "metric": "a.b"},
@@ -821,13 +821,13 @@ func TestApplyTemplateMostSpecificTemplate(t *testing.T) {
 	)
 	assert.NoError(t, err)
 
-	measurement, tags, _, err := p.ApplyTemplate("net.server001.a.b.c 2")
+	measurement, tags, _, _ := p.ApplyTemplate("net.server001.a.b.c 2")
 	assert.Equal(t, "net", measurement)
 	assert.Equal(t,
 		map[string]string{"host": "server001", "metric": "a.b.c"},
 		tags)
 
-	measurement, tags, _, err = p.ApplyTemplate("net.server001.a.b 2")
+	measurement, tags, _, _ = p.ApplyTemplate("net.server001.a.b 2")
 	assert.Equal(t, "net", measurement)
 	assert.Equal(t,
 		map[string]string{"host": "server001", "metric": "a.b"},

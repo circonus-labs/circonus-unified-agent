@@ -20,7 +20,7 @@ func TestGatherServer(t *testing.T) {
 	}
 	var cb Couchbase
 	var acc testutil.Accumulator
-	cb.gatherServer("mycluster", &acc, &pool)
+	_ = cb.gatherServer("mycluster", &acc, &pool)
 	acc.AssertContainsTaggedFields(t, "couchbase_node",
 		map[string]interface{}{"memory_free": 23181365248.0, "memory_total": 64424656896.0},
 		map[string]string{"cluster": "mycluster", "hostname": "172.16.10.187:8091"})

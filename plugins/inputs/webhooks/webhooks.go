@@ -107,7 +107,7 @@ func (wb *Webhooks) Start(acc cua.Accumulator) error {
 
 	wb.srv = &http.Server{Handler: r}
 
-	ln, err := net.Listen("tcp", fmt.Sprintf("%s", wb.ServiceAddress))
+	ln, err := net.Listen("tcp", wb.ServiceAddress)
 	if err != nil {
 		log.Fatalf("E! Error starting server: %v", err)
 		return err

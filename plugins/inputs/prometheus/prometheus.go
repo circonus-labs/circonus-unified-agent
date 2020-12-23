@@ -168,7 +168,7 @@ type URLAndAddress struct {
 }
 
 func (p *Prometheus) GetAllURLs() (map[string]URLAndAddress, error) {
-	allURLs := make(map[string]URLAndAddress, 0)
+	allURLs := make(map[string]URLAndAddress)
 	for _, u := range p.URLs {
 		URL, err := url.Parse(u)
 		if err != nil {

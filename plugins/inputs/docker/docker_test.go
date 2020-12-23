@@ -904,7 +904,7 @@ func TestDockerGatherSwarmInfo(t *testing.T) {
 	err := acc.GatherError(d.Gather)
 	require.NoError(t, err)
 
-	d.gatherSwarmInfo(&acc)
+	_ = d.gatherSwarmInfo(&acc)
 
 	// test docker_container_net measurement
 	acc.AssertContainsTaggedFields(t,

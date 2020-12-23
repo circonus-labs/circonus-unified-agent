@@ -8,11 +8,11 @@ type timingStat struct {
 	measurement string
 	field       string
 	tags        map[string]string
-	key         uint64
-	v           int64
-	prev        int64
-	count       int64
-	mu          sync.Mutex
+	// key         uint64
+	v     int64
+	prev  int64
+	count int64
+	mu    sync.Mutex
 }
 
 func (s *timingStat) Incr(v int64) {

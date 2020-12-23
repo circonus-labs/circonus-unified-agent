@@ -86,14 +86,8 @@ func (l *Lanz) Stop() {
 }
 
 func receive(acc cua.Accumulator, in <-chan *pb.LanzRecord, deviceUrl *url.URL) {
-	for {
-		select {
-		case msg, ok := <-in:
-			if !ok {
-				return
-			}
-			msgToAccumulator(acc, msg, deviceUrl)
-		}
+	for msg := range in {
+		msgToAccumulator(acc, msg, deviceUrl)
 	}
 }
 

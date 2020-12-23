@@ -48,7 +48,7 @@ var validQuery = map[string]bool{
 
 func (d *Dovecot) SampleConfig() string { return sampleConfig }
 
-const defaultPort = "24242"
+// const defaultPort = "24242"
 
 // Reads stats from all configured servers.
 func (d *Dovecot) Gather(acc cua.Accumulator) error {
@@ -93,7 +93,7 @@ func (d *Dovecot) gatherServer(addr string, acc cua.Accumulator, qtype string, f
 	defer c.Close()
 
 	// Extend connection
-	c.SetDeadline(time.Now().Add(defaultTimeout))
+	_ = c.SetDeadline(time.Now().Add(defaultTimeout))
 
 	msg := fmt.Sprintf("EXPORT\t%s", qtype)
 	if len(filter) > 0 {
@@ -101,9 +101,9 @@ func (d *Dovecot) gatherServer(addr string, acc cua.Accumulator, qtype string, f
 	}
 	msg += "\n"
 
-	c.Write([]byte(msg))
+	_, _ = c.Write([]byte(msg))
 	var buf bytes.Buffer
-	io.Copy(&buf, c)
+	_, _ = io.Copy(&buf, c)
 
 	host, _, _ := net.SplitHostPort(addr)
 

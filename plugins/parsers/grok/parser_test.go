@@ -15,7 +15,7 @@ func TestGrokParse(t *testing.T) {
 		Measurement: "t_met",
 		Patterns:    []string{"%{COMMON_LOG_FORMAT}"},
 	}
-	parser.Compile()
+	_ = parser.Compile()
 	_, err := parser.Parse([]byte(`127.0.0.1 user-identifier frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326`))
 	assert.NoError(t, err)
 }
@@ -1088,7 +1088,7 @@ func TestEmptyYearInTimestamp(t *testing.T) {
 		`,
 	}
 	require.NoError(t, p.Compile())
-	p.ParseLine("Nov  6 13:57:03 generic iTunes[6504]: info> Scale factor of main display = 2.0")
+	_, _ = p.ParseLine("Nov  6 13:57:03 generic iTunes[6504]: info> Scale factor of main display = 2.0")
 	m, err := p.ParseLine("Nov  6 13:57:03 generic iTunes[6504]: objc[6504]: Object descriptor was null.")
 	require.NoError(t, err)
 	require.NotNil(t, m)

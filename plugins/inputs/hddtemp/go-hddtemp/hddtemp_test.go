@@ -105,11 +105,13 @@ func serve(t *testing.T, data []byte) net.Listener {
 		conn, err := l.Accept()
 
 		if err != nil {
-			t.Fatal(err)
+			t.Error(err)
+			_ = conn.Close()
+			return
 		}
 
-		conn.Write(data)
-		conn.Close()
+		_, _ = conn.Write(data)
+		_ = conn.Close()
 	}(t)
 
 	return l

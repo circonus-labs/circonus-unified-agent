@@ -45,7 +45,7 @@ var localhost = &Server{Url: &url.URL{Host: "127.0.0.1:28015"}}
 // Returns one of the errors encountered while gather stats (if any).
 func (r *RethinkDB) Gather(acc cua.Accumulator) error {
 	if len(r.Servers) == 0 {
-		r.gatherServer(localhost, acc)
+		_ = r.gatherServer(localhost, acc)
 		return nil
 	}
 

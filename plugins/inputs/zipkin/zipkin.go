@@ -108,9 +108,9 @@ func (z *Zipkin) Start(acc cua.Accumulator) error {
 	z.address = ln.Addr().String()
 	z.Log.Infof("Started the zipkin listener on %s", z.address)
 
+	z.waitGroup.Add(1)
 	go func() {
-		wg.Add(1)
-		defer wg.Done()
+		defer z.waitGroup.Done()
 
 		z.Listen(ln, acc)
 	}()
@@ -125,7 +125,7 @@ func (z *Zipkin) Stop() {
 	defer z.waitGroup.Wait()
 	defer cancel()
 
-	z.server.Shutdown(ctx)
+	_ = z.server.Shutdown(ctx)
 }
 
 // Listen creates an http server on the zipkin instance it is called with, and

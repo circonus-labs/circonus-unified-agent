@@ -25,8 +25,8 @@ func queryRunner(t *testing.T, q query) *testutil.Accumulator {
 		Query:     q,
 	}
 	var acc testutil.Accumulator
-	p.Start(&acc)
-	p.Init()
+	_ = p.Start(&acc)
+	_ = p.Init()
 	require.NoError(t, acc.GatherError(p.Gather))
 	return &acc
 }
@@ -222,8 +222,8 @@ func TestPostgresqlSqlScript(t *testing.T) {
 		Query:     q,
 	}
 	var acc testutil.Accumulator
-	p.Start(&acc)
-	p.Init()
+	_ = p.Start(&acc)
+	_ = p.Init()
 
 	require.NoError(t, acc.GatherError(p.Gather))
 }
@@ -284,9 +284,9 @@ func (f fakeRow) Scan(dest ...interface{}) error {
 	}
 
 	for i, d := range dest {
-		switch d.(type) {
+		switch x := d.(type) {
 		case (*interface{}):
-			*d.(*interface{}) = f.fields[i]
+			*x = f.fields[i]
 		default:
 			return fmt.Errorf("Bad type %T", d)
 		}

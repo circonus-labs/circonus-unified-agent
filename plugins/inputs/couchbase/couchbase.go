@@ -40,7 +40,7 @@ func (r *Couchbase) Description() string {
 // Returns one of the errors encountered while gathering stats (if any).
 func (r *Couchbase) Gather(acc cua.Accumulator) error {
 	if len(r.Servers) == 0 {
-		r.gatherServer("http://localhost:8091/", acc, nil)
+		_ = r.gatherServer("http://localhost:8091/", acc, nil)
 		return nil
 	}
 

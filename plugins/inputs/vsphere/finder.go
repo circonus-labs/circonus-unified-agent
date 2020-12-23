@@ -99,7 +99,9 @@ func (f *Finder) descend(ctx context.Context, root types.ManagedObjectReference,
 	if err != nil {
 		return err
 	}
-	defer v.Destroy(ctx)
+	defer func() {
+		_ = v.Destroy(ctx)
+	}()
 	var content []types.ObjectContent
 
 	fields := []string{"name"}
@@ -117,7 +119,9 @@ func (f *Finder) descend(ctx context.Context, root types.ManagedObjectReference,
 			if err != nil {
 				return err
 			}
-			defer v2.Destroy(ctx)
+			defer func() {
+				_ = v2.Destroy(ctx)
+			}()
 			err = v2.Retrieve(ctx, []string{resType}, fields, &content)
 			if err != nil {
 				return err

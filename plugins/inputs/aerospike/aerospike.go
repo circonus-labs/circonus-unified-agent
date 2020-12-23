@@ -241,8 +241,6 @@ func (a *Aerospike) parseNodeInfo(stats map[string]string, hostPort string, node
 		fields[strings.Replace(k, "-", "_", -1)] = val
 	}
 	acc.AddFields("aerospike_node", fields, tags, time.Now())
-
-	return
 }
 
 func (a *Aerospike) getNamespaces(n *as.Node) ([]string, error) {
@@ -287,8 +285,6 @@ func (a *Aerospike) parseNamespaceInfo(stats map[string]string, hostPort string,
 		nFields[strings.Replace(parts[0], "-", "_", -1)] = val
 	}
 	acc.AddFields("aerospike_namespace", nFields, nTags, time.Now())
-
-	return
 }
 
 func (a *Aerospike) getSets(n *as.Node) ([]string, error) {
@@ -358,8 +354,6 @@ func (a *Aerospike) parseSetInfo(stats map[string]string, hostPort string, names
 		nFields[strings.Replace(pieces[0], "-", "_", -1)] = val
 	}
 	acc.AddFields("aerospike_set", nFields, nTags, time.Now())
-
-	return
 }
 
 func (a *Aerospike) getTTLHistogram(hostPort string, namespace string, set string, n *as.Node, acc cua.Accumulator) error {
@@ -459,8 +453,6 @@ func (a *Aerospike) parseHistogram(stats map[string]string, hostPort string, nam
 	}
 
 	acc.AddFields(fmt.Sprintf("aerospike_histogram_%v", strings.Replace(histogramType, "-", "_", -1)), nFields, nTags, time.Now())
-
-	return
 }
 
 func splitNamespaceSet(namespaceSet string) (string, string) {
@@ -481,13 +473,13 @@ func parseValue(v string) interface{} {
 	}
 }
 
-func copyTags(m map[string]string) map[string]string {
-	out := make(map[string]string)
-	for k, v := range m {
-		out[k] = v
-	}
-	return out
-}
+// func copyTags(m map[string]string) map[string]string {
+// 	out := make(map[string]string)
+// 	for k, v := range m {
+// 		out[k] = v
+// 	}
+// 	return out
+// }
 
 func init() {
 	inputs.Add("aerospike", func() cua.Input {

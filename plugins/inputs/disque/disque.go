@@ -18,8 +18,8 @@ import (
 type Disque struct {
 	Servers []string
 
-	c   net.Conn
-	buf []byte
+	c net.Conn
+	// buf []byte
 }
 
 var sampleConfig = `
@@ -69,7 +69,7 @@ func (g *Disque) Gather(acc cua.Accumulator) error {
 		url := &url.URL{
 			Host: ":7711",
 		}
-		g.gatherServer(url, acc)
+		_ = g.gatherServer(url, acc)
 		return nil
 	}
 
@@ -116,7 +116,7 @@ func (g *Disque) gatherServer(addr *url.URL, acc cua.Accumulator) error {
 		if addr.User != nil {
 			pwd, set := addr.User.Password()
 			if set && pwd != "" {
-				c.Write([]byte(fmt.Sprintf("AUTH %s\r\n", pwd)))
+				_, _ = c.Write([]byte(fmt.Sprintf("AUTH %s\r\n", pwd)))
 
 				r := bufio.NewReader(c)
 
@@ -134,9 +134,9 @@ func (g *Disque) gatherServer(addr *url.URL, acc cua.Accumulator) error {
 	}
 
 	// Extend connection
-	g.c.SetDeadline(time.Now().Add(defaultTimeout))
+	_ = g.c.SetDeadline(time.Now().Add(defaultTimeout))
 
-	g.c.Write([]byte("info\r\n"))
+	_, _ = g.c.Write([]byte("info\r\n"))
 
 	r := bufio.NewReader(g.c)
 

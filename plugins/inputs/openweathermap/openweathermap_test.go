@@ -422,7 +422,7 @@ func TestForecastGeneratesMetrics(t *testing.T) {
 		Fetch:   []string{"weather", "forecast"},
 		Units:   "metric",
 	}
-	n.Init()
+	_ = n.Init()
 
 	var acc testutil.Accumulator
 
@@ -506,7 +506,7 @@ func TestWeatherGeneratesMetrics(t *testing.T) {
 		Fetch:   []string{"weather"},
 		Units:   "metric",
 	}
-	n.Init()
+	_ = n.Init()
 
 	var acc testutil.Accumulator
 
@@ -566,7 +566,7 @@ func TestRainMetrics(t *testing.T) {
 		Fetch:   []string{"weather"},
 		Units:   "metric",
 	}
-	n.Init()
+	_ = n.Init()
 
 	var acc testutil.Accumulator
 
@@ -709,7 +709,7 @@ func TestBatchWeatherGeneratesMetrics(t *testing.T) {
 		Fetch:   []string{"weather"},
 		Units:   "metric",
 	}
-	n.Init()
+	_ = n.Init()
 
 	var acc testutil.Accumulator
 
@@ -808,7 +808,7 @@ func TestFormatURL(t *testing.T) {
 		Lang:    "lang",
 		BaseUrl: "http://foo.com",
 	}
-	n.Init()
+	_ = n.Init()
 
 	require.Equal(t,
 		"http://foo.com/data/2.5/forecast?APPID=appid&id=12345&lang=lang&units=units",
@@ -817,14 +817,14 @@ func TestFormatURL(t *testing.T) {
 
 func TestDefaultUnits(t *testing.T) {
 	n := &OpenWeatherMap{}
-	n.Init()
+	_ = n.Init()
 
 	require.Equal(t, "metric", n.Units)
 }
 
 func TestDefaultLang(t *testing.T) {
 	n := &OpenWeatherMap{}
-	n.Init()
+	_ = n.Init()
 
 	require.Equal(t, "en", n.Lang)
 }

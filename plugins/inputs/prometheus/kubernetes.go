@@ -17,10 +17,10 @@ import (
 	"github.com/ghodss/yaml"
 )
 
-type payload struct {
-	eventype string
-	pod      *corev1.Pod
-}
+// type payload struct {
+// 	eventype string
+// 	pod      *corev1.Pod
+// }
 
 // loadClient parses a kubeconfig from a file and returns a Kubernetes
 // client. It does not support extensions or client auth providers.
@@ -85,7 +85,7 @@ func (p *Prometheus) watch(ctx context.Context, client *k8s.Client) error {
 
 	selectors := podSelector(p)
 
-	pod := &corev1.Pod{}
+	// pod := &corev1.Pod{}
 	watcher, err := client.Watch(ctx, p.PodNamespace, &corev1.Pod{}, selectors...)
 	if err != nil {
 		return err
@@ -97,7 +97,7 @@ func (p *Prometheus) watch(ctx context.Context, client *k8s.Client) error {
 		case <-ctx.Done():
 			return nil
 		default:
-			pod = &corev1.Pod{}
+			pod := &corev1.Pod{}
 			// An error here means we need to reconnect the watcher.
 			eventType, err := watcher.Next(pod)
 			if err != nil {

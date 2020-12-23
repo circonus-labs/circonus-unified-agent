@@ -1,6 +1,7 @@
 //line plugins/parsers/influx/machine.go.rl:1
 package influx
 
+
 import (
 	"errors"
 	"io"
@@ -160,6 +161,7 @@ func (m *machine) Next() error {
 	return m.exec()
 }
 
+//nolint
 func (m *machine) exec() error {
 	var err error
 	
@@ -3313,12 +3315,9 @@ tr2:
 	( m.p)--
 
 	( m.cs) = 257;
-	{
-		( m.p)++
-		goto _out 
-	}
+	{( m.p)++; goto _out }
 
-	// goto _again
+	goto _again
 tr8:
 	( m.cs) = 0
 //line plugins/parsers/influx/machine.go.rl:39
@@ -3327,12 +3326,9 @@ tr8:
 	( m.p)--
 
 	( m.cs) = 257;
-	{
-		( m.p)++
-		goto _out 
-	}
+	{( m.p)++; goto _out }
 
-	// goto _again
+	goto _again
 tr33:
 	( m.cs) = 0
 //line plugins/parsers/influx/machine.go.rl:32
@@ -3341,12 +3337,9 @@ tr33:
 	( m.p)--
 
 	( m.cs) = 257;
-	{
-		( m.p)++
-		goto _out
-	}
+	{( m.p)++; goto _out }
 
-	// goto _again
+	goto _again
 tr37:
 	( m.cs) = 0
 //line plugins/parsers/influx/machine.go.rl:32
@@ -3378,7 +3371,7 @@ tr41:
 
 //line plugins/parsers/influx/machine.go.rl:39
 
-	err = ErrFieldParse
+	err = ErrFieldParse //nolint:govet
 	( m.p)--
 
 	( m.cs) = 257;

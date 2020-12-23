@@ -188,7 +188,7 @@ func (c *CloudWatch) Gather(acc cua.Accumulator) error {
 	}
 
 	if c.client == nil {
-		c.initializeCloudWatch()
+		_ = c.initializeCloudWatch()
 	}
 
 	filteredMetrics, err := getFilteredMetrics(c)
@@ -383,7 +383,7 @@ func (c *CloudWatch) fetchNamespaceMetrics() ([]*cloudwatch.Metric, error) {
 
 	var token *string
 	var params *cloudwatch.ListMetricsInput
-	var recentlyActive *string = nil
+	var recentlyActive *string
 
 	switch c.RecentlyActive {
 	case "PT3H":
@@ -563,7 +563,7 @@ func (c *CloudWatch) aggregateMetrics(
 		tags["region"] = c.Region
 
 		for i := range result.Values {
-			grouper.Add(namespace, tags, *result.Timestamps[i], *result.Label, *result.Values[i])
+			_ = grouper.Add(namespace, tags, *result.Timestamps[i], *result.Label, *result.Values[i])
 		}
 	}
 
@@ -602,10 +602,10 @@ func snakeCase(s string) string {
 	return s
 }
 
-type dimension struct {
-	name  string
-	value string
-}
+// type dimension struct {
+// 	name  string
+// 	value string
+// }
 
 // ctod converts cloudwatch dimensions to regular dimensions.
 func ctod(cDimensions []*cloudwatch.Dimension) *map[string]string {

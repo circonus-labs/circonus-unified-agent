@@ -46,7 +46,7 @@ func (g *Gatherer) Gather(client *Client, acc cua.Accumulator) error {
 // gatherResponses adds points to an accumulator from the ReadResponse objects
 // returned by a Jolokia agent.
 func (g *Gatherer) gatherResponses(responses []ReadResponse, tags map[string]string, acc cua.Accumulator) {
-	series := make(map[string][]point, 0)
+	series := make(map[string][]point)
 
 	for _, metric := range g.metrics {
 		points, ok := series[metric.Name]
@@ -56,9 +56,10 @@ func (g *Gatherer) gatherResponses(responses []ReadResponse, tags map[string]str
 
 		responsePoints, responseErrors := g.generatePoints(metric, responses)
 
-		for _, responsePoint := range responsePoints {
-			points = append(points, responsePoint)
-		}
+		points = append(points, responsePoints...)
+		// for _, responsePoint := range responsePoints {
+		// 	points = append(points, responsePoint)
+		// }
 
 		for _, err := range responseErrors {
 			acc.AddError(err)

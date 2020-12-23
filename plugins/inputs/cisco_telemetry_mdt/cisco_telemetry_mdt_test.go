@@ -409,8 +409,8 @@ func TestTCPDialoutOverflow(t *testing.T) {
 	addr := c.Address()
 	conn, err := net.Dial(addr.Network(), addr.String())
 	require.NoError(t, err)
-	binary.Write(conn, binary.BigEndian, hdr)
-	conn.Read([]byte{0})
+	_ = binary.Write(conn, binary.BigEndian, hdr)
+	_, _ = conn.Read([]byte{0})
 	conn.Close()
 
 	c.Stop()
@@ -474,8 +474,8 @@ func TestTCPDialoutMultiple(t *testing.T) {
 
 	data, _ := proto.Marshal(telemetry)
 	hdr.MsgLen = uint32(len(data))
-	binary.Write(conn, binary.BigEndian, hdr)
-	conn.Write(data)
+	_ = binary.Write(conn, binary.BigEndian, hdr)
+	_, _ = conn.Write(data)
 
 	conn2, err := net.Dial(addr.Network(), addr.String())
 	require.NoError(t, err)
@@ -483,19 +483,19 @@ func TestTCPDialoutMultiple(t *testing.T) {
 	telemetry.EncodingPath = "type:model/parallel/path"
 	data, _ = proto.Marshal(telemetry)
 	hdr.MsgLen = uint32(len(data))
-	binary.Write(conn2, binary.BigEndian, hdr)
-	conn2.Write(data)
-	conn2.Write([]byte{0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0})
-	conn2.Read([]byte{0})
+	_ = binary.Write(conn2, binary.BigEndian, hdr)
+	_, _ = conn2.Write(data)
+	_, _ = conn2.Write([]byte{0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0})
+	_, _ = conn2.Read([]byte{0})
 	conn2.Close()
 
 	telemetry.EncodingPath = "type:model/other/path"
 	data, _ = proto.Marshal(telemetry)
 	hdr.MsgLen = uint32(len(data))
-	binary.Write(conn, binary.BigEndian, hdr)
-	conn.Write(data)
-	conn.Write([]byte{0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0})
-	conn.Read([]byte{0})
+	_ = binary.Write(conn, binary.BigEndian, hdr)
+	_, _ = conn.Write(data)
+	_, _ = conn.Write([]byte{0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0})
+	_, _ = conn.Read([]byte{0})
 	c.Stop()
 	conn.Close()
 
@@ -527,10 +527,10 @@ func TestGRPCDialoutError(t *testing.T) {
 	stream, _ := client.MdtDialout(context.Background())
 
 	args := &dialout.MdtDialoutArgs{Errors: "foobar"}
-	stream.Send(args)
+	_ = stream.Send(args)
 
 	// Wait for the server to close
-	stream.Recv()
+	_, _ = stream.Recv()
 	c.Stop()
 
 	require.Equal(t, acc.Errors, []error{errors.New("GRPC dialout error: foobar")})
@@ -551,7 +551,7 @@ func TestGRPCDialoutMultiple(t *testing.T) {
 
 	data, _ := proto.Marshal(telemetry)
 	args := &dialout.MdtDialoutArgs{Data: data, ReqId: 456}
-	stream.Send(args)
+	_ = stream.Send(args)
 
 	conn2, _ := grpc.Dial(addr.String(), grpc.WithInsecure(), grpc.WithBlock())
 	client2 := dialout.NewGRPCMdtDialoutClient(conn2)
@@ -560,17 +560,17 @@ func TestGRPCDialoutMultiple(t *testing.T) {
 	telemetry.EncodingPath = "type:model/parallel/path"
 	data, _ = proto.Marshal(telemetry)
 	args = &dialout.MdtDialoutArgs{Data: data}
-	stream2.Send(args)
-	stream2.Send(&dialout.MdtDialoutArgs{Errors: "testclose"})
-	stream2.Recv()
+	_ = stream2.Send(args)
+	_ = stream2.Send(&dialout.MdtDialoutArgs{Errors: "testclose"})
+	_, _ = stream2.Recv()
 	conn2.Close()
 
 	telemetry.EncodingPath = "type:model/other/path"
 	data, _ = proto.Marshal(telemetry)
 	args = &dialout.MdtDialoutArgs{Data: data}
-	stream.Send(args)
-	stream.Send(&dialout.MdtDialoutArgs{Errors: "testclose"})
-	stream.Recv()
+	_ = stream.Send(args)
+	_ = stream.Send(&dialout.MdtDialoutArgs{Errors: "testclose"})
+	_, _ = stream.Recv()
 
 	c.Stop()
 	conn.Close()

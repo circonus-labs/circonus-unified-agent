@@ -81,7 +81,7 @@ func (b *Bind) addStatsXMLv3(stats v3Stats, acc cua.Accumulator, hostPort string
 
 			tags := map[string]string{"url": hostPort, "source": host, "port": port, "type": cg.Type}
 
-			grouper.Add("bind_counter", tags, ts, c.Name, c.Value)
+			_ = grouper.Add("bind_counter", tags, ts, c.Name, c.Value)
 		}
 	}
 
@@ -118,7 +118,7 @@ func (b *Bind) addStatsXMLv3(stats v3Stats, acc cua.Accumulator, hostPort string
 						"type":   cg.Type,
 					}
 
-					grouper.Add("bind_counter", tags, ts, c.Name, c.Value)
+					_ = grouper.Add("bind_counter", tags, ts, c.Name, c.Value)
 				}
 			}
 		}

@@ -28,8 +28,8 @@ type Unbound struct {
 	ThreadAsTag bool
 	ConfigFile  string
 
-	filter filter.Filter
-	run    runner
+	// filter filter.Filter
+	run runner
 }
 
 var defaultBinary = "/usr/sbin/unbound-control"

@@ -19,7 +19,7 @@ import (
 )
 
 type ResponseMetrics struct {
-	total   int
+	// total   int
 	Metrics []Metric `json:"metrics"`
 }
 
@@ -204,11 +204,11 @@ func (h *GrayLog) flatten(item map[string]interface{}, fields map[string]interfa
 		id = id + "_"
 	}
 	for k, i := range item {
-		switch i.(type) {
+		switch x := i.(type) {
 		case int:
-			fields[id+k] = i.(float64)
+			fields[id+k] = float64(x)
 		case float64:
-			fields[id+k] = i.(float64)
+			fields[id+k] = x
 		case map[string]interface{}:
 			h.flatten(i.(map[string]interface{}), fields, id+k)
 		default:

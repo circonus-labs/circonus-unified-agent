@@ -210,7 +210,7 @@ func (h *InfluxDBV2Listener) handleReady() http.HandlerFunc {
 			"started": h.startTime.Format(time.RFC3339Nano),
 			"status":  "ready",
 			"up":      h.timeFunc().Sub(h.startTime).String()})
-		res.Write(b)
+		_, _ = res.Write(b)
 	}
 }
 
@@ -298,7 +298,7 @@ func tooLarge(res http.ResponseWriter, maxLength int64) {
 		"code":      fmt.Sprint(Invalid),
 		"message":   "http: request body too large",
 		"maxLength": fmt.Sprint(maxLength)})
-	res.Write(b)
+	_, _ = res.Write(b)
 }
 
 func badRequest(res http.ResponseWriter, code BadRequestCode, errString string) {
@@ -314,7 +314,7 @@ func badRequest(res http.ResponseWriter, code BadRequestCode, errString string) 
 		"op":      "",
 		"err":     errString,
 	})
-	res.Write(b)
+	_, _ = res.Write(b)
 }
 
 func getPrecisionMultiplier(precision string) time.Duration {

@@ -98,11 +98,14 @@ nfpms:
       bindir: /opt/circonus/unified-agent
       empty_folders:
         - /opt/circonus/unified-agent/etc/config.d
-      files:
-        "scripts/circonus-unified-agent.service": "/opt/circonus/unified-agent/service/circonus-unified-agent.service"
-        "scripts/init.sh": "/opt/circonus/unified-agent/service/init.sh"
-      config_files:
-        "etc/circonus-unified-agent.conf": "/opt/circonus/unified-agent/etc/circonus-unified-agent.conf"
+      contents:
+        - src: "scripts/circonus-unified-agent.service"
+          dst: "/opt/circonus/unified-agent/service/circonus-unified-agent.service"
+        - src: "scripts/init.sh"
+          dst: "/opt/circonus/unified-agent/service/init.sh"
+        - src: "etc/circonus-unified-agent.conf" 
+          dst: "/opt/circonus/unified-agent/etc/circonus-unified-agent.conf"
+          type: "config|noreplace"
       overrides:
         deb:
           scripts:
@@ -115,9 +118,6 @@ nfpms:
             preinstall: "scripts/rpm/pre-install.sh"
             postinstall: "scripts/rpm/post-install.sh"
             postremove: "scripts/rpm/post-remove.sh"
-      rpm:
-        config_noreplace_files:
-          etc/circonus-unified-agent.conf: /opt/circonus/unified-agent/etc/circonus-unified-agent.conf
 
 archives:
     -   

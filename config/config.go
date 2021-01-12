@@ -37,7 +37,7 @@ var (
 
 	// Default input plugins
 	inputDefaults = []string{"cpu", "mem", "swap", "system", "kernel",
-		"processes", "disk", "diskio"}
+		"processes", "disk", "diskio", "internal"}
 
 	// Default output plugins
 	outputDefaults = []string{"circonus"}
@@ -810,6 +810,9 @@ func (c *Config) LoadConfigData(data []byte) error {
 			}
 		case "inputs", "plugins":
 			for pluginName, pluginVal := range subTable.Fields {
+				if IsDefaultPlugin(pluginName) {
+					c.disableDefaultPlugin(pluginName)
+				}
 				switch pluginSubTable := pluginVal.(type) {
 				// legacy [inputs.cpu] support
 				case *ast.Table:
@@ -871,6 +874,11 @@ func (c *Config) LoadConfigData(data []byte) error {
 				return fmt.Errorf("Error parsing %s, %s", name, err)
 			}
 		}
+	}
+
+	if err := c.addDefaultPlugins(); err != nil {
+		return fmt.Errorf("adding default plugins (%w)", err)
+
 	}
 
 	if len(c.Processors) > 1 {
@@ -1601,3 +1609,146 @@ func (c *Config) addError(tbl *ast.Table, err error) {
 type unwrappable interface {
 	Unwrap() cua.Processor
 }
+
+type defaultPlugin struct {
+	Enabled bool
+	Data    []byte
+}
+
+var defaultPluginList = map[string]defaultPlugin{
+	"cpu": {
+		Enabled: true,
+		Data: []byte(`
+instance_id="system"
+percpu = false
+totalcpu = true
+collect_cpu_time = false
+report_active = false`),
+	},
+	"disk": {
+		Enabled: true,
+		Data: []byte(`
+instance_id="system"
+ignore_fs = ["tmpfs", "devtmpfs", "devfs", "iso9660", "overlay", "aufs", "squashfs"]`),
+	},
+	"mem": {
+		Enabled: true,
+		Data:    []byte(`instance_id="system"`),
+	},
+	"swap": {
+		Enabled: true,
+		Data:    []byte(`instance_id="system"`),
+	},
+	"system": {
+		Enabled: true,
+		Data:    []byte(`instance_id="system"`),
+	},
+	"kernel": {
+		Enabled: true,
+		Data:    []byte(`instance_id="system"`),
+	},
+	"processes": {
+		Enabled: true,
+		Data:    []byte(`instance_id="system"`),
+	},
+	"diskio": {
+		Enabled: true,
+		Data: []byte(`
+instance_id="system"
+## By default, agent will gather stats for all devices including
+## disk partitions.
+## Setting devices will restrict the stats to the specified devices.
+# devices = ["sda", "sdb", "vd*"]
+## Uncomment the following line if you need disk serial numbers.
+# skip_serial_number = false
+#
+## On systems which support it, device metadata can be added in the form of
+## tags.
+## Currently only Linux is supported via udev properties. You can view
+## available properties for a device by running:
+## 'udevadm info -q property -n /dev/sda'
+## Note: Most, but not all, udev properties can be accessed this way. Properties
+## that are currently inaccessible include DEVTYPE, DEVNAME, and DEVPATH.
+# device_tags = ["ID_FS_TYPE", "ID_FS_USAGE"]
+#
+## Using the same metadata source as device_tags, you can also customize the
+## name of the device via templates.
+## The 'name_templates' parameter is a list of templates to try and apply to
+## the device. The template may contain variables in the form of '$PROPERTY' or
+## '${PROPERTY}'. The first template which does not contain any variables not
+## present for the device is used as the device name tag.
+## The typical use case is for LVM volumes, to get the VG/LV name instead of
+## the near-meaningless DM-0 name.
+# name_templates = ["$ID_FS_LABEL","$DM_VG_NAME/$DM_LV_NAME"]`),
+	},
+	"internal": {
+		Enabled: true,
+		Data: []byte(`
+instance_id="system"
+collect_memstats = true`),
+	},
+}
+
+func IsDefaultPlugin(name string) bool {
+	if name == "" {
+		return false
+	}
+	if _, ok := defaultPluginList[name]; ok {
+		return true
+	}
+	return false
+}
+
+func (c *Config) disableDefaultPlugin(name string) {
+	if name == "" {
+		return
+	}
+	if cfg, ok := defaultPluginList[name]; ok {
+		cfg.Enabled = false
+		defaultPluginList[name] = cfg
+	}
+}
+
+func (c *Config) addDefaultPlugins() error {
+	for pluginName, pluginConfig := range defaultPluginList {
+		if !pluginConfig.Enabled {
+			continue // user override in configuration
+		}
+		tbl, err := parseConfig(pluginConfig.Data)
+		if err != nil {
+			return fmt.Errorf("Error parsing data: %s", err)
+		}
+		if err = c.addInput(pluginName, tbl); err != nil {
+			return fmt.Errorf("error parsing %s, %s", pluginName, err)
+		}
+	}
+	return nil
+}
+
+/*
+	// Add default plugins
+	defaultPlugins := map[string]interface{}{
+		"cpu":       nil,
+		"mem":       nil,
+		"swap":      nil,
+		"system":    nil,
+		"kernel":    nil,
+		"processes": nil,
+		"disk":      nil,
+		"diskio":    nil,
+		"internal":  nil,
+	}
+	for defaultPluginName, defaultPluginSettings := range defaultPlugins {
+		if val, ok := subTable.Fields[defaultPluginName]; !ok {
+			subTable.Fields[defaultPluginName] = defaultPluginSettings
+		} else {
+			spew.Dump(defaultPluginName, val)
+			// switch st := val.(type) {
+			// case []*ast.Table:
+			// 	for _, t := range st {
+			// 		fmt.Printf("found [%s] = %#v\n", defaultPluginName, t)
+			// 	}
+			// }
+		}
+	}
+*/

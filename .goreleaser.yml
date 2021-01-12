@@ -8,7 +8,7 @@ before:
 builds:
     -
         id: cua
-        main: ./cmd/circonus-unified-agent/.
+        main: ./cmd/circonus-unified-agent
         binary: sbin/circonus-unified-agentd
         env:
             - CGO_ENABLED=0
@@ -32,7 +32,7 @@ builds:
             - -s
             - -w
             - -extldflags "-static"
-            - -X main.verion={{.Version}}
+            - -X main.version={{.Version}}
             - -X main.commit={{.ShortCommit}}
             - -X main.branch={{.Branch}}
             - -X main.buildDate={{.Date}}

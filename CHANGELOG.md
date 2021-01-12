@@ -1,3 +1,10 @@
+# v0.0.4
+
+* add: debug_metrics setting
+* fix: copy metric for origin and origin instance
+* upd: default plugins in example configuration
+* fix: ldflags typo
+
 # v0.0.3
 
 * add: metric volume internal metric `cua_metrics_sent`

@@ -236,12 +236,14 @@ func (m *metric) SetTime(t time.Time) {
 
 func (m *metric) Copy() cua.Metric {
 	m2 := &metric{
-		name:      m.name,
-		tags:      make([]*cua.Tag, len(m.tags)),
-		fields:    make([]*cua.Field, len(m.fields)),
-		tm:        m.tm,
-		tp:        m.tp,
-		aggregate: m.aggregate,
+		name:           m.name,
+		tags:           make([]*cua.Tag, len(m.tags)),
+		fields:         make([]*cua.Field, len(m.fields)),
+		tm:             m.tm,
+		tp:             m.tp,
+		aggregate:      m.aggregate,
+		origin:         m.origin,
+		originInstance: m.originInstance,
 	}
 
 	for i, tag := range m.tags {

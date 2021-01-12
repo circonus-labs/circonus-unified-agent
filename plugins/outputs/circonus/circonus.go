@@ -29,6 +29,7 @@ type Circonus struct {
 	OneCheck        bool   `toml:"one_check"`
 	CheckNamePrefix string `toml:"check_name_prefix"`
 	DebugCGM        bool   `toml:"debug_cgm"`
+	DebugMetrics    bool   `toml:"debug_metrics"`
 	apicfg          apiclient.Config
 	checks          map[string]*cgm.CirconusMetrics
 	Log             cua.Logger
@@ -267,8 +268,10 @@ func (c *Circonus) buildNumerics(defaultDest *cgm.CirconusMetrics, m cua.Metric)
 		mn := strings.TrimSuffix(field.Key, "__value")
 		dest.AddGaugeWithTags(mn, tags, field.Value)
 		numMetrics++
+		if c.DebugMetrics {
+			c.Log.Infof("%s %v %v %T\n", mn, tags, field.Value, field.Value)
+		}
 	}
-	// defaultDest.RecordCountForValue(metricVolume, 0, numMetrics)
 
 	return numMetrics
 }
@@ -286,9 +289,10 @@ func (c *Circonus) buildTexts(defaultDest *cgm.CirconusMetrics, m cua.Metric) in
 		mn := strings.TrimSuffix(field.Key, "__value")
 		dest.SetTextWithTags(mn, tags, field.Value.(string))
 		numMetrics++
+		if c.DebugMetrics {
+			c.Log.Infof("%s %v %v %T\n", mn, tags, field.Value, field.Value)
+		}
 	}
-	// defaultDest.RecordCountForValue(metricVolume, 0, numMetrics)
-	// defaultDest.RecordValue(metricVolume, float64(numMetrics))
 
 	return numMetrics
 }
@@ -305,17 +309,18 @@ func (c *Circonus) buildHistogram(defaultDest *cgm.CirconusMetrics, m cua.Metric
 	mn := strings.TrimSuffix(m.Name(), "__value")
 	tags := c.convertTags(m.Origin(), m.OriginInstance(), m.TagList())
 
-	for _, f := range m.FieldList() {
-		v, err := strconv.ParseFloat(f.Key, 64)
+	for _, field := range m.FieldList() {
+		v, err := strconv.ParseFloat(field.Key, 64)
 		if err != nil {
 			continue
 		}
 
-		dest.RecordCountForValueWithTags(mn, tags, v, f.Value.(int64))
+		dest.RecordCountForValueWithTags(mn, tags, v, field.Value.(int64))
 		numMetrics++
+		if c.DebugMetrics {
+			c.Log.Infof("%s %v v:%v vt%T n:%v nT:%T\n", mn, tags, v, v, field.Value, field.Value)
+		}
 	}
-	// defaultDest.RecordCountForValue(metricVolume, 0, numMetrics)
-	// defaultDest.RecordValue(metricVolume, float64(numMetrics))
 
 	return numMetrics
 }

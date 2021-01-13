@@ -1,3 +1,8 @@
+# v0.0.6
+
+* upd: remove agent version tag from internal metrics (to reduce cardinality)
+* add: `cua_version` metric
+
 # v0.0.5
 
 * add: windows default plugin placeholder

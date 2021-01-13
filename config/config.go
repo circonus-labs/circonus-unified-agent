@@ -876,9 +876,10 @@ func (c *Config) LoadConfigData(data []byte) error {
 		}
 	}
 
+	// mgm:add default plugins if they were not in configuration
 	if err := c.addDefaultPlugins(); err != nil {
-		return fmt.Errorf("adding default plugins (%w)", err)
-
+		fmt.Fprintf(os.Stderr, "adding default plugins (%s)\n", err)
+		return nil
 	}
 
 	if len(c.Processors) > 1 {
@@ -1619,7 +1620,7 @@ var defaultPluginList = map[string]defaultPlugin{
 	"cpu": {
 		Enabled: true,
 		Data: []byte(`
-instance_id="system"
+instance_id="host"
 percpu = false
 totalcpu = true
 collect_cpu_time = false
@@ -1628,33 +1629,33 @@ report_active = false`),
 	"disk": {
 		Enabled: true,
 		Data: []byte(`
-instance_id="system"
+instance_id="host"
 ignore_fs = ["tmpfs", "devtmpfs", "devfs", "iso9660", "overlay", "aufs", "squashfs"]`),
 	},
 	"mem": {
 		Enabled: true,
-		Data:    []byte(`instance_id="system"`),
+		Data:    []byte(`instance_id="host"`),
 	},
 	"swap": {
 		Enabled: true,
-		Data:    []byte(`instance_id="system"`),
+		Data:    []byte(`instance_id="host"`),
 	},
 	"system": {
 		Enabled: true,
-		Data:    []byte(`instance_id="system"`),
+		Data:    []byte(`instance_id="host"`),
 	},
 	"kernel": {
 		Enabled: true,
-		Data:    []byte(`instance_id="system"`),
+		Data:    []byte(`instance_id="host"`),
 	},
 	"processes": {
 		Enabled: true,
-		Data:    []byte(`instance_id="system"`),
+		Data:    []byte(`instance_id="host"`),
 	},
 	"diskio": {
 		Enabled: true,
 		Data: []byte(`
-instance_id="system"
+instance_id="host"
 ## By default, agent will gather stats for all devices including
 ## disk partitions.
 ## Setting devices will restrict the stats to the specified devices.
@@ -1684,7 +1685,7 @@ instance_id="system"
 	"internal": {
 		Enabled: true,
 		Data: []byte(`
-instance_id="system"
+instance_id="host"
 collect_memstats = true`),
 	},
 }
@@ -1693,7 +1694,18 @@ func IsDefaultPlugin(name string) bool {
 	if name == "" {
 		return false
 	}
-	if _, ok := defaultPluginList[name]; ok {
+
+	var plugList *map[string]defaultPlugin
+
+	if runtime.GOOS == "linux" {
+		plugList = &defaultPluginList
+	}
+
+	if plugList == nil {
+		return false
+	}
+
+	if _, ok := (*plugList)[name]; ok {
 		return true
 	}
 	return false
@@ -1703,14 +1715,35 @@ func (c *Config) disableDefaultPlugin(name string) {
 	if name == "" {
 		return
 	}
-	if cfg, ok := defaultPluginList[name]; ok {
+
+	var plugList *map[string]defaultPlugin
+
+	if runtime.GOOS == "linux" {
+		plugList = &defaultPluginList
+	}
+
+	if plugList == nil {
+		return
+	}
+
+	if cfg, ok := (*plugList)[name]; ok {
 		cfg.Enabled = false
-		defaultPluginList[name] = cfg
+		(*plugList)[name] = cfg
 	}
 }
 
 func (c *Config) addDefaultPlugins() error {
-	for pluginName, pluginConfig := range defaultPluginList {
+	var plugList *map[string]defaultPlugin
+
+	if runtime.GOOS == "linux" {
+		plugList = &defaultPluginList
+	}
+
+	if plugList == nil {
+		return fmt.Errorf("no default plugin list available for GOOS %s", runtime.GOOS)
+	}
+
+	for pluginName, pluginConfig := range *plugList {
 		if !pluginConfig.Enabled {
 			continue // user override in configuration
 		}
@@ -1724,31 +1757,3 @@ func (c *Config) addDefaultPlugins() error {
 	}
 	return nil
 }
-
-/*
-	// Add default plugins
-	defaultPlugins := map[string]interface{}{
-		"cpu":       nil,
-		"mem":       nil,
-		"swap":      nil,
-		"system":    nil,
-		"kernel":    nil,
-		"processes": nil,
-		"disk":      nil,
-		"diskio":    nil,
-		"internal":  nil,
-	}
-	for defaultPluginName, defaultPluginSettings := range defaultPlugins {
-		if val, ok := subTable.Fields[defaultPluginName]; !ok {
-			subTable.Fields[defaultPluginName] = defaultPluginSettings
-		} else {
-			spew.Dump(defaultPluginName, val)
-			// switch st := val.(type) {
-			// case []*ast.Table:
-			// 	for _, t := range st {
-			// 		fmt.Printf("found [%s] = %#v\n", defaultPluginName, t)
-			// 	}
-			// }
-		}
-	}
-*/

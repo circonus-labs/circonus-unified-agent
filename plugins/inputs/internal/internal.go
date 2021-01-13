@@ -53,7 +53,7 @@ func (s *Self) Gather(acc cua.Accumulator) error {
 			"heap_objects":        m.HeapObjects,  // total number of allocated objects
 			"num_gc":              m.NumGC,
 		}
-		acc.AddFields("internal_memstats", fields, map[string]string{})
+		acc.AddFields("internal_memstats", fields, map[string]string{"_rollup": "false"})
 	}
 
 	agentVersion := inter.Version()
@@ -64,6 +64,7 @@ func (s *Self) Gather(acc cua.Accumulator) error {
 			m.AddTag("go_version", goVersion)
 		}
 		m.AddTag("version", agentVersion)
+		m.AddTag("__rollup", "false")
 		acc.AddFields(m.Name(), m.Fields(), m.Tags(), m.Time())
 	}
 

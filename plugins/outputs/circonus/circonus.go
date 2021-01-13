@@ -11,6 +11,7 @@ import (
 	cgm "github.com/circonus-labs/circonus-gometrics/v3"
 	"github.com/circonus-labs/circonus-unified-agent/config"
 	"github.com/circonus-labs/circonus-unified-agent/cua"
+	inter "github.com/circonus-labs/circonus-unified-agent/internal"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/outputs"
 	apiclient "github.com/circonus-labs/go-apiclient"
 )
@@ -122,7 +123,10 @@ func (c *Circonus) Connect() error {
 		return err
 	}
 
-	// to get agent metrics, turn on 'internal' input
+	agentVersion := inter.Version()
+	defaultDest := c.checks["*"]
+	defaultDest.SetText("cua_version", agentVersion)
+
 	return nil
 }
 

@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
-	inter "github.com/circonus-labs/circonus-unified-agent/internal"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
 	"github.com/circonus-labs/circonus-unified-agent/selfstat"
 )
@@ -56,14 +55,14 @@ func (s *Self) Gather(acc cua.Accumulator) error {
 		acc.AddFields("internal_memstats", fields, map[string]string{"_rollup": "false"})
 	}
 
-	agentVersion := inter.Version()
+	// agentVersion := inter.Version()
 	goVersion := strings.TrimPrefix(runtime.Version(), "go")
 
 	for _, m := range selfstat.Metrics() {
 		if m.Name() == "internal_agent" {
 			m.AddTag("go_version", goVersion)
 		}
-		m.AddTag("version", agentVersion)
+		// m.AddTag("version", agentVersion)
 		m.AddTag("__rollup", "false")
 		acc.AddFields(m.Name(), m.Fields(), m.Tags(), m.Time())
 	}

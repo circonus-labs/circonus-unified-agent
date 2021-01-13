@@ -1,3 +1,8 @@
+# v0.0.5
+
+* add: windows default plugin placeholder
+* add: rollup tag to internal metrics
+
 # v0.0.4
 
 * add: debug_metrics setting

@@ -125,7 +125,9 @@ func (c *Circonus) Connect() error {
 
 	agentVersion := inter.Version()
 	defaultDest := c.checks["*"]
-	defaultDest.SetText("cua_version", agentVersion)
+	if defaultDest != nil {
+		defaultDest.SetText("cua_version", agentVersion)
+	}
 
 	return nil
 }

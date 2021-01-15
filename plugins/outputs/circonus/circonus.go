@@ -3,7 +3,9 @@
 package circonus
 
 import (
+	"crypto/x509"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
@@ -40,7 +42,7 @@ type Circonus struct {
 func (c *Circonus) Init() error {
 
 	if c.APIToken == "" {
-		c.Log.Error("Circonus API Token is required")
+		return fmt.Errorf("circonus api token is requried")
 	}
 
 	if c.APIApp == "" {
@@ -54,6 +56,18 @@ func (c *Circonus) Init() error {
 
 	if c.APIURL != "" {
 		c.apicfg.URL = c.APIURL
+	}
+
+	if c.APITLSCA != "" {
+		cp := x509.NewCertPool()
+		cert, err := ioutil.ReadFile(c.APITLSCA)
+		if err != nil {
+			return fmt.Errorf("unable to load api ca file (%s): %s", c.APITLSCA, err)
+		}
+		if !cp.AppendCertsFromPEM(cert) {
+			return fmt.Errorf("unable to parse api ca file (%s): %s", c.APITLSCA, err)
+		}
+		c.apicfg.CACert = cp
 	}
 
 	if c.Broker != "" {

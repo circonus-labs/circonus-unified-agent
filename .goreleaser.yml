@@ -3,6 +3,7 @@ project_name: circonus-unified-agent
 before:
     hooks:
         - go mod tidy
+        - golangci-lint run
         #- ./build_lint.sh
         
 builds:
@@ -14,12 +15,8 @@ builds:
             - CGO_ENABLED=0
         goos:
             - linux
-            - darwin
             - windows
             - freebsd
-            #- openbsd
-            #- solaris
-            #- illumos
         goarch:
             - amd64
             - arm64
@@ -54,7 +51,7 @@ dockers:
             - "--label=org.label-schema.version={{.Version}}"
             - "--label=org.label-schema.name={{.ProjectName}}"
         extra_files:
-            - etc/circonus-unified-agent.conf
+            - etc/example-circonus-unified-agent.conf
     -
         goos: linux
         goarch: arm64
@@ -71,7 +68,7 @@ dockers:
             - "--label=org.label-schema.version={{.Version}}"
             - "--label=org.label-schema.name={{.ProjectName}}"
         extra_files:
-            - etc/circonus-unified-agent.conf
+            - etc/example-circonus-unified-agent.conf
 
 docker_manifests:
     - name_template: "circonus/{{.ProjectName}}:latest"
@@ -103,7 +100,7 @@ nfpms:
           dst: "/opt/circonus/unified-agent/service/circonus-unified-agent.service"
         - src: "scripts/init.sh"
           dst: "/opt/circonus/unified-agent/service/init.sh"
-        - src: "etc/circonus-unified-agent.conf" 
+        - src: "etc/example-circonus-unified-agent.conf" 
           dst: "/opt/circonus/unified-agent/etc/circonus-unified-agent.conf"
           type: "config|noreplace"
       overrides:

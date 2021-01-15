@@ -1,3 +1,14 @@
+# v0.0.7
+
+* upd: refactor default plugin handling in prep to support more platforms
+* upd: remove darwin build target
+* upd: rename example config file
+* upd: dependency gopsutil
+* upd: support custom api ca cert loading (circonus output)
+* fix: include example configuration files
+* upd: dest guard for agent version
+* fix: env var syntax in example conf
+
 # v0.0.6
 
 * upd: remove agent version tag from internal metrics (to reduce cardinality)

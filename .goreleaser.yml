@@ -130,6 +130,7 @@ archives:
             - LICENSE
             - README.md
             - CHANGELOG.md
+            - etc/*
             - etc/**/*
             - scripts/circonus-unified-agent.service
 

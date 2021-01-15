@@ -1653,33 +1653,7 @@ ignore_fs = ["tmpfs", "devtmpfs", "devfs", "iso9660", "overlay", "aufs", "squash
 	},
 	"diskio": {
 		Enabled: true,
-		Data: []byte(`
-instance_id="host"
-## By default, agent will gather stats for all devices including
-## disk partitions.
-## Setting devices will restrict the stats to the specified devices.
-# devices = ["sda", "sdb", "vd*"]
-## Uncomment the following line if you need disk serial numbers.
-# skip_serial_number = false
-#
-## On systems which support it, device metadata can be added in the form of
-## tags.
-## Currently only Linux is supported via udev properties. You can view
-## available properties for a device by running:
-## 'udevadm info -q property -n /dev/sda'
-## Note: Most, but not all, udev properties can be accessed this way. Properties
-## that are currently inaccessible include DEVTYPE, DEVNAME, and DEVPATH.
-# device_tags = ["ID_FS_TYPE", "ID_FS_USAGE"]
-#
-## Using the same metadata source as device_tags, you can also customize the
-## name of the device via templates.
-## The 'name_templates' parameter is a list of templates to try and apply to
-## the device. The template may contain variables in the form of '$PROPERTY' or
-## '${PROPERTY}'. The first template which does not contain any variables not
-## present for the device is used as the device name tag.
-## The typical use case is for LVM volumes, to get the VG/LV name instead of
-## the near-meaningless DM-0 name.
-# name_templates = ["$ID_FS_LABEL","$DM_VG_NAME/$DM_LV_NAME"]`),
+		Data:    []byte(`instance_id="host"`),
 	},
 	"internal": {
 		Enabled: true,
@@ -1694,11 +1668,7 @@ func IsDefaultPlugin(name string) bool {
 		return false
 	}
 
-	var plugList *map[string]defaultPlugin
-
-	if runtime.GOOS == "linux" {
-		plugList = &defaultPluginList
-	}
+	plugList := getDefaultPluginList()
 
 	if plugList == nil {
 		return false
@@ -1710,17 +1680,23 @@ func IsDefaultPlugin(name string) bool {
 	return false
 }
 
+func getDefaultPluginList() *map[string]defaultPlugin {
+	switch runtime.GOOS {
+	case "darwin":
+		fallthrough
+	case "linux":
+		return &defaultPluginList
+	default:
+		return nil
+	}
+}
+
 func (c *Config) disableDefaultPlugin(name string) {
 	if name == "" {
 		return
 	}
 
-	var plugList *map[string]defaultPlugin
-
-	if runtime.GOOS == "linux" {
-		plugList = &defaultPluginList
-	}
-
+	plugList := getDefaultPluginList()
 	if plugList == nil {
 		return
 	}
@@ -1732,12 +1708,7 @@ func (c *Config) disableDefaultPlugin(name string) {
 }
 
 func (c *Config) addDefaultPlugins() error {
-	var plugList *map[string]defaultPlugin
-
-	if runtime.GOOS == "linux" {
-		plugList = &defaultPluginList
-	}
-
+	plugList := getDefaultPluginList()
 	if plugList == nil {
 		return fmt.Errorf("no default plugin list available for GOOS %s", runtime.GOOS)
 	}

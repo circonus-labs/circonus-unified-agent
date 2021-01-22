@@ -1661,6 +1661,10 @@ ignore_fs = ["tmpfs", "devtmpfs", "devfs", "iso9660", "overlay", "aufs", "squash
 instance_id="host"
 collect_memstats = true`),
 	},
+	"net": {
+		Enabled: true,
+		Data:    []byte(`instance_id="host"`),
+	},
 }
 
 func IsDefaultPlugin(name string) bool {

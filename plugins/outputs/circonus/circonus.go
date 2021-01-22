@@ -176,6 +176,7 @@ func (c *Circonus) Write(metrics []cua.Metric) error {
 	}
 	defaultDest.AddGauge(metricVolume+"_batch", numMetrics)
 	defaultDest.RecordValue(metricVolume, float64(numMetrics))
+	c.Log.Infof("queued %d metrics for Circonus", numMetrics)
 
 	return nil
 }

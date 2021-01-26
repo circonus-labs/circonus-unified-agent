@@ -533,7 +533,7 @@ func (s *Stackdriver) generatetimeSeriesConfs(
 
 	ret := []*timeSeriesConf{}
 	req := &monitoringpb.ListMetricDescriptorsRequest{
-		Name: fmt.Sprintf("project/%s", s.Project),
+		Name: fmt.Sprintf("projects/%s", s.Project),
 	}
 
 	filters := s.newListMetricDescriptorsFilters()

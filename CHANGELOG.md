@@ -1,3 +1,7 @@
+# v0.0.10
+
+* fix: health output missing in all
+
 # v0.0.9
 
 * fix: lint error

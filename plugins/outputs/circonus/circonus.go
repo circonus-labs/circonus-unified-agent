@@ -289,11 +289,11 @@ func (c *Circonus) buildNumerics(defaultDest *cgm.CirconusMetrics, m cua.Metric)
 	tags := c.convertTags(m.Origin(), m.OriginInstance(), m.TagList())
 	for _, field := range m.FieldList() {
 		mn := strings.TrimSuffix(field.Key, "__value")
-		dest.AddGaugeWithTags(mn, tags, field.Value)
-		numMetrics++
 		if c.DebugMetrics {
 			c.Log.Infof("%s %v %v %T\n", mn, tags, field.Value, field.Value)
 		}
+		dest.AddGaugeWithTags(mn, tags, field.Value)
+		numMetrics++
 	}
 
 	return numMetrics
@@ -310,7 +310,9 @@ func (c *Circonus) buildTexts(defaultDest *cgm.CirconusMetrics, m cua.Metric) in
 	tags := c.convertTags(m.Origin(), m.OriginInstance(), m.TagList())
 	for _, field := range m.FieldList() {
 		mn := strings.TrimSuffix(field.Key, "__value")
-		//c.Log.Infof("MN=%s Tags=[%v] %v=%v[%T]\n", mn, tags, field.Key, field.Value, field.Value)
+		if c.DebugMetrics {
+			c.Log.Infof("%s %v %v %T\n", mn, tags, field.Value, field.Value)
+		}
 		switch v := field.Value.(type) {
 		case string:
 			dest.SetTextWithTags(mn, tags, v)
@@ -318,9 +320,6 @@ func (c *Circonus) buildTexts(defaultDest *cgm.CirconusMetrics, m cua.Metric) in
 			dest.AddGaugeWithTags(mn, tags, v)
 		}
 		numMetrics++
-		if c.DebugMetrics {
-			c.Log.Infof("%s %v %v %T\n", mn, tags, field.Value, field.Value)
-		}
 	}
 
 	return numMetrics
@@ -341,15 +340,15 @@ func (c *Circonus) buildHistogram(defaultDest *cgm.CirconusMetrics, m cua.Metric
 	for _, field := range m.FieldList() {
 		v, err := strconv.ParseFloat(field.Key, 64)
 		if err != nil {
-			c.Log.Errorf("Cannot parse histogram float: %s\n", field.Key)
+			c.Log.Errorf("cannot parse histogram (%s) field.key (%s) as float: %s\n", mn, field.Key, err)
 			continue
+		}
+		if c.DebugMetrics {
+			c.Log.Infof("%s %v v:%v vt%T n:%v nT:%T\n", mn, tags, v, v, field.Value, field.Value)
 		}
 
 		dest.RecordCountForValueWithTags(mn, tags, v, field.Value.(int64))
 		numMetrics++
-		if c.DebugMetrics {
-			c.Log.Infof("%s %v v:%v vt%T n:%v nT:%T\n", mn, tags, v, v, field.Value, field.Value)
-		}
 	}
 
 	return numMetrics

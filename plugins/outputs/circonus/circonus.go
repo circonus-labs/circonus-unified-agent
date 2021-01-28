@@ -164,21 +164,21 @@ func (c *Circonus) Write(metrics []cua.Metric) error {
 				if strings.Contains(s, "H[") && strings.Contains(s, "]=") {
 					numMetrics += c.buildHistogram(defaultDest, m)
 				} else {
-					c.Log.Debugf("Metric type is %v", m.Type())
+					// c.Log.Debugf("Metric type is %v", m.Type())
 					numMetrics += c.buildTexts(defaultDest, m)
 				}
 			} else {
 				numMetrics += c.buildNumerics(defaultDest, m)
 			}
 		case cua.Histogram:
-			c.Log.Debugf("Metric type is histogram", m.Type())
+			// c.Log.Debugf("Metric type is histogram", m.Type())
 			numMetrics += c.buildHistogram(defaultDest, m)
 		default:
 		}
 	}
 	defaultDest.AddGauge(metricVolume+"_batch", numMetrics)
 	defaultDest.RecordValue(metricVolume, float64(numMetrics))
-	c.Log.Infof("queued %d metrics for Circonus", numMetrics)
+	c.Log.Debugf("queued %d metrics for submission", numMetrics)
 
 	return nil
 }

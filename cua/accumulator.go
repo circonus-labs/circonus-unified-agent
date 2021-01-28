@@ -38,6 +38,12 @@ type Accumulator interface {
 		tags map[string]string,
 		t ...time.Time)
 
+	// AddCumulativeHistogram is the same as AddFields, but will add the metric as a "CumulativeHistogram" type
+	AddCumulativeHistogram(measurement string,
+		fields map[string]interface{},
+		tags map[string]string,
+		t ...time.Time)
+
 	// AddMetric adds an metric to the accumulator.
 	AddMetric(Metric)
 

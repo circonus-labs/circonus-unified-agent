@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 
@@ -173,6 +174,8 @@ func (c *Circonus) Write(metrics []cua.Metric) error {
 		case cua.Histogram:
 			// c.Log.Debugf("Metric type is histogram", m.Type())
 			numMetrics += c.buildHistogram(defaultDest, m)
+		case cua.CumulativeHistogram:
+			numMetrics += c.buildCumulativeHistogram(defaultDest, m)
 		default:
 		}
 	}
@@ -249,7 +252,7 @@ func (l logshim) Printf(fmt string, args ...interface{}) {
 
 // initCheck initializes cgm instance for the plugin identified by id
 func (c *Circonus) initCheck(id string) error {
-	checkType := "httptrap:cua:"
+	checkType := "httptrap:cua:" + runtime.GOOS + ":"
 
 	if id == "*" {
 		checkType += "default"
@@ -349,6 +352,46 @@ func (c *Circonus) buildHistogram(defaultDest *cgm.CirconusMetrics, m cua.Metric
 
 		dest.RecordCountForValueWithTags(mn, tags, v, field.Value.(int64))
 		numMetrics++
+	}
+
+	return numMetrics
+}
+
+// buildCumulativeHistogram constructs cumulative histogram metrics from a cua metric.
+func (c *Circonus) buildCumulativeHistogram(defaultDest *cgm.CirconusMetrics, m cua.Metric) int64 {
+	dest := c.getMetricDest(defaultDest, m.Origin(), m.OriginInstance())
+	if dest == nil {
+		// no default and no plugin specific
+		return 0
+	}
+
+	numMetrics := int64(0)
+	mn := strings.TrimSuffix(m.Name(), "__value")
+	tags := c.convertTags(m.Origin(), m.OriginInstance(), m.TagList())
+
+	buckets := make([]string, 0)
+
+	for _, field := range m.FieldList() {
+		v, err := strconv.ParseFloat(field.Key, 64)
+		if err != nil {
+			c.Log.Errorf("cannot parse histogram (%s) field.key (%s) as float: %s\n", mn, field.Key, err)
+			continue
+		}
+		if c.DebugMetrics {
+			c.Log.Infof("%s %v v:%v vt%T n:%v nT:%T\n", mn, tags, v, v, field.Value, field.Value)
+		}
+
+		buckets = append(buckets, fmt.Sprintf("H[%e]=%d", v, field.Value))
+		// dest.RecordCountForValueWithTags(mn, tags, v, field.Value.(int64))
+		numMetrics++
+	}
+
+	_ = dest.Custom(dest.MetricNameWithStreamTags(mn, tags), cgm.Metric{
+		Type:  cgm.MetricTypeCumulativeHistogram,
+		Value: strings.Join(buckets, ","),
+	})
+	if c.DebugMetrics {
+		c.Log.Infof("%s %s\n", dest.MetricNameWithStreamTags(mn, tags), strings.Join(buckets, ","))
 	}
 
 	return numMetrics

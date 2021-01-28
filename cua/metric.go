@@ -15,6 +15,7 @@ const (
 	Untyped
 	Summary
 	Histogram
+	CumulativeHistogram
 )
 
 // Tag represents a single tag key and value.

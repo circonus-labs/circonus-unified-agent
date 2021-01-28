@@ -164,12 +164,14 @@ func (c *Circonus) Write(metrics []cua.Metric) error {
 				if strings.Contains(s, "H[") && strings.Contains(s, "]=") {
 					numMetrics += c.buildHistogram(defaultDest, m)
 				} else {
+					c.Log.Debugf("Metric type is %v", m.Type())
 					numMetrics += c.buildTexts(defaultDest, m)
 				}
 			} else {
 				numMetrics += c.buildNumerics(defaultDest, m)
 			}
 		case cua.Histogram:
+			c.Log.Debugf("Metric type is histogram", m.Type())
 			numMetrics += c.buildHistogram(defaultDest, m)
 		default:
 		}
@@ -308,7 +310,13 @@ func (c *Circonus) buildTexts(defaultDest *cgm.CirconusMetrics, m cua.Metric) in
 	tags := c.convertTags(m.Origin(), m.OriginInstance(), m.TagList())
 	for _, field := range m.FieldList() {
 		mn := strings.TrimSuffix(field.Key, "__value")
-		dest.SetTextWithTags(mn, tags, field.Value.(string))
+		//c.Log.Infof("MN=%s Tags=[%v] %v=%v[%T]\n", mn, tags, field.Key, field.Value, field.Value)
+		switch v := field.Value.(type) {
+		case string:
+			dest.SetTextWithTags(mn, tags, v)
+		default:
+			dest.AddGaugeWithTags(mn, tags, v)
+		}
 		numMetrics++
 		if c.DebugMetrics {
 			c.Log.Infof("%s %v %v %T\n", mn, tags, field.Value, field.Value)
@@ -333,6 +341,7 @@ func (c *Circonus) buildHistogram(defaultDest *cgm.CirconusMetrics, m cua.Metric
 	for _, field := range m.FieldList() {
 		v, err := strconv.ParseFloat(field.Key, 64)
 		if err != nil {
+			c.Log.Errorf("Cannot parse histogram float: %s\n", field.Key)
 			continue
 		}
 

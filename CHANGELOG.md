@@ -1,3 +1,12 @@
+# v0.0.9
+
+* fix: lint error
+* upd: pem location
+* add: health output plugin
+* upd: turn off metric type debug msgs
+* upd: mv queued metrics msg to debug
+* upd: dep (cgm)
+
 # v0.0.8
 
 * upd: refactor metric debug above cgm add to catch metrics causing any errors

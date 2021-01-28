@@ -124,8 +124,8 @@ github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e/go.mod h1:nSuG5e5P
 github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1/go.mod h1:Q3SI9o4m/ZMnBNeIyt5eFwwo7qiLfzFZmjNmxjkiQlU=
 github.com/circonus-labs/circonus-gometrics v2.3.1+incompatible h1:C29Ae4G5GtYyYMm1aztcyj/J5ckgJm2zwdDajFbx1NY=
 github.com/circonus-labs/circonus-gometrics v2.3.1+incompatible/go.mod h1:nmEj6Dob7S7YxXgwXpfOuvO54S+tGdZdw9fuRZt25Ag=
-github.com/circonus-labs/circonus-gometrics/v3 v3.3.0 h1:7jglWWxtmeRBHnxfDFJi4NVgeEgqgjg2YAG2I7KfM54=
-github.com/circonus-labs/circonus-gometrics/v3 v3.3.0/go.mod h1:hbHb81YGFfRAgDZHE8J5kws/aDP1D40tkaTnhVfnqSw=
+github.com/circonus-labs/circonus-gometrics/v3 v3.3.2 h1:lClblf4WNYe/hiWBTneYZ9jQUHvQxwm3l4DukIre+2g=
+github.com/circonus-labs/circonus-gometrics/v3 v3.3.2/go.mod h1:hbHb81YGFfRAgDZHE8J5kws/aDP1D40tkaTnhVfnqSw=
 github.com/circonus-labs/circonusllhist v0.1.3/go.mod h1:kMXHVDlOchFAehlya5ePtbp5jckzBHf4XRpQvBOLI+I=
 github.com/circonus-labs/circonusllhist v0.1.4 h1:G5qJPuD16akpIXMUR7KcfBvrQOVm95+qyqUm+SEAZks=
 github.com/circonus-labs/circonusllhist v0.1.4/go.mod h1:kMXHVDlOchFAehlya5ePtbp5jckzBHf4XRpQvBOLI+I=

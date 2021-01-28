@@ -99,7 +99,7 @@ var sampleConfig = `
 
   ## Circonus API TLS CA file, optional, for internal deployments with private certificates: 
   ## example:
-  # api_tls_ca = "/etc/circonus-unified-agent/circonus_api_ca.pem"
+  # api_tls_ca = "/opt/circonus/unified-agent/etc/circonus_api_ca.pem"
 
   ## Check name prefix - unique prefix to use for all checks created by this instance
   ## default is the hostname from the OS. If set, "host" tag on metrics will be 

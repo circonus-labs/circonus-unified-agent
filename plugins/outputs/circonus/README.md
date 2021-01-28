@@ -19,7 +19,7 @@ check configuration click [here][docs].
   ## If not provided, the API application used will default to circonus-unified-agent:
   # api_app = "circonus-unified-agent"
   ## Optional API TLS Configuration:
-  # api_tls_ca = "/etc/circonus-unified-agent/circonus_api_ca.pem"
+  # api_tls_ca = "/opt/circonus/unified-agent/etc/circonus_api_ca.pem"
 
   ## Check name prefix - unique prefix to use for all checks created by this instance
   ## default is the hostname from the OS.

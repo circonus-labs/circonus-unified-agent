@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"math"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -13,7 +12,7 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/internal"
 	"github.com/circonus-labs/circonus-unified-agent/internal/limiter"
-	"github.com/circonus-labs/circonus-unified-agent/metric"
+	cuametric "github.com/circonus-labs/circonus-unified-agent/metric"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs" // Imports the Stackdriver Monitoring client package.
 	"github.com/circonus-labs/circonus-unified-agent/selfstat"
 	googlepbduration "github.com/golang/protobuf/ptypes/duration"
@@ -184,7 +183,7 @@ type (
 
 	lockedSeriesGrouper struct {
 		sync.Mutex
-		*metric.SeriesGrouper
+		*cuametric.SeriesGrouper
 	}
 )
 
@@ -298,7 +297,7 @@ func (s *Stackdriver) Gather(acc cua.Accumulator) error {
 	defer lmtr.Stop()
 
 	grouper := &lockedSeriesGrouper{
-		SeriesGrouper: metric.NewSeriesGrouper(),
+		SeriesGrouper: cuametric.NewSeriesGrouper(),
 	}
 
 	var wg sync.WaitGroup
@@ -307,7 +306,7 @@ func (s *Stackdriver) Gather(acc cua.Accumulator) error {
 		<-lmtr.C
 		go func(tsConf *timeSeriesConf) {
 			defer wg.Done()
-			acc.AddError(s.gatherTimeSeries(ctx, grouper, tsConf))
+			acc.AddError(s.gatherTimeSeries(ctx, grouper, tsConf, acc))
 		}(tsConf)
 	}
 	wg.Wait()
@@ -588,7 +587,7 @@ func (s *Stackdriver) generatetimeSeriesConfs(
 // Do the work to gather an individual time series. Runs inside a
 // timeseries-specific goroutine.
 func (s *Stackdriver) gatherTimeSeries(
-	ctx context.Context, grouper *lockedSeriesGrouper, tsConf *timeSeriesConf,
+	ctx context.Context, grouper *lockedSeriesGrouper, tsConf *timeSeriesConf, acc cua.Accumulator,
 ) error {
 	tsReq := tsConf.listTimeSeriesRequest
 
@@ -608,12 +607,24 @@ func (s *Stackdriver) gatherTimeSeries(
 			tags[k] = v
 		}
 
+		slashIdx := strings.LastIndex(tsConf.measurement, "/")
+		if slashIdx > 0 {
+			cat := tsConf.measurement[slashIdx+1:]
+			tags["metric_category"] = cat
+		} else {
+			tags["metric_category"] = tsConf.measurement
+		}
+
+		s.Log.Debugf("%s %v %v\n", tsConf.fieldKey, tags, tsDesc.ValueType)
+
 		for _, p := range tsDesc.Points {
 			ts := time.Unix(p.Interval.EndTime.Seconds, 0)
 
 			if tsDesc.ValueType == metricpb.MetricDescriptor_DISTRIBUTION {
 				dist := p.Value.GetDistributionValue()
-				s.addDistribution(dist, tags, ts, grouper, tsConf)
+
+				s.Log.Debugf("DISTRIBUTION: %s %v %v\n", tsConf.fieldKey, tags, dist)
+				s.addDistribution(dist, tags, ts, grouper, tsConf, acc)
 			} else {
 				var value interface{}
 
@@ -638,10 +649,66 @@ func (s *Stackdriver) gatherTimeSeries(
 	return nil
 }
 
+func distributionToCircHisto(s *Stackdriver, metric *distributionpb.Distribution, options *distributionpb.Distribution_BucketOptions) map[string]int64 {
+
+	linearBuckets := options.GetLinearBuckets()
+	exponentialBuckets := options.GetExponentialBuckets()
+	explicitBuckets := options.GetExplicitBuckets()
+
+	ret := make(map[string]int64)
+
+	var numBuckets int32
+	if linearBuckets != nil {
+		numBuckets = linearBuckets.NumFiniteBuckets + 2
+	} else if exponentialBuckets != nil {
+		numBuckets = exponentialBuckets.NumFiniteBuckets + 2
+	} else {
+		numBuckets = int32(len(explicitBuckets.Bounds)) + 1
+	}
+
+	s.Log.Debugf("numBuckets: %d\n", numBuckets)
+	s.Log.Debugf("BucketCounts: %d, Count: %d\n", len(metric.BucketCounts), metric.Count)
+
+	var i int32
+	var count int64
+	for i = 0; i < numBuckets; i++ {
+		// The last bucket is the overflow bucket, and includes all values
+		// greater than the previous bound.
+		var localCount int64 = 0
+		// Add to the cumulative count; trailing buckets with value 0 are
+		// omitted from the response.
+		if i < int32(len(metric.BucketCounts)) {
+			localCount = metric.BucketCounts[i]
+			count += localCount
+			s.Log.Debugf("Bucket %d count: %d\n", i, localCount)
+		}
+
+		if localCount > 0 {
+			var upperBound float64
+			if i == 0 {
+				upperBound = 0
+			} else if i == numBuckets-1 {
+				upperBound = 10e+127
+			} else if linearBuckets != nil {
+				upperBound = linearBuckets.Offset + (linearBuckets.Width * float64(i))
+			} else if exponentialBuckets != nil {
+				width := math.Pow(exponentialBuckets.GrowthFactor, float64(i))
+				upperBound = exponentialBuckets.Scale * width
+			} else if explicitBuckets != nil {
+				upperBound = explicitBuckets.Bounds[i]
+			}
+			s.Log.Debugf("Adding bucket H[%e]=%d\n", upperBound, localCount)
+			ret[fmt.Sprintf("%e", upperBound)] = localCount
+		}
+	}
+
+	return ret
+}
+
 // AddDistribution adds metrics from a distribution value type.
 func (s *Stackdriver) addDistribution(
 	metric *distributionpb.Distribution,
-	tags map[string]string, ts time.Time, grouper *lockedSeriesGrouper, tsConf *timeSeriesConf,
+	tags map[string]string, ts time.Time, grouper *lockedSeriesGrouper, tsConf *timeSeriesConf, acc cua.Accumulator,
 ) {
 	field := tsConf.fieldKey
 	name := tsConf.measurement
@@ -655,45 +722,21 @@ func (s *Stackdriver) addDistribution(
 		_ = grouper.Add(name, tags, ts, field+"_range_max", metric.Range.Max)
 	}
 
-	linearBuckets := metric.BucketOptions.GetLinearBuckets()
-	exponentialBuckets := metric.BucketOptions.GetExponentialBuckets()
-	explicitBuckets := metric.BucketOptions.GetExplicitBuckets()
+	circhisto := distributionToCircHisto(s, metric, metric.BucketOptions)
 
-	var numBuckets int32
-	if linearBuckets != nil {
-		numBuckets = linearBuckets.NumFiniteBuckets + 2
-	} else if exponentialBuckets != nil {
-		numBuckets = exponentialBuckets.NumFiniteBuckets + 2
-	} else {
-		numBuckets = int32(len(explicitBuckets.Bounds)) + 1
-	}
-
-	var i int32
-	var count int64
-	for i = 0; i < numBuckets; i++ {
-		// The last bucket is the overflow bucket, and includes all values
-		// greater than the previous bound.
-		if i == numBuckets-1 {
-			tags["lt"] = "+Inf"
-		} else {
-			var upperBound float64
-			if linearBuckets != nil {
-				upperBound = linearBuckets.Offset + (linearBuckets.Width * float64(i))
-			} else if exponentialBuckets != nil {
-				width := math.Pow(exponentialBuckets.GrowthFactor, float64(i))
-				upperBound = exponentialBuckets.Scale * width
-			} else if explicitBuckets != nil {
-				upperBound = explicitBuckets.Bounds[i]
+	if len(circhisto) > 0 {
+		s.Log.Debugf("Histogram has %d buckets\n", len(circhisto))
+		var histometric cua.Metric = nil
+		for key, value := range circhisto {
+			if histometric == nil {
+				histometric, _ = cuametric.New(field, tags, map[string]interface{}{key: value}, ts, cua.Histogram)
+			} else {
+				histometric.AddField(key, value)
 			}
-			tags["lt"] = strconv.FormatFloat(upperBound, 'f', -1, 64)
 		}
-
-		// Add to the cumulative count; trailing buckets with value 0 are
-		// omitted from the response.
-		if i < int32(len(metric.BucketCounts)) {
-			count += metric.BucketCounts[i]
-		}
-		_ = grouper.Add(name, tags, ts, field+"_bucket", count)
+		acc.AddMetric(histometric)
+	} else {
+		s.Log.Debugf("Histogram has 0 buckets\n")
 	}
 }
 

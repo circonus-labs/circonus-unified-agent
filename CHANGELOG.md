@@ -1,3 +1,13 @@
+# v0.0.8
+
+* upd: refactor metric debug above cgm add to catch metrics causing any errors
+* add: support for non-cumulative histograms into stackdriver input plugin
+* upd: remove unused templates
+* fix: add 's' to project in metric descriptor request (stackdriver)
+* upd: log metric queued for circ
+* add: net as a default input
+* upd: syntax change in tool
+
 # v0.0.7
 
 * upd: refactor default plugin handling in prep to support more platforms

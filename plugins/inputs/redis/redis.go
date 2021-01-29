@@ -137,7 +137,7 @@ func (r *Redis) init(acc cua.Accumulator) error {
 
 		u, err := url.Parse(serv)
 		if err != nil {
-			return fmt.Errorf("unable to parse to address %q: %s", serv, err.Error())
+			return fmt.Errorf("unable to parse to address %q: %w", serv, err)
 		}
 
 		password := ""

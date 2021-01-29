@@ -27,7 +27,7 @@ import (
 func loadClient(kubeconfigPath string) (*k8s.Client, error) {
 	data, err := ioutil.ReadFile(kubeconfigPath)
 	if err != nil {
-		return nil, fmt.Errorf("failed reading '%s': %v", kubeconfigPath, err)
+		return nil, fmt.Errorf("failed reading '%s': %w", kubeconfigPath, err)
 	}
 
 	// Unmarshal YAML into a Kubernetes config object.
@@ -43,7 +43,7 @@ func (p *Prometheus) start(ctx context.Context) error {
 	if err != nil {
 		u, err := user.Current()
 		if err != nil {
-			return fmt.Errorf("Failed to get current user - %v", err)
+			return fmt.Errorf("failed to get current user - %w", err)
 		}
 
 		configLocation := filepath.Join(u.HomeDir, ".kube/config")

@@ -2,6 +2,7 @@ package powerdns
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -75,7 +76,7 @@ func (p *Powerdns) gatherServer(address string, acc cua.Accumulator) error {
 	for {
 		n, err := rw.Read(tmp)
 		if err != nil {
-			if err != io.EOF {
+			if !errors.Is(err, io.EOF) {
 				return err
 			}
 

@@ -94,7 +94,7 @@ func (p *Parser) Parse(input []byte) ([]cua.Metric, error) {
 
 	for {
 		err := p.machine.Next()
-		if err == EOF {
+		if errors.Is(err, EOF) {
 			break
 		}
 
@@ -190,12 +190,13 @@ func (h *StreamParser) SetTimePrecision(u time.Duration) {
 // function if it returns ParseError to get the next metric or error.
 func (p *StreamParser) Next() (cua.Metric, error) {
 	err := p.machine.Next()
-	if err == EOF {
+	if errors.Is(err, EOF) {
 		return nil, err
 	}
 
-	if e, ok := err.(*readErr); ok {
-		return nil, e.Err
+	var rerr *readErr
+	if errors.As(err, &rerr) {
+		return nil, rerr.Err
 	}
 
 	if err != nil {

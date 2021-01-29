@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -189,7 +190,7 @@ func (h *InfluxDBListener) Start(acc cua.Accumulator) error {
 
 	go func() {
 		err = h.server.Serve(h.listener)
-		if err != http.ErrServerClosed {
+		if !errors.Is(err, http.ErrServerClosed) {
 			h.Log.Infof("Error serving HTTP on %s", h.ServiceAddress)
 		}
 	}()
@@ -305,9 +306,10 @@ func (h *InfluxDBListener) handleWrite() http.HandlerFunc {
 			lastPos = pos
 
 			// Continue parsing metrics even if some are malformed
-			if parseErr, ok := err.(*influx.ParseError); ok {
+			var perr *influx.ParseError
+			if errors.As(err, &perr) {
 				parseErrorCount += 1
-				errStr := parseErr.Error()
+				errStr := perr.Error()
 				if firstParseErrorStr == "" {
 					firstParseErrorStr = errStr
 				}
@@ -329,7 +331,7 @@ func (h *InfluxDBListener) handleWrite() http.HandlerFunc {
 			h.acc.AddMetric(m)
 
 		}
-		if err != influx.EOF {
+		if !errors.Is(err, influx.EOF) {
 			h.Log.Debugf("Error parsing the request body: %v", err.Error())
 			badRequest(res, err.Error())
 			return

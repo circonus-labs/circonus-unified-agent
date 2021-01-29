@@ -132,7 +132,7 @@ func (c *Client) read(requests []ReadRequest) ([]ReadResponse, error) {
 
 	req, err := http.NewRequest("POST", requestUrl, bytes.NewBuffer(requestBody))
 	if err != nil {
-		return nil, fmt.Errorf("unable to create new request '%s': %s", requestUrl, err)
+		return nil, fmt.Errorf("unable to create new request '%s': %w", requestUrl, err)
 	}
 
 	req.Header.Add("Content-type", "application/json")
@@ -155,7 +155,7 @@ func (c *Client) read(requests []ReadRequest) ([]ReadResponse, error) {
 
 	var jresponses []jolokiaResponse
 	if err = json.Unmarshal([]byte(responseBody), &jresponses); err != nil {
-		return nil, fmt.Errorf("Error decoding JSON response: %s: %s", err, responseBody)
+		return nil, fmt.Errorf("Error decoding JSON response: %w: %s", err, responseBody)
 	}
 
 	return makeReadResponses(jresponses), nil

@@ -3,6 +3,7 @@ package snmp
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"log"
 	"math"
@@ -84,8 +85,9 @@ func execCmd(arg0 string, args ...string) ([]byte, error) {
 
 	out, err := execCommand(arg0, args...).Output()
 	if err != nil {
-		if err, ok := err.(*exec.ExitError); ok {
-			return nil, fmt.Errorf("%s: %w", bytes.TrimRight(err.Stderr, "\r\n"), err)
+		var exiterr *exec.ExitError
+		if errors.As(err, &exiterr) {
+			return nil, fmt.Errorf("%s: %w", bytes.TrimRight(exiterr.Stderr, "\r\n"), exiterr)
 		}
 		return nil, err
 	}
@@ -487,7 +489,8 @@ func (t Table) Build(gs snmpConnection, walk bool) (*RTable, error) {
 				// Our callback always wraps errors in a walkError.
 				// If this error isn't a walkError, we know it's not
 				// from the callback
-				if _, ok := err.(*walkError); !ok {
+				var werr *walkError
+				if !errors.As(err, &werr) {
 					return nil, fmt.Errorf("performing bulk walk for field %s: %w", f.Name, err)
 				}
 			}
@@ -851,7 +854,8 @@ func snmpTranslateCall(oid string) (mibName string, oidNum string, oidText strin
 		out, err = execCmd("snmptranslate", "-Td", "-Ob", oid)
 	} else {
 		out, err = execCmd("snmptranslate", "-Td", "-Ob", "-m", "all", oid)
-		if err, ok := err.(*exec.Error); ok && err.Err == exec.ErrNotFound {
+		var exiterr *exec.Error
+		if errors.As(err, &exiterr) && errors.Is(exiterr.Err, exec.ErrNotFound) {
 			// Silently discard error if snmptranslate not found and we have a numeric OID.
 			// Meaning we can get by without the lookup.
 			return "", oid, oid, "", nil

@@ -54,7 +54,7 @@ func NewGraphiteParser(
 	p.templateEngine, err = templating.NewEngine(p.Separator, defaultTemplate, p.Templates)
 
 	if err != nil {
-		return p, fmt.Errorf("exec input parser config is error: %s ", err.Error())
+		return p, fmt.Errorf("exec input parser config is error: %w ", err)
 	}
 	return p, nil
 }
@@ -117,7 +117,7 @@ func (p *GraphiteParser) ParseLine(line string) (cua.Metric, error) {
 	// Parse value.
 	v, err := strconv.ParseFloat(fields[1], 64)
 	if err != nil {
-		return nil, fmt.Errorf(`field "%s" value: %s`, fields[0], err)
+		return nil, fmt.Errorf(`field "%s" value: %w`, fields[0], err)
 	}
 
 	fieldValues := map[string]interface{}{}
@@ -134,7 +134,7 @@ func (p *GraphiteParser) ParseLine(line string) (cua.Metric, error) {
 		// Parse timestamp.
 		unixTime, err := strconv.ParseFloat(fields[2], 64)
 		if err != nil {
-			return nil, fmt.Errorf(`field "%s" time: %s`, fields[0], err)
+			return nil, fmt.Errorf(`field "%s" time: %w`, fields[0], err)
 		}
 
 		// -1 is a special value that gets converted to current UTC time

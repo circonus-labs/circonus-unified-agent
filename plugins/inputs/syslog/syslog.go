@@ -199,7 +199,7 @@ func getAddressParts(a string) (string, string, error) {
 
 	u, err := url.Parse(filepath.ToSlash(a)) // convert backslashes to slashes (to make Windows path a valid URL)
 	if err != nil {
-		return "", "", fmt.Errorf("could not parse address '%s': %v", a, err)
+		return "", "", fmt.Errorf("could not parse address '%s': %w", a, err)
 	}
 	switch u.Scheme {
 	case "unix", "unixpacket", "unixgram":
@@ -276,7 +276,7 @@ func (s *Syslog) listenStream(acc cua.Accumulator) {
 		s.connectionsMu.Unlock()
 
 		if err := s.setKeepAlive(tcpConn); err != nil {
-			acc.AddError(fmt.Errorf("unable to configure keep alive (%s): %s", s.Address, err))
+			acc.AddError(fmt.Errorf("unable to configure keep alive (%s): %w", s.Address, err))
 		}
 
 		go s.handle(conn, acc)

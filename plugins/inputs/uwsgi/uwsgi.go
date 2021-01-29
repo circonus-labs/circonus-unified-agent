@@ -62,7 +62,7 @@ func (u *Uwsgi) Gather(acc cua.Accumulator) error {
 			defer wg.Done()
 			n, err := url.Parse(s)
 			if err != nil {
-				acc.AddError(fmt.Errorf("could not parse uWSGI Stats Server url '%s': %s", s, err.Error()))
+				acc.AddError(fmt.Errorf("could not parse uWSGI Stats Server url '%s': %w", s, err))
 				return
 			}
 
@@ -113,7 +113,7 @@ func (u *Uwsgi) gatherServer(acc cua.Accumulator, url *url.URL) error {
 	defer r.Close()
 
 	if err := json.NewDecoder(r).Decode(&s); err != nil {
-		return fmt.Errorf("failed to decode json payload from '%s': %s", url.String(), err.Error())
+		return fmt.Errorf("failed to decode json payload from '%s': %w", url.String(), err)
 	}
 
 	u.gatherStatServer(acc, &s)

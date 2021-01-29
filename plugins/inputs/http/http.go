@@ -143,7 +143,7 @@ func (h *HTTP) Gather(acc cua.Accumulator) error {
 		go func(url string) {
 			defer wg.Done()
 			if err := h.gatherURL(acc, url); err != nil {
-				acc.AddError(fmt.Errorf("[url=%s]: %s", url, err))
+				acc.AddError(fmt.Errorf("[url=%s]: %w", url, err))
 			}
 		}(u)
 	}

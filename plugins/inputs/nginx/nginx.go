@@ -65,7 +65,7 @@ func (n *Nginx) Gather(acc cua.Accumulator) error {
 	for _, u := range n.Urls {
 		addr, err := url.Parse(u)
 		if err != nil {
-			acc.AddError(fmt.Errorf("Unable to parse address '%s': %s", u, err))
+			acc.AddError(fmt.Errorf("Unable to parse address '%s': %w", u, err))
 			continue
 		}
 
@@ -103,7 +103,7 @@ func (n *Nginx) createHttpClient() (*http.Client, error) {
 func (n *Nginx) gatherUrl(addr *url.URL, acc cua.Accumulator) error {
 	resp, err := n.client.Get(addr.String())
 	if err != nil {
-		return fmt.Errorf("error making HTTP request to %s: %s", addr.String(), err)
+		return fmt.Errorf("error making HTTP request to %s: %w", addr.String(), err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {

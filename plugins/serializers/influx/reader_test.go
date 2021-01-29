@@ -2,6 +2,7 @@ package influx
 
 import (
 	"bytes"
+	"errors"
 	"io"
 	"testing"
 	"time"
@@ -155,7 +156,7 @@ func TestReader(t *testing.T) {
 			for {
 				n, err := reader.Read(readbuf)
 				total += n
-				if err == io.EOF {
+				if errors.Is(err, io.EOF) {
 					break
 				}
 
@@ -268,7 +269,7 @@ func BenchmarkReader(b *testing.B) {
 		reader := NewReader(metrics, serializer)
 		for {
 			_, err := reader.Read(readbuf)
-			if err == io.EOF {
+			if errors.Is(err, io.EOF) {
 				break
 			}
 

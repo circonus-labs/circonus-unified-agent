@@ -43,7 +43,7 @@ func addError(acc cua.Accumulator, err error) {
 	//
 	// The correct solution is to do a GET to /api to get the available paths
 	// on the server rather than simply ignore.
-	if err != errNotFound {
+	if !errors.Is(err, errNotFound) {
 		acc.AddError(err)
 	}
 }
@@ -53,7 +53,7 @@ func (n *NginxPlusApi) gatherUrl(addr *url.URL, path string) ([]byte, error) {
 	resp, err := n.client.Get(url)
 
 	if err != nil {
-		return nil, fmt.Errorf("error making HTTP request to %s: %s", url, err)
+		return nil, fmt.Errorf("error making HTTP request to %s: %w", url, err)
 	}
 	defer resp.Body.Close()
 

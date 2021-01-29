@@ -156,7 +156,7 @@ func (k *Kibana) Gather(acc cua.Accumulator) error {
 		go func(baseUrl string, acc cua.Accumulator) {
 			defer wg.Done()
 			if err := k.gatherKibanaStatus(baseUrl, acc); err != nil {
-				acc.AddError(fmt.Errorf("[url=%s]: %s", baseUrl, err))
+				acc.AddError(fmt.Errorf("[url=%s]: %w", baseUrl, err))
 				return
 			}
 		}(serv, acc)
@@ -240,7 +240,7 @@ func (k *Kibana) gatherKibanaStatus(baseUrl string, acc cua.Accumulator) error {
 func (k *Kibana) gatherJsonData(url string, v interface{}) (host string, err error) {
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return "", fmt.Errorf("unable to create new request '%s': %v", url, err)
+		return "", fmt.Errorf("unable to create new request '%s': %w", url, err)
 	}
 
 	if (k.Username != "") || (k.Password != "") {

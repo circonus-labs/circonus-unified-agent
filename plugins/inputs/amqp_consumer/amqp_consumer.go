@@ -288,7 +288,7 @@ func (a *AMQPConsumer) connect(amqpConf *amqp.Config) (<-chan amqp.Delivery, err
 
 	ch, err := a.conn.Channel()
 	if err != nil {
-		return nil, fmt.Errorf("Failed to open a channel: %s", err.Error())
+		return nil, fmt.Errorf("Failed to open a channel: %w", err)
 	}
 
 	if a.Exchange != "" {
@@ -335,7 +335,7 @@ func (a *AMQPConsumer) connect(amqpConf *amqp.Config) (<-chan amqp.Delivery, err
 			nil,
 		)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to bind a queue: %s", err)
+			return nil, fmt.Errorf("Failed to bind a queue: %w", err)
 		}
 	}
 
@@ -345,7 +345,7 @@ func (a *AMQPConsumer) connect(amqpConf *amqp.Config) (<-chan amqp.Delivery, err
 		false, // global
 	)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to set QoS: %s", err)
+		return nil, fmt.Errorf("Failed to set QoS: %w", err)
 	}
 
 	msgs, err := ch.Consume(
@@ -358,7 +358,7 @@ func (a *AMQPConsumer) connect(amqpConf *amqp.Config) (<-chan amqp.Delivery, err
 		nil,    // arguments
 	)
 	if err != nil {
-		return nil, fmt.Errorf("Failed establishing connection to queue: %s", err)
+		return nil, fmt.Errorf("Failed establishing connection to queue: %w", err)
 	}
 
 	return msgs, err
@@ -395,7 +395,7 @@ func declareExchange(
 		)
 	}
 	if err != nil {
-		return fmt.Errorf("Error declaring exchange: %v", err)
+		return fmt.Errorf("Error declaring exchange: %w", err)
 	}
 	return nil
 }
@@ -437,7 +437,7 @@ func declareQueue(
 		)
 	}
 	if err != nil {
-		return nil, fmt.Errorf("Error declaring queue: %v", err)
+		return nil, fmt.Errorf("Error declaring queue: %w", err)
 	}
 	return &queue, nil
 }
@@ -537,7 +537,7 @@ func (a *AMQPConsumer) Stop() {
 	a.cancel()
 	a.wg.Wait()
 	err := a.conn.Close()
-	if err != nil && err != amqp.ErrClosed {
+	if err != nil && errors.Is(err, amqp.ErrClosed) {
 		a.Log.Errorf("Error closing AMQP connection: %s", err)
 		return
 	}

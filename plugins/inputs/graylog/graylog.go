@@ -170,7 +170,7 @@ func (h *GrayLog) gatherServer(
 	}
 	requestURL, err := url.Parse(serverURL)
 	if err != nil {
-		return fmt.Errorf("unable to parse address '%s': %s", serverURL, err)
+		return fmt.Errorf("unable to parse address '%s': %w", serverURL, err)
 	}
 
 	host, port, _ := net.SplitHostPort(requestURL.Host)

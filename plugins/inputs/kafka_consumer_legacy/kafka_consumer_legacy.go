@@ -139,17 +139,15 @@ func (k *Kafka) receiver() {
 			return
 		case err := <-k.errs:
 			if err != nil {
-				k.acc.AddError(fmt.Errorf("Consumer Error: %s\n", err))
+				k.acc.AddError(fmt.Errorf("Consumer Error: %w", err))
 			}
 		case msg := <-k.in:
 			if k.MaxMessageLen != 0 && len(msg.Value) > k.MaxMessageLen {
-				k.acc.AddError(fmt.Errorf("Message longer than max_message_len (%d > %d)",
-					len(msg.Value), k.MaxMessageLen))
+				k.acc.AddError(fmt.Errorf("Message longer than max_message_len (%d > %d)", len(msg.Value), k.MaxMessageLen))
 			} else {
 				metrics, err := k.parser.Parse(msg.Value)
 				if err != nil {
-					k.acc.AddError(fmt.Errorf("Message Parse Error\nmessage: %s\nerror: %s",
-						string(msg.Value), err.Error()))
+					k.acc.AddError(fmt.Errorf("Message Parse Error\nmessage: %s\nerror: %w", string(msg.Value), err))
 				}
 				for _, metric := range metrics {
 					k.acc.AddFields(metric.Name(), metric.Fields(), metric.Tags(), metric.Time())
@@ -172,7 +170,7 @@ func (k *Kafka) Stop() {
 	defer k.Unlock()
 	close(k.done)
 	if err := k.Consumer.Close(); err != nil {
-		k.acc.AddError(fmt.Errorf("Error closing consumer: %s\n", err.Error()))
+		k.acc.AddError(fmt.Errorf("Error closing consumer: %w", err))
 	}
 }
 

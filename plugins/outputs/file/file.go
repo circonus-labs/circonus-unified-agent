@@ -123,7 +123,7 @@ func (f *File) Write(metrics []cua.Metric) error {
 
 			_, err = f.writer.Write(b)
 			if err != nil {
-				writeErr = fmt.Errorf("E! [outputs.file] failed to write message: %v", err)
+				writeErr = fmt.Errorf("E! [outputs.file] failed to write message: %w", err)
 			}
 		}
 	}

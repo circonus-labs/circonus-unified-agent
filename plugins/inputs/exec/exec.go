@@ -71,7 +71,7 @@ func (c CommandRunner) Run(
 ) ([]byte, []byte, error) {
 	split_cmd, err := shellquote.Split(command)
 	if err != nil || len(split_cmd) == 0 {
-		return nil, nil, fmt.Errorf("exec: unable to parse command, %s", err)
+		return nil, nil, fmt.Errorf("exec: unable to parse command, %w", err)
 	}
 
 	cmd := exec.Command(split_cmd[0], split_cmd[1:]...)
@@ -146,7 +146,7 @@ func (e *Exec) ProcessCommand(command string, acc cua.Accumulator, wg *sync.Wait
 
 	out, errbuf, runErr := e.runner.Run(command, e.Timeout.Duration)
 	if !isNagios && runErr != nil {
-		err := fmt.Errorf("exec: %s for command '%s': %s", runErr, command, string(errbuf))
+		err := fmt.Errorf("exec: %w for command '%s': %s", runErr, command, string(errbuf))
 		acc.AddError(err)
 		return
 	}

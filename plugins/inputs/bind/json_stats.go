@@ -167,7 +167,7 @@ func (b *Bind) readStatsJSON(addr *url.URL, acc cua.Accumulator) error {
 		}
 
 		if err := json.NewDecoder(resp.Body).Decode(&stats); err != nil {
-			return fmt.Errorf("Unable to decode JSON blob: %s", err)
+			return fmt.Errorf("Unable to decode JSON blob: %w", err)
 		}
 	}
 

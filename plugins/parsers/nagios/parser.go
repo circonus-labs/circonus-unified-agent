@@ -24,15 +24,16 @@ func getExitCode(err error) (int, error) {
 		return 0, nil
 	}
 
-	ee, ok := err.(*exec.ExitError)
-	if !ok {
+	var exitErr *exec.ExitError
+	// ee, ok := err.(*exec.ExitError)
+	if !errors.As(err, &exitErr) {
 		// If it is not an *exec.ExitError, then it must be
 		// an io error, but docs do not say anything about the
 		// exit code in this case.
 		return 0, errors.New("expected *exec.ExitError")
 	}
 
-	ws, ok := ee.Sys().(syscall.WaitStatus)
+	ws, ok := exitErr.Sys().(syscall.WaitStatus)
 	if !ok {
 		return 0, errors.New("expected syscall.WaitStatus")
 	}
@@ -46,7 +47,7 @@ func getExitCode(err error) (int, error) {
 func TryAddState(runErr error, metrics []cua.Metric) ([]cua.Metric, error) {
 	state, err := getExitCode(runErr)
 	if err != nil {
-		return metrics, fmt.Errorf("exec: get exit code: %s", err)
+		return metrics, fmt.Errorf("exec: get exit code: %w", err)
 	}
 
 	for _, m := range metrics {

@@ -1,6 +1,7 @@
 package webhooks
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -116,8 +117,8 @@ func (wb *Webhooks) Start(acc cua.Accumulator) error {
 
 	go func() {
 		if err := wb.srv.Serve(ln); err != nil {
-			if err != http.ErrServerClosed {
-				acc.AddError(fmt.Errorf("E! Error listening: %v", err))
+			if !errors.Is(err, http.ErrServerClosed) {
+				acc.AddError(fmt.Errorf("E! Error listening: %w", err))
 			}
 		}
 	}()

@@ -105,7 +105,7 @@ func (s *Shim) writeProcessedMetrics() error {
 	for m := range s.metricCh {
 		b, err := serializer.Serialize(m)
 		if err != nil {
-			return fmt.Errorf("failed to serialize metric: %s", err)
+			return fmt.Errorf("failed to serialize metric: %w", err)
 		}
 		// Write this to stdout
 		fmt.Fprint(s.stdout, string(b))

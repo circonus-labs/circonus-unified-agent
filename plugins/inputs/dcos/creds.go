@@ -50,7 +50,7 @@ func (c *ServiceAccount) IsExpired() bool {
 func (c *TokenCreds) Token(ctx context.Context, client Client) (string, error) {
 	octets, err := ioutil.ReadFile(c.Path)
 	if err != nil {
-		return "", fmt.Errorf("Error reading token file %q: %s", c.Path, err)
+		return "", fmt.Errorf("Error reading token file %q: %w", c.Path, err)
 	}
 	if !utf8.Valid(octets) {
 		return "", fmt.Errorf("Token file does not contain utf-8 encoded text: %s", c.Path)

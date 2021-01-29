@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -236,7 +237,7 @@ func (d *DockerLogs) Gather(acc cua.Accumulator) error {
 			}()
 
 			err = d.tailContainerLogs(ctx, acc, container, containerName)
-			if err != nil && err != context.Canceled {
+			if !errors.Is(err, context.Canceled) {
 				acc.AddError(err)
 			}
 		}(container)
@@ -333,7 +334,7 @@ func parseLine(line []byte) (time.Time, string, error) {
 
 	ts, err := time.Parse(time.RFC3339Nano, tsString)
 	if err != nil {
-		return time.Time{}, "", fmt.Errorf("error parsing timestamp %q: %v", tsString, err)
+		return time.Time{}, "", fmt.Errorf("error parsing timestamp %q: %w", tsString, err)
 	}
 
 	return ts, string(message), nil
@@ -372,7 +373,7 @@ func tailStream(
 		}
 
 		if err != nil {
-			if err == io.EOF {
+			if errors.Is(err, io.EOF) {
 				return nil
 			}
 			return err

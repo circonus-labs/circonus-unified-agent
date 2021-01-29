@@ -170,7 +170,7 @@ func importMetric(stat []byte, acc cua.Accumulator) error {
 	decoder := xml.NewDecoder(bytes.NewReader(stat))
 	decoder.CharsetReader = charset.NewReaderLabel
 	if err := decoder.Decode(&p); err != nil {
-		return fmt.Errorf("Cannot parse input with error: %v\n", err)
+		return fmt.Errorf("Cannot parse input with error: %w", err)
 	}
 
 	tags := map[string]string{

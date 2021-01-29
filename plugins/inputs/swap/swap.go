@@ -21,7 +21,7 @@ func (_ *SwapStats) SampleConfig() string { return "" }
 func (s *SwapStats) Gather(acc cua.Accumulator) error {
 	swap, err := s.ps.SwapStat()
 	if err != nil {
-		return fmt.Errorf("error getting swap memory info: %s", err)
+		return fmt.Errorf("error getting swap memory info: %w", err)
 	}
 
 	fieldsG := map[string]interface{}{

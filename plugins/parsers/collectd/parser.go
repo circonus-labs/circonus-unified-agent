@@ -75,7 +75,7 @@ func NewCollectdParser(
 func (p *CollectdParser) Parse(buf []byte) ([]cua.Metric, error) {
 	valueLists, err := network.Parse(buf, p.popts)
 	if err != nil {
-		return nil, fmt.Errorf("Collectd parser error: %s", err)
+		return nil, fmt.Errorf("Collectd parser error: %w", err)
 	}
 
 	metrics := []cua.Metric{}

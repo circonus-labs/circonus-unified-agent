@@ -30,7 +30,7 @@ func LogModule(logger cua.Logger) *starlarkstruct.Module {
 func log(t *starlark.Thread, b *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple, logger cua.Logger) (starlark.Value, error) {
 	var msg starlark.String
 	if err := starlark.UnpackPositionalArgs(b.Name(), args, kwargs, 1, &msg); err != nil {
-		return starlark.None, fmt.Errorf("%s: %v", b.Name(), err)
+		return starlark.None, fmt.Errorf("%s: %w", b.Name(), err)
 	}
 	switch b.Name() {
 	case "log.debug":

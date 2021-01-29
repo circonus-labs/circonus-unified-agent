@@ -67,7 +67,7 @@ func (ja *JolokiaAgent) Gather(acc cua.Accumulator) error {
 		for _, url := range ja.URLs {
 			client, err := ja.createClient(url)
 			if err != nil {
-				acc.AddError(fmt.Errorf("Unable to create client for %s: %v", url, err))
+				acc.AddError(fmt.Errorf("Unable to create client for %s: %w", url, err))
 				continue
 			}
 			ja.clients = append(ja.clients, client)
@@ -83,7 +83,7 @@ func (ja *JolokiaAgent) Gather(acc cua.Accumulator) error {
 
 			err := ja.gatherer.Gather(client, acc)
 			if err != nil {
-				acc.AddError(fmt.Errorf("Unable to gather metrics for %s: %v", client.URL, err))
+				acc.AddError(fmt.Errorf("Unable to gather metrics for %s: %w", client.URL, err))
 			}
 
 		}(client)

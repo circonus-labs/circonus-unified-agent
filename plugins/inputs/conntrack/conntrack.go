@@ -92,7 +92,7 @@ func (c *Conntrack) Gather(acc cua.Accumulator) error {
 
 			contents, err := ioutil.ReadFile(fName)
 			if err != nil {
-				acc.AddError(fmt.Errorf("E! failed to read file '%s': %v", fName, err))
+				acc.AddError(fmt.Errorf("E! failed to read file '%s': %w", fName, err))
 				continue
 			}
 
@@ -100,7 +100,7 @@ func (c *Conntrack) Gather(acc cua.Accumulator) error {
 			fields[metricKey], err = strconv.ParseFloat(v, 64)
 			if err != nil {
 				acc.AddError(fmt.Errorf("E! failed to parse metric, expected number but "+
-					" found '%s': %v", v, err))
+					" found '%s': %w", v, err))
 			}
 		}
 	}

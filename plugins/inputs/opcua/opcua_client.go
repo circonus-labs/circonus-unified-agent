@@ -276,14 +276,14 @@ func Connect(o *OpcUA) error {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(o.ConnectTimeout))
 		defer cancel()
 		if err := o.client.Connect(ctx); err != nil {
-			return fmt.Errorf("Error in Client Connection: %s", err)
+			return fmt.Errorf("Error in Client Connection: %w", err)
 		}
 
 		regResp, err := o.client.RegisterNodes(&ua.RegisterNodesRequest{
 			NodesToRegister: o.NodeIDs,
 		})
 		if err != nil {
-			return fmt.Errorf("RegisterNodes failed: %v", err)
+			return fmt.Errorf("RegisterNodes failed: %w", err)
 		}
 
 		o.req = &ua.ReadRequest{
@@ -294,7 +294,7 @@ func Connect(o *OpcUA) error {
 
 		err = o.getData()
 		if err != nil {
-			return fmt.Errorf("Get Data Failed: %v", err)
+			return fmt.Errorf("Get Data Failed: %w", err)
 		}
 
 	default:
@@ -326,7 +326,7 @@ func (o *OpcUA) getData() error {
 	resp, err := o.client.Read(o.req)
 	if err != nil {
 		o.ReadError++
-		return fmt.Errorf("RegisterNodes Read failed: %v", err)
+		return fmt.Errorf("RegisterNodes Read failed: %w", err)
 	}
 	o.ReadSuccess++
 	for i, d := range resp.Results {

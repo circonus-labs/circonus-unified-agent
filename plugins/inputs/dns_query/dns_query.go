@@ -1,6 +1,7 @@
 package dns_query
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"strconv"
@@ -91,11 +92,14 @@ func (d *DnsQuery) Gather(acc cua.Accumulator) error {
 				if err == nil {
 					setResult(Success, fields, tags)
 					fields["query_time_ms"] = dnsQueryTime
-				} else if opErr, ok := err.(*net.OpError); ok && opErr.Timeout() {
-					setResult(Timeout, fields, tags)
 				} else if err != nil {
-					setResult(Error, fields, tags)
-					acc.AddError(err)
+					var opErr *net.OpError
+					if errors.As(err, &opErr) && opErr.Timeout() {
+						setResult(Timeout, fields, tags)
+					} else {
+						setResult(Error, fields, tags)
+						acc.AddError(err)
+					}
 				}
 
 				acc.AddFields("dns_query", fields, tags)

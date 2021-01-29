@@ -128,7 +128,7 @@ func (m *Ipmi) parse(acc cua.Accumulator, server string) error {
 	out, err := internal.CombinedOutputTimeout(cmd, m.Timeout.Duration)
 	timestamp := time.Now()
 	if err != nil {
-		return fmt.Errorf("failed to run command %s: %s - %s", strings.Join(cmd.Args, " "), err, string(out))
+		return fmt.Errorf("failed to run command %s: %w - %s", strings.Join(cmd.Args, " "), err, string(out))
 	}
 	if m.MetricVersion == 2 {
 		return parseV2(acc, hostname, out, timestamp)

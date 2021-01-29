@@ -65,7 +65,7 @@ func opensmtpdRunner(cmdName string, Timeout internal.Duration, UseSudo bool) (*
 	cmd.Stdout = &out
 	err := internal.RunTimeout(cmd, Timeout.Duration)
 	if err != nil {
-		return &out, fmt.Errorf("error running smtpctl: %s", err)
+		return &out, fmt.Errorf("error running smtpctl: %w", err)
 	}
 
 	return &out, nil
@@ -85,7 +85,7 @@ func (s *Opensmtpd) Gather(acc cua.Accumulator) error {
 
 	out, err := s.run(s.Binary, s.Timeout, s.UseSudo)
 	if err != nil {
-		return fmt.Errorf("error gathering metrics: %s", err)
+		return fmt.Errorf("error gathering metrics: %w", err)
 	}
 
 	// Process values

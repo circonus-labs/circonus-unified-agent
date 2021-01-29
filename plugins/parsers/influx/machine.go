@@ -161,7 +161,6 @@ func (m *machine) Next() error {
 	return m.exec()
 }
 
-//nolint
 func (m *machine) exec() error {
 	var err error
 	
@@ -31690,9 +31689,9 @@ func (m *streamMachine) Next() error {
 		}
 
 		n, err := m.reader.Read(m.machine.data[m.machine.pe:])
-		if n == 0 && err == io.EOF {
+		if n == 0 && errors.Is(err,io.EOF) {
 			m.machine.eof = m.machine.pe
-		} else if err != nil && err != io.EOF {
+		} else if err != nil && !errors.Is(err,io.EOF) {
 			// After the reader returns an error this function shouldn't be
 			// called again.  This will cause the machine to return EOF this
 			// is done.

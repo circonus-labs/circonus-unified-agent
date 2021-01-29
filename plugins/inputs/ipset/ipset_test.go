@@ -86,7 +86,7 @@ func TestIpset(t *testing.T) {
 			}
 			acc := new(testutil.Accumulator)
 			err := acc.GatherError(ips.Gather)
-			if !reflect.DeepEqual(tt.err, err) {
+			if err != nil && tt.err.Error() != err.Error() {
 				t.Errorf("%d: expected error '%#v' got '%#v'", i, tt.err, err)
 			}
 			if len(tt.tags) == 0 {
@@ -129,7 +129,7 @@ func TestIpset_Gather_listerError(t *testing.T) {
 	}
 	acc := new(testutil.Accumulator)
 	err := acc.GatherError(ips.Gather)
-	if !reflect.DeepEqual(err, errFoo) {
+	if err.Error() != errFoo.Error() {
 		t.Errorf("Expected error %#v got\n%#v\n", errFoo, err)
 	}
 }

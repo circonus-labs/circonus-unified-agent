@@ -2,6 +2,7 @@ package zipkin
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -137,8 +138,8 @@ func (z *Zipkin) Listen(ln net.Listener, acc cua.Accumulator) {
 		// So we don't want to display it as an error.
 		// This interferes with internal data collection,
 		// by making it appear as if a serious error occurred.
-		if err != http.ErrServerClosed {
-			acc.AddError(fmt.Errorf("E! Error listening: %v", err))
+		if !errors.Is(err, http.ErrServerClosed) {
+			acc.AddError(fmt.Errorf("E! Error listening: %w", err))
 		}
 	}
 }

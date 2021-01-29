@@ -2,6 +2,7 @@ package github
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -128,7 +129,8 @@ func (g *GitHub) Gather(acc cua.Accumulator) error {
 
 			repositoryInfo, response, err := g.githubClient.Repositories.Get(ctx, owner, repository)
 
-			if _, ok := err.(*github.RateLimitError); ok {
+			var rlerr *github.RateLimitError
+			if errors.As(err, &rlerr) {
 				g.RateLimitErrors.Incr(1)
 			}
 

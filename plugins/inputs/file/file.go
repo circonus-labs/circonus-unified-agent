@@ -94,7 +94,7 @@ func (f *File) refreshFilePaths() error {
 	for _, file := range f.Files {
 		g, err := globpath.Compile(file)
 		if err != nil {
-			return fmt.Errorf("could not compile glob %v: %v", file, err)
+			return fmt.Errorf("could not compile glob %v: %w", file, err)
 		}
 		files := g.Match()
 		if len(files) <= 0 {
@@ -117,7 +117,7 @@ func (f *File) readMetric(filename string) ([]cua.Metric, error) {
 	r, _ := utfbom.Skip(f.decoder.Reader(file))
 	fileContents, err := ioutil.ReadAll(r)
 	if err != nil {
-		return nil, fmt.Errorf("E! Error file: %v could not be read, %s", filename, err)
+		return nil, fmt.Errorf("E! Error file: %v could not be read, %w", filename, err)
 	}
 	return f.parser.Parse(fileContents)
 }

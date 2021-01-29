@@ -152,7 +152,7 @@ const pipelineStats = "/_node/stats/pipeline"
 func (i *Logstash) Init() error {
 	err := choice.CheckSlice(i.Collect, []string{"pipelines", "process", "jvm"})
 	if err != nil {
-		return fmt.Errorf(`cannot verify "collect" setting: %v`, err)
+		return fmt.Errorf(`cannot verify "collect" setting: %w`, err)
 	}
 	return nil
 }

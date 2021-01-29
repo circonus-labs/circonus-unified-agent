@@ -2,6 +2,7 @@ package modbus
 
 import (
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"log"
 	"math"
@@ -691,11 +692,13 @@ func (m *Modbus) Gather(acc cua.Accumulator) error {
 		timestamp = time.Now()
 		err := m.getFields()
 		if err != nil {
-			mberr, ok := err.(*mb.ModbusError)
-			if ok && mberr.ExceptionCode == mb.ExceptionCodeServerDeviceBusy && retry < m.Retries {
-				log.Printf("I! [inputs.modbus] device busy! Retrying %d more time(s)...", m.Retries-retry)
-				time.Sleep(m.RetriesWaitTime.Duration)
-				continue
+			var mberr *mb.ModbusError
+			if errors.As(err, &mberr) {
+				if mberr.ExceptionCode == mb.ExceptionCodeServerDeviceBusy && retry < m.Retries {
+					log.Printf("I! [inputs.modbus] device busy! Retrying %d more time(s)...", m.Retries-retry)
+					time.Sleep(m.RetriesWaitTime.Duration)
+					continue
+				}
 			}
 			_ = disconnect(m)
 			m.isConnected = false

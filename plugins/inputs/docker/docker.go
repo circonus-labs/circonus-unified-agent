@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"regexp"
@@ -200,7 +201,7 @@ func (d *Docker) Gather(acc cua.Accumulator) error {
 	defer cancel()
 
 	containers, err := d.client.ContainerList(ctx, opts)
-	if err == context.DeadlineExceeded {
+	if errors.Is(err, context.DeadlineExceeded) {
 		return errListTimeout
 	}
 	if err != nil {
@@ -228,7 +229,7 @@ func (d *Docker) gatherSwarmInfo(acc cua.Accumulator) error {
 	defer cancel()
 
 	services, err := d.client.ServiceList(ctx, types.ServiceListOptions{})
-	if err == context.DeadlineExceeded {
+	if errors.Is(err, context.DeadlineExceeded) {
 		return errServiceTimeout
 	}
 	if err != nil {
@@ -305,7 +306,7 @@ func (d *Docker) gatherInfo(acc cua.Accumulator) error {
 	defer cancel()
 
 	info, err := d.client.Info(ctx)
-	if err == context.DeadlineExceeded {
+	if errors.Is(err, context.DeadlineExceeded) {
 		return errInfoTimeout
 	}
 	if err != nil {
@@ -462,20 +463,20 @@ func (d *Docker) gatherContainer(
 	defer cancel()
 
 	r, err := d.client.ContainerStats(ctx, container.ID, false)
-	if err == context.DeadlineExceeded {
+	if errors.Is(err, context.DeadlineExceeded) {
 		return errStatsTimeout
 	}
 	if err != nil {
-		return fmt.Errorf("error getting docker stats: %v", err)
+		return fmt.Errorf("error getting docker stats: %w", err)
 	}
 
 	defer r.Body.Close()
 	dec := json.NewDecoder(r.Body)
 	if err = dec.Decode(&v); err != nil {
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			return nil
 		}
-		return fmt.Errorf("error decoding: %v", err)
+		return fmt.Errorf("error decoding: %w", err)
 	}
 	daemonOSType := r.OSType
 
@@ -505,11 +506,11 @@ func (d *Docker) gatherContainerInspect(
 	defer cancel()
 
 	info, err := d.client.ContainerInspect(ctx, container.ID)
-	if err == context.DeadlineExceeded {
+	if errors.Is(err, context.DeadlineExceeded) {
 		return errInspectTimeout
 	}
 	if err != nil {
-		return fmt.Errorf("error inspecting docker container: %v", err)
+		return fmt.Errorf("error inspecting docker container: %w", err)
 	}
 
 	// Add whitelisted environment variables to tags

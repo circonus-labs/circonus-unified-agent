@@ -60,7 +60,7 @@ func (r *GzipReader) Read(b []byte) (int, error) {
 
 	// Since multistream is disabled, io.EOF indicates the end of the gzip
 	// sequence.  On the next read we must read the next gzip header.
-	if err == io.EOF {
+	if errors.Is(err, io.EOF) {
 		r.endOfStream = true
 		return n, nil
 	}
@@ -160,7 +160,7 @@ func (d *GzipDecoder) Decode(data []byte) ([]byte, error) {
 	d.buf.Reset()
 
 	_, err := d.buf.ReadFrom(d.reader)
-	if err != nil && err != io.EOF {
+	if err != nil && !errors.Is(err, io.EOF) {
 		return nil, err
 	}
 	err = d.reader.Close()

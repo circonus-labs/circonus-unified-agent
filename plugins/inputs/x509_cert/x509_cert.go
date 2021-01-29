@@ -67,7 +67,7 @@ func (c *X509Cert) locationToURL(location string) (*url.URL, error) {
 
 	u, err := url.Parse(location)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse cert location - %s", err.Error())
+		return nil, fmt.Errorf("failed to parse cert location - %w", err)
 	}
 
 	return u, nil
@@ -204,7 +204,7 @@ func (c *X509Cert) Gather(acc cua.Accumulator) error {
 
 		certs, err := c.getCert(u, c.Timeout.Duration*time.Second)
 		if err != nil {
-			acc.AddError(fmt.Errorf("cannot get SSL cert '%s': %s", location, err.Error()))
+			acc.AddError(fmt.Errorf("cannot get SSL cert '%s': %w", location, err))
 		}
 
 		for i, cert := range certs {

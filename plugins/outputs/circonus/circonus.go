@@ -63,10 +63,10 @@ func (c *Circonus) Init() error {
 		cp := x509.NewCertPool()
 		cert, err := ioutil.ReadFile(c.APITLSCA)
 		if err != nil {
-			return fmt.Errorf("unable to load api ca file (%s): %s", c.APITLSCA, err)
+			return fmt.Errorf("unable to load api ca file (%s): %w", c.APITLSCA, err)
 		}
 		if !cp.AppendCertsFromPEM(cert) {
-			return fmt.Errorf("unable to parse api ca file (%s): %s", c.APITLSCA, err)
+			return fmt.Errorf("unable to parse api ca file (%s): %w", c.APITLSCA, err)
 		}
 		c.apicfg.CACert = cp
 	}
@@ -138,9 +138,8 @@ func (c *Circonus) Connect() error {
 		return err
 	}
 
-	agentVersion := inter.Version()
-	defaultDest := c.checks["*"]
-	if defaultDest != nil {
+	if defaultDest := c.checks["*"]; defaultDest != nil {
+		agentVersion := inter.Version()
 		defaultDest.SetText("cua_version", agentVersion)
 	}
 

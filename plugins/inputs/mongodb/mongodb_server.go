@@ -177,7 +177,7 @@ func (s *Server) gatherCollectionStats(colStatsDbs []string) (*ColStats, error) 
 					},
 				}, colStatLine)
 				if err != nil {
-					s.authLog(fmt.Errorf("error getting col stats from %q: %v", colName, err))
+					s.authLog(fmt.Errorf("error getting col stats from %q: %w", colName, err))
 					continue
 				}
 				collection := &Collection{
@@ -214,7 +214,7 @@ func (s *Server) gatherData(acc cua.Accumulator, gatherClusterStatus bool, gathe
 	if replSetStatus != nil {
 		oplogStats, err = s.gatherOplogStats()
 		if err != nil {
-			s.authLog(fmt.Errorf("Unable to get oplog stats: %v", err))
+			s.authLog(fmt.Errorf("Unable to get oplog stats: %w", err))
 		}
 	}
 
@@ -229,7 +229,7 @@ func (s *Server) gatherData(acc cua.Accumulator, gatherClusterStatus bool, gathe
 
 	shardStats, err := s.gatherShardConnPoolStats()
 	if err != nil {
-		s.authLog(fmt.Errorf("unable to gather shard connection pool stats: %s", err.Error()))
+		s.authLog(fmt.Errorf("unable to gather shard connection pool stats: %w", err))
 	}
 
 	var collectionStats *ColStats

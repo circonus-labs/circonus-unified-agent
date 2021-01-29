@@ -21,24 +21,23 @@ type Server struct {
 
 func (s *Server) gatherData(acc cua.Accumulator) error {
 	if err := s.getServerStatus(); err != nil {
-		return fmt.Errorf("Failed to get server_status, %s\n", err)
+		return fmt.Errorf("failed to get server_status: %w", err)
 	}
 
 	if err := s.validateVersion(); err != nil {
-		return fmt.Errorf("Failed version validation, %s\n", err.Error())
+		return fmt.Errorf("failed version validation: %w", err)
 	}
 
 	if err := s.addClusterStats(acc); err != nil {
-		fmt.Printf("error adding cluster stats, %s\n", err.Error())
-		return fmt.Errorf("Error adding cluster stats, %s\n", err.Error())
+		return fmt.Errorf("error adding cluster stats: %w", err)
 	}
 
 	if err := s.addMemberStats(acc); err != nil {
-		return fmt.Errorf("Error adding member stats, %s\n", err.Error())
+		return fmt.Errorf("error adding member stats: %w", err)
 	}
 
 	if err := s.addTableStats(acc); err != nil {
-		return fmt.Errorf("Error adding table stats, %s\n", err.Error())
+		return fmt.Errorf("error adding table stats: %w", err)
 	}
 
 	return nil
@@ -112,12 +111,12 @@ var ClusterTracking = []string{
 func (s *Server) addClusterStats(acc cua.Accumulator) error {
 	cursor, err := gorethink.DB("rethinkdb").Table("stats").Get([]string{"cluster"}).Run(s.session)
 	if err != nil {
-		return fmt.Errorf("cluster stats query error, %s\n", err.Error())
+		return fmt.Errorf("cluster stats query error: %w", err)
 	}
 	defer cursor.Close()
 	var clusterStats stats
 	if err := cursor.One(&clusterStats); err != nil {
-		return fmt.Errorf("failure to parse cluster stats, %s\n", err.Error())
+		return fmt.Errorf("failure to parse cluster stats: %w", err)
 	}
 
 	tags := s.getDefaultTags()
@@ -140,12 +139,12 @@ var MemberTracking = []string{
 func (s *Server) addMemberStats(acc cua.Accumulator) error {
 	cursor, err := gorethink.DB("rethinkdb").Table("stats").Get([]string{"server", s.serverStatus.Id}).Run(s.session)
 	if err != nil {
-		return fmt.Errorf("member stats query error, %s\n", err.Error())
+		return fmt.Errorf("member stats query error: %w", err)
 	}
 	defer cursor.Close()
 	var memberStats stats
 	if err := cursor.One(&memberStats); err != nil {
-		return fmt.Errorf("failure to parse member stats, %s\n", err.Error())
+		return fmt.Errorf("failure to parse member stats: %w", err)
 	}
 
 	tags := s.getDefaultTags()
@@ -164,7 +163,7 @@ var TableTracking = []string{
 func (s *Server) addTableStats(acc cua.Accumulator) error {
 	tablesCursor, err := gorethink.DB("rethinkdb").Table("table_status").Run(s.session)
 	if err != nil {
-		return fmt.Errorf("table stats query error, %s\n", err.Error())
+		return fmt.Errorf("table stats query error: %w", err)
 	}
 
 	defer tablesCursor.Close()
@@ -178,12 +177,12 @@ func (s *Server) addTableStats(acc cua.Accumulator) error {
 			Get([]string{"table_server", table.Id, s.serverStatus.Id}).
 			Run(s.session)
 		if err != nil {
-			return fmt.Errorf("table stats query error, %s\n", err.Error())
+			return fmt.Errorf("table stats query error: %w", err)
 		}
 		defer cursor.Close()
 		var ts tableStats
 		if err := cursor.One(&ts); err != nil {
-			return fmt.Errorf("failure to parse table stats, %s\n", err.Error())
+			return fmt.Errorf("failure to parse table stats: %w", err)
 		}
 
 		tags := s.getDefaultTags()

@@ -13,7 +13,6 @@ import (
 
 	_ "modernc.org/sqlite" //to register SQLite driver
 
-	
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
 )
@@ -23,7 +22,7 @@ type Ras struct {
 	DBPath string `toml:"db_path"`
 
 	Log cua.Logger `toml:"-"`
-	db  *sql.DB         `toml:"-"`
+	db  *sql.DB    `toml:"-"`
 
 	latestTimestamp   time.Time              `toml:"-"`
 	cpuSocketCounters map[int]metricCounters `toml:"-"`

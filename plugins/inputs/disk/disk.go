@@ -44,7 +44,7 @@ func (s *DiskStats) Gather(acc cua.Accumulator) error {
 
 	disks, partitions, err := s.ps.DiskUsage(s.MountPoints, s.IgnoreFS)
 	if err != nil {
-		return fmt.Errorf("error getting disk usage info: %s", err)
+		return fmt.Errorf("error getting disk usage info: %w", err)
 	}
 
 	for i, du := range disks {

@@ -243,7 +243,7 @@ func TestChildServeCleansUp(t *testing.T) {
 		) {
 			// block on reading body of request
 			_, err := io.Copy(ioutil.Discard, r.Body)
-			if err != tt.err {
+			if !errors.Is(err, tt.err) {
 				t.Errorf("Expected %#v, got %#v", tt.err, err)
 			}
 			// not reached if body of request isn't closed

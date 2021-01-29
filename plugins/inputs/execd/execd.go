@@ -124,12 +124,13 @@ func (e *Execd) cmdReadOutStream(out io.Reader) {
 	for {
 		metric, err := parser.Next()
 		if err != nil {
-			if err == influx.EOF {
+			if errors.Is(err, influx.EOF) {
 				break // stream ended
 			}
-			if parseErr, isParseError := err.(*influx.ParseError); isParseError {
+			var perr *influx.ParseError
+			if errors.As(err, &perr) {
 				// parse error.
-				e.acc.AddError(parseErr)
+				e.acc.AddError(perr)
 				continue
 			}
 			// some non-recoverable error?

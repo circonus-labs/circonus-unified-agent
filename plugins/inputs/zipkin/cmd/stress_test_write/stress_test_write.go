@@ -70,7 +70,7 @@ func main() {
 	log.Printf("Writing %d spans to zipkin server at %s\n", SpanCount, hostname)
 	for i := 0; i < SpanCount; i++ {
 		parent := tracer.StartSpan("Parent")
-		parent.LogEvent(fmt.Sprintf("Trace%d", i)) //nolint:staticcheck
+		parent.LogEvent(fmt.Sprintf("Trace%d", i))
 		parent.Finish()
 	}
 	log.Println("Done. Flushing remaining spans...")

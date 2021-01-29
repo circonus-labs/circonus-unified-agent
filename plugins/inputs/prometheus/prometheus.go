@@ -268,7 +268,7 @@ func (p *Prometheus) gatherURL(u URLAndAddress, acc cua.Accumulator) error {
 		addr := "http://localhost" + path
 		req, err = http.NewRequest("GET", addr, nil)
 		if err != nil {
-			return fmt.Errorf("unable to create new request '%s': %s", addr, err)
+			return fmt.Errorf("unable to create new request '%s': %w", addr, err)
 		}
 
 		// ignore error because it's been handled before getting here
@@ -290,7 +290,7 @@ func (p *Prometheus) gatherURL(u URLAndAddress, acc cua.Accumulator) error {
 		}
 		req, err = http.NewRequest("GET", u.URL.String(), nil)
 		if err != nil {
-			return fmt.Errorf("unable to create new request '%s': %s", u.URL.String(), err)
+			return fmt.Errorf("unable to create new request '%s': %w", u.URL.String(), err)
 		}
 	}
 
@@ -315,7 +315,7 @@ func (p *Prometheus) gatherURL(u URLAndAddress, acc cua.Accumulator) error {
 		resp, err = uClient.Do(req)
 	}
 	if err != nil {
-		return fmt.Errorf("error making HTTP request to %s: %s", u.URL, err)
+		return fmt.Errorf("error making HTTP request to %s: %w", u.URL, err)
 	}
 	defer resp.Body.Close()
 
@@ -325,7 +325,7 @@ func (p *Prometheus) gatherURL(u URLAndAddress, acc cua.Accumulator) error {
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("error reading body: %s", err)
+		return fmt.Errorf("error reading body: %w", err)
 	}
 
 	if p.MetricVersion == 2 {
@@ -335,8 +335,7 @@ func (p *Prometheus) gatherURL(u URLAndAddress, acc cua.Accumulator) error {
 	}
 
 	if err != nil {
-		return fmt.Errorf("error reading metrics for %s: %s",
-			u.URL, err)
+		return fmt.Errorf("error reading metrics for %s: %w", u.URL, err)
 	}
 
 	for _, metric := range metrics {

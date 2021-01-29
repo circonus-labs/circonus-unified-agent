@@ -163,7 +163,7 @@ func (b *burrow) Gather(acc cua.Accumulator) error {
 	for _, addr := range b.Servers {
 		u, err := url.Parse(addr)
 		if err != nil {
-			acc.AddError(fmt.Errorf("unable to parse address '%s': %s", addr, err))
+			acc.AddError(fmt.Errorf("unable to parse address '%s': %w", addr, err))
 			continue
 		}
 		if u.Path == "" {

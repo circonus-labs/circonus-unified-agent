@@ -55,13 +55,13 @@ func (bond *Bond) Gather(acc cua.Accumulator) error {
 		bondAbsPath := bond.HostProc + "/net/bonding/" + bondName
 		file, err := ioutil.ReadFile(bondAbsPath)
 		if err != nil {
-			acc.AddError(fmt.Errorf("error inspecting '%s' interface: %v", bondAbsPath, err))
+			acc.AddError(fmt.Errorf("error inspecting '%s' interface: %w", bondAbsPath, err))
 			continue
 		}
 		rawFile := strings.TrimSpace(string(file))
 		err = bond.gatherBondInterface(bondName, rawFile, acc)
 		if err != nil {
-			acc.AddError(fmt.Errorf("error inspecting '%s' interface: %v", bondName, err))
+			acc.AddError(fmt.Errorf("error inspecting '%s' interface: %w", bondName, err))
 		}
 	}
 	return nil

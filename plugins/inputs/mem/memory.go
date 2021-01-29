@@ -28,7 +28,7 @@ func (m *MemStats) Init() error {
 func (s *MemStats) Gather(acc cua.Accumulator) error {
 	vm, err := s.ps.VMStat()
 	if err != nil {
-		return fmt.Errorf("error getting virtual memory info: %s", err)
+		return fmt.Errorf("error getting virtual memory info: %w", err)
 	}
 
 	fields := map[string]interface{}{

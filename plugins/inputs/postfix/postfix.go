@@ -37,7 +37,7 @@ func qScan(path string, acc cua.Accumulator) (int64, int64, int64, error) {
 	var oldest time.Time
 	err := filepath.Walk(path, func(_ string, finfo os.FileInfo, err error) error {
 		if err != nil {
-			acc.AddError(fmt.Errorf("error scanning %s: %s", path, err))
+			acc.AddError(fmt.Errorf("error scanning %s: %w", path, err))
 			return nil
 		}
 		if finfo.IsDir() {
@@ -78,14 +78,14 @@ func (p *Postfix) Gather(acc cua.Accumulator) error {
 		var err error
 		p.QueueDirectory, err = getQueueDirectory()
 		if err != nil {
-			return fmt.Errorf("unable to determine queue directory: %s", err)
+			return fmt.Errorf("unable to determine queue directory: %w", err)
 		}
 	}
 
 	for _, q := range []string{"active", "hold", "incoming", "maildrop", "deferred"} {
 		length, size, age, err := qScan(filepath.Join(p.QueueDirectory, q), acc)
 		if err != nil {
-			acc.AddError(fmt.Errorf("error scanning queue %s: %s", q, err))
+			acc.AddError(fmt.Errorf("error scanning queue %s: %w", q, err))
 			continue
 		}
 		fields := map[string]interface{}{"length": length, "size": size}

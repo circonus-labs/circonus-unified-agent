@@ -201,7 +201,7 @@ func (r *Redfish) getData(url string, payload interface{}) error {
 
 	err = json.Unmarshal(body, &payload)
 	if err != nil {
-		return fmt.Errorf("error parsing input: %v", err)
+		return fmt.Errorf("error parsing input: %w", err)
 	}
 
 	return nil

@@ -86,7 +86,7 @@ func varnishRunner(cmdName string, UseSudo bool, InstanceName string, Timeout in
 
 	err := internal.RunTimeout(cmd, Timeout.Duration)
 	if err != nil {
-		return &out, fmt.Errorf("error running varnishstat: %s", err)
+		return &out, fmt.Errorf("error running varnishstat: %w", err)
 	}
 
 	return &out, nil
@@ -117,7 +117,7 @@ func (s *Varnish) Gather(acc cua.Accumulator) error {
 
 	out, err := s.run(s.Binary, s.UseSudo, s.InstanceName, s.Timeout)
 	if err != nil {
-		return fmt.Errorf("error gathering metrics: %s", err)
+		return fmt.Errorf("error gathering metrics: %w", err)
 	}
 
 	sectionMap := make(map[string]map[string]interface{})

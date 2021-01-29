@@ -50,7 +50,7 @@ func (_ *CPUStats) SampleConfig() string {
 func (s *CPUStats) Gather(acc cua.Accumulator) error {
 	times, err := s.ps.CPUTimes(s.PerCPU, s.TotalCPU)
 	if err != nil {
-		return fmt.Errorf("error getting CPU info: %s", err)
+		return fmt.Errorf("error getting CPU info: %w", err)
 	}
 	now := time.Now()
 

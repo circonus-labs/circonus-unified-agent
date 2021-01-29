@@ -87,10 +87,10 @@ func unboundRunner(cmdName string, Timeout internal.Duration, UseSudo bool, Serv
 		defer lookUpCancel()
 		serverIps, err := resolver.LookupIPAddr(ctx, host)
 		if err != nil {
-			return nil, fmt.Errorf("error looking up ip for server: %s: %s", Server, err)
+			return nil, fmt.Errorf("error looking up ip for server: %s: %w", Server, err)
 		}
 		if len(serverIps) == 0 {
-			return nil, fmt.Errorf("error no ip for server: %s: %s", Server, err)
+			return nil, fmt.Errorf("error no ip for server: %s: %w", Server, err)
 		}
 		server := serverIps[0].IP.String()
 		if port != "" {
@@ -115,7 +115,7 @@ func unboundRunner(cmdName string, Timeout internal.Duration, UseSudo bool, Serv
 	cmd.Stdout = &out
 	err := internal.RunTimeout(cmd, Timeout.Duration)
 	if err != nil {
-		return &out, fmt.Errorf("error running unbound-control: %s (%s %v)", err, cmdName, cmdArgs)
+		return &out, fmt.Errorf("error running unbound-control: %w (%s %v)", err, cmdName, cmdArgs)
 	}
 
 	return &out, nil
@@ -135,7 +135,7 @@ func (s *Unbound) Gather(acc cua.Accumulator) error {
 
 	out, err := s.run(s.Binary, s.Timeout, s.UseSudo, s.Server, s.ThreadAsTag, s.ConfigFile)
 	if err != nil {
-		return fmt.Errorf("error gathering metrics: %s", err)
+		return fmt.Errorf("error gathering metrics: %w", err)
 	}
 
 	// Process values

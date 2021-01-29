@@ -65,7 +65,7 @@ func (f *Fail2ban) Gather(acc cua.Accumulator) error {
 	cmd := execCommand(name, args...)
 	out, err := cmd.Output()
 	if err != nil {
-		return fmt.Errorf("failed to run command %s: %s - %s", strings.Join(cmd.Args, " "), err, string(out))
+		return fmt.Errorf("failed to run command %s: %w - %s", strings.Join(cmd.Args, " "), err, string(out))
 	}
 	lines := strings.Split(string(out), "\n")
 	const targetString = "Jail list:"
@@ -86,7 +86,7 @@ func (f *Fail2ban) Gather(acc cua.Accumulator) error {
 		cmd := execCommand(name, args...)
 		out, err := cmd.Output()
 		if err != nil {
-			return fmt.Errorf("failed to run command %s: %s - %s", strings.Join(cmd.Args, " "), err, string(out))
+			return fmt.Errorf("failed to run command %s: %w - %s", strings.Join(cmd.Args, " "), err, string(out))
 		}
 
 		lines := strings.Split(string(out), "\n")

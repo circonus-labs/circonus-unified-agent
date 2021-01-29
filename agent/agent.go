@@ -204,38 +204,28 @@ func (a *Agent) Run(ctx context.Context) error {
 // initPlugins runs the Init function on plugins.
 func (a *Agent) initPlugins() error {
 	for _, input := range a.Config.Inputs {
-		err := input.Init()
-		if err != nil {
-			return fmt.Errorf("could not initialize input %s: %v",
-				input.LogName(), err)
+		if err := input.Init(); err != nil {
+			return fmt.Errorf("could not initialize input %s: %w", input.LogName(), err)
 		}
 	}
 	for _, processor := range a.Config.Processors {
-		err := processor.Init()
-		if err != nil {
-			return fmt.Errorf("could not initialize processor %s: %v",
-				processor.Config.Name, err)
+		if err := processor.Init(); err != nil {
+			return fmt.Errorf("could not initialize processor %s: %w", processor.Config.Name, err)
 		}
 	}
 	for _, aggregator := range a.Config.Aggregators {
-		err := aggregator.Init()
-		if err != nil {
-			return fmt.Errorf("could not initialize aggregator %s: %v",
-				aggregator.Config.Name, err)
+		if err := aggregator.Init(); err != nil {
+			return fmt.Errorf("could not initialize aggregator %s: %w", aggregator.Config.Name, err)
 		}
 	}
 	for _, processor := range a.Config.AggProcessors {
-		err := processor.Init()
-		if err != nil {
-			return fmt.Errorf("could not initialize processor %s: %v",
-				processor.Config.Name, err)
+		if err := processor.Init(); err != nil {
+			return fmt.Errorf("could not initialize processor %s: %w", processor.Config.Name, err)
 		}
 	}
 	for _, output := range a.Config.Outputs {
-		err := output.Init()
-		if err != nil {
-			return fmt.Errorf("could not initialize output %s: %v",
-				output.Config.Name, err)
+		if err := output.Init(); err != nil {
+			return fmt.Errorf("could not initialize output %s: %w", output.Config.Name, err)
 		}
 	}
 	return nil

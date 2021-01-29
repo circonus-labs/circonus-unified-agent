@@ -137,7 +137,7 @@ func (ep *LoopedParser) parse(p *PointParser, pt *Point) error {
 			return err
 		}
 		err = ep.wsParser.parse(p, pt)
-		if err == ErrEOF {
+		if errors.Is(err, ErrEOF) {
 			break
 		}
 	}

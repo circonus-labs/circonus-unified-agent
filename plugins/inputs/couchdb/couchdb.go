@@ -111,7 +111,7 @@ func (c *CouchDB) Gather(accumulator cua.Accumulator) error {
 		go func(host string) {
 			defer wg.Done()
 			if err := c.fetchAndInsertData(accumulator, host); err != nil {
-				accumulator.AddError(fmt.Errorf("[host=%s]: %s", host, err))
+				accumulator.AddError(fmt.Errorf("[host=%s]: %w", host, err))
 			}
 		}(u)
 	}

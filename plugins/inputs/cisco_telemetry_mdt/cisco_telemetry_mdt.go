@@ -3,6 +3,7 @@ package cisco_telemetry_mdt
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -131,7 +132,8 @@ func (c *CiscoTelemetryMDT) acceptTCPClients() {
 
 	for {
 		conn, err := c.listener.Accept()
-		if neterr, ok := err.(*net.OpError); ok && (neterr.Timeout() || neterr.Temporary()) {
+		var neterr *net.OpError
+		if errors.As(err, &neterr) && (neterr.Timeout() || neterr.Temporary()) {
 			continue
 		} else if err != nil {
 			break // Stop() will close the connection so Accept() will fail here
@@ -224,8 +226,8 @@ func (c *CiscoTelemetryMDT) MdtDialout(stream dialout.GRPCMdtDialout_MdtDialoutS
 	for {
 		packet, err := stream.Recv()
 		if err != nil {
-			if err != io.EOF {
-				c.acc.AddError(fmt.Errorf("GRPC dialout receive error: %v", err))
+			if !errors.Is(err, io.EOF) {
+				c.acc.AddError(fmt.Errorf("GRPC dialout receive error: %w", err))
 			}
 			break
 		}
@@ -261,7 +263,7 @@ func (c *CiscoTelemetryMDT) handleTelemetry(data []byte) {
 	msg := &telemetry.Telemetry{}
 	err := proto.Unmarshal(data, msg)
 	if err != nil {
-		c.acc.AddError(fmt.Errorf("Cisco MDT failed to decode: %v", err))
+		c.acc.AddError(fmt.Errorf("Cisco MDT failed to decode: %w", err))
 		return
 	}
 

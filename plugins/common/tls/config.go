@@ -105,7 +105,7 @@ func (c *ServerConfig) TLSConfig() (*tls.Config, error) {
 		cipherSuites, err := ParseCiphers(c.TLSCipherSuites)
 		if err != nil {
 			return nil, fmt.Errorf(
-				"could not parse server cipher suites %s: %v", strings.Join(c.TLSCipherSuites, ","), err)
+				"could not parse server cipher suites %s: %w", strings.Join(c.TLSCipherSuites, ","), err)
 		}
 		tlsConfig.CipherSuites = cipherSuites
 	}
@@ -114,7 +114,7 @@ func (c *ServerConfig) TLSConfig() (*tls.Config, error) {
 		version, err := ParseTLSVersion(c.TLSMaxVersion)
 		if err != nil {
 			return nil, fmt.Errorf(
-				"could not parse tls max version %q: %v", c.TLSMaxVersion, err)
+				"could not parse tls max version %q: %w", c.TLSMaxVersion, err)
 		}
 		tlsConfig.MaxVersion = version
 	}
@@ -123,7 +123,7 @@ func (c *ServerConfig) TLSConfig() (*tls.Config, error) {
 		version, err := ParseTLSVersion(c.TLSMinVersion)
 		if err != nil {
 			return nil, fmt.Errorf(
-				"could not parse tls min version %q: %v", c.TLSMinVersion, err)
+				"could not parse tls min version %q: %w", c.TLSMinVersion, err)
 		}
 		tlsConfig.MinVersion = version
 	}
@@ -142,12 +142,12 @@ func makeCertPool(certFiles []string) (*x509.CertPool, error) {
 		pem, err := ioutil.ReadFile(certFile)
 		if err != nil {
 			return nil, fmt.Errorf(
-				"could not read certificate %q: %v", certFile, err)
+				"could not read certificate %q: %w", certFile, err)
 		}
 		ok := pool.AppendCertsFromPEM(pem)
 		if !ok {
 			return nil, fmt.Errorf(
-				"could not parse any PEM certificates %q: %v", certFile, err)
+				"could not parse any PEM certificates %q: %w", certFile, err)
 		}
 	}
 	return pool, nil
@@ -157,7 +157,7 @@ func loadCertificate(config *tls.Config, certFile, keyFile string) error {
 	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
 	if err != nil {
 		return fmt.Errorf(
-			"could not load keypair %s:%s: %v", certFile, keyFile, err)
+			"could not load keypair %s:%s: %w", certFile, keyFile, err)
 	}
 
 	config.Certificates = []tls.Certificate{cert}

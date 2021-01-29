@@ -277,12 +277,12 @@ func (r *IntelRDT) readData(args []string, processesPIDsAssociation map[string]s
 	}()
 	err = cmd.Start()
 	if err != nil {
-		r.errorChan <- fmt.Errorf("pqos: %v", err)
+		r.errorChan <- fmt.Errorf("pqos: %w", err)
 		return
 	}
 	err = cmd.Wait()
 	if err != nil {
-		r.errorChan <- fmt.Errorf("pqos: %v", err)
+		r.errorChan <- fmt.Errorf("pqos: %w", err)
 	}
 }
 
@@ -340,7 +340,7 @@ func shutDownPqos(pqos *exec.Cmd) error {
 		if err != nil {
 			err = pqos.Process.Kill()
 			if err != nil {
-				return fmt.Errorf("failed to shut down pqos: %v", err)
+				return fmt.Errorf("failed to shut down pqos: %w", err)
 			}
 		}
 	}
@@ -405,10 +405,10 @@ func parseCoresConfig(cores []string) ([]string, error) {
 		for _, coreStr := range separatedCores {
 			actualCores, err := validateAndParseCores(coreStr)
 			if err != nil {
-				return nil, fmt.Errorf("%v: %v", configError, err)
+				return nil, fmt.Errorf("%s: %w", configError, err)
 			}
 			if checkForDuplicates(allCores, actualCores) {
-				return nil, fmt.Errorf("%v: %v", configError, "core value cannot be duplicated")
+				return nil, fmt.Errorf("%w: %v", configError, "core value cannot be duplicated")
 			}
 			actualGroupOfCores = append(actualGroupOfCores, actualCores...)
 			allCores = append(allCores, actualGroupOfCores...)

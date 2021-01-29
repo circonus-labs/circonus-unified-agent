@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"math"
@@ -207,20 +208,20 @@ func (c *GNMI) subscribeGNMI(ctx context.Context, address string, tlscfg *tls.Co
 
 	client, err := grpc.DialContext(ctx, address, opt)
 	if err != nil {
-		return fmt.Errorf("failed to dial: %v", err)
+		return fmt.Errorf("failed to dial: %w", err)
 	}
 	defer client.Close()
 
 	subscribeClient, err := gnmi.NewGNMIClient(client).Subscribe(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to setup subscription: %v", err)
+		return fmt.Errorf("failed to setup subscription: %w", err)
 	}
 
 	if err = subscribeClient.Send(request); err != nil {
 		// If io.EOF is returned, the stream may have ended and stream status
 		// can be determined by calling Recv.
-		if err != io.EOF {
-			return fmt.Errorf("failed to send subscription request: %v", err)
+		if !errors.Is(err, io.EOF) {
+			return fmt.Errorf("failed to send subscription request: %w", err)
 		}
 	}
 
@@ -229,8 +230,8 @@ func (c *GNMI) subscribeGNMI(ctx context.Context, address string, tlscfg *tls.Co
 	for ctx.Err() == nil {
 		var reply *gnmi.SubscribeResponse
 		if reply, err = subscribeClient.Recv(); err != nil {
-			if err != io.EOF && ctx.Err() == nil {
-				return fmt.Errorf("aborted gNMI subscription: %v", err)
+			if !errors.Is(err, io.EOF) && ctx.Err() == nil {
+				return fmt.Errorf("aborted gNMI subscription: %w", err)
 			}
 			break
 		}
@@ -360,7 +361,7 @@ func (c *GNMI) handleTelemetryField(update *gnmi.Update, tags map[string]string,
 		fields[name] = value
 	} else if jsondata != nil {
 		if err := json.Unmarshal(jsondata, &value); err != nil {
-			c.acc.AddError(fmt.Errorf("failed to parse JSON value: %v", err))
+			c.acc.AddError(fmt.Errorf("failed to parse JSON value: %w", err))
 		} else {
 			flattener := jsonparser.JSONFlattener{Fields: fields}
 			_ = flattener.FullFlattenJSON(name, value, true, true)

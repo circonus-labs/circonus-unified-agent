@@ -137,7 +137,7 @@ func (m *MongoDB) gatherServer(server *Server, acc cua.Accumulator) error {
 		}
 		dialInfo, err := mgo.ParseURL(dialAddrs[0])
 		if err != nil {
-			return fmt.Errorf("unable to parse URL %q: %s", dialAddrs[0], err.Error())
+			return fmt.Errorf("unable to parse URL %q: %w", dialAddrs[0], err)
 		}
 		dialInfo.Direct = true
 		dialInfo.Timeout = 5 * time.Second
@@ -179,7 +179,7 @@ func (m *MongoDB) gatherServer(server *Server, acc cua.Accumulator) error {
 
 		sess, err := mgo.DialWithInfo(dialInfo)
 		if err != nil {
-			return fmt.Errorf("unable to connect to MongoDB: %s", err.Error())
+			return fmt.Errorf("unable to connect to MongoDB: %w", err)
 		}
 		server.Session = sess
 	}

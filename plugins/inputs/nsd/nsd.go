@@ -88,7 +88,7 @@ func nsdRunner(cmdName string, Timeout internal.Duration, UseSudo bool, Server s
 	cmd.Stdout = &out
 	err := internal.RunTimeout(cmd, Timeout.Duration)
 	if err != nil {
-		return &out, fmt.Errorf("error running nsd-control: %s (%s %v)", err, cmdName, cmdArgs)
+		return &out, fmt.Errorf("error running nsd-control: %w (%s %v)", err, cmdName, cmdArgs)
 	}
 
 	return &out, nil
@@ -98,7 +98,7 @@ func nsdRunner(cmdName string, Timeout internal.Duration, UseSudo bool, Server s
 func (s *NSD) Gather(acc cua.Accumulator) error {
 	out, err := s.run(s.Binary, s.Timeout, s.UseSudo, s.Server, s.ConfigFile)
 	if err != nil {
-		return fmt.Errorf("error gathering metrics: %s", err)
+		return fmt.Errorf("error gathering metrics: %w", err)
 	}
 
 	// Process values

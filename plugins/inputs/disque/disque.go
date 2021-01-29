@@ -78,7 +78,7 @@ func (g *Disque) Gather(acc cua.Accumulator) error {
 	for _, serv := range g.Servers {
 		u, err := url.Parse(serv)
 		if err != nil {
-			acc.AddError(fmt.Errorf("Unable to parse to address '%s': %s", serv, err))
+			acc.AddError(fmt.Errorf("Unable to parse to address '%s': %w", serv, err))
 			continue
 		} else if u.Scheme == "" {
 			// fallback to simple string based address (i.e. "10.0.0.1:10000")
@@ -110,7 +110,7 @@ func (g *Disque) gatherServer(addr *url.URL, acc cua.Accumulator) error {
 
 		c, err := net.DialTimeout("tcp", addr.Host, defaultTimeout)
 		if err != nil {
-			return fmt.Errorf("Unable to connect to disque server '%s': %s", addr.Host, err)
+			return fmt.Errorf("Unable to connect to disque server '%s': %w", addr.Host, err)
 		}
 
 		if addr.User != nil {
@@ -146,7 +146,7 @@ func (g *Disque) gatherServer(addr *url.URL, acc cua.Accumulator) error {
 	}
 
 	if line[0] != '$' {
-		return fmt.Errorf("bad line start: %s", ErrProtocolError)
+		return fmt.Errorf("bad line start: %w", ErrProtocolError)
 	}
 
 	line = strings.TrimSpace(line)
@@ -155,7 +155,7 @@ func (g *Disque) gatherServer(addr *url.URL, acc cua.Accumulator) error {
 
 	sz, err := strconv.Atoi(szStr)
 	if err != nil {
-		return fmt.Errorf("bad size string <<%s>>: %s", szStr, ErrProtocolError)
+		return fmt.Errorf("bad size string <<%s>>: %w", szStr, ErrProtocolError)
 	}
 
 	var read int

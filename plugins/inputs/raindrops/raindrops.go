@@ -39,7 +39,7 @@ func (r *Raindrops) Gather(acc cua.Accumulator) error {
 	for _, u := range r.Urls {
 		addr, err := url.Parse(u)
 		if err != nil {
-			acc.AddError(fmt.Errorf("Unable to parse address '%s': %s", u, err))
+			acc.AddError(fmt.Errorf("Unable to parse address '%s': %w", u, err))
 			continue
 		}
 
@@ -58,7 +58,7 @@ func (r *Raindrops) Gather(acc cua.Accumulator) error {
 func (r *Raindrops) gatherUrl(addr *url.URL, acc cua.Accumulator) error {
 	resp, err := r.http_client.Get(addr.String())
 	if err != nil {
-		return fmt.Errorf("error making HTTP request to %s: %s", addr.String(), err)
+		return fmt.Errorf("error making HTTP request to %s: %w", addr.String(), err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {

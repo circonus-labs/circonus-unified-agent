@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -124,7 +125,7 @@ func (s *Suricata) handleServerConnection(ctx context.Context, acc cua.Accumulat
 			// we want to handle EOF as an opportunity to wait for a new
 			// connection -- this could, for example, happen when Suricata is
 			// restarted while agent is running.
-			if err != io.EOF {
+			if !errors.Is(err, io.EOF) {
 				acc.AddError(err)
 				return
 			}

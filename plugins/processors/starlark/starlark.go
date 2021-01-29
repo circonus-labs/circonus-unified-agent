@@ -136,8 +136,9 @@ func (s *Starlark) Add(metric cua.Metric, acc cua.Accumulator) error {
 
 	rv, err := starlark.Call(s.thread, s.applyFunc, s.args, nil)
 	if err != nil {
-		if err, ok := err.(*starlark.EvalError); ok {
-			for _, line := range strings.Split(err.Backtrace(), "\n") {
+		var eerr *starlark.EvalError
+		if errors.As(err, &eerr) {
+			for _, line := range strings.Split(eerr.Backtrace(), "\n") {
 				s.Log.Error(line)
 			}
 		}

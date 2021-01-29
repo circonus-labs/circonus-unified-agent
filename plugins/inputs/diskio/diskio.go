@@ -76,7 +76,7 @@ func (s *DiskIO) init() error {
 		if hasMeta(device) {
 			filter, err := filter.Compile(s.Devices)
 			if err != nil {
-				return fmt.Errorf("error compiling device pattern: %s", err.Error())
+				return fmt.Errorf("error compiling device pattern: %w", err)
 			}
 			s.deviceFilter = filter
 		}
@@ -100,7 +100,7 @@ func (s *DiskIO) Gather(acc cua.Accumulator) error {
 
 	diskio, err := s.ps.DiskIO(devices)
 	if err != nil {
-		return fmt.Errorf("error getting disk io info: %s", err.Error())
+		return fmt.Errorf("error getting disk io info: %w", err)
 	}
 
 	for _, io := range diskio {

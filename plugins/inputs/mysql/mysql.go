@@ -3,6 +3,7 @@ package mysql
 import (
 	"bytes"
 	"database/sql"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -171,7 +172,7 @@ func (m *Mysql) Gather(acc cua.Accumulator) error {
 
 	tlsConfig, err := m.ClientConfig.TLSConfig()
 	if err != nil {
-		return fmt.Errorf("registering TLS config: %s", err)
+		return fmt.Errorf("registering TLS config: %w", err)
 	}
 
 	if tlsConfig != nil {
@@ -732,42 +733,42 @@ func (m *Mysql) gatherGlobalStatuses(db *sql.DB, serv string, acc cua.Accumulato
 			case "Queries":
 				i, err := strconv.ParseInt(string(val), 10, 64)
 				if err != nil {
-					acc.AddError(fmt.Errorf("E! Error mysql: parsing %s int value (%s)", key, err))
+					acc.AddError(fmt.Errorf("E! Error mysql: parsing %s int value: %w", key, err))
 				} else {
 					fields["queries"] = i
 				}
 			case "Questions":
 				i, err := strconv.ParseInt(string(val), 10, 64)
 				if err != nil {
-					acc.AddError(fmt.Errorf("E! Error mysql: parsing %s int value (%s)", key, err))
+					acc.AddError(fmt.Errorf("E! Error mysql: parsing %s int value: %w", key, err))
 				} else {
 					fields["questions"] = i
 				}
 			case "Slow_queries":
 				i, err := strconv.ParseInt(string(val), 10, 64)
 				if err != nil {
-					acc.AddError(fmt.Errorf("E! Error mysql: parsing %s int value (%s)", key, err))
+					acc.AddError(fmt.Errorf("E! Error mysql: parsing %s int value: %w", key, err))
 				} else {
 					fields["slow_queries"] = i
 				}
 			case "Connections":
 				i, err := strconv.ParseInt(string(val), 10, 64)
 				if err != nil {
-					acc.AddError(fmt.Errorf("E! Error mysql: parsing %s int value (%s)", key, err))
+					acc.AddError(fmt.Errorf("E! Error mysql: parsing %s int value: %w", key, err))
 				} else {
 					fields["connections"] = i
 				}
 			case "Syncs":
 				i, err := strconv.ParseInt(string(val), 10, 64)
 				if err != nil {
-					acc.AddError(fmt.Errorf("E! Error mysql: parsing %s int value (%s)", key, err))
+					acc.AddError(fmt.Errorf("E! Error mysql: parsing %s int value: %w", key, err))
 				} else {
 					fields["syncs"] = i
 				}
 			case "Uptime":
 				i, err := strconv.ParseInt(string(val), 10, 64)
 				if err != nil {
-					acc.AddError(fmt.Errorf("E! Error mysql: parsing %s int value (%s)", key, err))
+					acc.AddError(fmt.Errorf("E! Error mysql: parsing %s int value: %w", key, err))
 				} else {
 					fields["uptime"] = i
 				}
@@ -1271,7 +1272,7 @@ func (m *Mysql) gatherPerfTableLockWaits(db *sql.DB, serv string, acc cua.Accumu
 	var tableName string
 	err := db.QueryRow(perfSchemaTablesQuery, "table_lock_waits_summary_by_table").Scan(&tableName)
 	switch {
-	case err == sql.ErrNoRows:
+	case errors.Is(err, sql.ErrNoRows):
 		return nil
 	case err != nil:
 		return err

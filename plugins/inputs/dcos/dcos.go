@@ -2,6 +2,7 @@ package dcos
 
 import (
 	"context"
+	"errors"
 	"io/ioutil"
 	"net/url"
 	"sort"
@@ -188,7 +189,8 @@ func (d *DCOS) GatherContainers(ctx context.Context, acc cua.Accumulator, cluste
 				defer wg.Done()
 				m, err := d.client.GetContainerMetrics(ctx, node, container)
 				if err != nil {
-					if err, ok := err.(APIError); ok && err.StatusCode == 404 {
+					var apiErr APIError
+					if errors.As(err, &apiErr) && apiErr.StatusCode == 404 {
 						return
 					}
 					acc.AddError(err)
@@ -204,7 +206,8 @@ func (d *DCOS) GatherContainers(ctx context.Context, acc cua.Accumulator, cluste
 				defer wg.Done()
 				m, err := d.client.GetAppMetrics(ctx, node, container)
 				if err != nil {
-					if err, ok := err.(APIError); ok && err.StatusCode == 404 {
+					var apiErr APIError
+					if errors.As(err, &apiErr) && apiErr.StatusCode == 404 {
 						return
 					}
 					acc.AddError(err)

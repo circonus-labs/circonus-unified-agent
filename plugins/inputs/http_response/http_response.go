@@ -230,27 +230,30 @@ func setResult(result_string string, fields map[string]interface{}, tags map[str
 }
 
 func setError(err error, fields map[string]interface{}, tags map[string]string) error {
-	if timeoutError, ok := err.(net.Error); ok && timeoutError.Timeout() {
+	var timeoutError net.Error
+	if errors.As(err, &timeoutError) && timeoutError.Timeout() {
 		setResult("timeout", fields, tags)
 		return timeoutError
 	}
 
-	urlErr, isUrlErr := err.(*url.Error)
-	if !isUrlErr {
+	var uerr *url.Error
+	if !errors.As(err, &uerr) {
 		return nil
 	}
 
-	opErr, isNetErr := (urlErr.Err).(*net.OpError)
-	if isNetErr {
-		switch e := (opErr.Err).(type) {
-		case (*net.DNSError):
+	var operr *net.OpError
+	if errors.As(err, &operr) {
+		var dnsErr *net.DNSError
+		if errors.As(err, &dnsErr) {
 			setResult("dns_error", fields, tags)
-			return e
-		case (*net.ParseError):
+			return dnsErr
+		}
+		var perr *net.ParseError
+		if errors.As(err, &perr) {
 			// Parse error has to do with parsing of IP addresses, so we
 			// group it with address errors
 			setResult("address_error", fields, tags)
-			return e
+			return perr
 		}
 	}
 
@@ -408,7 +411,7 @@ func (h *HTTPResponse) Gather(acc cua.Accumulator) error {
 		var err error
 		h.compiledStringMatch, err = regexp.Compile(h.ResponseStringMatch)
 		if err != nil {
-			return fmt.Errorf("Failed to compile regular expression %s : %s", h.ResponseStringMatch, err)
+			return fmt.Errorf("Failed to compile regular expression %s : %w", h.ResponseStringMatch, err)
 		}
 	}
 

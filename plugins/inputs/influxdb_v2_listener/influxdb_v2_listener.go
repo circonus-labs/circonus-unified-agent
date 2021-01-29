@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -173,7 +174,7 @@ func (h *InfluxDBV2Listener) Start(acc cua.Accumulator) error {
 
 	go func() {
 		err = h.server.Serve(h.listener)
-		if err != http.ErrServerClosed {
+		if !errors.Is(err, http.ErrServerClosed) {
 			h.Log.Infof("Error serving HTTP on %s", h.ServiceAddress)
 		}
 	}()
@@ -270,8 +271,8 @@ func (h *InfluxDBV2Listener) handleWrite() http.HandlerFunc {
 
 		metrics, err = parser.Parse(bytes)
 
-		if err != influx.EOF && err != nil {
-			h.Log.Debugf("Error parsing the request body: %v", err.Error())
+		if !errors.Is(err, influx.EOF) && err != nil {
+			h.Log.Debugf("Error parsing the request body: %s", err)
 			badRequest(res, Invalid, err.Error())
 			return
 		}

@@ -83,12 +83,12 @@ func (d *Dovecot) Gather(acc cua.Accumulator) error {
 func (d *Dovecot) gatherServer(addr string, acc cua.Accumulator, qtype string, filter string) error {
 	_, _, err := net.SplitHostPort(addr)
 	if err != nil {
-		return fmt.Errorf("%q on url %s", err.Error(), addr)
+		return fmt.Errorf("%w on url %s", err, addr)
 	}
 
 	c, err := net.DialTimeout("tcp", addr, defaultTimeout)
 	if err != nil {
-		return fmt.Errorf("enable to connect to dovecot server '%s': %s", addr, err)
+		return fmt.Errorf("enable to connect to dovecot server '%s': %w", addr, err)
 	}
 	defer c.Close()
 

@@ -93,7 +93,7 @@ scan:
 		irqs = append(irqs, *irq)
 	}
 	if scanner.Err() != nil {
-		return nil, fmt.Errorf("Error scanning file: %s", scanner.Err())
+		return nil, fmt.Errorf("Error scanning file: %w", scanner.Err())
 	}
 	return irqs, nil
 }
@@ -118,7 +118,7 @@ func (s *Interrupts) Gather(acc cua.Accumulator) error {
 		defer f.Close()
 		irqs, err := parseInterrupts(f)
 		if err != nil {
-			acc.AddError(fmt.Errorf("Parsing %s: %s", file, err))
+			acc.AddError(fmt.Errorf("Parsing %s: %w", file, err))
 			continue
 		}
 		reportMetrics(measurement, irqs, acc, s.CpuAsTag)

@@ -89,7 +89,7 @@ func (cf *ClientFactory) GetClient(ctx context.Context) (*Client, error) {
 					cf.client = nil
 					continue
 				}
-				return nil, fmt.Errorf("renewing authentication failed: %s", err.Error())
+				return nil, fmt.Errorf("renewing authentication failed: %w", err)
 			}
 		}
 

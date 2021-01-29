@@ -288,8 +288,7 @@ func (m *OpenConfigTelemetry) collectData(ctx context.Context,
 					rpcStatus, _ := status.FromError(err)
 					// If service is currently unavailable and may come back later, retry
 					if rpcStatus.Code() != codes.Unavailable {
-						acc.AddError(fmt.Errorf("could not subscribe to %s: %v", grpcServer,
-							err))
+						acc.AddError(fmt.Errorf("could not subscribe to %s: %w", grpcServer, err))
 						return
 					} else {
 						// Retry with delay. If delay is not provided, use default
@@ -308,7 +307,7 @@ func (m *OpenConfigTelemetry) collectData(ctx context.Context,
 					if err != nil {
 						// If we encounter error in the stream, break so we can retry
 						// the connection
-						acc.AddError(fmt.Errorf("failed to read from %s: %s", grpcServer, err))
+						acc.AddError(fmt.Errorf("failed to read from %s: %w", grpcServer, err))
 						break
 					}
 

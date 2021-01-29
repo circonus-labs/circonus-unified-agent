@@ -26,8 +26,9 @@ func (p *Ping) pingToURL(u string, acc cua.Accumulator) {
 		// the output.
 		// Linux iputils-ping returns 1, BSD-derived ping returns 2.
 		status := -1
-		if exitError, ok := err.(*exec.ExitError); ok {
-			if ws, ok := exitError.Sys().(syscall.WaitStatus); ok {
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) {
+			if ws, ok := exitErr.Sys().(syscall.WaitStatus); ok {
 				status = ws.ExitStatus()
 				fields["result_code"] = status
 			}
@@ -47,9 +48,9 @@ func (p *Ping) pingToURL(u string, acc cua.Accumulator) {
 			// Combine go err + stderr output
 			out = strings.TrimSpace(out)
 			if len(out) > 0 {
-				acc.AddError(fmt.Errorf("host %s: %s, %s", u, out, err))
+				acc.AddError(fmt.Errorf("host %s: %s, %w", u, out, err))
 			} else {
-				acc.AddError(fmt.Errorf("host %s: %s", u, err))
+				acc.AddError(fmt.Errorf("host %s: %w", u, err))
 			}
 			fields["result_code"] = 2
 			acc.AddFields("ping", fields, tags)
@@ -59,7 +60,7 @@ func (p *Ping) pingToURL(u string, acc cua.Accumulator) {
 	trans, rec, ttl, min, avg, max, stddev, err := processPingOutput(out)
 	if err != nil {
 		// fatal error
-		acc.AddError(fmt.Errorf("%s: %s", err, u))
+		acc.AddError(fmt.Errorf("%w: %s", err, u))
 		fields["result_code"] = 2
 		acc.AddFields("ping", fields, tags)
 		return

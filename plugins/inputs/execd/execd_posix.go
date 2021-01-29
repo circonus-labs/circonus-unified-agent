@@ -33,7 +33,7 @@ func (e *Execd) Gather(acc cua.Accumulator) error {
 			_ = osStdin.SetWriteDeadline(time.Now().Add(1 * time.Second))
 		}
 		if _, err := io.WriteString(e.process.Stdin, "\n"); err != nil {
-			return fmt.Errorf("Error writing to stdin: %s", err)
+			return fmt.Errorf("Error writing to stdin: %w", err)
 		}
 	case "none":
 	default:

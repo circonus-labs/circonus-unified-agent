@@ -228,7 +228,7 @@ func (k *Kubernetes) LoadJson(url string, v interface{}) error {
 	req.Header.Add("Accept", "application/json")
 	resp, err = k.RoundTripper.RoundTrip(req)
 	if err != nil {
-		return fmt.Errorf("error making HTTP request to %s: %s", url, err)
+		return fmt.Errorf("error making HTTP request to %s: %w", url, err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
@@ -237,7 +237,7 @@ func (k *Kubernetes) LoadJson(url string, v interface{}) error {
 
 	err = json.NewDecoder(resp.Body).Decode(v)
 	if err != nil {
-		return fmt.Errorf(`Error parsing response: %s`, err)
+		return fmt.Errorf("Error parsing response: %w", err)
 	}
 
 	return nil

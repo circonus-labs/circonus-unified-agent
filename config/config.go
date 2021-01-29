@@ -639,7 +639,7 @@ func PrintInputConfig(name string) error {
 	if creator, ok := inputs.Inputs[name]; ok {
 		printConfig(name, creator(), "inputs", false)
 	} else {
-		return fmt.Errorf("Input %s not found", name)
+		return fmt.Errorf("input %s not found", name)
 	}
 	return nil
 }
@@ -649,7 +649,7 @@ func PrintOutputConfig(name string) error {
 	if creator, ok := outputs.Outputs[name]; ok {
 		printConfig(name, creator(), "outputs", false)
 	} else {
-		return fmt.Errorf("Output %s not found", name)
+		return fmt.Errorf("output %s not found", name)
 	}
 	return nil
 }
@@ -734,7 +734,7 @@ func (c *Config) LoadConfig(path string) error {
 func (c *Config) LoadConfigData(data []byte) error {
 	tbl, err := parseConfig(data)
 	if err != nil {
-		return fmt.Errorf("Error parsing data: %s", err)
+		return fmt.Errorf("error parsing data: %w", err)
 	}
 
 	// Parse tags tables first:
@@ -822,12 +822,11 @@ func (c *Config) LoadConfigData(data []byte) error {
 				case []*ast.Table:
 					for _, t := range pluginSubTable {
 						if err = c.addInput(pluginName, t); err != nil {
-							return fmt.Errorf("error parsing %s, %s", pluginName, err)
+							return fmt.Errorf("error parsing %s: %w", pluginName, err)
 						}
 					}
 				default:
-					return fmt.Errorf("unsupported config format: %s",
-						pluginName)
+					return fmt.Errorf("unsupported config format: %s", pluginName)
 				}
 				if len(c.UnusedFields) > 0 {
 					return fmt.Errorf("plugin %s.%s: line %d: configuration specified the fields %q, but they weren't used", name, pluginName, subTable.Line, keys(c.UnusedFields))
@@ -839,12 +838,11 @@ func (c *Config) LoadConfigData(data []byte) error {
 				case []*ast.Table:
 					for _, t := range pluginSubTable {
 						if err = c.addProcessor(pluginName, t); err != nil {
-							return fmt.Errorf("error parsing %s, %s", pluginName, err)
+							return fmt.Errorf("error parsing %s: %w", pluginName, err)
 						}
 					}
 				default:
-					return fmt.Errorf("unsupported config format: %s",
-						pluginName)
+					return fmt.Errorf("unsupported config format: %s", pluginName)
 				}
 				if len(c.UnusedFields) > 0 {
 					return fmt.Errorf("plugin %s.%s: line %d: configuration specified the fields %q, but they weren't used", name, pluginName, subTable.Line, keys(c.UnusedFields))
@@ -856,12 +854,11 @@ func (c *Config) LoadConfigData(data []byte) error {
 				case []*ast.Table:
 					for _, t := range pluginSubTable {
 						if err = c.addAggregator(pluginName, t); err != nil {
-							return fmt.Errorf("error parsing %s, %s", pluginName, err)
+							return fmt.Errorf("error parsing %s: %w", pluginName, err)
 						}
 					}
 				default:
-					return fmt.Errorf("unsupported config format: %s",
-						pluginName)
+					return fmt.Errorf("unsupported config format: %s", pluginName)
 				}
 				if len(c.UnusedFields) > 0 {
 					return fmt.Errorf("plugin %s.%s: line %d: configuration specified the fields %q, but they weren't used", name, pluginName, subTable.Line, keys(c.UnusedFields))
@@ -871,14 +868,14 @@ func (c *Config) LoadConfigData(data []byte) error {
 		// identifiers are present
 		default:
 			if err = c.addInput(name, subTable); err != nil {
-				return fmt.Errorf("Error parsing %s, %s", name, err)
+				return fmt.Errorf("error parsing %s: %w", name, err)
 			}
 		}
 	}
 
 	// mgm:add default plugins if they were not in configuration
 	if err := c.addDefaultPlugins(); err != nil {
-		fmt.Fprintf(os.Stderr, "adding default plugins (%s)\n", err)
+		log.Printf("W! adding default plugins: %s", err)
 		return nil
 	}
 
@@ -1723,10 +1720,10 @@ func (c *Config) addDefaultPlugins() error {
 		}
 		tbl, err := parseConfig(pluginConfig.Data)
 		if err != nil {
-			return fmt.Errorf("Error parsing data: %s", err)
+			return fmt.Errorf("error parsing data: %w", err)
 		}
 		if err = c.addInput(pluginName, tbl); err != nil {
-			return fmt.Errorf("error parsing %s, %s", pluginName, err)
+			return fmt.Errorf("error parsing %s: %w", pluginName, err)
 		}
 	}
 	return nil

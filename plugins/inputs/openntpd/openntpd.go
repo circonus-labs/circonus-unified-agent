@@ -86,7 +86,7 @@ func openntpdRunner(cmdName string, Timeout internal.Duration, UseSudo bool) (*b
 	cmd.Stdout = &out
 	err := internal.RunTimeout(cmd, Timeout.Duration)
 	if err != nil {
-		return &out, fmt.Errorf("error running ntpctl: %s", err)
+		return &out, fmt.Errorf("error running ntpctl: %w", err)
 	}
 
 	return &out, nil
@@ -95,7 +95,7 @@ func openntpdRunner(cmdName string, Timeout internal.Duration, UseSudo bool) (*b
 func (n *Openntpd) Gather(acc cua.Accumulator) error {
 	out, err := n.run(n.Binary, n.Timeout, n.UseSudo)
 	if err != nil {
-		return fmt.Errorf("error gathering metrics: %s", err)
+		return fmt.Errorf("error gathering metrics: %w", err)
 	}
 
 	lineCounter := 0

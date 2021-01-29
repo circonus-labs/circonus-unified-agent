@@ -105,7 +105,7 @@ func reloadLoop(
 		}()
 
 		err := runAgent(ctx, inputFilters, outputFilters)
-		if err != nil && err != context.Canceled {
+		if !errors.Is(err, context.Canceled) {
 			log.Fatalf("E! [circonus-unified-agent] Error running agent: %v", err)
 		}
 	}

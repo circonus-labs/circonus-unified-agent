@@ -18,7 +18,7 @@ type Pgrep struct {
 func NewPgrep() (PIDFinder, error) {
 	path, err := exec.LookPath("pgrep")
 	if err != nil {
-		return nil, fmt.Errorf("Could not find pgrep binary: %s", err)
+		return nil, fmt.Errorf("Could not find pgrep binary: %w", err)
 	}
 	return &Pgrep{path}, nil
 }
@@ -27,8 +27,7 @@ func (pg *Pgrep) PidFile(path string) ([]PID, error) {
 	var pids []PID
 	pidString, err := ioutil.ReadFile(path)
 	if err != nil {
-		return pids, fmt.Errorf("Failed to read pidfile '%s'. Error: '%s'",
-			path, err)
+		return pids, fmt.Errorf("Failed to read pidfile (%s): %w", path, err)
 	}
 	pid, err := strconv.ParseInt(strings.TrimSpace(string(pidString)), 10, 32)
 	if err != nil {
@@ -71,7 +70,7 @@ func run(path string, args []string) (string, error) {
 	}
 
 	if err != nil {
-		return "", fmt.Errorf("Error running %s: %s", path, err)
+		return "", fmt.Errorf("error running %s: %w", path, err)
 	}
 	return string(out), err
 }

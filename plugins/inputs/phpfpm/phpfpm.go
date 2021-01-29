@@ -144,7 +144,7 @@ func (p *phpfpm) gatherServer(addr string, acc cua.Accumulator) error {
 	if strings.HasPrefix(addr, "fcgi://") || strings.HasPrefix(addr, "cgi://") {
 		u, err := url.Parse(addr)
 		if err != nil {
-			return fmt.Errorf("Unable parse server address '%s': %s", addr, err)
+			return fmt.Errorf("Unable parse server address '%s': %w", addr, err)
 		}
 		socketAddr := strings.Split(u.Host, ":")
 		fcgiIp := socketAddr[0]
@@ -189,7 +189,7 @@ func (p *phpfpm) gatherFcgi(fcgi *conn, statusPath string, acc cua.Accumulator, 
 		importMetric(bytes.NewReader(fpmOutput), acc, addr)
 		return nil
 	} else {
-		return fmt.Errorf("Unable parse phpfpm status. Error: %v %v", string(fpmErr), err)
+		return fmt.Errorf("Unable parse phpfpm status. Error: %v %w", string(fpmErr), err)
 	}
 }
 
@@ -197,22 +197,22 @@ func (p *phpfpm) gatherFcgi(fcgi *conn, statusPath string, acc cua.Accumulator, 
 func (p *phpfpm) gatherHttp(addr string, acc cua.Accumulator) error {
 	u, err := url.Parse(addr)
 	if err != nil {
-		return fmt.Errorf("unable parse server address '%s': %v", addr, err)
+		return fmt.Errorf("unable parse server address '%s': %w", addr, err)
 	}
 
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
-		return fmt.Errorf("unable to create new request '%s': %v", addr, err)
+		return fmt.Errorf("unable to create new request '%s': %w", addr, err)
 	}
 
 	res, err := p.client.Do(req)
 	if err != nil {
-		return fmt.Errorf("unable to connect to phpfpm status page '%s': %v", addr, err)
+		return fmt.Errorf("unable to connect to phpfpm status page '%s': %w", addr, err)
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode != 200 {
-		return fmt.Errorf("unable to get valid stat result from '%s': %v", addr, err)
+		return fmt.Errorf("unable to get valid stat result from '%s': %w", addr, err)
 	}
 
 	importMetric(res.Body, acc, addr)
@@ -296,11 +296,11 @@ func globUnixSocket(url string) ([]string, error) {
 	pattern, status := unixSocketPaths(url)
 	glob, err := globpath.Compile(pattern)
 	if err != nil {
-		return nil, fmt.Errorf("could not compile glob %q: %v", pattern, err)
+		return nil, fmt.Errorf("could not compile glob %q: %w", pattern, err)
 	}
 	paths := glob.Match()
 	if len(paths) == 0 {
-		return nil, fmt.Errorf("socket doesn't exist %q: %v", pattern, err)
+		return nil, fmt.Errorf("socket doesn't exist %q: %w", pattern, err)
 	}
 
 	addresses := make([]string, 0, len(paths))

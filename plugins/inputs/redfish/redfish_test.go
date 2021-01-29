@@ -1,6 +1,7 @@
 package redfish
 
 import (
+	"errors"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -10,7 +11,6 @@ import (
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/testutil"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -655,9 +655,10 @@ func TestConnection(t *testing.T) {
 	var acc testutil.Accumulator
 	_ = r.Init()
 	err := r.Gather(&acc)
-	if assert.Error(t, err) {
-		_, ok := err.(*url.Error)
-		assert.True(t, ok)
+
+	var uerr *url.Error
+	if !errors.As(err, &uerr) {
+		t.Fatalf("expected url error %s", err)
 	}
 }
 

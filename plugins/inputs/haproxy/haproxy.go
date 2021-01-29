@@ -2,6 +2,7 @@ package haproxy
 
 import (
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -121,13 +122,13 @@ func (g *haproxy) gatherServerSocket(addr string, acc cua.Accumulator) error {
 	c, err := net.Dial("unix", socketPath)
 
 	if err != nil {
-		return fmt.Errorf("Could not connect to socket '%s': %s", addr, err)
+		return fmt.Errorf("Could not connect to socket '%s': %w", addr, err)
 	}
 
 	_, errw := c.Write([]byte("show stat\n"))
 
 	if errw != nil {
-		return fmt.Errorf("Could not write to socket '%s': %s", addr, errw)
+		return fmt.Errorf("Could not write to socket '%s': %w", addr, errw)
 	}
 
 	return g.importCsvResult(c, acc, socketPath)
@@ -160,12 +161,12 @@ func (g *haproxy) gatherServer(addr string, acc cua.Accumulator) error {
 
 	u, err := url.Parse(addr)
 	if err != nil {
-		return fmt.Errorf("unable parse server address '%s': %s", addr, err)
+		return fmt.Errorf("unable parse server address '%s': %w", addr, err)
 	}
 
 	req, err := http.NewRequest("GET", addr, nil)
 	if err != nil {
-		return fmt.Errorf("unable to create new request '%s': %s", addr, err)
+		return fmt.Errorf("unable to create new request '%s': %w", addr, err)
 	}
 	if u.User != nil {
 		p, _ := u.User.Password()
@@ -180,7 +181,7 @@ func (g *haproxy) gatherServer(addr string, acc cua.Accumulator) error {
 
 	res, err := g.client.Do(req)
 	if err != nil {
-		return fmt.Errorf("unable to connect to haproxy server '%s': %s", addr, err)
+		return fmt.Errorf("unable to connect to haproxy server '%s': %w", addr, err)
 	}
 	defer res.Body.Close()
 
@@ -189,7 +190,7 @@ func (g *haproxy) gatherServer(addr string, acc cua.Accumulator) error {
 	}
 
 	if err := g.importCsvResult(res.Body, acc, u.Host); err != nil {
-		return fmt.Errorf("unable to parse stat result from '%s': %s", addr, err)
+		return fmt.Errorf("unable to parse stat result from '%s': %w", addr, err)
 	}
 
 	return nil
@@ -236,7 +237,7 @@ func (g *haproxy) importCsvResult(r io.Reader, acc cua.Accumulator, host string)
 
 	for {
 		row, err := csvr.Read()
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			break
 		}
 		if err != nil {

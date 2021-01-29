@@ -3,6 +3,7 @@ package socket_listener
 import (
 	"bufio"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -139,8 +140,9 @@ func (ssl *streamSocketListener) read(c net.Conn) {
 	}
 
 	if err := scnr.Err(); err != nil {
-		if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
-			ssl.Log.Debugf("Timeout in plugin: %s", err.Error())
+		var netErr net.Error
+		if errors.As(err, &netErr) && netErr.Timeout() {
+			ssl.Log.Debugf("Timeout in plugin: %s", err)
 		} else if netErr != nil && !strings.HasSuffix(err.Error(), ": use of closed network connection") {
 			ssl.Log.Error(err.Error())
 		}

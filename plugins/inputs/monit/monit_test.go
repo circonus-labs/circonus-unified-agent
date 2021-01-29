@@ -585,9 +585,9 @@ func TestConnection(t *testing.T) {
 	var acc testutil.Accumulator
 	err := r.Gather(&acc)
 
-	if assert.Error(t, err) {
-		_, ok := err.(*url.Error)
-		assert.True(t, ok)
+	var uerr *url.Error
+	if !errors.As(err, &uerr) {
+		t.Fatalf("expected url error: %s", err)
 	}
 }
 

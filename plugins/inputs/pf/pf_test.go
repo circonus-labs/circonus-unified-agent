@@ -247,7 +247,7 @@ Counters
 			}
 			acc := new(testutil.Accumulator)
 			err := acc.GatherError(pf.Gather)
-			if !reflect.DeepEqual(tt.err, err) {
+			if err != nil && tt.err.Error() != err.Error() {
 				t.Errorf("%d: expected error '%#v' got '%#v'", i, tt.err, err)
 			}
 			n := 0

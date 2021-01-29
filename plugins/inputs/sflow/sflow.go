@@ -132,7 +132,7 @@ func (s *SFlow) read(acc cua.Accumulator, conn net.PacketConn) {
 func (s *SFlow) process(acc cua.Accumulator, buf []byte) {
 
 	if err := s.decoder.Decode(bytes.NewBuffer(buf)); err != nil {
-		acc.AddError(fmt.Errorf("unable to parse incoming packet: %s", err))
+		acc.AddError(fmt.Errorf("unable to parse incoming packet: %w", err))
 	}
 }
 

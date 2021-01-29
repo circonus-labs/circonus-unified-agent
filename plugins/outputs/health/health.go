@@ -159,7 +159,7 @@ func (h *Health) Connect() error {
 	go func() {
 		defer h.wg.Done()
 		err := h.server.Serve(listener)
-		if err != http.ErrServerClosed {
+		if !errors.Is(err, http.ErrServerClosed) {
 			log.Printf("E! [outputs.health] Serve error on %s: %v", h.origin, err)
 		}
 		h.origin = ""

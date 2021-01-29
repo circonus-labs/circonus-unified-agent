@@ -138,7 +138,7 @@ func (w *WinEventLog) Gather(acc cua.Accumulator) error {
 	if w.subscription == 0 {
 		w.subscription, err = w.evtSubscribe(w.EventlogName, w.Query)
 		if err != nil {
-			return fmt.Errorf("Windows Event Log subscription error: %v", err.Error())
+			return fmt.Errorf("Windows Event Log subscription error: %w", err)
 		}
 	}
 	w.Log.Debug("Subscription handle id:", w.subscription)

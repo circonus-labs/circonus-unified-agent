@@ -3,6 +3,7 @@ package wavefront
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"io"
 	"log"
 	"strconv"
@@ -105,7 +106,7 @@ func (p *PointParser) Parse(buf []byte) ([]cua.Metric, error) {
 	for {
 		// Read up to the next newline.
 		buf, err := reader.ReadBytes('\n')
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			break
 		}
 

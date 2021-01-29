@@ -103,18 +103,18 @@ func (c *Ceph) Gather(acc cua.Accumulator) error {
 func (c *Ceph) gatherAdminSocketStats(acc cua.Accumulator) error {
 	sockets, err := findSockets(c)
 	if err != nil {
-		return fmt.Errorf("failed to find sockets at path '%s': %v", c.SocketDir, err)
+		return fmt.Errorf("failed to find sockets at path '%s': %w", c.SocketDir, err)
 	}
 
 	for _, s := range sockets {
 		dump, err := perfDump(c.CephBinary, s)
 		if err != nil {
-			acc.AddError(fmt.Errorf("error reading from socket '%s': %v", s.socket, err))
+			acc.AddError(fmt.Errorf("error reading from socket '%s': %w", s.socket, err))
 			continue
 		}
 		data, err := parseDump(dump)
 		if err != nil {
-			acc.AddError(fmt.Errorf("error parsing dump from socket '%s': %v", s.socket, err))
+			acc.AddError(fmt.Errorf("error parsing dump from socket '%s': %w", s.socket, err))
 			continue
 		}
 		for tag, metrics := range data {
@@ -140,11 +140,11 @@ func (c *Ceph) gatherClusterStats(acc cua.Accumulator) error {
 	for _, job := range jobs {
 		output, err := c.exec(job.command)
 		if err != nil {
-			return fmt.Errorf("error executing command: %v", err)
+			return fmt.Errorf("error executing command: %w", err)
 		}
 		err = job.parser(acc, output)
 		if err != nil {
-			return fmt.Errorf("error parsing output: %v", err)
+			return fmt.Errorf("error parsing output: %w", err)
 		}
 	}
 
@@ -188,7 +188,7 @@ var perfDump = func(binary string, socket *socket) (string, error) {
 	cmd.Stdout = &out
 	err := cmd.Run()
 	if err != nil {
-		return "", fmt.Errorf("error running ceph dump: %s", err)
+		return "", fmt.Errorf("error running ceph dump: %w", err)
 	}
 
 	return out.String(), nil
@@ -197,7 +197,7 @@ var perfDump = func(binary string, socket *socket) (string, error) {
 var findSockets = func(c *Ceph) ([]*socket, error) {
 	listing, err := ioutil.ReadDir(c.SocketDir)
 	if err != nil {
-		return []*socket{}, fmt.Errorf("Failed to read socket directory '%s': %v", c.SocketDir, err)
+		return []*socket{}, fmt.Errorf("Failed to read socket directory '%s': %w", c.SocketDir, err)
 	}
 	sockets := make([]*socket, 0, len(listing))
 	for _, info := range listing {
@@ -273,7 +273,7 @@ func parseDump(dump string) (taggedMetricMap, error) {
 	data := make(map[string]interface{})
 	err := json.Unmarshal([]byte(dump), &data)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse json: '%s': %v", dump, err)
+		return nil, fmt.Errorf("failed to parse json: '%s': %w", dump, err)
 	}
 
 	return newTaggedMetricMap(data), nil
@@ -329,7 +329,7 @@ func (c *Ceph) exec(command string) (string, error) {
 	cmd.Stdout = &out
 	err := cmd.Run()
 	if err != nil {
-		return "", fmt.Errorf("error running ceph %v: %s", command, err)
+		return "", fmt.Errorf("error running ceph %v: %w", command, err)
 	}
 
 	output := out.String()
@@ -382,7 +382,7 @@ type CephStatus struct {
 func decodeStatus(acc cua.Accumulator, input string) error {
 	data := &CephStatus{}
 	if err := json.Unmarshal([]byte(input), data); err != nil {
-		return fmt.Errorf("failed to parse json: '%s': %v", input, err)
+		return fmt.Errorf("failed to parse json: '%s': %w", input, err)
 	}
 
 	decoders := []func(cua.Accumulator, *CephStatus) error{
@@ -485,7 +485,7 @@ type CephDf struct {
 func decodeDf(acc cua.Accumulator, input string) error {
 	data := &CephDf{}
 	if err := json.Unmarshal([]byte(input), data); err != nil {
-		return fmt.Errorf("failed to parse json: '%s': %v", input, err)
+		return fmt.Errorf("failed to parse json: '%s': %w", input, err)
 	}
 
 	// ceph.usage: records global utilization and number of objects
@@ -538,7 +538,7 @@ type CephOSDPoolStats []struct {
 func decodeOsdPoolStats(acc cua.Accumulator, input string) error {
 	data := CephOSDPoolStats{}
 	if err := json.Unmarshal([]byte(input), &data); err != nil {
-		return fmt.Errorf("failed to parse json: '%s': %v", input, err)
+		return fmt.Errorf("failed to parse json: '%s': %w", input, err)
 	}
 
 	// ceph.pool.stats: records pre pool IO and recovery throughput

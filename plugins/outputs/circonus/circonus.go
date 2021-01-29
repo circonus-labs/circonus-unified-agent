@@ -165,14 +165,12 @@ func (c *Circonus) Write(metrics []cua.Metric) error {
 				if strings.Contains(s, "H[") && strings.Contains(s, "]=") {
 					numMetrics += c.buildHistogram(defaultDest, m)
 				} else {
-					// c.Log.Debugf("Metric type is %v", m.Type())
 					numMetrics += c.buildTexts(defaultDest, m)
 				}
 			} else {
 				numMetrics += c.buildNumerics(defaultDest, m)
 			}
 		case cua.Histogram:
-			// c.Log.Debugf("Metric type is histogram", m.Type())
 			numMetrics += c.buildHistogram(defaultDest, m)
 		case cua.CumulativeHistogram:
 			numMetrics += c.buildCumulativeHistogram(defaultDest, m)
@@ -382,16 +380,15 @@ func (c *Circonus) buildCumulativeHistogram(defaultDest *cgm.CirconusMetrics, m 
 		}
 
 		buckets = append(buckets, fmt.Sprintf("H[%e]=%d", v, field.Value))
-		// dest.RecordCountForValueWithTags(mn, tags, v, field.Value.(int64))
 		numMetrics++
 	}
 
 	_ = dest.Custom(dest.MetricNameWithStreamTags(mn, tags), cgm.Metric{
 		Type:  cgm.MetricTypeCumulativeHistogram,
-		Value: strings.Join(buckets, ","),
+		Value: buckets, // buckets are submitted as a string array
 	})
 	if c.DebugMetrics {
-		c.Log.Infof("%s %s\n", dest.MetricNameWithStreamTags(mn, tags), strings.Join(buckets, ","))
+		c.Log.Infof("%s|ST[%s] %s\n", mn, tags, strings.Join(buckets, "\n"))
 	}
 
 	return numMetrics

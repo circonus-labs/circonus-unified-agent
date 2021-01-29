@@ -607,12 +607,25 @@ func (s *Stackdriver) gatherTimeSeries(
 			tags[k] = v
 		}
 
+		// add metric category to prevent collisions
 		slashIdx := strings.LastIndex(tsConf.measurement, "/")
 		if slashIdx > 0 {
 			cat := tsConf.measurement[slashIdx+1:]
 			tags["metric_category"] = cat
 		} else {
 			tags["metric_category"] = tsConf.measurement
+		}
+
+		// add stackdriver metrickind as a tag so proper math can applied ex-post facto
+		switch tsDesc.MetricKind {
+		case metricpb.MetricDescriptor_METRIC_KIND_UNSPECIFIED:
+			tags["metric_kind"] = "unspecified"
+		case metricpb.MetricDescriptor_GAUGE:
+			tags["metric_kind"] = "gauge"
+		case metricpb.MetricDescriptor_DELTA:
+			tags["metric_kind"] = "delta"
+		case metricpb.MetricDescriptor_CUMULATIVE:
+			tags["metric_kind"] = "cumulative"
 		}
 
 		s.Log.Debugf("%s %v %v\n", tsConf.fieldKey, tags, tsDesc.ValueType)

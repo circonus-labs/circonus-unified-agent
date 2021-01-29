@@ -1,3 +1,8 @@
+# v0.0.11
+
+* fix: cumulative histogram submission and honor metricKind settings (stackdriver)
+* add: a tag for metric_kind (stackdriver)
+
 # v0.0.10
 
 * fix: health output missing in all

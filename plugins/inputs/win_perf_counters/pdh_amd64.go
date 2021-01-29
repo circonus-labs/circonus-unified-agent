@@ -48,7 +48,7 @@ type PDH_FMT_COUNTERVALUE_LARGE struct {
 type PDH_FMT_COUNTERVALUE_LONG struct {
 	CStatus   uint32
 	LongValue int32
-	padding   [4]byte
+	padding   [4]byte //nolint:structcheck
 }
 
 type PDH_FMT_COUNTERVALUE_ITEM_DOUBLE struct {

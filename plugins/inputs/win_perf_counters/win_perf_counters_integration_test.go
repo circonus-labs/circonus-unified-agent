@@ -104,7 +104,8 @@ func TestWinPerformanceQueryImpl(t *testing.T) {
 	require.NoError(t, err)
 
 	arr, err := query.GetFormattedCounterArrayDouble(hCounter)
-	if phderr, ok := err.(*PdhError); ok && phderr.ErrorCode != PDH_INVALID_DATA && phderr.ErrorCode != PDH_CALC_NEGATIVE_VALUE {
+	var pdhErr *PdhError
+	if errors.As(err, &pdhErr) && (pdhErr.ErrorCode != PDH_INVALID_DATA && pdhErr.ErrorCode != PDH_CALC_NEGATIVE_VALUE) {
 		time.Sleep(time.Second)
 		arr, err = query.GetFormattedCounterArrayDouble(hCounter)
 	}
@@ -144,7 +145,7 @@ func TestWinPerfcountersConfigGet1(t *testing.T) {
 	perfobjects[0] = PerfObject
 
 	m := Win_PerfCounters{PrintValid: false, Object: perfobjects, query: &PerformanceQueryImpl{}}
-	m.query.Open()
+	_ = m.query.Open()
 
 	err := m.ParseConfig()
 	require.NoError(t, err)
@@ -178,7 +179,7 @@ func TestWinPerfcountersConfigGet2(t *testing.T) {
 	perfobjects[0] = PerfObject
 
 	m := Win_PerfCounters{PrintValid: false, Object: perfobjects, query: &PerformanceQueryImpl{}}
-	m.query.Open()
+	_ = m.query.Open()
 
 	err := m.ParseConfig()
 	require.NoError(t, err)
@@ -225,7 +226,7 @@ func TestWinPerfcountersConfigGet3(t *testing.T) {
 	perfobjects[0] = PerfObject
 
 	m := Win_PerfCounters{PrintValid: false, Object: perfobjects, query: &PerformanceQueryImpl{}}
-	m.query.Open()
+	_ = m.query.Open()
 
 	err := m.ParseConfig()
 	require.NoError(t, err)
@@ -274,7 +275,7 @@ func TestWinPerfcountersConfigGet4(t *testing.T) {
 	perfobjects[0] = PerfObject
 
 	m := Win_PerfCounters{PrintValid: false, Object: perfobjects, query: &PerformanceQueryImpl{}}
-	m.query.Open()
+	_ = m.query.Open()
 
 	err := m.ParseConfig()
 	require.NoError(t, err)
@@ -324,7 +325,7 @@ func TestWinPerfcountersConfigGet5(t *testing.T) {
 	perfobjects[0] = PerfObject
 
 	m := Win_PerfCounters{PrintValid: false, Object: perfobjects, query: &PerformanceQueryImpl{}}
-	m.query.Open()
+	_ = m.query.Open()
 
 	err := m.ParseConfig()
 	require.NoError(t, err)
@@ -370,7 +371,7 @@ func TestWinPerfcountersConfigGet6(t *testing.T) {
 	perfobjects[0] = PerfObject
 
 	m := Win_PerfCounters{PrintValid: false, Object: perfobjects, query: &PerformanceQueryImpl{}}
-	m.query.Open()
+	_ = m.query.Open()
 
 	err := m.ParseConfig()
 	require.NoError(t, err)
@@ -406,7 +407,7 @@ func TestWinPerfcountersConfigGet7(t *testing.T) {
 	perfobjects[0] = PerfObject
 
 	m := Win_PerfCounters{PrintValid: false, Object: perfobjects, query: &PerformanceQueryImpl{}}
-	m.query.Open()
+	_ = m.query.Open()
 
 	err := m.ParseConfig()
 	require.NoError(t, err)
@@ -452,7 +453,7 @@ func TestWinPerfcountersConfigError1(t *testing.T) {
 	perfobjects[0] = PerfObject
 
 	m := Win_PerfCounters{PrintValid: false, Object: perfobjects, query: &PerformanceQueryImpl{}}
-	m.query.Open()
+	_ = m.query.Open()
 
 	err := m.ParseConfig()
 	require.Error(t, err)
@@ -486,11 +487,11 @@ func TestWinPerfcountersConfigError2(t *testing.T) {
 	perfobjects[0] = PerfObject
 
 	m := Win_PerfCounters{PrintValid: false, Object: perfobjects, query: &PerformanceQueryImpl{}}
-	m.query.Open()
+	_ = m.query.Open()
 
-	err := m.ParseConfig()
+	_ = m.ParseConfig()
 	var acc testutil.Accumulator
-	err = m.Gather(&acc)
+	err := m.Gather(&acc)
 	require.Error(t, err)
 }
 
@@ -522,7 +523,7 @@ func TestWinPerfcountersConfigError3(t *testing.T) {
 	perfobjects[0] = PerfObject
 
 	m := Win_PerfCounters{PrintValid: false, Object: perfobjects, query: &PerformanceQueryImpl{}}
-	m.query.Open()
+	_ = m.query.Open()
 
 	err := m.ParseConfig()
 	require.Error(t, err)

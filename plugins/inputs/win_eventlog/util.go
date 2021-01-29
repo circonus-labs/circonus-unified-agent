@@ -7,6 +7,7 @@ package win_eventlog
 import (
 	"bytes"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -48,7 +49,7 @@ func GetFromSnapProcess(pid uint32) (uint32, uint32, string, error) {
 	if err != nil {
 		return 0, 0, "", err
 	}
-	defer windows.CloseHandle(snap)
+	defer func() { _ = windows.CloseHandle(snap) }()
 	var pe32 windows.ProcessEntry32
 	pe32.Size = uint32(unsafe.Sizeof(pe32))
 	if err = windows.Process32First(snap, &pe32); err != nil {
@@ -96,7 +97,7 @@ func UnrollXMLFields(data []byte, fieldsUsage map[string]int, separator string) 
 	for {
 		var node xmlnode
 		err := dec.Decode(&node)
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			break
 		}
 		if err != nil {

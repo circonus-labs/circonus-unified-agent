@@ -37,14 +37,14 @@ import (
 )
 
 type SYSTEMTIME struct {
-	wYear         uint16
-	wMonth        uint16
-	wDayOfWeek    uint16
-	wDay          uint16
-	wHour         uint16
-	wMinute       uint16
-	wSecond       uint16
-	wMilliseconds uint16
+	wYear         uint16 //nolint:structcheck
+	wMonth        uint16 //nolint:structcheck
+	wDayOfWeek    uint16 //nolint:structcheck
+	wDay          uint16 //nolint:structcheck
+	wHour         uint16 //nolint:structcheck
+	wMinute       uint16 //nolint:structcheck
+	wSecond       uint16 //nolint:structcheck
+	wMilliseconds uint16 //nolint:structcheck
 }
 
 type FILETIME struct {

@@ -3,6 +3,7 @@
 package win_services
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -23,8 +24,9 @@ func (e *ServiceErr) Error() string {
 }
 
 func IsPermission(err error) bool {
-	if err, ok := err.(*ServiceErr); ok {
-		return os.IsPermission(err.Err)
+	var svcErr *ServiceErr
+	if errors.As(err, &svcErr) {
+		return os.IsPermission(svcErr.Err)
 	}
 	return false
 }
@@ -113,9 +115,9 @@ func (m *WinServices) SampleConfig() string {
 func (m *WinServices) Gather(acc cua.Accumulator) error {
 	scmgr, err := m.mgrProvider.Connect()
 	if err != nil {
-		return fmt.Errorf("Could not open service manager: %s", err)
+		return fmt.Errorf("could not open service manager: %w", err)
 	}
-	defer scmgr.Disconnect()
+	defer func() { _ = scmgr.Disconnect() }()
 
 	serviceNames, err := listServices(scmgr, m.ServiceNames)
 	if err != nil {
@@ -159,7 +161,7 @@ func listServices(scmgr WinServiceManager, userServices []string) ([]string, err
 
 	names, err := scmgr.ListServices()
 	if err != nil {
-		return nil, fmt.Errorf("Could not list services: %s", err)
+		return nil, fmt.Errorf("could not list services: %w", err)
 	}
 	return names, nil
 }

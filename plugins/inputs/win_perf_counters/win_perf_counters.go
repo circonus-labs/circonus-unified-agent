@@ -274,7 +274,7 @@ func (m *Win_PerfCounters) AddItem(counterPath string, objectName string, instan
 
 		for _, counterPath := range counters {
 			var err error
-			counterHandle, err := m.query.AddCounterToQuery(counterPath)
+			counterHandle, _ := m.query.AddCounterToQuery(counterPath)
 
 			objectName, instance, counterName, err = extractCounterInfoFromCounterPath(counterPath)
 			if err != nil {
@@ -389,9 +389,9 @@ func (m *Win_PerfCounters) Gather(acc cua.Accumulator) error {
 			if err != nil {
 				//ignore invalid data  as some counters from process instances returns this sometimes
 				if !isKnownCounterDataError(err) {
-					return fmt.Errorf("error while getting value for counter %s: %v", metric.counterPath, err)
+					return fmt.Errorf("error while getting value for counter %s: %w", metric.counterPath, err)
 				}
-				m.Log.Warnf("error while getting value for counter %q, will skip metric: %v", metric.counterPath, err)
+				m.Log.Warnf("error while getting value for counter %q, will skip metric: %w", metric.counterPath, err)
 				continue
 			}
 			addCounterMeasurement(metric, metric.instance, value, collectFields)
@@ -400,9 +400,9 @@ func (m *Win_PerfCounters) Gather(acc cua.Accumulator) error {
 			if err != nil {
 				//ignore invalid data  as some counters from process instances returns this sometimes
 				if !isKnownCounterDataError(err) {
-					return fmt.Errorf("error while getting value for counter %s: %v", metric.counterPath, err)
+					return fmt.Errorf("error while getting value for counter %s: %w", metric.counterPath, err)
 				}
-				m.Log.Warnf("error while getting value for counter %q, will skip metric: %v", metric.counterPath, err)
+				m.Log.Warnf("error while getting value for counter %q, will skip metric: %w", metric.counterPath, err)
 				continue
 			}
 
@@ -465,7 +465,8 @@ func addCounterMeasurement(metric *counter, instanceName string, value float64, 
 }
 
 func isKnownCounterDataError(err error) bool {
-	if pdhErr, ok := err.(*PdhError); ok && (pdhErr.ErrorCode == PDH_INVALID_DATA ||
+	var pdhErr (*PdhError)
+	if errors.As(err, &pdhErr) && (pdhErr.ErrorCode == PDH_INVALID_DATA ||
 		pdhErr.ErrorCode == PDH_CALC_NEGATIVE_DENOMINATOR ||
 		pdhErr.ErrorCode == PDH_CALC_NEGATIVE_VALUE ||
 		pdhErr.ErrorCode == PDH_CSTATUS_INVALID_DATA ||

@@ -20,7 +20,7 @@ func TestList(t *testing.T) {
 	provider := &MgProvider{}
 	scmgr, err := provider.Connect()
 	require.NoError(t, err)
-	defer scmgr.Disconnect()
+	defer func() { _ = scmgr.Disconnect() }()
 
 	services, err := listServices(scmgr, KnownServices)
 	require.NoError(t, err)
@@ -36,7 +36,7 @@ func TestEmptyList(t *testing.T) {
 	provider := &MgProvider{}
 	scmgr, err := provider.Connect()
 	require.NoError(t, err)
-	defer scmgr.Disconnect()
+	defer func() { _ = scmgr.Disconnect() }()
 
 	services, err := listServices(scmgr, []string{})
 	require.NoError(t, err)

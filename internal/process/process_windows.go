@@ -11,7 +11,7 @@ import (
 func gracefulStop(ctx context.Context, cmd *exec.Cmd, timeout time.Duration) {
 	select {
 	case <-time.After(timeout):
-		cmd.Process.Kill()
+		_ = cmd.Process.Kill()
 	case <-ctx.Done():
 	}
 }

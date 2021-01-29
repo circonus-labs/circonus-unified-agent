@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+//nolint:deadcode
 func statCTime(_ interface{}) time.Time {
 	return time.Time{}
 }

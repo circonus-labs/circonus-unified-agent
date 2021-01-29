@@ -34,9 +34,9 @@ func (p *Ping) pingToURL(u string, acc cua.Accumulator) {
 	if err != nil {
 		// fatal error
 		if pendingError != nil {
-			acc.AddError(fmt.Errorf("%s: %s", pendingError, u))
+			acc.AddError(fmt.Errorf("%w: %s", pendingError, u))
 		} else {
-			acc.AddError(fmt.Errorf("%s: %s", err, u))
+			acc.AddError(fmt.Errorf("%w: %s", err, u))
 		}
 
 		fields["result_code"] = 2

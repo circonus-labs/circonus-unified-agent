@@ -19,7 +19,7 @@ func (e *Execd) Gather(acc cua.Accumulator) error {
 	switch e.Signal {
 	case "STDIN":
 		if osStdin, ok := e.process.Stdin.(*os.File); ok {
-			osStdin.SetWriteDeadline(time.Now().Add(1 * time.Second))
+			_ = osStdin.SetWriteDeadline(time.Now().Add(1 * time.Second))
 		}
 		if _, err := io.WriteString(e.process.Stdin, "\n"); err != nil {
 			return fmt.Errorf("Error writing to stdin: %w", err)

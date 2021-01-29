@@ -58,18 +58,18 @@ func (m *FakePerformanceQuery) Close() error {
 
 func (m *FakePerformanceQuery) AddCounterToQuery(counterPath string) (PDH_HCOUNTER, error) {
 	if !m.openCalled {
-		return 0, errors.New("AddCounterToQuery: uninitialized query")
+		return 0, fmt.Errorf("AddCounterToQuery: uninitialized query")
 	}
 	if c, ok := m.counters[counterPath]; ok {
 		return c.handle, nil
 	} else {
-		return 0, errors.New(fmt.Sprintf("AddCounterToQuery: invalid counter path: %s", counterPath))
+		return 0, fmt.Errorf("AddCounterToQuery: invalid counter path: %s", counterPath)
 	}
 }
 
 func (m *FakePerformanceQuery) AddEnglishCounterToQuery(counterPath string) (PDH_HCOUNTER, error) {
 	if !m.openCalled {
-		return 0, errors.New("AddEnglishCounterToQuery: uninitialized query")
+		return 0, fmt.Errorf("AddEnglishCounterToQuery: uninitialized query")
 	}
 	if c, ok := m.counters[counterPath]; ok {
 		return c.handle, nil
@@ -157,14 +157,14 @@ func (m *FakePerformanceQuery) GetFormattedCounterArrayDouble(hCounter PDH_HCOUN
 
 func (m *FakePerformanceQuery) CollectData() error {
 	if !m.openCalled {
-		return errors.New("CollectData: uninitialized query")
+		return fmt.Errorf("CollectData: uninitialized query")
 	}
 	return nil
 }
 
 func (m *FakePerformanceQuery) CollectDataWithTime() (time.Time, error) {
 	if !m.openCalled {
-		return time.Now(), errors.New("CollectData: uninitialized query")
+		return time.Now(), fmt.Errorf("CollectData: uninitialized query")
 	}
 	return MetricTime, nil
 }
@@ -770,7 +770,7 @@ func TestGatherRefreshingWithExpansion(t *testing.T) {
 		vistaAndNewer: true,
 	}
 	m.query = fpm
-	fpm.Open()
+	_ = fpm.Open()
 	var acc2 testutil.Accumulator
 
 	fields3 := map[string]interface{}{
@@ -864,7 +864,7 @@ func TestGatherRefreshingWithoutExpansion(t *testing.T) {
 		vistaAndNewer: true,
 	}
 	m.query = fpm
-	fpm.Open()
+	_ = fpm.Open()
 	var acc2 testutil.Accumulator
 
 	fields3 := map[string]interface{}{
@@ -900,7 +900,7 @@ func TestGatherRefreshingWithoutExpansion(t *testing.T) {
 	m.query = fpm
 	m.Object = perfObjects
 
-	fpm.Open()
+	_ = fpm.Open()
 
 	time.Sleep(m.CountersRefreshInterval.Duration)
 

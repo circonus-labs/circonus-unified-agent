@@ -8,6 +8,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"path/filepath"
 	"reflect"
@@ -148,7 +149,7 @@ loop:
 		events, err := w.fetchEvents(w.subscription)
 		if err != nil {
 			switch {
-			case err == ERROR_NO_MORE_ITEMS:
+			case errors.Is(err, ERROR_NO_MORE_ITEMS):
 				break loop
 			case err != nil:
 				w.Log.Error("Error getting events:", err.Error())
@@ -330,7 +331,7 @@ func (w *WinEventLog) evtSubscribe(logName, xquery string) (EvtHandle, error) {
 	if err != nil {
 		return 0, err
 	}
-	defer windows.CloseHandle(sigEvent)
+	defer func() { _ = windows.CloseHandle(sigEvent) }()
 
 	logNamePtr, err = syscall.UTF16PtrFromString(logName)
 	if err != nil {
@@ -361,7 +362,7 @@ func (w *WinEventLog) fetchEventHandles(subsHandle EvtHandle) ([]EvtHandle, erro
 
 	err := _EvtNext(subsHandle, eventsNumber, &eventHandles[0], 0, 0, &evtReturned)
 	if err != nil {
-		if err == ERROR_INVALID_OPERATION && evtReturned == 0 {
+		if errors.Is(err, ERROR_INVALID_OPERATION) && evtReturned == 0 {
 			return nil, ERROR_NO_MORE_ITEMS
 		}
 		return nil, err
@@ -461,7 +462,7 @@ func formatEventString(
 	var bufferUsed uint32
 	err := _EvtFormatMessage(publisherHandle, eventHandle, 0, 0, 0, messageFlag,
 		0, nil, &bufferUsed)
-	if err != nil && err != ERROR_INSUFFICIENT_BUFFER {
+	if err != nil && !errors.Is(err, ERROR_INSUFFICIENT_BUFFER) {
 		return "", err
 	}
 

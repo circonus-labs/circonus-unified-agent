@@ -204,7 +204,7 @@ func setSystemctl(Timeout internal.Duration, UnitType string) (*bytes.Buffer, er
 	cmd.Stdout = &out
 	err = internal.RunTimeout(cmd, Timeout.Duration)
 	if err != nil {
-		return &out, fmt.Errorf("error running systemctl list-units --all --plain --type=%s --no-legend: %s", UnitType, err)
+		return &out, fmt.Errorf("error running systemctl list-units --all --plain --type=%s --no-legend: %w", UnitType, err)
 	}
 
 	return &out, nil

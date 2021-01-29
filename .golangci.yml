@@ -8,7 +8,7 @@ run:
 linters:
   enable:
     - asciicheck
-    - nolintlint
+    # - nolintlint # different linters with different GOOS fire issues GOOS=linux 'structcheck' unused, under GOOS=darwin it's required
     - errorlint
     # - ifshort # doesn't really work... (x := someFunc(); if x ... then x used later, linter complains var isn't used)
   fast: true

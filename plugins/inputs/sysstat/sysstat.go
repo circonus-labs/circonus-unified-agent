@@ -5,6 +5,7 @@ package sysstat
 import (
 	"bufio"
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -194,7 +195,7 @@ func (s *Sysstat) collect() error {
 		if err := os.Remove(s.tmpFile); err != nil {
 			s.Log.Errorf("Failed to remove tmp file after %q command: %s", strings.Join(cmd.Args, " "), err.Error())
 		}
-		return fmt.Errorf("failed to run command %s: %s - %s", strings.Join(cmd.Args, " "), err, string(out))
+		return fmt.Errorf("failed to run command %s: %w - %s", strings.Join(cmd.Args, " "), err, string(out))
 	}
 	return nil
 }
@@ -235,7 +236,7 @@ func (s *Sysstat) parse(acc cua.Accumulator, option string, ts time.Time) error 
 		return err
 	}
 	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("running command '%s' failed: %s", strings.Join(cmd.Args, " "), err)
+		return fmt.Errorf("running command '%s' failed: %w", strings.Join(cmd.Args, " "), err)
 	}
 
 	r := bufio.NewReader(stdout)
@@ -251,7 +252,7 @@ func (s *Sysstat) parse(acc cua.Accumulator, option string, ts time.Time) error 
 	m := make(map[string]groupData)
 	for {
 		record, err := csv.Read()
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			break
 		}
 		if err != nil {
@@ -307,8 +308,7 @@ func (s *Sysstat) parse(acc cua.Accumulator, option string, ts time.Time) error 
 		}
 	}
 	if err := internal.WaitTimeout(cmd, time.Second*5); err != nil {
-		return fmt.Errorf("command %s failed with %s",
-			strings.Join(cmd.Args, " "), err)
+		return fmt.Errorf("command %s failed with %w", strings.Join(cmd.Args, " "), err)
 	}
 	return nil
 }

@@ -191,7 +191,7 @@ func validateDbPath(dbPath string) error {
 	}
 
 	if err != nil {
-		return fmt.Errorf("cannot get system information for db_path file: [%s] - %v", dbPath, err)
+		return fmt.Errorf("cannot get system information for db_path file: [%s] - %w", dbPath, err)
 	}
 
 	if mode := pathInfo.Mode(); !mode.IsRegular() {

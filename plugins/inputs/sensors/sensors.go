@@ -62,7 +62,7 @@ func (s *Sensors) parse(acc cua.Accumulator) error {
 	cmd := execCommand(s.path, "-A", "-u")
 	out, err := internal.StdOutputTimeout(cmd, s.Timeout.Duration)
 	if err != nil {
-		return fmt.Errorf("failed to run command %s: %s - %s", strings.Join(cmd.Args, " "), err, string(out))
+		return fmt.Errorf("failed to run command %s: %w - %s", strings.Join(cmd.Args, " "), err, string(out))
 	}
 	lines := strings.Split(strings.TrimSpace(string(out)), "\n")
 	for _, line := range lines {

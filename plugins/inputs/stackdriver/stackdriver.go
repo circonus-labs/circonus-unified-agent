@@ -637,7 +637,7 @@ func (s *Stackdriver) gatherTimeSeries(
 				dist := p.Value.GetDistributionValue()
 
 				s.Log.Debugf("DISTRIBUTION: %s %v %v\n", tsConf.fieldKey, tags, dist)
-				s.addDistribution(dist, tags, ts, grouper, tsConf, acc)
+				s.addDistribution(dist, tags, ts, grouper, tsConf, acc, tsDesc.MetricKind)
 			} else {
 				var value interface{}
 
@@ -662,7 +662,9 @@ func (s *Stackdriver) gatherTimeSeries(
 	return nil
 }
 
-func distributionToCircHisto(s *Stackdriver, metric *distributionpb.Distribution, options *distributionpb.Distribution_BucketOptions) map[string]int64 {
+func distributionToCircHisto(s *Stackdriver,
+	metric *distributionpb.Distribution,
+	options *distributionpb.Distribution_BucketOptions) map[string]int64 {
 
 	linearBuckets := options.GetLinearBuckets()
 	exponentialBuckets := options.GetExponentialBuckets()
@@ -721,7 +723,9 @@ func distributionToCircHisto(s *Stackdriver, metric *distributionpb.Distribution
 // AddDistribution adds metrics from a distribution value type.
 func (s *Stackdriver) addDistribution(
 	metric *distributionpb.Distribution,
-	tags map[string]string, ts time.Time, grouper *lockedSeriesGrouper, tsConf *timeSeriesConf, acc cua.Accumulator,
+	tags map[string]string, ts time.Time,
+	grouper *lockedSeriesGrouper, tsConf *timeSeriesConf,
+	acc cua.Accumulator, metricKind metricpb.MetricDescriptor_MetricKind,
 ) {
 	field := tsConf.fieldKey
 	name := tsConf.measurement
@@ -742,7 +746,11 @@ func (s *Stackdriver) addDistribution(
 		var histometric cua.Metric = nil
 		for key, value := range circhisto {
 			if histometric == nil {
-				histometric, _ = cuametric.New(field, tags, map[string]interface{}{key: value}, ts, cua.Histogram)
+				mk := cua.Histogram
+				if metricKind == metricpb.MetricDescriptor_CUMULATIVE {
+					mk = cua.CumulativeHistogram
+				}
+				histometric, _ = cuametric.New(field, tags, map[string]interface{}{key: value}, ts, mk)
 			} else {
 				histometric.AddField(key, value)
 			}

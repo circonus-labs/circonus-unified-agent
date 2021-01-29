@@ -6,4 +6,9 @@ run:
     - plugins/parsers/influx
 
 linters:
+  enable:
+    - asciicheck
+    - nolintlint
+    - errorlint
+    # - ifshort # doesn't really work... (x := someFunc(); if x ... then x used later, linter complains var isn't used)
   fast: true

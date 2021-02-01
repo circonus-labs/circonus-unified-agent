@@ -1617,7 +1617,7 @@ var defaultPluginList = map[string]defaultPlugin{
 		Enabled: true,
 		Data: []byte(`
 instance_id="host"
-percpu = false
+percpu = true
 totalcpu = true
 collect_cpu_time = false
 report_active = false`),

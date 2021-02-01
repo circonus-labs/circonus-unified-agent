@@ -1,4 +1,4 @@
-package ipmi_sensor
+package ipmisensor
 
 import (
 	"testing"

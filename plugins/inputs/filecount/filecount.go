@@ -65,11 +65,11 @@ type FileCount struct {
 	Log            cua.Logger
 }
 
-func (_ *FileCount) Description() string {
+func (*FileCount) Description() string {
 	return "Count files in a directory"
 }
 
-func (_ *FileCount) SampleConfig() string { return sampleConfig }
+func (*FileCount) SampleConfig() string { return sampleConfig }
 
 type fileFilterFunc func(os.FileInfo) (bool, error)
 

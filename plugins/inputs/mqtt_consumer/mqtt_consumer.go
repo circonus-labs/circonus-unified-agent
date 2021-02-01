@@ -1,4 +1,4 @@
-package mqtt_consumer
+package mqttconsumer
 
 import (
 	"context"

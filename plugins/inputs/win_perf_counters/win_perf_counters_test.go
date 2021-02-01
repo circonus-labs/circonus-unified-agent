@@ -1,6 +1,6 @@
 // +build windows
 
-package win_perf_counters
+package winperfcounters
 
 import (
 	"errors"
@@ -15,7 +15,7 @@ import (
 )
 
 type testCounter struct {
-	handle PDH_HCOUNTER
+	handle PdhHCounter
 	path   string
 	value  float64
 	status uint32 // allows for tests against specific pdh_error codes, rather than assuming all cases of "value == 0" to indicate error conditions
@@ -56,29 +56,27 @@ func (m *FakePerformanceQuery) Close() error {
 	return nil
 }
 
-func (m *FakePerformanceQuery) AddCounterToQuery(counterPath string) (PDH_HCOUNTER, error) {
+func (m *FakePerformanceQuery) AddCounterToQuery(counterPath string) (PdhHCounter, error) {
 	if !m.openCalled {
 		return 0, fmt.Errorf("AddCounterToQuery: uninitialized query")
 	}
 	if c, ok := m.counters[counterPath]; ok {
 		return c.handle, nil
-	} else {
-		return 0, fmt.Errorf("AddCounterToQuery: invalid counter path: %s", counterPath)
 	}
+	return 0, fmt.Errorf("AddCounterToQuery: invalid counter path: %s", counterPath)
 }
 
-func (m *FakePerformanceQuery) AddEnglishCounterToQuery(counterPath string) (PDH_HCOUNTER, error) {
+func (m *FakePerformanceQuery) AddEnglishCounterToQuery(counterPath string) (PdhHCounter, error) {
 	if !m.openCalled {
 		return 0, fmt.Errorf("AddEnglishCounterToQuery: uninitialized query")
 	}
 	if c, ok := m.counters[counterPath]; ok {
 		return c.handle, nil
-	} else {
-		return 0, fmt.Errorf("AddEnglishCounterToQuery: invalid counter path: %s", counterPath)
 	}
+	return 0, fmt.Errorf("AddEnglishCounterToQuery: invalid counter path: %s", counterPath)
 }
 
-func (m *FakePerformanceQuery) GetCounterPath(counterHandle PDH_HCOUNTER) (string, error) {
+func (m *FakePerformanceQuery) GetCounterPath(counterHandle PdhHCounter) (string, error) {
 	for _, counter := range m.counters {
 		if counter.handle == counterHandle {
 			return counter.path, nil
@@ -90,12 +88,11 @@ func (m *FakePerformanceQuery) GetCounterPath(counterHandle PDH_HCOUNTER) (strin
 func (m *FakePerformanceQuery) ExpandWildCardPath(counterPath string) ([]string, error) {
 	if e, ok := m.expandPaths[counterPath]; ok {
 		return e, nil
-	} else {
-		return []string{}, fmt.Errorf("ExpandWildCardPath: invalid counter path: %s", counterPath)
 	}
+	return []string{}, fmt.Errorf("ExpandWildCardPath: invalid counter path: %s", counterPath)
 }
 
-func (m *FakePerformanceQuery) GetFormattedCounterValueDouble(counterHandle PDH_HCOUNTER) (float64, error) {
+func (m *FakePerformanceQuery) GetFormattedCounterValueDouble(counterHandle PdhHCounter) (float64, error) {
 	if !m.openCalled {
 		return 0, errors.New("GetFormattedCounterValueDouble: uninitialized query")
 	}
@@ -118,7 +115,7 @@ func (m *FakePerformanceQuery) findCounterByPath(counterPath string) *testCounte
 	return nil
 }
 
-func (m *FakePerformanceQuery) findCounterByHandle(counterHandle PDH_HCOUNTER) *testCounter {
+func (m *FakePerformanceQuery) findCounterByHandle(counterHandle PdhHCounter) *testCounter {
 	for _, c := range m.counters {
 		if c.handle == counterHandle {
 			return &c
@@ -127,7 +124,7 @@ func (m *FakePerformanceQuery) findCounterByHandle(counterHandle PDH_HCOUNTER) *
 	return nil
 }
 
-func (m *FakePerformanceQuery) GetFormattedCounterArrayDouble(hCounter PDH_HCOUNTER) ([]CounterValue, error) {
+func (m *FakePerformanceQuery) GetFormattedCounterArrayDouble(hCounter PdhHCounter) ([]CounterValue, error) {
 	if !m.openCalled {
 		return nil, errors.New("GetFormattedCounterArrayDouble: uninitialized query")
 	}
@@ -147,9 +144,8 @@ func (m *FakePerformanceQuery) GetFormattedCounterArrayDouble(hCounter PDH_HCOUN
 					}
 				}
 				return counters, nil
-			} else {
-				return nil, fmt.Errorf("GetFormattedCounterArrayDouble: invalid counter : %d", hCounter)
 			}
+			return nil, fmt.Errorf("GetFormattedCounterArrayDouble: invalid counter : %d", hCounter)
 		}
 	}
 	return nil, fmt.Errorf("GetFormattedCounterArrayDouble: invalid counter : %d, no paths found", hCounter)
@@ -191,7 +187,7 @@ func createCounterMap(counterPaths []string, values []float64, status []uint32) 
 	counters := make(map[string]testCounter)
 	for i, cp := range counterPaths {
 		counters[cp] = testCounter{
-			PDH_HCOUNTER(i),
+			PdhHCounter(i),
 			cp,
 			values[i],
 			status[i],
@@ -247,7 +243,7 @@ func TestCounterPathParsing(t *testing.T) {
 func TestAddItemSimple(t *testing.T) {
 	var err error
 	cps1 := []string{"\\O(I)\\C"}
-	m := Win_PerfCounters{
+	m := WinPerfCounters{
 		Log:        testutil.Logger{},
 		PrintValid: false,
 		Object:     nil,
@@ -269,7 +265,7 @@ func TestAddItemSimple(t *testing.T) {
 func TestAddItemInvalidCountPath(t *testing.T) {
 	var err error
 	cps1 := []string{"\\O\\C"}
-	m := Win_PerfCounters{
+	m := WinPerfCounters{
 		Log:                   testutil.Logger{},
 		PrintValid:            false,
 		Object:                nil,
@@ -293,7 +289,7 @@ func TestParseConfigBasic(t *testing.T) {
 	var err error
 	perfObjects := createPerfObject("m", "O", []string{"I1", "I2"}, []string{"C1", "C2"}, false, false)
 	cps1 := []string{"\\O(I1)\\C1", "\\O(I1)\\C2", "\\O(I2)\\C1", "\\O(I2)\\C2"}
-	m := Win_PerfCounters{
+	m := WinPerfCounters{
 		Log:        testutil.Logger{},
 		PrintValid: false,
 		Object:     perfObjects,
@@ -331,7 +327,7 @@ func TestParseConfigNoInstance(t *testing.T) {
 	var err error
 	perfObjects := createPerfObject("m", "O", []string{"------"}, []string{"C1", "C2"}, false, false)
 	cps1 := []string{"\\O\\C1", "\\O\\C2"}
-	m := Win_PerfCounters{
+	m := WinPerfCounters{
 		Log:                   testutil.Logger{},
 		PrintValid:            false,
 		Object:                perfObjects,
@@ -368,7 +364,7 @@ func TestParseConfigInvalidCounterError(t *testing.T) {
 	var err error
 	perfObjects := createPerfObject("m", "O", []string{"I1", "I2"}, []string{"C1", "C2"}, true, false)
 	cps1 := []string{"\\O(I1)\\C2", "\\O(I2)\\C1", "\\O(I2)\\C2"}
-	m := Win_PerfCounters{
+	m := WinPerfCounters{
 		Log:        testutil.Logger{},
 		PrintValid: false,
 		Object:     perfObjects,
@@ -403,7 +399,7 @@ func TestParseConfigInvalidCounterNoError(t *testing.T) {
 	var err error
 	perfObjects := createPerfObject("m", "O", []string{"I1", "I2"}, []string{"C1", "C2"}, false, false)
 	cps1 := []string{"\\O(I1)\\C2", "\\O(I2)\\C1", "\\O(I2)\\C2"}
-	m := Win_PerfCounters{
+	m := WinPerfCounters{
 		Log:        testutil.Logger{},
 		PrintValid: false,
 		Object:     perfObjects,
@@ -439,7 +435,7 @@ func TestParseConfigTotalExpansion(t *testing.T) {
 	var err error
 	perfObjects := createPerfObject("m", "O", []string{"*"}, []string{"*"}, true, true)
 	cps1 := []string{"\\O(I1)\\C1", "\\O(I1)\\C2", "\\O(_Total)\\C1", "\\O(_Total)\\C2"}
-	m := Win_PerfCounters{
+	m := WinPerfCounters{
 		Log:                   testutil.Logger{},
 		PrintValid:            false,
 		UseWildcardsExpansion: true,
@@ -461,7 +457,7 @@ func TestParseConfigTotalExpansion(t *testing.T) {
 
 	perfObjects[0].IncludeTotal = false
 
-	m = Win_PerfCounters{
+	m = WinPerfCounters{
 		Log:                   testutil.Logger{},
 		PrintValid:            false,
 		UseWildcardsExpansion: true,
@@ -486,7 +482,7 @@ func TestParseConfigExpand(t *testing.T) {
 	var err error
 	perfObjects := createPerfObject("m", "O", []string{"*"}, []string{"*"}, false, false)
 	cps1 := []string{"\\O(I1)\\C1", "\\O(I1)\\C2", "\\O(I2)\\C1", "\\O(I2)\\C2"}
-	m := Win_PerfCounters{
+	m := WinPerfCounters{
 		Log:                   testutil.Logger{},
 		PrintValid:            false,
 		UseWildcardsExpansion: true,
@@ -515,7 +511,7 @@ func TestSimpleGather(t *testing.T) {
 	measurement := "test"
 	perfObjects := createPerfObject(measurement, "O", []string{"I"}, []string{"C"}, false, false)
 	cp1 := "\\O(I)\\C"
-	m := Win_PerfCounters{
+	m := WinPerfCounters{
 		Log:        testutil.Logger{},
 		PrintValid: false,
 		Object:     perfObjects,
@@ -558,12 +554,12 @@ func TestSimpleGatherNoData(t *testing.T) {
 	measurement := "test"
 	perfObjects := createPerfObject(measurement, "O", []string{"I"}, []string{"C"}, false, false)
 	cp1 := "\\O(I)\\C"
-	m := Win_PerfCounters{
+	m := WinPerfCounters{
 		Log:        testutil.Logger{},
 		PrintValid: false,
 		Object:     perfObjects,
 		query: &FakePerformanceQuery{
-			counters: createCounterMap([]string{cp1}, []float64{1.2}, []uint32{PDH_NO_DATA}),
+			counters: createCounterMap([]string{cp1}, []float64{1.2}, []uint32{pdhNoData}),
 			expandPaths: map[string][]string{
 				cp1: {cp1},
 			},
@@ -604,7 +600,7 @@ func TestSimpleGatherWithTimestamp(t *testing.T) {
 	measurement := "test"
 	perfObjects := createPerfObject(measurement, "O", []string{"I"}, []string{"C"}, false, false)
 	cp1 := "\\O(I)\\C"
-	m := Win_PerfCounters{
+	m := WinPerfCounters{
 		Log:                testutil.Logger{},
 		PrintValid:         false,
 		UsePerfCounterTime: true,
@@ -633,19 +629,19 @@ func TestSimpleGatherWithTimestamp(t *testing.T) {
 
 func TestGatherError(t *testing.T) {
 	var err error
-	expected_error := "error while getting value for counter \\O(I)\\C: The information passed is not valid.\r\n"
+	expectedError := "error while getting value for counter \\O(I)\\C: The information passed is not valid.\r\n"
 	if testing.Short() {
 		t.Skip("Skipping long taking test in short mode")
 	}
 	measurement := "test"
 	perfObjects := createPerfObject(measurement, "O", []string{"I"}, []string{"C"}, false, false)
 	cp1 := "\\O(I)\\C"
-	m := Win_PerfCounters{
+	m := WinPerfCounters{
 		Log:        testutil.Logger{},
 		PrintValid: false,
 		Object:     perfObjects,
 		query: &FakePerformanceQuery{
-			counters: createCounterMap([]string{cp1}, []float64{-2}, []uint32{PDH_PLA_VALIDATION_WARNING}),
+			counters: createCounterMap([]string{cp1}, []float64{-2}, []uint32{pdhPLAValidationWarning}),
 			expandPaths: map[string][]string{
 				cp1: {cp1},
 			},
@@ -654,7 +650,7 @@ func TestGatherError(t *testing.T) {
 	var acc1 testutil.Accumulator
 	err = m.Gather(&acc1)
 	require.Error(t, err)
-	require.Equal(t, expected_error, err.Error())
+	require.Equal(t, expectedError, err.Error())
 
 	m.UseWildcardsExpansion = true
 	m.counters = nil
@@ -664,7 +660,7 @@ func TestGatherError(t *testing.T) {
 
 	err = m.Gather(&acc2)
 	require.Error(t, err)
-	require.Equal(t, expected_error, err.Error())
+	require.Equal(t, expectedError, err.Error())
 }
 
 func TestGatherInvalidDataIgnore(t *testing.T) {
@@ -675,12 +671,12 @@ func TestGatherInvalidDataIgnore(t *testing.T) {
 	measurement := "test"
 	perfObjects := createPerfObject(measurement, "O", []string{"I"}, []string{"C1", "C2", "C3"}, false, false)
 	cps1 := []string{"\\O(I)\\C1", "\\O(I)\\C2", "\\O(I)\\C3"}
-	m := Win_PerfCounters{
+	m := WinPerfCounters{
 		Log:        testutil.Logger{},
 		PrintValid: false,
 		Object:     perfObjects,
 		query: &FakePerformanceQuery{
-			counters: createCounterMap(cps1, []float64{1.2, 1, 0}, []uint32{0, PDH_INVALID_DATA, 0}),
+			counters: createCounterMap(cps1, []float64{1.2, 1, 0}, []uint32{0, pdhInvalidData, 0}),
 			expandPaths: map[string][]string{
 				cps1[0]: {cps1[0]},
 				cps1[1]: {cps1[1]},
@@ -728,7 +724,7 @@ func TestGatherRefreshingWithExpansion(t *testing.T) {
 		},
 		vistaAndNewer: true,
 	}
-	m := Win_PerfCounters{
+	m := WinPerfCounters{
 		Log:                     testutil.Logger{},
 		PrintValid:              false,
 		Object:                  perfObjects,
@@ -821,7 +817,7 @@ func TestGatherRefreshingWithoutExpansion(t *testing.T) {
 		},
 		vistaAndNewer: true,
 	}
-	m := Win_PerfCounters{
+	m := WinPerfCounters{
 		Log:                     testutil.Logger{},
 		PrintValid:              false,
 		Object:                  perfObjects,
@@ -937,7 +933,7 @@ func TestGatherTotalNoExpansion(t *testing.T) {
 	measurement := "m"
 	perfObjects := createPerfObject(measurement, "O", []string{"*"}, []string{"C1", "C2"}, true, true)
 	cps1 := []string{"\\O(I1)\\C1", "\\O(I1)\\C2", "\\O(_Total)\\C1", "\\O(_Total)\\C2"}
-	m := Win_PerfCounters{
+	m := WinPerfCounters{
 		Log:                   testutil.Logger{},
 		PrintValid:            false,
 		UseWildcardsExpansion: false,

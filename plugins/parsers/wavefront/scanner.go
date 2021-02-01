@@ -53,7 +53,7 @@ func (s *PointScanner) Scan() (Token, string) {
 	case '.':
 		return DOT, string(ch)
 	case '-':
-		return MINUS_SIGN, string(ch)
+		return MINUSSIGN, string(ch)
 	case '_':
 		return UNDERSCORE, string(ch)
 	case '/':

@@ -8,7 +8,7 @@ import (
 
 type LRUValType = TTLValType
 
-type hashType map[keyType]*list.Element
+type hashType map[KeyType]*list.Element
 
 type LRUCache struct {
 	cap uint       // capacity
@@ -18,7 +18,7 @@ type LRUCache struct {
 
 // Pair is the value of a list node.
 type Pair struct {
-	key   keyType
+	key   KeyType
 	value LRUValType
 }
 
@@ -32,7 +32,7 @@ func NewLRUCache(capacity uint) LRUCache {
 }
 
 // Get a list node from the hash map.
-func (c *LRUCache) Get(key keyType) (LRUValType, bool) {
+func (c *LRUCache) Get(key KeyType) (LRUValType, bool) {
 	// check if list node exists
 	if node, ok := c.m[key]; ok {
 		val := node.Value.(*list.Element).Value.(Pair).value
@@ -44,7 +44,7 @@ func (c *LRUCache) Get(key keyType) (LRUValType, bool) {
 }
 
 // Put key and value in the LRUCache
-func (c *LRUCache) Put(key keyType, value LRUValType) {
+func (c *LRUCache) Put(key KeyType, value LRUValType) {
 	// check if list node exists
 	if node, ok := c.m[key]; ok {
 		// move the node to front
@@ -75,7 +75,7 @@ func (c *LRUCache) Put(key keyType, value LRUValType) {
 	}
 }
 
-func (c *LRUCache) Delete(key keyType) {
+func (c *LRUCache) Delete(key KeyType) {
 	if node, ok := c.m[key]; ok {
 		c.l.Remove(node)
 		delete(c.m, key)

@@ -9,7 +9,7 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 )
 
-type serializer struct {
+type Serializer struct {
 	TimestampUnits time.Duration
 }
 
@@ -38,12 +38,12 @@ type OIMetric struct {
 
 type OIMetrics []OIMetric
 
-func NewSerializer() (*serializer, error) {
-	s := &serializer{}
+func NewSerializer() (*Serializer, error) {
+	s := &Serializer{}
 	return s, nil
 }
 
-func (s *serializer) Serialize(metric cua.Metric) (out []byte, err error) {
+func (s *Serializer) Serialize(metric cua.Metric) (out []byte, err error) {
 	serialized, err := s.createObject(metric)
 	if err != nil {
 		return []byte{}, nil
@@ -51,7 +51,7 @@ func (s *serializer) Serialize(metric cua.Metric) (out []byte, err error) {
 	return serialized, err
 }
 
-func (s *serializer) SerializeBatch(metrics []cua.Metric) (out []byte, err error) {
+func (s *Serializer) SerializeBatch(metrics []cua.Metric) (out []byte, err error) {
 	objects := make([]byte, 0)
 	for _, metric := range metrics {
 		m, err := s.createObject(metric)
@@ -65,7 +65,7 @@ func (s *serializer) SerializeBatch(metrics []cua.Metric) (out []byte, err error
 	return replaced, nil
 }
 
-func (s *serializer) createObject(metric cua.Metric) ([]byte, error) {
+func (s *Serializer) createObject(metric cua.Metric) ([]byte, error) {
 	/*  ServiceNow Operational Intelligence supports an array of JSON objects.
 	** Following elements accepted in the request body:
 		 ** metric_type: 	The name of the metric
@@ -123,9 +123,9 @@ func (s *serializer) createObject(metric cua.Metric) ([]byte, error) {
 		allmetrics = append(allmetrics, oimetric)
 	}
 
-	metricsJson, err := json.Marshal(allmetrics)
+	metricsJSON, err := json.Marshal(allmetrics)
 
-	return metricsJson, err
+	return metricsJSON, err
 }
 
 func verifyValue(v interface{}) bool {

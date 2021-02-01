@@ -149,16 +149,16 @@ const processStats = "/_node/stats/process"
 const pipelinesStats = "/_node/stats/pipelines"
 const pipelineStats = "/_node/stats/pipeline"
 
-func (i *Logstash) Init() error {
-	err := choice.CheckSlice(i.Collect, []string{"pipelines", "process", "jvm"})
+func (logstash *Logstash) Init() error {
+	err := choice.CheckSlice(logstash.Collect, []string{"pipelines", "process", "jvm"})
 	if err != nil {
 		return fmt.Errorf(`cannot verify "collect" setting: %w`, err)
 	}
 	return nil
 }
 
-// createHttpClient create a clients to access API
-func (logstash *Logstash) createHttpClient() (*http.Client, error) {
+// createHTTPClient create a clients to access API
+func (logstash *Logstash) createHTTPClient() (*http.Client, error) {
 	tlsConfig, err := logstash.ClientConfig.TLSConfig()
 	if err != nil {
 		return nil, err
@@ -174,8 +174,8 @@ func (logstash *Logstash) createHttpClient() (*http.Client, error) {
 	return client, nil
 }
 
-// gatherJsonData query the data source and parse the response JSON
-func (logstash *Logstash) gatherJsonData(url string, value interface{}) error {
+// gatherJSONData query the data source and parse the response JSON
+func (logstash *Logstash) gatherJSONData(url string, value interface{}) error {
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return err
@@ -217,7 +217,7 @@ func (logstash *Logstash) gatherJsonData(url string, value interface{}) error {
 func (logstash *Logstash) gatherJVMStats(url string, accumulator cua.Accumulator) error {
 	jvmStats := &JVMStats{}
 
-	err := logstash.gatherJsonData(url, jvmStats)
+	err := logstash.gatherJSONData(url, jvmStats)
 	if err != nil {
 		return err
 	}
@@ -229,7 +229,7 @@ func (logstash *Logstash) gatherJVMStats(url string, accumulator cua.Accumulator
 		"source":       jvmStats.Host,
 	}
 
-	flattener := jsonParser.JSONFlattener{}
+	flattener := jsonParser.Flattener{}
 	err = flattener.FlattenJSON("", jvmStats.JVM)
 	if err != nil {
 		return err
@@ -243,7 +243,7 @@ func (logstash *Logstash) gatherJVMStats(url string, accumulator cua.Accumulator
 func (logstash *Logstash) gatherProcessStats(url string, accumulator cua.Accumulator) error {
 	processStats := &ProcessStats{}
 
-	err := logstash.gatherJsonData(url, processStats)
+	err := logstash.gatherJSONData(url, processStats)
 	if err != nil {
 		return err
 	}
@@ -255,7 +255,7 @@ func (logstash *Logstash) gatherProcessStats(url string, accumulator cua.Accumul
 		"source":       processStats.Host,
 	}
 
-	flattener := jsonParser.JSONFlattener{}
+	flattener := jsonParser.Flattener{}
 	err = flattener.FlattenJSON("", processStats.Process)
 	if err != nil {
 		return err
@@ -281,7 +281,7 @@ func (logstash *Logstash) gatherPluginsStats(
 		for tag, value := range tags {
 			pluginTags[tag] = value
 		}
-		flattener := jsonParser.JSONFlattener{}
+		flattener := jsonParser.Flattener{}
 		err := flattener.FlattenJSON("", plugin.Events)
 		if err != nil {
 			return err
@@ -310,7 +310,7 @@ func (logstash *Logstash) gatherQueueStats(
 	}
 
 	if queue.Type != "memory" {
-		flattener := jsonParser.JSONFlattener{}
+		flattener := jsonParser.Flattener{}
 		err = flattener.FlattenJSON("", queue.Capacity)
 		if err != nil {
 			return err
@@ -333,7 +333,7 @@ func (logstash *Logstash) gatherQueueStats(
 func (logstash *Logstash) gatherPipelineStats(url string, accumulator cua.Accumulator) error {
 	pipelineStats := &PipelineStats{}
 
-	err := logstash.gatherJsonData(url, pipelineStats)
+	err := logstash.gatherJSONData(url, pipelineStats)
 	if err != nil {
 		return err
 	}
@@ -345,7 +345,7 @@ func (logstash *Logstash) gatherPipelineStats(url string, accumulator cua.Accumu
 		"source":       pipelineStats.Host,
 	}
 
-	flattener := jsonParser.JSONFlattener{}
+	flattener := jsonParser.Flattener{}
 	err = flattener.FlattenJSON("", pipelineStats.Pipeline.Events)
 	if err != nil {
 		return err
@@ -377,7 +377,7 @@ func (logstash *Logstash) gatherPipelineStats(url string, accumulator cua.Accumu
 func (logstash *Logstash) gatherPipelinesStats(url string, accumulator cua.Accumulator) error {
 	pipelinesStats := &PipelinesStats{}
 
-	err := logstash.gatherJsonData(url, pipelinesStats)
+	err := logstash.gatherJSONData(url, pipelinesStats)
 	if err != nil {
 		return err
 	}
@@ -391,7 +391,7 @@ func (logstash *Logstash) gatherPipelinesStats(url string, accumulator cua.Accum
 			"source":       pipelinesStats.Host,
 		}
 
-		flattener := jsonParser.JSONFlattener{}
+		flattener := jsonParser.Flattener{}
 		err := flattener.FlattenJSON("", pipeline.Events)
 		if err != nil {
 			return err
@@ -423,7 +423,7 @@ func (logstash *Logstash) gatherPipelinesStats(url string, accumulator cua.Accum
 // Gather ask this plugin to start gathering metrics
 func (logstash *Logstash) Gather(accumulator cua.Accumulator) error {
 	if logstash.client == nil {
-		client, err := logstash.createHttpClient()
+		client, err := logstash.createHTTPClient()
 
 		if err != nil {
 			return err
@@ -432,40 +432,40 @@ func (logstash *Logstash) Gather(accumulator cua.Accumulator) error {
 	}
 
 	if choice.Contains("jvm", logstash.Collect) {
-		jvmUrl, err := url.Parse(logstash.URL + jvmStats)
+		jvmURL, err := url.Parse(logstash.URL + jvmStats)
 		if err != nil {
 			return err
 		}
-		if err := logstash.gatherJVMStats(jvmUrl.String(), accumulator); err != nil {
+		if err := logstash.gatherJVMStats(jvmURL.String(), accumulator); err != nil {
 			return err
 		}
 	}
 
 	if choice.Contains("process", logstash.Collect) {
-		processUrl, err := url.Parse(logstash.URL + processStats)
+		processURL, err := url.Parse(logstash.URL + processStats)
 		if err != nil {
 			return err
 		}
-		if err := logstash.gatherProcessStats(processUrl.String(), accumulator); err != nil {
+		if err := logstash.gatherProcessStats(processURL.String(), accumulator); err != nil {
 			return err
 		}
 	}
 
 	if choice.Contains("pipelines", logstash.Collect) {
 		if logstash.SinglePipeline {
-			pipelineUrl, err := url.Parse(logstash.URL + pipelineStats)
+			pipelineURL, err := url.Parse(logstash.URL + pipelineStats)
 			if err != nil {
 				return err
 			}
-			if err := logstash.gatherPipelineStats(pipelineUrl.String(), accumulator); err != nil {
+			if err := logstash.gatherPipelineStats(pipelineURL.String(), accumulator); err != nil {
 				return err
 			}
 		} else {
-			pipelinesUrl, err := url.Parse(logstash.URL + pipelinesStats)
+			pipelinesURL, err := url.Parse(logstash.URL + pipelinesStats)
 			if err != nil {
 				return err
 			}
-			if err := logstash.gatherPipelinesStats(pipelinesUrl.String(), accumulator); err != nil {
+			if err := logstash.gatherPipelinesStats(pipelinesURL.String(), accumulator); err != nil {
 				return err
 			}
 		}

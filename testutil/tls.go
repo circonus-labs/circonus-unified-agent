@@ -9,15 +9,15 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/plugins/common/tls"
 )
 
-type pki struct {
+type PKI struct {
 	path string
 }
 
-func NewPKI(path string) *pki {
-	return &pki{path: path}
+func NewPKI(path string) *PKI {
+	return &PKI{path: path}
 }
 
-func (p *pki) TLSClientConfig() *tls.ClientConfig {
+func (p *PKI) TLSClientConfig() *tls.ClientConfig {
 	return &tls.ClientConfig{
 		TLSCA:   p.CACertPath(),
 		TLSCert: p.ClientCertPath(),
@@ -25,7 +25,7 @@ func (p *pki) TLSClientConfig() *tls.ClientConfig {
 	}
 }
 
-func (p *pki) TLSServerConfig() *tls.ServerConfig {
+func (p *PKI) TLSServerConfig() *tls.ServerConfig {
 	return &tls.ServerConfig{
 		TLSAllowedCACerts: []string{p.CACertPath()},
 		TLSCert:           p.ServerCertPath(),
@@ -36,55 +36,55 @@ func (p *pki) TLSServerConfig() *tls.ServerConfig {
 	}
 }
 
-func (p *pki) ReadCACert() string {
+func (p *PKI) ReadCACert() string {
 	return readCertificate(p.CACertPath())
 }
 
-func (p *pki) CACertPath() string {
+func (p *PKI) CACertPath() string {
 	return path.Join(p.path, "cacert.pem")
 }
 
-func (p *pki) CipherSuite() string {
+func (p *PKI) CipherSuite() string {
 	return "TLS_RSA_WITH_3DES_EDE_CBC_SHA"
 }
 
-func (p *pki) TLSMinVersion() string {
+func (p *PKI) TLSMinVersion() string {
 	return "TLS11"
 }
 
-func (p *pki) TLSMaxVersion() string {
+func (p *PKI) TLSMaxVersion() string {
 	return "TLS12"
 }
 
-func (p *pki) ReadClientCert() string {
+func (p *PKI) ReadClientCert() string {
 	return readCertificate(p.ClientCertPath())
 }
 
-func (p *pki) ClientCertPath() string {
+func (p *PKI) ClientCertPath() string {
 	return path.Join(p.path, "clientcert.pem")
 }
 
-func (p *pki) ReadClientKey() string {
+func (p *PKI) ReadClientKey() string {
 	return readCertificate(p.ClientKeyPath())
 }
 
-func (p *pki) ClientKeyPath() string {
+func (p *PKI) ClientKeyPath() string {
 	return path.Join(p.path, "clientkey.pem")
 }
 
-func (p *pki) ReadServerCert() string {
+func (p *PKI) ReadServerCert() string {
 	return readCertificate(p.ServerCertPath())
 }
 
-func (p *pki) ServerCertPath() string {
+func (p *PKI) ServerCertPath() string {
 	return path.Join(p.path, "servercert.pem")
 }
 
-func (p *pki) ReadServerKey() string {
+func (p *PKI) ReadServerKey() string {
 	return readCertificate(p.ServerKeyPath())
 }
 
-func (p *pki) ServerKeyPath() string {
+func (p *PKI) ServerKeyPath() string {
 	return path.Join(p.path, "serverkey.pem")
 }
 

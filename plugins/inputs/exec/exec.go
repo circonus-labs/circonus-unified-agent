@@ -69,12 +69,12 @@ func (c CommandRunner) Run(
 	command string,
 	timeout time.Duration,
 ) ([]byte, []byte, error) {
-	split_cmd, err := shellquote.Split(command)
-	if err != nil || len(split_cmd) == 0 {
+	splitCmd, err := shellquote.Split(command)
+	if err != nil || len(splitCmd) == 0 {
 		return nil, nil, fmt.Errorf("exec: unable to parse command, %w", err)
 	}
 
-	cmd := exec.Command(split_cmd[0], split_cmd[1:]...)
+	cmd := exec.Command(splitCmd[0], splitCmd[1:]...)
 
 	var (
 		out    bytes.Buffer
@@ -123,7 +123,7 @@ func removeCarriageReturns(b bytes.Buffer) bytes.Buffer {
 			byt, er := b.ReadBytes(0x0D)
 			end := len(byt)
 			if nil == er {
-				end -= 1
+				end--
 			}
 			if nil != byt {
 				buf.Write(byt[:end])
@@ -142,7 +142,7 @@ func removeCarriageReturns(b bytes.Buffer) bytes.Buffer {
 
 func (e *Exec) ProcessCommand(command string, acc cua.Accumulator, wg *sync.WaitGroup) {
 	defer wg.Done()
-	_, isNagios := e.parser.(*nagios.NagiosParser)
+	_, isNagios := e.parser.(*nagios.Parser)
 
 	out, errbuf, runErr := e.runner.Run(command, e.Timeout.Duration)
 	if !isNagios && runErr != nil {

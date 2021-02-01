@@ -127,14 +127,14 @@ func (s *NSD) Gather(acc cua.Accumulator) error {
 		if strings.HasPrefix(stat, "server") {
 			statTokens := strings.Split(stat, ".")
 			if len(statTokens) > 1 {
-				serverId := strings.TrimPrefix(statTokens[0], "server")
-				if _, err := strconv.Atoi(serverId); err == nil {
+				serverID := strings.TrimPrefix(statTokens[0], "server")
+				if _, err := strconv.Atoi(serverID); err == nil {
 					serverTokens := statTokens[1:]
 					field := strings.Join(serverTokens[:], "_")
-					if fieldsServers[serverId] == nil {
-						fieldsServers[serverId] = make(map[string]interface{})
+					if fieldsServers[serverID] == nil {
+						fieldsServers[serverID] = make(map[string]interface{})
 					}
-					fieldsServers[serverId][field] = fieldValue
+					fieldsServers[serverID][field] = fieldValue
 				}
 			}
 		} else {
@@ -144,8 +144,8 @@ func (s *NSD) Gather(acc cua.Accumulator) error {
 	}
 
 	acc.AddFields("nsd", fields, nil)
-	for thisServerId, thisServerFields := range fieldsServers {
-		thisServerTag := map[string]string{"server": thisServerId}
+	for thisServerID, thisServerFields := range fieldsServers {
+		thisServerTag := map[string]string{"server": thisServerID}
 		acc.AddFields("nsd_servers", thisServerFields, thisServerTag)
 	}
 

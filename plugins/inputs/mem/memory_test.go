@@ -55,7 +55,7 @@ func TestMemStats(t *testing.T) {
 	}
 
 	mps.On("VMStat").Return(vms, nil)
-	plugin := &MemStats{ps: &mps}
+	plugin := &Stats{ps: &mps}
 
 	err = plugin.Init()
 	require.NoError(t, err)

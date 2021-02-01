@@ -7,6 +7,7 @@ type StreamingCreator func() cua.StreamingProcessor
 
 // all processors are streaming processors.
 // cua.Processor processors are upgraded to cua.StreamingProcessor
+
 var Processors = map[string]StreamingCreator{}
 
 // Add adds a cua.Processor processor

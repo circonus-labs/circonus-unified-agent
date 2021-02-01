@@ -216,7 +216,7 @@ func assertNagiosState(t *testing.T, m cua.Metric, f map[string]interface{}) {
 }
 
 func TestParse(t *testing.T) {
-	parser := NagiosParser{
+	parser := Parser{
 		MetricName: "nagios_test",
 	}
 

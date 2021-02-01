@@ -21,14 +21,14 @@ var (
 )
 
 // Parser encapsulates a Graphite Parser.
-type GraphiteParser struct {
+type Parser struct {
 	Separator      string
 	Templates      []string
 	DefaultTags    map[string]string
 	templateEngine *templating.Engine
 }
 
-func (p *GraphiteParser) SetDefaultTags(tags map[string]string) {
+func (p *Parser) SetDefaultTags(tags map[string]string) {
 	p.DefaultTags = tags
 }
 
@@ -36,13 +36,13 @@ func NewGraphiteParser(
 	separator string,
 	templates []string,
 	defaultTags map[string]string,
-) (*GraphiteParser, error) {
+) (*Parser, error) {
 	var err error
 
 	if separator == "" {
 		separator = DefaultSeparator
 	}
-	p := &GraphiteParser{
+	p := &Parser{
 		Separator: separator,
 		Templates: templates,
 	}
@@ -59,7 +59,7 @@ func NewGraphiteParser(
 	return p, nil
 }
 
-func (p *GraphiteParser) Parse(buf []byte) ([]cua.Metric, error) {
+func (p *Parser) Parse(buf []byte) ([]cua.Metric, error) {
 	// parse even if the buffer begins with a newline
 	if len(buf) != 0 && buf[0] == '\n' {
 		buf = buf[1:]
@@ -96,7 +96,7 @@ func (p *GraphiteParser) Parse(buf []byte) ([]cua.Metric, error) {
 }
 
 // Parse performs Graphite parsing of a single line.
-func (p *GraphiteParser) ParseLine(line string) (cua.Metric, error) {
+func (p *Parser) ParseLine(line string) (cua.Metric, error) {
 	// Break into 3 fields (name, value, timestamp).
 	fields := strings.Fields(line)
 	if len(fields) != 2 && len(fields) != 3 {
@@ -159,7 +159,7 @@ func (p *GraphiteParser) ParseLine(line string) (cua.Metric, error) {
 
 // ApplyTemplate extracts the template fields from the given line and
 // returns the measurement name and tags.
-func (p *GraphiteParser) ApplyTemplate(line string) (string, map[string]string, string, error) {
+func (p *Parser) ApplyTemplate(line string) (string, map[string]string, string, error) {
 	// Break line into fields (name, value, timestamp), only name is used
 	fields := strings.Fields(line)
 	if len(fields) == 0 {

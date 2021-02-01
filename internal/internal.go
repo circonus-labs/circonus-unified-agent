@@ -26,11 +26,11 @@ import (
 const alphanum string = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
 var (
-	TimeoutErr = errors.New("Command timed out.")
+	ErrTimeout = fmt.Errorf("command timed out")
 
-	NotImplementedError = errors.New("not implemented yet")
+	ErrNotImplemented = fmt.Errorf("not implemented yet")
 
-	VersionAlreadySetError = errors.New("version has already been set")
+	ErrVersionAlreadySet = fmt.Errorf("version has already been set")
 )
 
 // Set via the main module
@@ -58,7 +58,7 @@ type ReadWaitCloser struct {
 // SetVersion sets the agent version
 func SetVersion(v string) error {
 	if version != "" {
-		return VersionAlreadySetError
+		return ErrVersionAlreadySet
 	}
 	version = v
 	return nil
@@ -357,7 +357,7 @@ func parseUnix(format string, timestamp interface{}) (time.Time, error) {
 	case "unix_ns":
 		return time.Unix(0, integer).UTC(), nil
 	default:
-		return time.Unix(0, 0), errors.New("unsupported type")
+		return time.Unix(0, 0), fmt.Errorf("unsupported type")
 	}
 }
 
@@ -389,7 +389,7 @@ func parseComponents(timestamp interface{}) (int64, int64, error) {
 		integer, fractional := math.Modf(ts)
 		return int64(integer), int64(fractional * 1e9), nil
 	default:
-		return 0, 0, errors.New("unsupported type")
+		return 0, 0, fmt.Errorf("unsupported type")
 	}
 }
 
@@ -420,6 +420,6 @@ func parseTime(format string, timestamp interface{}, location string) (time.Time
 		}
 		return time.ParseInLocation(format, ts, loc)
 	default:
-		return time.Unix(0, 0), errors.New("unsupported type")
+		return time.Unix(0, 0), fmt.Errorf("unsupported type")
 	}
 }

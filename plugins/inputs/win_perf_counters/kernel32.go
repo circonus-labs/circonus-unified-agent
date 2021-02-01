@@ -30,7 +30,7 @@
 
 // +build windows
 
-package win_perf_counters
+package winperfcounters
 
 import (
 	"syscall"
@@ -57,17 +57,17 @@ var (
 	libkrnDll *syscall.DLL
 
 	// Functions
-	krn_FileTimeToSystemTime    *syscall.Proc
-	krn_FileTimeToLocalFileTime *syscall.Proc
-	krn_LocalFileTimeToFileTime *syscall.Proc
-	krn_WideCharToMultiByte     *syscall.Proc
+	krnFileTimeToSystemTime    *syscall.Proc
+	krnFileTimeToLocalFileTime *syscall.Proc
+	krnLocalFileTimeToFileTime *syscall.Proc
+	krnWideCharToMultiByte     *syscall.Proc
 )
 
 func init() {
 	libkrnDll = syscall.MustLoadDLL("Kernel32.dll")
 
-	krn_FileTimeToSystemTime = libkrnDll.MustFindProc("FileTimeToSystemTime")
-	krn_FileTimeToLocalFileTime = libkrnDll.MustFindProc("FileTimeToLocalFileTime")
-	krn_LocalFileTimeToFileTime = libkrnDll.MustFindProc("LocalFileTimeToFileTime")
-	krn_WideCharToMultiByte = libkrnDll.MustFindProc("WideCharToMultiByte")
+	krnFileTimeToSystemTime = libkrnDll.MustFindProc("FileTimeToSystemTime")
+	krnFileTimeToLocalFileTime = libkrnDll.MustFindProc("FileTimeToLocalFileTime")
+	krnLocalFileTimeToFileTime = libkrnDll.MustFindProc("LocalFileTimeToFileTime")
+	krnWideCharToMultiByte = libkrnDll.MustFindProc("WideCharToMultiByte")
 }

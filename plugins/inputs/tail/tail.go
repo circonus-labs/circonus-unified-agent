@@ -293,17 +293,18 @@ func parseLine(parser parsers.Parser, line string, firstLine bool) ([]cua.Metric
 		// line from the file.
 		if firstLine {
 			return parser.Parse([]byte(line))
-		} else {
-			m, err := parser.ParseLine(line)
-			if err != nil {
-				return nil, err
-			}
-
-			if m != nil {
-				return []cua.Metric{m}, nil
-			}
-			return []cua.Metric{}, nil
 		}
+
+		m, err := parser.ParseLine(line)
+		if err != nil {
+			return nil, err
+		}
+
+		if m != nil {
+			return []cua.Metric{m}, nil
+		}
+
+		return []cua.Metric{}, nil
 	default:
 		return parser.Parse([]byte(line))
 	}

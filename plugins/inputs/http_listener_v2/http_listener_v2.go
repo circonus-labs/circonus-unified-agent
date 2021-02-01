@@ -1,4 +1,4 @@
-package http_listener_v2
+package httplistenerv2
 
 import (
 	"compress/gzip"

@@ -25,7 +25,7 @@ type Ecs struct {
 	LabelInclude []string `toml:"ecs_label_include"`
 	LabelExclude []string `toml:"ecs_label_exclude"`
 
-	newClient func(timeout time.Duration, endpoint string, version int) (*EcsClient, error)
+	newClient func(timeout time.Duration, endpoint string, version int) (*Connection, error)
 
 	client              Client
 	filtersCreated      bool

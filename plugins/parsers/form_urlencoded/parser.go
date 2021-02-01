@@ -1,4 +1,4 @@
-package form_urlencoded
+package formurlencoded
 
 import (
 	"bytes"

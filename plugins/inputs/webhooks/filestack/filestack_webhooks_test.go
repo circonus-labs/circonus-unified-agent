@@ -9,7 +9,7 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/testutil"
 )
 
-func postWebhooks(md *FilestackWebhook, eventBody string) *httptest.ResponseRecorder {
+func postWebhooks(md *Webhook, eventBody string) *httptest.ResponseRecorder {
 	req, _ := http.NewRequest("POST", "/filestack", strings.NewReader(eventBody))
 	w := httptest.NewRecorder()
 
@@ -20,7 +20,7 @@ func postWebhooks(md *FilestackWebhook, eventBody string) *httptest.ResponseReco
 
 func TestDialogEvent(t *testing.T) {
 	var acc testutil.Accumulator
-	fs := &FilestackWebhook{Path: "/filestack", acc: &acc}
+	fs := &Webhook{Path: "/filestack", acc: &acc}
 	resp := postWebhooks(fs, DialogOpenJSON())
 	if resp.Code != http.StatusOK {
 		t.Errorf("POST returned HTTP status code %v.\nExpected %v", resp.Code, http.StatusOK)
@@ -38,7 +38,7 @@ func TestDialogEvent(t *testing.T) {
 }
 
 func TestParseError(t *testing.T) {
-	fs := &FilestackWebhook{Path: "/filestack"}
+	fs := &Webhook{Path: "/filestack"}
 	resp := postWebhooks(fs, "")
 	if resp.Code != http.StatusBadRequest {
 		t.Errorf("POST returned HTTP status code %v.\nExpected %v", resp.Code, http.StatusBadRequest)
@@ -47,7 +47,7 @@ func TestParseError(t *testing.T) {
 
 func TestUploadEvent(t *testing.T) {
 	var acc testutil.Accumulator
-	fs := &FilestackWebhook{Path: "/filestack", acc: &acc}
+	fs := &Webhook{Path: "/filestack", acc: &acc}
 	resp := postWebhooks(fs, UploadJSON())
 	if resp.Code != http.StatusOK {
 		t.Errorf("POST returned HTTP status code %v.\nExpected %v", resp.Code, http.StatusOK)
@@ -66,7 +66,7 @@ func TestUploadEvent(t *testing.T) {
 
 func TestVideoConversionEvent(t *testing.T) {
 	var acc testutil.Accumulator
-	fs := &FilestackWebhook{Path: "/filestack", acc: &acc}
+	fs := &Webhook{Path: "/filestack", acc: &acc}
 	resp := postWebhooks(fs, VideoConversionJSON())
 	if resp.Code != http.StatusBadRequest {
 		t.Errorf("POST returned HTTP status code %v.\nExpected %v", resp.Code, http.StatusBadRequest)

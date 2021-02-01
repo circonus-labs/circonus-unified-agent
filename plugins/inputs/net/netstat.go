@@ -9,21 +9,21 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs/system"
 )
 
-type NetStats struct {
+type Stats struct {
 	ps system.PS
 }
 
-func (_ *NetStats) Description() string {
+func (*Stats) Description() string {
 	return "Read TCP metrics such as established, time wait and sockets counts."
 }
 
 var tcpstatSampleConfig = ""
 
-func (_ *NetStats) SampleConfig() string {
+func (*Stats) SampleConfig() string {
 	return tcpstatSampleConfig
 }
 
-func (s *NetStats) Gather(acc cua.Accumulator) error {
+func (s *Stats) Gather(acc cua.Accumulator) error {
 	netconns, err := s.ps.NetConnections()
 	if err != nil {
 		return fmt.Errorf("error getting net connections info: %w", err)
@@ -35,7 +35,7 @@ func (s *NetStats) Gather(acc cua.Accumulator) error {
 	tags := map[string]string{}
 	for _, netcon := range netconns {
 		if netcon.Type == syscall.SOCK_DGRAM {
-			counts["UDP"] += 1
+			counts["UDP"]++
 			continue // UDP has no status
 		}
 		c, ok := counts[netcon.Status]
@@ -67,6 +67,6 @@ func (s *NetStats) Gather(acc cua.Accumulator) error {
 
 func init() {
 	inputs.Add("netstat", func() cua.Input {
-		return &NetStats{ps: system.NewSystemPS()}
+		return &Stats{ps: system.NewSystemPS()}
 	})
 }

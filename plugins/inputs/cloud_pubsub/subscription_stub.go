@@ -1,4 +1,4 @@
-package cloud_pubsub
+package cloudpubsub
 
 import (
 	"context"

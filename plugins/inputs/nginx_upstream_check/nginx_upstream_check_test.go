@@ -1,4 +1,4 @@
-package nginx_upstream_check
+package nginxupstreamcheck
 
 import (
 	"fmt"
@@ -56,7 +56,7 @@ func TestNginxUpstreamCheckData(test *testing.T) {
 	}))
 	defer testServer.Close()
 
-	check := NewNginxUpstreamCheck()
+	check := NewUpstreamCheck()
 	check.URL = fmt.Sprintf("%s/status", testServer.URL)
 
 	var accumulator testutil.Accumulator
@@ -120,7 +120,7 @@ func TestNginxUpstreamCheckRequest(test *testing.T) {
 	}))
 	defer testServer.Close()
 
-	check := NewNginxUpstreamCheck()
+	check := NewUpstreamCheck()
 	check.URL = fmt.Sprintf("%s/status", testServer.URL)
 	check.Headers["X-test"] = "test-value"
 	check.HostHeader = "status.local"

@@ -541,7 +541,7 @@ func (m *mockOutput) Write(metrics []cua.Metric) error {
 	m.Lock()
 	defer m.Unlock()
 	if m.failWrite {
-		return fmt.Errorf("Failed Write!")
+		return fmt.Errorf("failed write")
 	}
 
 	if m.metrics == nil {
@@ -581,7 +581,7 @@ func (m *perfOutput) SampleConfig() string {
 
 func (m *perfOutput) Write(metrics []cua.Metric) error {
 	if m.failWrite {
-		return fmt.Errorf("Failed Write!")
+		return fmt.Errorf("failed write")
 	}
 	return nil
 }

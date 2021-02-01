@@ -11,13 +11,13 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/metric"
 )
 
-type ValueParser struct {
+type Parser struct {
 	MetricName  string
 	DataType    string
 	DefaultTags map[string]string
 }
 
-func (v *ValueParser) Parse(buf []byte) ([]cua.Metric, error) {
+func (v *Parser) Parse(buf []byte) ([]cua.Metric, error) {
 	vStr := string(bytes.TrimSpace(bytes.Trim(buf, "\x00")))
 
 	// unless it's a string, separate out any fields in the buffer,
@@ -56,7 +56,7 @@ func (v *ValueParser) Parse(buf []byte) ([]cua.Metric, error) {
 	return []cua.Metric{metric}, nil
 }
 
-func (v *ValueParser) ParseLine(line string) (cua.Metric, error) {
+func (v *Parser) ParseLine(line string) (cua.Metric, error) {
 	metrics, err := v.Parse([]byte(line))
 
 	if err != nil {
@@ -70,6 +70,6 @@ func (v *ValueParser) ParseLine(line string) (cua.Metric, error) {
 	return metrics[0], nil
 }
 
-func (v *ValueParser) SetDefaultTags(tags map[string]string) {
+func (v *Parser) SetDefaultTags(tags map[string]string) {
 	v.DefaultTags = tags
 }

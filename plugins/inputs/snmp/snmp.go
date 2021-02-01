@@ -251,7 +251,7 @@ func (f *Field) init() error {
 		return nil
 	}
 
-	_, oidNum, oidText, conversion, err := SnmpTranslate(f.Oid)
+	_, oidNum, oidText, conversion, err := TranslateOID(f.Oid)
 	if err != nil {
 		return fmt.Errorf("translating: %w", err)
 	}
@@ -455,7 +455,7 @@ func (t Table) Build(gs snmpConnection, walk bool) (*RTable, error) {
 					i := f.OidIndexLength + 1 // leading separator
 					idx = strings.Map(func(r rune) rune {
 						if r == '.' {
-							i -= 1
+							i--
 						}
 						if i < 1 {
 							return -1
@@ -467,7 +467,7 @@ func (t Table) Build(gs snmpConnection, walk bool) (*RTable, error) {
 				// snmptranslate table field value here
 				if f.Translate {
 					if entOid, ok := ent.Value.(string); ok {
-						_, _, oidText, _, err := SnmpTranslate(entOid)
+						_, _, oidText, _, err := TranslateOID(entOid)
 						if err == nil {
 							// If no error translating, the original value for ent.Value should be replaced
 							ent.Value = oidText
@@ -730,7 +730,7 @@ func snmpTable(oid string) (mibName string, oidNum string, oidText string, field
 }
 
 func snmpTableCall(oid string) (mibName string, oidNum string, oidText string, fields []Field, err error) {
-	mibName, oidNum, oidText, _, err = SnmpTranslate(oid)
+	mibName, oidNum, oidText, _, err = TranslateOID(oid)
 	if err != nil {
 		return "", "", "", nil, fmt.Errorf("translating: %w", err)
 	}
@@ -800,7 +800,7 @@ var snmpTranslateCachesLock sync.Mutex
 var snmpTranslateCaches map[string]snmpTranslateCache
 
 // snmpTranslate resolves the given OID.
-func SnmpTranslate(oid string) (mibName string, oidNum string, oidText string, conversion string, err error) {
+func TranslateOID(oid string) (mibName string, oidNum string, oidText string, conversion string, err error) {
 	snmpTranslateCachesLock.Lock()
 	if snmpTranslateCaches == nil {
 		snmpTranslateCaches = map[string]snmpTranslateCache{}
@@ -826,7 +826,7 @@ func SnmpTranslate(oid string) (mibName string, oidNum string, oidText string, c
 	return stc.mibName, stc.oidNum, stc.oidText, stc.conversion, stc.err
 }
 
-func SnmpTranslateForce(oid string, mibName string, oidNum string, oidText string, conversion string) {
+func TranslateForce(oid string, mibName string, oidNum string, oidText string, conversion string) {
 	snmpTranslateCachesLock.Lock()
 	defer snmpTranslateCachesLock.Unlock()
 	if snmpTranslateCaches == nil {
@@ -842,7 +842,7 @@ func SnmpTranslateForce(oid string, mibName string, oidNum string, oidText strin
 	snmpTranslateCaches[oid] = stc
 }
 
-func SnmpTranslateClear() {
+func TranslateClear() {
 	snmpTranslateCachesLock.Lock()
 	defer snmpTranslateCachesLock.Unlock()
 	snmpTranslateCaches = map[string]snmpTranslateCache{}

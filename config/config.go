@@ -1242,7 +1242,7 @@ func (c *Config) buildInput(name string, tbl *ast.Table) (*models.InputConfig, e
 	if node, ok := tbl.Fields["tags"]; ok {
 		if subtbl, ok := node.(*ast.Table); ok {
 			if err := c.toml.UnmarshalTable(subtbl, cp.Tags); err != nil {
-				return nil, fmt.Errorf("could not parse tags for input %s\n", name)
+				return nil, fmt.Errorf("could not parse tags for input %s", name)
 			}
 		}
 	}

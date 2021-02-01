@@ -16,14 +16,14 @@ type Disk struct {
 	Status      string
 }
 
-type hddtemp struct {
+type HDDTemp struct {
 }
 
-func New() *hddtemp {
-	return &hddtemp{}
+func New() *HDDTemp {
+	return &HDDTemp{}
 }
 
-func (h *hddtemp) Fetch(address string) ([]Disk, error) {
+func (h *HDDTemp) Fetch(address string) ([]Disk, error) {
 	var (
 		err    error
 		conn   net.Conn

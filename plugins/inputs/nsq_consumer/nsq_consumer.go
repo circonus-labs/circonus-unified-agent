@@ -1,4 +1,4 @@
-package nsq_consumer
+package nsqconsumer
 
 import (
 	"context"

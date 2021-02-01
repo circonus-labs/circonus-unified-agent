@@ -1,4 +1,4 @@
-package opcua_client
+package opcuaclient
 
 import (
 	"context"
@@ -220,9 +220,9 @@ func (o *OpcUA) validateOPCTags() error {
 		//search name duplicate
 		if nameEncountered[item.Name] {
 			return fmt.Errorf("name '%s' is duplicated in '%s'", item.Name, item.Name)
-		} else {
-			nameEncountered[item.Name] = true
 		}
+		nameEncountered[item.Name] = true
+
 		//search identifier type
 		switch item.IdentifierType {
 		case "s", "i", "g", "b":

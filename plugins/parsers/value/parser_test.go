@@ -7,7 +7,7 @@ import (
 )
 
 func TestParseValidValues(t *testing.T) {
-	parser := ValueParser{
+	parser := Parser{
 		MetricName: "value_test",
 		DataType:   "integer",
 	}
@@ -20,7 +20,7 @@ func TestParseValidValues(t *testing.T) {
 	}, metrics[0].Fields())
 	assert.Equal(t, map[string]string{}, metrics[0].Tags())
 
-	parser = ValueParser{
+	parser = Parser{
 		MetricName: "value_test",
 		DataType:   "float",
 	}
@@ -33,7 +33,7 @@ func TestParseValidValues(t *testing.T) {
 	}, metrics[0].Fields())
 	assert.Equal(t, map[string]string{}, metrics[0].Tags())
 
-	parser = ValueParser{
+	parser = Parser{
 		MetricName: "value_test",
 		DataType:   "string",
 	}
@@ -46,7 +46,7 @@ func TestParseValidValues(t *testing.T) {
 	}, metrics[0].Fields())
 	assert.Equal(t, map[string]string{}, metrics[0].Tags())
 
-	parser = ValueParser{
+	parser = Parser{
 		MetricName: "value_test",
 		DataType:   "boolean",
 	}
@@ -61,7 +61,7 @@ func TestParseValidValues(t *testing.T) {
 }
 
 func TestParseMultipleValues(t *testing.T) {
-	parser := ValueParser{
+	parser := Parser{
 		MetricName: "value_test",
 		DataType:   "integer",
 	}
@@ -81,7 +81,7 @@ func TestParseMultipleValues(t *testing.T) {
 }
 
 func TestParseLineValidValues(t *testing.T) {
-	parser := ValueParser{
+	parser := Parser{
 		MetricName: "value_test",
 		DataType:   "integer",
 	}
@@ -93,7 +93,7 @@ func TestParseLineValidValues(t *testing.T) {
 	}, metric.Fields())
 	assert.Equal(t, map[string]string{}, metric.Tags())
 
-	parser = ValueParser{
+	parser = Parser{
 		MetricName: "value_test",
 		DataType:   "float",
 	}
@@ -105,7 +105,7 @@ func TestParseLineValidValues(t *testing.T) {
 	}, metric.Fields())
 	assert.Equal(t, map[string]string{}, metric.Tags())
 
-	parser = ValueParser{
+	parser = Parser{
 		MetricName: "value_test",
 		DataType:   "string",
 	}
@@ -117,7 +117,7 @@ func TestParseLineValidValues(t *testing.T) {
 	}, metric.Fields())
 	assert.Equal(t, map[string]string{}, metric.Tags())
 
-	parser = ValueParser{
+	parser = Parser{
 		MetricName: "value_test",
 		DataType:   "boolean",
 	}
@@ -131,7 +131,7 @@ func TestParseLineValidValues(t *testing.T) {
 }
 
 func TestParseInvalidValues(t *testing.T) {
-	parser := ValueParser{
+	parser := Parser{
 		MetricName: "value_test",
 		DataType:   "integer",
 	}
@@ -139,7 +139,7 @@ func TestParseInvalidValues(t *testing.T) {
 	assert.Error(t, err)
 	assert.Len(t, metrics, 0)
 
-	parser = ValueParser{
+	parser = Parser{
 		MetricName: "value_test",
 		DataType:   "float",
 	}
@@ -147,7 +147,7 @@ func TestParseInvalidValues(t *testing.T) {
 	assert.Error(t, err)
 	assert.Len(t, metrics, 0)
 
-	parser = ValueParser{
+	parser = Parser{
 		MetricName: "value_test",
 		DataType:   "boolean",
 	}
@@ -157,21 +157,21 @@ func TestParseInvalidValues(t *testing.T) {
 }
 
 func TestParseLineInvalidValues(t *testing.T) {
-	parser := ValueParser{
+	parser := Parser{
 		MetricName: "value_test",
 		DataType:   "integer",
 	}
 	_, err := parser.ParseLine("55.0")
 	assert.Error(t, err)
 
-	parser = ValueParser{
+	parser = Parser{
 		MetricName: "value_test",
 		DataType:   "float",
 	}
 	_, err = parser.ParseLine("foobar")
 	assert.Error(t, err)
 
-	parser = ValueParser{
+	parser = Parser{
 		MetricName: "value_test",
 		DataType:   "boolean",
 	}
@@ -180,7 +180,7 @@ func TestParseLineInvalidValues(t *testing.T) {
 }
 
 func TestParseValidValuesDefaultTags(t *testing.T) {
-	parser := ValueParser{
+	parser := Parser{
 		MetricName: "value_test",
 		DataType:   "integer",
 	}
@@ -194,7 +194,7 @@ func TestParseValidValuesDefaultTags(t *testing.T) {
 	}, metrics[0].Fields())
 	assert.Equal(t, map[string]string{"test": "tag"}, metrics[0].Tags())
 
-	parser = ValueParser{
+	parser = Parser{
 		MetricName: "value_test",
 		DataType:   "float",
 	}
@@ -208,7 +208,7 @@ func TestParseValidValuesDefaultTags(t *testing.T) {
 	}, metrics[0].Fields())
 	assert.Equal(t, map[string]string{"test": "tag"}, metrics[0].Tags())
 
-	parser = ValueParser{
+	parser = Parser{
 		MetricName: "value_test",
 		DataType:   "string",
 	}
@@ -222,7 +222,7 @@ func TestParseValidValuesDefaultTags(t *testing.T) {
 	}, metrics[0].Fields())
 	assert.Equal(t, map[string]string{"test": "tag"}, metrics[0].Tags())
 
-	parser = ValueParser{
+	parser = Parser{
 		MetricName: "value_test",
 		DataType:   "boolean",
 	}
@@ -238,7 +238,7 @@ func TestParseValidValuesDefaultTags(t *testing.T) {
 }
 
 func TestParseValuesWithNullCharacter(t *testing.T) {
-	parser := ValueParser{
+	parser := Parser{
 		MetricName: "value_test",
 		DataType:   "integer",
 	}

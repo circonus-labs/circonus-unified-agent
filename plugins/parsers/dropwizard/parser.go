@@ -20,8 +20,8 @@ type TimeFunc func() time.Time
 
 // Parser parses json inputs containing dropwizard metrics,
 // either top-level or embedded inside a json field.
-// This parser is using gjson for retrieving paths within the json file.
-type parser struct {
+// This Parser is using gjson for retrieving paths within the json file.
+type Parser struct {
 
 	// an optional json path containing the metric registry object
 	// if left empty, the whole json object is parsed as a metric registry
@@ -55,11 +55,11 @@ type parser struct {
 	seriesParser *influx.Parser
 }
 
-func NewParser() *parser {
+func NewParser() *Parser {
 	handler := influx.NewMetricHandler()
 	seriesParser := influx.NewSeriesParser(handler)
 
-	parser := &parser{
+	parser := &Parser{
 		timeFunc:     time.Now,
 		seriesParser: seriesParser,
 	}
@@ -67,7 +67,7 @@ func NewParser() *parser {
 }
 
 // Parse parses the input bytes to an array of metrics
-func (p *parser) Parse(buf []byte) ([]cua.Metric, error) {
+func (p *Parser) Parse(buf []byte) ([]cua.Metric, error) {
 
 	metrics := make([]cua.Metric, 0)
 
@@ -114,7 +114,7 @@ func (p *parser) Parse(buf []byte) ([]cua.Metric, error) {
 	return metrics, nil
 }
 
-func (p *parser) SetTemplates(separator string, templates []string) error {
+func (p *Parser) SetTemplates(separator string, templates []string) error {
 	if len(templates) == 0 {
 		p.templateEngine = nil
 		return nil
@@ -136,16 +136,16 @@ func (p *parser) SetTemplates(separator string, templates []string) error {
 }
 
 // ParseLine is not supported by the dropwizard format
-func (p *parser) ParseLine(line string) (cua.Metric, error) {
+func (p *Parser) ParseLine(line string) (cua.Metric, error) {
 	return nil, fmt.Errorf("ParseLine not supported: %s, for data format: dropwizard", line)
 }
 
 // SetDefaultTags sets the default tags
-func (p *parser) SetDefaultTags(tags map[string]string) {
+func (p *Parser) SetDefaultTags(tags map[string]string) {
 	p.DefaultTags = tags
 }
 
-func (p *parser) readTags(buf []byte) map[string]string {
+func (p *Parser) readTags(buf []byte) map[string]string {
 
 	if p.TagsPath != "" {
 		var tagsBytes []byte
@@ -171,7 +171,7 @@ func (p *parser) readTags(buf []byte) map[string]string {
 	return tags
 }
 
-func (p *parser) parseTime(buf []byte) (time.Time, error) {
+func (p *Parser) parseTime(buf []byte) (time.Time, error) {
 
 	if p.TimePath != "" {
 		timeFormat := p.TimeFormat
@@ -193,7 +193,7 @@ func (p *parser) parseTime(buf []byte) (time.Time, error) {
 	return p.timeFunc(), nil
 }
 
-func (p *parser) unmarshalMetrics(buf []byte) (map[string]interface{}, error) {
+func (p *Parser) unmarshalMetrics(buf []byte) (map[string]interface{}, error) {
 
 	var registryBytes []byte
 	if p.MetricRegistryPath != "" {
@@ -219,7 +219,7 @@ func (p *parser) unmarshalMetrics(buf []byte) (map[string]interface{}, error) {
 	return jsonOut, nil
 }
 
-func (p *parser) readDWMetrics(metricType string, dwms interface{}, metrics []cua.Metric, tm time.Time) []cua.Metric {
+func (p *Parser) readDWMetrics(metricType string, dwms interface{}, metrics []cua.Metric, tm time.Time) []cua.Metric {
 	if dwmsTyped, ok := dwms.(map[string]interface{}); ok {
 		for dwmName, dwmFields := range dwmsTyped {
 			measurementName := dwmName
@@ -268,6 +268,6 @@ func (p *parser) readDWMetrics(metricType string, dwms interface{}, metrics []cu
 	return metrics
 }
 
-func (p *parser) SetTimeFunc(f TimeFunc) {
+func (p *Parser) SetTimeFunc(f TimeFunc) {
 	p.timeFunc = f
 }

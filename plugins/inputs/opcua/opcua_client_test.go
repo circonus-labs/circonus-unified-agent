@@ -1,4 +1,4 @@
-package opcua_client
+package opcuaclient
 
 import (
 	"fmt"

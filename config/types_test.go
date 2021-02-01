@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/circonus-labs/circonus-unified-agent/config"
-	"github.com/circonus-labs/circonus-unified-agent/plugins/processors/reverse_dns"
+	reversedns "github.com/circonus-labs/circonus-unified-agent/plugins/processors/reverse_dns"
 	"github.com/stretchr/testify/require"
 )
 
@@ -23,7 +23,7 @@ func TestConfigDuration(t *testing.T) {
 `))
 	require.NoError(t, err)
 	require.Len(t, c.Processors, 1)
-	p := c.Processors[0].Processor.(*reverse_dns.ReverseDNS)
+	p := c.Processors[0].Processor.(*reversedns.ReverseDNS)
 	require.EqualValues(t, p.CacheTTL, 3*time.Hour)
 	require.EqualValues(t, p.LookupTimeout, 17*time.Second)
 	require.Equal(t, p.MaxParallelLookups, 13)

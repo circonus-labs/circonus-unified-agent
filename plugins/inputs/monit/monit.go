@@ -358,17 +358,15 @@ func linkMode(s Service) string {
 		return "duplex"
 	} else if s.Link.Duplex == 0 {
 		return "simplex"
-	} else {
-		return "unknown"
 	}
+	return "unknown"
 }
 
 func serviceStatus(s Service) string {
 	if s.Status == 0 {
 		return "running"
-	} else {
-		return "failure"
 	}
+	return "failure"
 }
 
 func pendingAction(s Service) string {
@@ -377,9 +375,8 @@ func pendingAction(s Service) string {
 			return "unknown"
 		}
 		return pendingActions[s.PendingAction-1]
-	} else {
-		return "none"
 	}
+	return "none"
 }
 
 func monitoringMode(s Service) string {

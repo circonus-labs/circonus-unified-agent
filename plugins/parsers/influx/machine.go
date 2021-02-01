@@ -1,3 +1,4 @@
+//nolint
 //line plugins/parsers/influx/machine.go.rl:1
 package influx
 

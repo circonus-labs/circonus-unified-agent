@@ -114,7 +114,7 @@ func NewSerializer(config *Config) (Serializer, error) {
 	case "graphite":
 		serializer, err = NewGraphiteSerializer(config.Prefix, config.Template, config.GraphiteTagSupport, config.GraphiteSeparator, config.Templates)
 	case "json":
-		serializer, err = NewJsonSerializer(config.TimestampUnits)
+		serializer, err = NewJSONSerializer(config.TimestampUnits)
 	case "splunkmetric":
 		serializer, err = NewSplunkmetricSerializer(config.HecRouting, config.SplunkmetricMultiMetric)
 	case "nowmetric":
@@ -158,7 +158,7 @@ func NewPrometheusSerializer(config *Config) (Serializer, error) {
 // 	return wavefront.NewSerializer(prefix, useStrict, sourceOverride)
 // }
 
-func NewJsonSerializer(timestampUnits time.Duration) (Serializer, error) {
+func NewJSONSerializer(timestampUnits time.Duration) (Serializer, error) {
 	return json.NewSerializer(timestampUnits)
 }
 
@@ -166,8 +166,8 @@ func NewCarbon2Serializer(carbon2format string) (Serializer, error) {
 	return carbon2.NewSerializer(carbon2format)
 }
 
-func NewSplunkmetricSerializer(splunkmetric_hec_routing bool, splunkmetric_multimetric bool) (Serializer, error) {
-	return splunkmetric.NewSerializer(splunkmetric_hec_routing, splunkmetric_multimetric)
+func NewSplunkmetricSerializer(splunkmetricHecRouting bool, splunkmetricMultimetric bool) (Serializer, error) {
+	return splunkmetric.NewSerializer(splunkmetricHecRouting, splunkmetricMultimetric)
 }
 
 func NewNowSerializer() (Serializer, error) {
@@ -196,7 +196,7 @@ func NewInfluxSerializer() (Serializer, error) {
 	return influx.NewSerializer(), nil
 }
 
-func NewGraphiteSerializer(prefix, template string, tag_support bool, separator string, templates []string) (Serializer, error) {
+func NewGraphiteSerializer(prefix, template string, tagSupport bool, separator string, templates []string) (Serializer, error) {
 	graphiteTemplates, defaultTemplate, err := graphite.InitGraphiteTemplates(templates)
 
 	if err != nil {
@@ -211,10 +211,10 @@ func NewGraphiteSerializer(prefix, template string, tag_support bool, separator 
 		separator = "."
 	}
 
-	return &graphite.GraphiteSerializer{
+	return &graphite.Serializer{
 		Prefix:     prefix,
 		Template:   template,
-		TagSupport: tag_support,
+		TagSupport: tagSupport,
 		Separator:  separator,
 		Templates:  graphiteTemplates,
 	}, nil

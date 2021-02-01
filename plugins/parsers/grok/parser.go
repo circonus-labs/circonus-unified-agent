@@ -38,18 +38,18 @@ var timeLayouts = map[string]string{
 }
 
 const (
-	MEASUREMENT       = "measurement"
-	INT               = "int"
-	TAG               = "tag"
-	FLOAT             = "float"
-	STRING            = "string"
-	DURATION          = "duration"
-	DROP              = "drop"
-	EPOCH             = "EPOCH"
-	EPOCH_MILLI       = "EPOCH_MILLI"
-	EPOCH_NANO        = "EPOCH_NANO"
-	SYSLOG_TIMESTAMP  = "SYSLOG_TIMESTAMP"
-	GENERIC_TIMESTAMP = "GENERIC_TIMESTAMP"
+	MEASUREMENT      = "measurement"
+	INT              = "int"
+	TAG              = "tag"
+	FLOAT            = "float"
+	STRING           = "string"
+	DURATION         = "duration"
+	DROP             = "drop"
+	EPOCH            = "EPOCH"
+	EPOCHMILLI       = "EPOCH_MILLI"
+	EPOCHNANO        = "EPOCH_NANO"
+	SYSLOGTIMESTAMP  = "SYSLOG_TIMESTAMP"
+	GENERICTIMESTAMP = "GENERIC_TIMESTAMP"
 )
 
 var (
@@ -161,7 +161,7 @@ func (p *Parser) Compile() error {
 
 	// Combine user-supplied CustomPatterns with DEFAULT_PATTERNS and parse
 	// them together as the same type of pattern.
-	p.CustomPatterns = DEFAULT_PATTERNS + p.CustomPatterns
+	p.CustomPatterns = defaultPatterns + p.CustomPatterns
 	if len(p.CustomPatterns) != 0 {
 		scanner := bufio.NewScanner(strings.NewReader(p.CustomPatterns))
 		p.addCustomPatterns(scanner)
@@ -299,21 +299,21 @@ func (p *Parser) ParseLine(line string) (cua.Metric, error) {
 				ts = ts.Add(time.Duration(nanosec) * time.Nanosecond)
 			}
 			timestamp = ts
-		case EPOCH_MILLI:
+		case EPOCHMILLI:
 			ms, err := strconv.ParseInt(v, 10, 64)
 			if err != nil {
 				log.Printf("E! Error parsing %s to int: %s", v, err)
 			} else {
 				timestamp = time.Unix(0, ms*int64(time.Millisecond))
 			}
-		case EPOCH_NANO:
+		case EPOCHNANO:
 			iv, err := strconv.ParseInt(v, 10, 64)
 			if err != nil {
 				log.Printf("E! Error parsing %s to int: %s", v, err)
 			} else {
 				timestamp = time.Unix(0, iv)
 			}
-		case SYSLOG_TIMESTAMP:
+		case SYSLOGTIMESTAMP:
 			ts, err := time.ParseInLocation(time.Stamp, v, p.loc)
 			if err == nil {
 				if ts.Year() == 0 {
@@ -323,7 +323,7 @@ func (p *Parser) ParseLine(line string) (cua.Metric, error) {
 			} else {
 				log.Printf("E! Error parsing %s to time layout [%s]: %s", v, t, err)
 			}
-		case GENERIC_TIMESTAMP:
+		case GENERICTIMESTAMP:
 			var foundTs bool
 			// first try timestamp layouts that we've already found
 			for _, layout := range p.foundTsLayouts {

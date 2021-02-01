@@ -1,4 +1,4 @@
-package nginx_sts
+package nginxsts
 
 import (
 	"fmt"
@@ -177,8 +177,8 @@ func TestNginxPlusGeneratesMetrics(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	n := &NginxSTS{
-		Urls: []string{fmt.Sprintf("%s/status", ts.URL)},
+	n := &STS{
+		URLs: []string{fmt.Sprintf("%s/status", ts.URL)},
 	}
 
 	var acc testutil.Accumulator

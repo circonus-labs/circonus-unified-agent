@@ -403,7 +403,7 @@ func (e *Elasticsearch) gatherNodeStats(url string, acc cua.Accumulator) error {
 			if s == nil {
 				continue
 			}
-			f := jsonparser.JSONFlattener{}
+			f := jsonparser.Flattener{}
 			// parse Json, ignoring strings and bools
 			err := f.FlattenJSON("", s)
 			if err != nil {
@@ -485,7 +485,7 @@ func (e *Elasticsearch) gatherClusterStats(url string, acc cua.Accumulator) erro
 	}
 
 	for p, s := range stats {
-		f := jsonparser.JSONFlattener{}
+		f := jsonparser.Flattener{}
 		// parse json, including bools and strings
 		err := f.FullFlattenJSON("", s, true, true)
 		if err != nil {
@@ -519,7 +519,7 @@ func (e *Elasticsearch) gatherIndicesStats(url string, acc cua.Accumulator) erro
 	// All Stats
 	for m, s := range indicesStats.All {
 		// parse Json, ignoring strings and bools
-		jsonParser := jsonparser.JSONFlattener{}
+		jsonParser := jsonparser.Flattener{}
 		err := jsonParser.FullFlattenJSON("_", s, true, true)
 		if err != nil {
 			return err
@@ -535,7 +535,7 @@ func (e *Elasticsearch) gatherIndicesStats(url string, acc cua.Accumulator) erro
 			"total":     index.Total,
 		}
 		for m, s := range stats {
-			f := jsonparser.JSONFlattener{}
+			f := jsonparser.Flattener{}
 			// parse Json, getting strings and bools
 			err := f.FullFlattenJSON("", s, true, true)
 			if err != nil {
@@ -549,7 +549,7 @@ func (e *Elasticsearch) gatherIndicesStats(url string, acc cua.Accumulator) erro
 				for _, shard := range shards {
 
 					// Get Shard Stats
-					flattened := jsonparser.JSONFlattener{}
+					flattened := jsonparser.Flattener{}
 					err := flattened.FullFlattenJSON("", shard, true, true)
 					if err != nil {
 						return err

@@ -84,7 +84,7 @@ func (pg *testPgrep) Pattern(pattern string) ([]PID, error) {
 	return pg.pids, pg.err
 }
 
-func (pg *testPgrep) Uid(user string) ([]PID, error) {
+func (pg *testPgrep) UID(user string) ([]PID, error) {
 	return pg.pids, pg.err
 }
 

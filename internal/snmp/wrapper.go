@@ -146,7 +146,7 @@ func NewWrapper(s ClientConfig) (GosnmpWrapper, error) {
 // GoSNMP struct's corresponding fields.  This shouldn't be called
 // after using the wrapped GoSNMP struct, for example after
 // connecting.
-func (gs *GosnmpWrapper) SetAgent(agent string) error {
+func (gsw *GosnmpWrapper) SetAgent(agent string) error {
 	if !strings.Contains(agent, "://") {
 		agent = "udp://" + agent
 	}
@@ -158,14 +158,14 @@ func (gs *GosnmpWrapper) SetAgent(agent string) error {
 
 	switch u.Scheme {
 	case "tcp":
-		gs.Transport = "tcp"
+		gsw.Transport = "tcp"
 	case "", "udp":
-		gs.Transport = "udp"
+		gsw.Transport = "udp"
 	default:
 		return fmt.Errorf("unsupported scheme: %v", u.Scheme)
 	}
 
-	gs.Target = u.Hostname()
+	gsw.Target = u.Hostname()
 
 	portStr := u.Port()
 	if portStr == "" {
@@ -175,6 +175,6 @@ func (gs *GosnmpWrapper) SetAgent(agent string) error {
 	if err != nil {
 		return fmt.Errorf("parsing port: %w", err)
 	}
-	gs.Port = uint16(port)
+	gsw.Port = uint16(port)
 	return nil
 }

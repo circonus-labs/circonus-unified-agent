@@ -12,18 +12,18 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type RollbarWebhook struct {
+type Webhook struct {
 	Path string
 	acc  cua.Accumulator
 }
 
-func (rb *RollbarWebhook) Register(router *mux.Router, acc cua.Accumulator) {
+func (rb *Webhook) Register(router *mux.Router, acc cua.Accumulator) {
 	router.HandleFunc(rb.Path, rb.eventHandler).Methods("POST")
 	log.Printf("I! Started the webhooks_rollbar on %s\n", rb.Path)
 	rb.acc = acc
 }
 
-func (rb *RollbarWebhook) eventHandler(w http.ResponseWriter, r *http.Request) {
+func (rb *Webhook) eventHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	data, err := ioutil.ReadAll(r.Body)
 	if err != nil {

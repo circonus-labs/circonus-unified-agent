@@ -84,11 +84,11 @@ var sampleConfig = `
   # pid_finder = "pgrep"
 `
 
-func (_ *Procstat) SampleConfig() string {
+func (*Procstat) SampleConfig() string {
 	return sampleConfig
 }
 
-func (_ *Procstat) Description() string {
+func (*Procstat) Description() string {
 	return "Monitor process cpu and memory usage"
 }
 
@@ -224,23 +224,23 @@ func (p *Procstat) addMetric(proc Process, acc cua.Accumulator) {
 		fields[prefix+"created_at"] = createdAt * 1000000 //Convert ms to ns
 	}
 
-	cpu_time, err := proc.Times()
+	cpuTime, err := proc.Times()
 	if err == nil {
-		fields[prefix+"cpu_time_user"] = cpu_time.User
-		fields[prefix+"cpu_time_system"] = cpu_time.System
-		fields[prefix+"cpu_time_idle"] = cpu_time.Idle
-		fields[prefix+"cpu_time_nice"] = cpu_time.Nice
-		fields[prefix+"cpu_time_iowait"] = cpu_time.Iowait
-		fields[prefix+"cpu_time_irq"] = cpu_time.Irq
-		fields[prefix+"cpu_time_soft_irq"] = cpu_time.Softirq
-		fields[prefix+"cpu_time_steal"] = cpu_time.Steal
-		fields[prefix+"cpu_time_guest"] = cpu_time.Guest
-		fields[prefix+"cpu_time_guest_nice"] = cpu_time.GuestNice
+		fields[prefix+"cpu_time_user"] = cpuTime.User
+		fields[prefix+"cpu_time_system"] = cpuTime.System
+		fields[prefix+"cpu_time_idle"] = cpuTime.Idle
+		fields[prefix+"cpu_time_nice"] = cpuTime.Nice
+		fields[prefix+"cpu_time_iowait"] = cpuTime.Iowait
+		fields[prefix+"cpu_time_irq"] = cpuTime.Irq
+		fields[prefix+"cpu_time_soft_irq"] = cpuTime.Softirq
+		fields[prefix+"cpu_time_steal"] = cpuTime.Steal
+		fields[prefix+"cpu_time_guest"] = cpuTime.Guest
+		fields[prefix+"cpu_time_guest_nice"] = cpuTime.GuestNice
 	}
 
-	cpu_perc, err := proc.Percent(time.Duration(0))
+	cpuPerc, err := proc.Percent(time.Duration(0))
 	if err == nil {
-		fields[prefix+"cpu_usage"] = cpu_perc
+		fields[prefix+"cpu_usage"] = cpuPerc
 	}
 
 	mem, err := proc.MemoryInfo()
@@ -253,9 +253,9 @@ func (p *Procstat) addMetric(proc Process, acc cua.Accumulator) {
 		fields[prefix+"memory_locked"] = mem.Locked
 	}
 
-	mem_perc, err := proc.MemoryPercent()
+	memPerc, err := proc.MemoryPercent()
 	if err == nil {
-		fields[prefix+"memory_usage"] = mem_perc
+		fields[prefix+"memory_usage"] = memPerc
 	}
 
 	rlims, err := proc.RlimitUsage(true)
@@ -374,7 +374,7 @@ func (p *Procstat) findPids(acc cua.Accumulator) ([]PID, map[string]string, erro
 		pids, err = f.FullPattern(p.Pattern)
 		tags = map[string]string{"pattern": p.Pattern}
 	} else if p.User != "" {
-		pids, err = f.Uid(p.User)
+		pids, err = f.UID(p.User)
 		tags = map[string]string{"user": p.User}
 	} else if p.SystemdUnit != "" {
 		pids, err = p.systemdUnitPIDs()

@@ -1,4 +1,4 @@
-package docker_log
+package dockerlog
 
 import (
 	"context"

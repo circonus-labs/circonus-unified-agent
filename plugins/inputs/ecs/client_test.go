@@ -152,7 +152,7 @@ func TestEcsClient_Task(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &EcsClient{
+			c := &Connection{
 				client:  tt.client,
 				taskURL: "abc",
 			}
@@ -226,7 +226,7 @@ func TestEcsClient_ContainerStats(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &EcsClient{
+			c := &Connection{
 				client:   tt.client,
 				statsURL: "abc",
 			}

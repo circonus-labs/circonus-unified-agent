@@ -52,14 +52,14 @@ func TestRedis_Commands(t *testing.T) {
 
 	tc := &testClient{}
 
-	rc := &RedisCommand{
+	rc := &command{
 		Command: []interface{}{"llen", "test-list"},
 		Field:   redisListKey,
 		Type:    "integer",
 	}
 
 	r := &Redis{
-		Commands: []*RedisCommand{rc},
+		Commands: []*command{rc},
 		clients:  []Client{tc},
 	}
 

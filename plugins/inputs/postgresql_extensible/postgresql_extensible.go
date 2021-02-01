@@ -1,4 +1,4 @@
-package postgresql_extensible
+package postgresqlextensible
 
 import (
 	"bytes"
@@ -11,7 +11,7 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/internal"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs/postgresql"
-	_ "github.com/jackc/pgx/stdlib"
+	_ "github.com/jackc/pgx/stdlib" //nolint:golint
 )
 
 type Postgresql struct {
@@ -142,48 +142,48 @@ func ReadQueryFromFile(filePath string) (string, error) {
 
 func (p *Postgresql) Gather(acc cua.Accumulator) error {
 	var (
-		err         error
-		sql_query   string
-		query_addon string
-		db_version  int
-		query       string
-		tag_value   string
-		meas_name   string
-		columns     []string
+		err        error
+		sqlQuery   string
+		queryAddon string
+		dbVersion  int
+		query      string
+		tagValue   string
+		measName   string
+		columns    []string
 	)
 
 	// Retrieving the database version
 	query = `SELECT setting::integer / 100 AS version FROM pg_settings WHERE name = 'server_version_num'`
-	if err = p.DB.QueryRow(query).Scan(&db_version); err != nil {
-		db_version = 0
+	if err = p.DB.QueryRow(query).Scan(&dbVersion); err != nil {
+		dbVersion = 0
 	}
 
 	// We loop in order to process each query
 	// Query is not run if Database version does not match the query version.
 	for i := range p.Query {
-		sql_query = p.Query[i].Sqlquery
-		tag_value = p.Query[i].Tagvalue
+		sqlQuery = p.Query[i].Sqlquery
+		tagValue = p.Query[i].Tagvalue
 
 		if p.Query[i].Measurement != "" {
-			meas_name = p.Query[i].Measurement
+			measName = p.Query[i].Measurement
 		} else {
-			meas_name = "postgresql"
+			measName = "postgresql"
 		}
 
 		if p.Query[i].Withdbname {
 			if len(p.Databases) != 0 {
-				query_addon = fmt.Sprintf(` IN ('%s')`,
+				queryAddon = fmt.Sprintf(` IN ('%s')`,
 					strings.Join(p.Databases, "','"))
 			} else {
-				query_addon = " is not null"
+				queryAddon = " is not null"
 			}
 		} else {
-			query_addon = ""
+			queryAddon = ""
 		}
-		sql_query += query_addon
+		sqlQuery += queryAddon
 
-		if p.Query[i].Version <= db_version {
-			rows, err := p.DB.Query(sql_query)
+		if p.Query[i].Version <= dbVersion {
+			rows, err := p.DB.Query(sqlQuery)
 			if err != nil {
 				p.Log.Error(err.Error())
 				continue
@@ -198,15 +198,15 @@ func (p *Postgresql) Gather(acc cua.Accumulator) error {
 			}
 
 			p.AdditionalTags = nil
-			if tag_value != "" {
-				tag_list := strings.Split(tag_value, ",")
-				for t := range tag_list {
-					p.AdditionalTags = append(p.AdditionalTags, tag_list[t])
+			if tagValue != "" {
+				tagList := strings.Split(tagValue, ",")
+				for t := range tagList {
+					p.AdditionalTags = append(p.AdditionalTags, tagList[t])
 				}
 			}
 
 			for rows.Next() {
-				err = p.accRow(meas_name, rows, acc, columns)
+				err = p.accRow(measName, rows, acc, columns)
 				if err != nil {
 					p.Log.Error(err.Error())
 					break
@@ -221,7 +221,7 @@ type scanner interface {
 	Scan(dest ...interface{}) error
 }
 
-func (p *Postgresql) accRow(meas_name string, row scanner, acc cua.Accumulator, columns []string) error {
+func (p *Postgresql) accRow(measName string, row scanner, acc cua.Accumulator, columns []string) error {
 	var (
 		err        error
 		columnVars []interface{}
@@ -300,7 +300,7 @@ COLUMN:
 			fields[col] = *val
 		}
 	}
-	acc.AddFields(meas_name, fields, tags)
+	acc.AddFields(measName, fields, tags)
 	return nil
 }
 

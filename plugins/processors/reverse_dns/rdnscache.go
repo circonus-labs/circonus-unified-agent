@@ -1,4 +1,4 @@
-package reverse_dns
+package reversedns
 
 import (
 	"context"
@@ -22,10 +22,10 @@ type AnyResolver interface {
 	LookupAddr(ctx context.Context, addr string) (names []string, err error)
 }
 
-// ReverseDNSCache is safe to use across multiple goroutines.
+// RDNSCache is safe to use across multiple goroutines.
 // if multiple goroutines request the same IP at the same time, one of the
 // requests will trigger the lookup and the rest will wait for its response.
-type ReverseDNSCache struct {
+type RDNSCache struct {
 	Resolver AnyResolver
 	stats    RDNSCacheStats
 
@@ -60,12 +60,12 @@ type RDNSCacheStats struct {
 	RequestsFilled    uint64
 }
 
-func NewReverseDNSCache(ttl, lookupTimeout time.Duration, workerPoolSize int) *ReverseDNSCache {
+func NewReverseDNSCache(ttl, lookupTimeout time.Duration, workerPoolSize int) *RDNSCache {
 	if workerPoolSize <= 0 {
 		workerPoolSize = defaultMaxWorkers
 	}
 	ctx, cancel := context.WithCancel(context.Background())
-	d := &ReverseDNSCache{
+	d := &RDNSCache{
 		ttl:                 ttl,
 		lookupTimeout:       lookupTimeout,
 		cache:               map[string]*dnslookup{},
@@ -100,14 +100,14 @@ type callbackChannelType chan lookupResult
 // Lookup takes a string representing a parseable ipv4 or ipv6 IP, and blocks
 // until it has resolved to 0-n results, or until its lookup timeout has elapsed.
 // if the lookup timeout elapses, it returns an empty slice.
-func (d *ReverseDNSCache) Lookup(ip string) ([]string, error) {
+func (d *RDNSCache) Lookup(ip string) ([]string, error) {
 	if len(ip) == 0 {
 		return nil, nil
 	}
 	return d.lookup(ip)
 }
 
-func (d *ReverseDNSCache) lookup(ip string) ([]string, error) {
+func (d *RDNSCache) lookup(ip string) ([]string, error) {
 	// check if the value is cached
 	d.rwLock.RLock()
 	result, found := d.lockedGetFromCache(ip)
@@ -134,7 +134,7 @@ func (d *ReverseDNSCache) lookup(ip string) ([]string, error) {
 	}
 }
 
-func (d *ReverseDNSCache) subscribeTo(ip string) callbackChannelType {
+func (d *RDNSCache) subscribeTo(ip string) callbackChannelType {
 	callback := make(callbackChannelType, 1)
 
 	d.rwLock.Lock()
@@ -174,7 +174,7 @@ func (d *ReverseDNSCache) subscribeTo(ip string) callbackChannelType {
 // lockedGetFromCache fetches from the correct internal ip cache.
 // you MUST first do a read or write lock before calling it, and keep locks around
 // the dnslookup that is returned until you clone it.
-func (d *ReverseDNSCache) lockedGetFromCache(ip string) (lookup *dnslookup, found bool) {
+func (d *RDNSCache) lockedGetFromCache(ip string) (lookup *dnslookup, found bool) {
 	lookup, found = d.cache[ip]
 	if found && !lookup.expiresAt.After(time.Now()) {
 		return nil, false
@@ -184,14 +184,14 @@ func (d *ReverseDNSCache) lockedGetFromCache(ip string) (lookup *dnslookup, foun
 
 // lockedSaveToCache stores a lookup in the correct internal ip cache.
 // you MUST first do a write lock before calling it.
-func (d *ReverseDNSCache) lockedSaveToCache(lookup *dnslookup) {
+func (d *RDNSCache) lockedSaveToCache(lookup *dnslookup) {
 	if !lookup.expiresAt.After(time.Now()) {
 		return // don't cache.
 	}
 	d.cache[lookup.ip] = lookup
 }
 
-func (d *ReverseDNSCache) startCleanupWorker(ctx context.Context) {
+func (d *RDNSCache) startCleanupWorker(ctx context.Context) {
 	go func() {
 		cleanupTick := time.NewTicker(10 * time.Second)
 		for {
@@ -205,7 +205,7 @@ func (d *ReverseDNSCache) startCleanupWorker(ctx context.Context) {
 	}()
 }
 
-func (d *ReverseDNSCache) doLookup(ip string) {
+func (d *RDNSCache) doLookup(ip string) {
 	ctx, cancel := context.WithTimeout(context.Background(), d.lookupTimeout)
 	defer cancel()
 	if err := d.sem.Acquire(ctx, 1); err != nil {
@@ -249,7 +249,7 @@ func (d *ReverseDNSCache) doLookup(ip string) {
 	}
 }
 
-func (d *ReverseDNSCache) abandonLookup(ip string, err error) {
+func (d *RDNSCache) abandonLookup(ip string, err error) {
 	d.rwLock.Lock()
 	lookup, found := d.lockedGetFromCache(ip)
 	if !found {
@@ -268,7 +268,7 @@ func (d *ReverseDNSCache) abandonLookup(ip string, err error) {
 	}
 }
 
-func (d *ReverseDNSCache) cleanup() {
+func (d *RDNSCache) cleanup() {
 	now := time.Now()
 	d.expireListLock.Lock()
 	if len(d.expireList) == 0 {
@@ -300,11 +300,11 @@ func (d *ReverseDNSCache) cleanup() {
 
 // blockAllWorkers is a test function that eats up all the worker pool space to
 // make sure workers are done running and there's no room to acquire a new worker.
-func (d *ReverseDNSCache) blockAllWorkers() {
+func (d *RDNSCache) blockAllWorkers() {
 	_ = d.sem.Acquire(context.Background(), int64(d.maxWorkers))
 }
 
-func (d *ReverseDNSCache) Stats() RDNSCacheStats {
+func (d *RDNSCache) Stats() RDNSCacheStats {
 	stats := RDNSCacheStats{}
 	stats.CacheHit = atomic.LoadUint64(&d.stats.CacheHit)
 	stats.CacheMiss = atomic.LoadUint64(&d.stats.CacheMiss)
@@ -314,6 +314,6 @@ func (d *ReverseDNSCache) Stats() RDNSCacheStats {
 	return stats
 }
 
-func (d *ReverseDNSCache) Stop() {
+func (d *RDNSCache) Stop() {
 	d.cancelCleanupWorker()
 }

@@ -1,4 +1,4 @@
-package influxdb_v2_listener
+package influxdbv2listener
 
 import (
 	"bytes"

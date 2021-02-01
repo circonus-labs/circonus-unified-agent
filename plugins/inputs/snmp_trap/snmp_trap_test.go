@@ -1,4 +1,4 @@
-package snmp_trap
+package snmptrap
 
 import (
 	"fmt"

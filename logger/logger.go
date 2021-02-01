@@ -40,15 +40,15 @@ type LogConfig struct {
 	RotationMaxArchives int
 }
 
-type LoggerCreator interface {
+type Creator interface {
 	CreateLogger(config LogConfig) (io.Writer, error)
 }
 
-var loggerRegistry map[string]LoggerCreator
+var loggerRegistry map[string]Creator
 
-func registerLogger(name string, loggerCreator LoggerCreator) {
+func registerLogger(name string, loggerCreator Creator) {
 	if loggerRegistry == nil {
-		loggerRegistry = make(map[string]LoggerCreator)
+		loggerRegistry = make(map[string]Creator)
 	}
 	loggerRegistry[name] = loggerCreator
 }

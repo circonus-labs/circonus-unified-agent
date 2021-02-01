@@ -1,4 +1,4 @@
-package cisco_telemetry_mdt
+package ciscotelemetrymdt
 
 import (
 	"bytes"
@@ -21,8 +21,8 @@ import (
 	telemetry "github.com/cisco-ie/nx-telemetry-proto/telemetry_bis"
 	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials" // Register GRPC gzip decoder to support compressed telemetry
-	_ "google.golang.org/grpc/encoding/gzip"
+	"google.golang.org/grpc/credentials"     // Register GRPC gzip decoder to support compressed telemetry
+	_ "google.golang.org/grpc/encoding/gzip" //nolint:golint
 	"google.golang.org/grpc/peer"
 )
 

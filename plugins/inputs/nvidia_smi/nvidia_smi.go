@@ -1,4 +1,4 @@
-package nvidia_smi
+package nvidiasmi
 
 import (
 	"encoding/xml"

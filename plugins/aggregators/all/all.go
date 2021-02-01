@@ -1,5 +1,6 @@
 package all
 
+//nolint:golint
 import (
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/aggregators/basicstats"
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/aggregators/final"

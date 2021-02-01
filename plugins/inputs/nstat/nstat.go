@@ -18,18 +18,18 @@ var (
 
 // default file paths
 const (
-	NET_NETSTAT = "/net/netstat"
-	NET_SNMP    = "/net/snmp"
-	NET_SNMP6   = "/net/snmp6"
-	NET_PROC    = "/proc"
+	netNETSTAT = "/net/netstat"
+	netSNMP    = "/net/snmp"
+	netSNMP6   = "/net/snmp6"
+	netPROC    = "/proc"
 )
 
 // env variable names
 const (
-	ENV_NETSTAT = "PROC_NET_NETSTAT"
-	ENV_SNMP    = "PROC_NET_SNMP"
-	ENV_SNMP6   = "PROC_NET_SNMP6"
-	ENV_ROOT    = "PROC_ROOT"
+	envNETSTAT = "PROC_NET_NETSTAT"
+	envSNMP    = "PROC_NET_SNMP"
+	envSNMP6   = "PROC_NET_SNMP6"
+	envROOT    = "PROC_ROOT"
 )
 
 type Nstat struct {
@@ -136,13 +136,13 @@ func (ns *Nstat) gatherSNMP6(data []byte, acc cua.Accumulator) error {
 // if it is empty then try read from env variables
 func (ns *Nstat) loadPaths() {
 	if ns.ProcNetNetstat == "" {
-		ns.ProcNetNetstat = proc(ENV_NETSTAT, NET_NETSTAT)
+		ns.ProcNetNetstat = proc(envNETSTAT, netNETSTAT)
 	}
 	if ns.ProcNetSNMP == "" {
-		ns.ProcNetSNMP = proc(ENV_SNMP, NET_SNMP)
+		ns.ProcNetSNMP = proc(envSNMP, netSNMP)
 	}
 	if ns.ProcNetSNMP6 == "" {
-		ns.ProcNetSNMP6 = proc(ENV_SNMP6, NET_SNMP6)
+		ns.ProcNetSNMP6 = proc(envSNMP6, netSNMP6)
 	}
 }
 
@@ -220,9 +220,9 @@ func proc(env, path string) string {
 		return p
 	}
 	// try to read root path, or use default root path
-	root := os.Getenv(ENV_ROOT)
+	root := os.Getenv(envROOT)
 	if root == "" {
-		root = NET_PROC
+		root = netPROC
 	}
 	return root + path
 }

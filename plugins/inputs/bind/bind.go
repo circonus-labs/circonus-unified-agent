@@ -54,7 +54,7 @@ func (b *Bind) Gather(acc cua.Accumulator) error {
 		wg.Add(1)
 		go func(addr *url.URL) {
 			defer wg.Done()
-			acc.AddError(b.gatherUrl(addr, acc))
+			acc.AddError(b.gatherURL(addr, acc))
 		}(addr)
 	}
 
@@ -62,7 +62,7 @@ func (b *Bind) Gather(acc cua.Accumulator) error {
 	return nil
 }
 
-func (b *Bind) gatherUrl(addr *url.URL, acc cua.Accumulator) error {
+func (b *Bind) gatherURL(addr *url.URL, acc cua.Accumulator) error {
 	switch addr.Path {
 	case "":
 		// BIND 9.6 - 9.8
@@ -77,8 +77,7 @@ func (b *Bind) gatherUrl(addr *url.URL, acc cua.Accumulator) error {
 		// BIND 9.9+
 		return b.readStatsXMLv3(addr, acc)
 	default:
-		return fmt.Errorf("URL %s is ambiguous. Please check plugin documentation for supported URL formats.",
-			addr)
+		return fmt.Errorf("'%s' ambiguous, check plugin documentation for supported URL formats", addr)
 	}
 }
 

@@ -96,7 +96,7 @@ func (p *Parser) parseObject(data map[string]interface{}, timestamp time.Time) (
 		tags[k] = v
 	}
 
-	f := JSONFlattener{}
+	f := Flattener{}
 	err := f.FullFlattenJSON("", data, true, true)
 	if err != nil {
 		return nil, err
@@ -234,12 +234,12 @@ func (p *Parser) SetDefaultTags(tags map[string]string) {
 	p.defaultTags = tags
 }
 
-type JSONFlattener struct {
+type Flattener struct {
 	Fields map[string]interface{}
 }
 
 // FlattenJSON flattens nested maps/interfaces into a fields map (ignoring bools and string)
-func (f *JSONFlattener) FlattenJSON(
+func (f *Flattener) FlattenJSON(
 	fieldname string,
 	v interface{}) error {
 	if f.Fields == nil {
@@ -250,7 +250,7 @@ func (f *JSONFlattener) FlattenJSON(
 }
 
 // FullFlattenJSON flattens nested maps/interfaces into a fields map (including bools and string)
-func (f *JSONFlattener) FullFlattenJSON(
+func (f *Flattener) FullFlattenJSON(
 	fieldname string,
 	v interface{},
 	convertString bool,

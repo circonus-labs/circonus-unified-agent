@@ -82,7 +82,7 @@ func (n *NSQ) Gather(acc cua.Accumulator) error {
 	var err error
 
 	if n.httpClient == nil {
-		n.httpClient, err = n.getHttpClient()
+		n.httpClient, err = n.getHTTPClient()
 		if err != nil {
 			return err
 		}
@@ -101,7 +101,7 @@ func (n *NSQ) Gather(acc cua.Accumulator) error {
 	return nil
 }
 
-func (n *NSQ) getHttpClient() (*http.Client, error) {
+func (n *NSQ) getHTTPClient() (*http.Client, error) {
 	tlsConfig, err := n.ClientConfig.TLSConfig()
 	if err != nil {
 		return nil, err
@@ -136,14 +136,14 @@ func (n *NSQ) gatherEndpoint(e string, acc cua.Accumulator) error {
 		return fmt.Errorf(`Error reading body: %w`, err)
 	}
 
-	data := &NSQStatsData{}
+	data := &StatsData{}
 	err = json.Unmarshal(body, data)
 	if err != nil {
 		return fmt.Errorf(`Error parsing response: %w`, err)
 	}
 	// Data was not parsed correctly attempt to use old format.
 	if len(data.Version) < 1 {
-		wrapper := &NSQStats{}
+		wrapper := &Stats{}
 		err = json.Unmarshal(body, wrapper)
 		if err != nil {
 			return fmt.Errorf(`Error parsing response: %w`, err)
@@ -256,13 +256,13 @@ func clientStats(c ClientStats, acc cua.Accumulator, host, version, topic, chann
 	acc.AddFields("nsq_client", fields, tags)
 }
 
-type NSQStats struct {
-	Code int64        `json:"status_code"`
-	Txt  string       `json:"status_txt"`
-	Data NSQStatsData `json:"data"`
+type Stats struct {
+	Code int64     `json:"status_code"`
+	Txt  string    `json:"status_txt"`
+	Data StatsData `json:"data"`
 }
 
-type NSQStatsData struct {
+type StatsData struct {
 	Version   string       `json:"version"`
 	Health    string       `json:"health"`
 	StartTime int64        `json:"start_time"`

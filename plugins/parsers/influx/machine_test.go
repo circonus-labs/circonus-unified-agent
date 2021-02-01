@@ -1,3 +1,4 @@
+//nolint
 package influx_test
 
 import (

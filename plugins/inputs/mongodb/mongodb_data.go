@@ -8,7 +8,7 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 )
 
-type MongodbData struct {
+type MDBData struct {
 	StatLine      *StatLine
 	Fields        map[string]interface{}
 	Tags          map[string]string
@@ -28,8 +28,8 @@ type ColData struct {
 	Fields map[string]interface{}
 }
 
-func NewMongodbData(statLine *StatLine, tags map[string]string) *MongodbData {
-	return &MongodbData{
+func NewMongodbData(statLine *StatLine, tags map[string]string) *MDBData {
+	return &MDBData{
 		StatLine: statLine,
 		Tags:     tags,
 		Fields:   make(map[string]interface{}),
@@ -264,7 +264,7 @@ var ColDataStats = map[string]string{
 	"ok":               "Ok",
 }
 
-func (d *MongodbData) AddDbStats() {
+func (d *MDBData) AddDbStats() {
 	for _, dbstat := range d.StatLine.DbStatsLines {
 		dbStatLine := reflect.ValueOf(&dbstat).Elem()
 		newDbData := &DbData{
@@ -280,7 +280,7 @@ func (d *MongodbData) AddDbStats() {
 	}
 }
 
-func (d *MongodbData) AddColStats() {
+func (d *MDBData) AddColStats() {
 	for _, colstat := range d.StatLine.ColStatsLines {
 		colStatLine := reflect.ValueOf(&colstat).Elem()
 		newColData := &ColData{
@@ -297,7 +297,7 @@ func (d *MongodbData) AddColStats() {
 	}
 }
 
-func (d *MongodbData) AddShardHostStats() {
+func (d *MDBData) AddShardHostStats() {
 	for host, hostStat := range d.StatLine.ShardHostStatsLines {
 		hostStatLine := reflect.ValueOf(&hostStat).Elem()
 		newDbData := &DbData{
@@ -313,7 +313,7 @@ func (d *MongodbData) AddShardHostStats() {
 	}
 }
 
-func (d *MongodbData) AddDefaultStats() {
+func (d *MDBData) AddDefaultStats() {
 	statLine := reflect.ValueOf(d.StatLine).Elem()
 	d.addStat(statLine, DefaultStats)
 	if d.StatLine.NodeType != "" {
@@ -358,18 +358,18 @@ func (d *MongodbData) AddDefaultStats() {
 	}
 }
 
-func (d *MongodbData) addStat(statLine reflect.Value, stats map[string]string) {
+func (d *MDBData) addStat(statLine reflect.Value, stats map[string]string) {
 	for key, value := range stats {
 		val := statLine.FieldByName(value).Interface()
 		d.add(key, val)
 	}
 }
 
-func (d *MongodbData) add(key string, val interface{}) {
+func (d *MDBData) add(key string, val interface{}) {
 	d.Fields[key] = val
 }
 
-func (d *MongodbData) flush(acc cua.Accumulator) {
+func (d *MDBData) flush(acc cua.Accumulator) {
 	acc.AddFields(
 		"mongodb",
 		d.Fields,

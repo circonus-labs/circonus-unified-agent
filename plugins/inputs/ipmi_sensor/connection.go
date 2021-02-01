@@ -1,4 +1,4 @@
-package ipmi_sensor
+package ipmisensor
 
 import (
 	"fmt"
@@ -44,24 +44,24 @@ func NewConnection(server string, privilege string) *Connection {
 	return conn
 }
 
-func (t *Connection) options() []string {
-	intf := t.Interface
+func (c *Connection) options() []string {
+	intf := c.Interface
 	if intf == "" {
 		intf = "lan"
 	}
 
 	options := []string{
-		"-H", t.Hostname,
-		"-U", t.Username,
-		"-P", t.Password,
+		"-H", c.Hostname,
+		"-U", c.Username,
+		"-P", c.Password,
 		"-I", intf,
 	}
 
-	if t.Port != 0 {
-		options = append(options, "-p", strconv.Itoa(t.Port))
+	if c.Port != 0 {
+		options = append(options, "-p", strconv.Itoa(c.Port))
 	}
-	if t.Privilege != "" {
-		options = append(options, "-L", t.Privilege)
+	if c.Privilege != "" {
+		options = append(options, "-L", c.Privilege)
 	}
 	return options
 }

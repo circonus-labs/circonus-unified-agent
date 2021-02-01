@@ -2,7 +2,7 @@
 
 //revive:disable-next-line:var-naming
 // Package win_eventlog Input plugin to collect Windows Event Log messages
-package win_eventlog
+package wineventlog
 
 import (
 	"bufio"
@@ -149,7 +149,7 @@ loop:
 		events, err := w.fetchEvents(w.subscription)
 		if err != nil {
 			switch {
-			case errors.Is(err, ERROR_NO_MORE_ITEMS):
+			case errors.Is(err, ErrnoNoMoreItems):
 				break loop
 			case err != nil:
 				w.Log.Error("Error getting events:", err.Error())
@@ -362,8 +362,8 @@ func (w *WinEventLog) fetchEventHandles(subsHandle EvtHandle) ([]EvtHandle, erro
 
 	err := _EvtNext(subsHandle, eventsNumber, &eventHandles[0], 0, 0, &evtReturned)
 	if err != nil {
-		if errors.Is(err, ERROR_INVALID_OPERATION) && evtReturned == 0 {
-			return nil, ERROR_NO_MORE_ITEMS
+		if errors.Is(err, ErrnoInvalidOperation) && evtReturned == 0 {
+			return nil, ErrnoNoMoreItems
 		}
 		return nil, err
 	}
@@ -402,7 +402,7 @@ func (w *WinEventLog) renderEvent(eventHandle EvtHandle) (Event, error) {
 	var bufferUsed, propertyCount uint32
 
 	event := Event{}
-	err := _EvtRender(0, eventHandle, EvtRenderEventXml, uint32(len(w.buf)), &w.buf[0], &bufferUsed, &propertyCount)
+	err := _EvtRender(0, eventHandle, EvtRenderEventXML, uint32(len(w.buf)), &w.buf[0], &bufferUsed, &propertyCount)
 	if err != nil {
 		return event, err
 	}
@@ -462,7 +462,7 @@ func formatEventString(
 	var bufferUsed uint32
 	err := _EvtFormatMessage(publisherHandle, eventHandle, 0, 0, 0, messageFlag,
 		0, nil, &bufferUsed)
-	if err != nil && !errors.Is(err, ERROR_INSUFFICIENT_BUFFER) {
+	if err != nil && !errors.Is(err, ErrnoInsufficientBuffer) {
 		return "", err
 	}
 

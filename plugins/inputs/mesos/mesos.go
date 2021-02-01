@@ -159,7 +159,7 @@ func (m *Mesos) initialize() error {
 		m.slaveURLs = append(m.slaveURLs, u)
 	}
 
-	client, err := m.createHttpClient()
+	client, err := m.createHTTPClient()
 	if err != nil {
 		return err
 	}
@@ -201,7 +201,7 @@ func (m *Mesos) Gather(acc cua.Accumulator) error {
 	return nil
 }
 
-func (m *Mesos) createHttpClient() (*http.Client, error) {
+func (m *Mesos) createHTTPClient() (*http.Client, error) {
 	tlsCfg, err := m.ClientConfig.TLSConfig()
 	if err != nil {
 		return nil, err
@@ -555,7 +555,7 @@ func (m *Mesos) gatherSlaveTaskMetrics(u *url.URL, acc cua.Accumulator) error {
 	for _, task := range metrics {
 		tags["framework_id"] = task.FrameworkID
 
-		jf := jsonparser.JSONFlattener{}
+		jf := jsonparser.Flattener{}
 		err = jf.FlattenJSON("", task.Statistics)
 
 		if err != nil {
@@ -613,7 +613,7 @@ func (m *Mesos) gatherMainMetrics(u *url.URL, role Role, acc cua.Accumulator) er
 
 	m.filterMetrics(role, &jsonOut)
 
-	jf := jsonparser.JSONFlattener{}
+	jf := jsonparser.Flattener{}
 
 	err = jf.FlattenJSON("", jsonOut)
 

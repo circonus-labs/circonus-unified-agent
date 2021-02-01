@@ -30,7 +30,7 @@ type DiskIO struct {
 	initialized  bool
 }
 
-func (_ *DiskIO) Description() string {
+func (*DiskIO) Description() string {
 	return "Read metrics about disk IO by device"
 }
 
@@ -62,7 +62,7 @@ var diskIOsampleConfig = `
   # name_templates = ["$ID_FS_LABEL","$DM_VG_NAME/$DM_LV_NAME"]
 `
 
-func (_ *DiskIO) SampleConfig() string {
+func (*DiskIO) SampleConfig() string {
 	return diskIOsampleConfig
 }
 

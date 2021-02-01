@@ -1,4 +1,4 @@
-package cisco_telemetry_mdt
+package ciscotelemetrymdt
 
 import (
 	"context"

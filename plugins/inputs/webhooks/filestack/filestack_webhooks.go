@@ -11,19 +11,19 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type FilestackWebhook struct {
+type Webhook struct {
 	Path string
 	acc  cua.Accumulator
 }
 
-func (fs *FilestackWebhook) Register(router *mux.Router, acc cua.Accumulator) {
+func (fs *Webhook) Register(router *mux.Router, acc cua.Accumulator) {
 	router.HandleFunc(fs.Path, fs.eventHandler).Methods("POST")
 
 	log.Printf("I! Started the webhooks_filestack on %s\n", fs.Path)
 	fs.acc = acc
 }
 
-func (fs *FilestackWebhook) eventHandler(w http.ResponseWriter, r *http.Request) {
+func (fs *Webhook) eventHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -31,7 +31,7 @@ func (fs *FilestackWebhook) eventHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	event := &FilestackEvent{}
+	event := &Event{}
 	err = json.Unmarshal(body, event)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)

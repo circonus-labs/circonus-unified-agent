@@ -2,7 +2,7 @@
 
 //revive:disable-next-line:var-naming
 // Package win_eventlog Input plugin to collect Windows Event Log messages
-package win_eventlog
+package wineventlog
 
 import "syscall"
 
@@ -10,9 +10,9 @@ import "syscall"
 // https://msdn.microsoft.com/en-us/library/windows/desktop/ms681382(v=vs.85).aspx
 const (
 	//revive:disable:var-naming
-	ERROR_INSUFFICIENT_BUFFER syscall.Errno = 122
-	ERROR_NO_MORE_ITEMS       syscall.Errno = 259
-	ERROR_INVALID_OPERATION   syscall.Errno = 4317
+	ErrnoInsufficientBuffer syscall.Errno = 122
+	ErrnoNoMoreItems        syscall.Errno = 259
+	ErrnoInvalidOperation   syscall.Errno = 4317
 	//revive:enable:var-naming
 )
 
@@ -34,6 +34,6 @@ const (
 	//revive:disable:var-naming
 	// Render the event as an XML string. For details on the contents of the
 	// XML string, see the Event schema.
-	EvtRenderEventXml EvtRenderFlag = 1
+	EvtRenderEventXML EvtRenderFlag = 1
 	//revive:enable:var-naming
 )

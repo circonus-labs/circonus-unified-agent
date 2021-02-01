@@ -15,22 +15,22 @@ import (
 	"github.com/shirou/gopsutil/load"
 )
 
-type SystemStats struct {
+type Stats struct {
 	Log cua.Logger
 }
 
-func (*SystemStats) Description() string {
+func (*Stats) Description() string {
 	return "Read metrics about system load & uptime"
 }
 
-func (*SystemStats) SampleConfig() string {
+func (*Stats) SampleConfig() string {
 	return `
   ## Uncomment to remove deprecated metrics.
   # fielddrop = ["uptime_format"]
 `
 }
 
-func (s *SystemStats) Gather(acc cua.Accumulator) error {
+func (s *Stats) Gather(acc cua.Accumulator) error {
 	loadavg, err := load.Avg()
 	if err != nil && !strings.Contains(err.Error(), "not implemented") {
 		return err
@@ -102,6 +102,6 @@ func formatUptime(uptime uint64) string {
 
 func init() {
 	inputs.Add("system", func() cua.Input {
-		return &SystemStats{}
+		return &Stats{}
 	})
 }

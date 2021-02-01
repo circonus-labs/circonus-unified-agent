@@ -53,8 +53,7 @@ func (d *Dovecot) SampleConfig() string { return sampleConfig }
 // Reads stats from all configured servers.
 func (d *Dovecot) Gather(acc cua.Accumulator) error {
 	if !validQuery[d.Type] {
-		return fmt.Errorf("Error: %s is not a valid query type\n",
-			d.Type)
+		return fmt.Errorf("%s is not a valid query type", d.Type)
 	}
 
 	if len(d.Servers) == 0 {

@@ -72,7 +72,7 @@ func TestSerializeMetricNoHost(t *testing.T) {
 	m, err := metric.New("cpu", tags, fields, now)
 	assert.NoError(t, err)
 
-	s := GraphiteSerializer{}
+	s := Serializer{}
 	buf, _ := s.Serialize(m)
 	mS := strings.Split(strings.TrimSpace(string(buf)), "\n")
 	assert.NoError(t, err)
@@ -99,7 +99,7 @@ func TestSerializeMetricNoHostWithTagSupport(t *testing.T) {
 	m, err := metric.New("cpu", tags, fields, now)
 	assert.NoError(t, err)
 
-	s := GraphiteSerializer{
+	s := Serializer{
 		TagSupport: true,
 		Separator:  ".",
 	}
@@ -130,7 +130,7 @@ func TestSerializeMetricHost(t *testing.T) {
 	m, err := metric.New("cpu", tags, fields, now)
 	assert.NoError(t, err)
 
-	s := GraphiteSerializer{}
+	s := Serializer{}
 	buf, _ := s.Serialize(m)
 	mS := strings.Split(strings.TrimSpace(string(buf)), "\n")
 	assert.NoError(t, err)
@@ -166,7 +166,7 @@ func TestSerializeMetricHostWithMultipleTemplates(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, defaultTemplate, "")
 
-	s := GraphiteSerializer{
+	s := Serializer{
 		Templates: templates,
 	}
 
@@ -211,7 +211,7 @@ func TestSerializeMetricHostWithMultipleTemplatesWithDefault(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, defaultTemplate, "tags.host.measurement.field")
 
-	s := GraphiteSerializer{
+	s := Serializer{
 		Templates: templates,
 		Template:  defaultTemplate,
 	}
@@ -249,7 +249,7 @@ func TestSerializeMetricHostWithTagSupport(t *testing.T) {
 	m, err := metric.New("cpu", tags, fields, now)
 	assert.NoError(t, err)
 
-	s := GraphiteSerializer{
+	s := Serializer{
 		TagSupport: true,
 		Separator:  ".",
 	}
@@ -280,7 +280,7 @@ func TestSerializeValueField(t *testing.T) {
 	m, err := metric.New("cpu", tags, fields, now)
 	assert.NoError(t, err)
 
-	s := GraphiteSerializer{}
+	s := Serializer{}
 	buf, _ := s.Serialize(m)
 	mS := strings.Split(strings.TrimSpace(string(buf)), "\n")
 	assert.NoError(t, err)
@@ -304,7 +304,7 @@ func TestSerializeValueFieldWithTagSupport(t *testing.T) {
 	m, err := metric.New("cpu", tags, fields, now)
 	assert.NoError(t, err)
 
-	s := GraphiteSerializer{
+	s := Serializer{
 		TagSupport: true,
 		Separator:  ".",
 	}
@@ -332,7 +332,7 @@ func TestSerializeValueField2(t *testing.T) {
 	m, err := metric.New("cpu", tags, fields, now)
 	assert.NoError(t, err)
 
-	s := GraphiteSerializer{
+	s := Serializer{
 		Template: "host.field.tags.measurement",
 	}
 	buf, _ := s.Serialize(m)
@@ -358,7 +358,7 @@ func TestSerializeValueString(t *testing.T) {
 	m, err := metric.New("cpu", tags, fields, now)
 	assert.NoError(t, err)
 
-	s := GraphiteSerializer{
+	s := Serializer{
 		Template: "host.field.tags.measurement",
 	}
 	buf, _ := s.Serialize(m)
@@ -380,7 +380,7 @@ func TestSerializeValueStringWithTagSupport(t *testing.T) {
 	m, err := metric.New("cpu", tags, fields, now)
 	assert.NoError(t, err)
 
-	s := GraphiteSerializer{
+	s := Serializer{
 		TagSupport: true,
 		Separator:  ".",
 	}
@@ -404,7 +404,7 @@ func TestSerializeValueBoolean(t *testing.T) {
 	m, err := metric.New("cpu", tags, fields, now)
 	assert.NoError(t, err)
 
-	s := GraphiteSerializer{
+	s := Serializer{
 		Template: "host.field.tags.measurement",
 	}
 	buf, _ := s.Serialize(m)
@@ -434,7 +434,7 @@ func TestSerializeValueBooleanWithTagSupport(t *testing.T) {
 	m, err := metric.New("cpu", tags, fields, now)
 	assert.NoError(t, err)
 
-	s := GraphiteSerializer{
+	s := Serializer{
 		TagSupport: true,
 		Separator:  ".",
 	}
@@ -460,7 +460,7 @@ func TestSerializeValueUnsigned(t *testing.T) {
 	m, err := metric.New("mem", tags, fields, now)
 	require.NoError(t, err)
 
-	s := GraphiteSerializer{}
+	s := Serializer{}
 	buf, err := s.Serialize(m)
 	require.NoError(t, err)
 
@@ -481,7 +481,7 @@ func TestSerializeFieldWithSpaces(t *testing.T) {
 	m, err := metric.New("cpu", tags, fields, now)
 	assert.NoError(t, err)
 
-	s := GraphiteSerializer{
+	s := Serializer{
 		Template: "host.tags.measurement.field",
 	}
 	buf, _ := s.Serialize(m)
@@ -507,7 +507,7 @@ func TestSerializeFieldWithSpacesWithTagSupport(t *testing.T) {
 	m, err := metric.New("cpu", tags, fields, now)
 	assert.NoError(t, err)
 
-	s := GraphiteSerializer{
+	s := Serializer{
 		TagSupport: true,
 		Separator:  ".",
 	}
@@ -535,7 +535,7 @@ func TestSerializeTagWithSpaces(t *testing.T) {
 	m, err := metric.New("cpu", tags, fields, now)
 	assert.NoError(t, err)
 
-	s := GraphiteSerializer{
+	s := Serializer{
 		Template: "host.tags.measurement.field",
 	}
 	buf, _ := s.Serialize(m)
@@ -561,7 +561,7 @@ func TestSerializeTagWithSpacesWithTagSupport(t *testing.T) {
 	m, err := metric.New("cpu", tags, fields, now)
 	assert.NoError(t, err)
 
-	s := GraphiteSerializer{
+	s := Serializer{
 		TagSupport: true,
 		Separator:  ".",
 	}
@@ -589,7 +589,7 @@ func TestSerializeValueField3(t *testing.T) {
 	m, err := metric.New("cpu", tags, fields, now)
 	assert.NoError(t, err)
 
-	s := GraphiteSerializer{
+	s := Serializer{
 		Template: "field.host.tags.measurement",
 	}
 	buf, _ := s.Serialize(m)
@@ -616,7 +616,7 @@ func TestSerializeValueField5(t *testing.T) {
 	m, err := metric.New("cpu", tags, fields, now)
 	assert.NoError(t, err)
 
-	s := GraphiteSerializer{
+	s := Serializer{
 		Template: template5,
 	}
 	buf, _ := s.Serialize(m)
@@ -643,7 +643,7 @@ func TestSerializeMetricPrefix(t *testing.T) {
 	m, err := metric.New("cpu", tags, fields, now)
 	assert.NoError(t, err)
 
-	s := GraphiteSerializer{Prefix: "prefix"}
+	s := Serializer{Prefix: "prefix"}
 	buf, _ := s.Serialize(m)
 	mS := strings.Split(strings.TrimSpace(string(buf)), "\n")
 	assert.NoError(t, err)
@@ -671,7 +671,7 @@ func TestSerializeMetricPrefixWithTagSupport(t *testing.T) {
 	m, err := metric.New("cpu", tags, fields, now)
 	assert.NoError(t, err)
 
-	s := GraphiteSerializer{
+	s := Serializer{
 		Prefix:     "prefix",
 		TagSupport: true,
 		Separator:  ".",
@@ -808,11 +808,11 @@ func TestTemplate6(t *testing.T) {
 func TestClean(t *testing.T) {
 	now := time.Unix(1234567890, 0)
 	tests := []struct {
-		name        string
-		metric_name string
-		tags        map[string]string
-		fields      map[string]interface{}
-		expected    string
+		name       string
+		metricName string
+		tags       map[string]string
+		fields     map[string]interface{}
+		expected   string
 	}{
 		{
 			"Base metric",
@@ -886,10 +886,10 @@ func TestClean(t *testing.T) {
 		},
 	}
 
-	s := GraphiteSerializer{}
+	s := Serializer{}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			m, err := metric.New(tt.metric_name, tt.tags, tt.fields, now)
+			m, err := metric.New(tt.metricName, tt.tags, tt.fields, now)
 			assert.NoError(t, err)
 			actual, _ := s.Serialize(m)
 			require.Equal(t, tt.expected, string(actual))
@@ -900,11 +900,11 @@ func TestClean(t *testing.T) {
 func TestCleanWithTagsSupport(t *testing.T) {
 	now := time.Unix(1234567890, 0)
 	tests := []struct {
-		name        string
-		metric_name string
-		tags        map[string]string
-		fields      map[string]interface{}
-		expected    string
+		name       string
+		metricName string
+		tags       map[string]string
+		fields     map[string]interface{}
+		expected   string
 	}{
 		{
 			"Base metric",
@@ -978,13 +978,13 @@ func TestCleanWithTagsSupport(t *testing.T) {
 		},
 	}
 
-	s := GraphiteSerializer{
+	s := Serializer{
 		TagSupport: true,
 		Separator:  ".",
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			m, err := metric.New(tt.metric_name, tt.tags, tt.fields, now)
+			m, err := metric.New(tt.metricName, tt.tags, tt.fields, now)
 			assert.NoError(t, err)
 			actual, _ := s.Serialize(m)
 			require.Equal(t, tt.expected, string(actual))
@@ -995,11 +995,11 @@ func TestCleanWithTagsSupport(t *testing.T) {
 func TestSerializeBatch(t *testing.T) {
 	now := time.Unix(1234567890, 0)
 	tests := []struct {
-		name        string
-		metric_name string
-		tags        map[string]string
-		fields      map[string]interface{}
-		expected    string
+		name       string
+		metricName string
+		tags       map[string]string
+		fields     map[string]interface{}
+		expected   string
 	}{
 		{
 			"Base metric",
@@ -1010,10 +1010,10 @@ func TestSerializeBatch(t *testing.T) {
 		},
 	}
 
-	s := GraphiteSerializer{}
+	s := Serializer{}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			m, err := metric.New(tt.metric_name, tt.tags, tt.fields, now)
+			m, err := metric.New(tt.metricName, tt.tags, tt.fields, now)
 			assert.NoError(t, err)
 			actual, _ := s.SerializeBatch([]cua.Metric{m, m})
 			require.Equal(t, tt.expected, string(actual))
@@ -1024,11 +1024,11 @@ func TestSerializeBatch(t *testing.T) {
 func TestSerializeBatchWithTagsSupport(t *testing.T) {
 	now := time.Unix(1234567890, 0)
 	tests := []struct {
-		name        string
-		metric_name string
-		tags        map[string]string
-		fields      map[string]interface{}
-		expected    string
+		name       string
+		metricName string
+		tags       map[string]string
+		fields     map[string]interface{}
+		expected   string
 	}{
 		{
 			"Base metric",
@@ -1039,13 +1039,13 @@ func TestSerializeBatchWithTagsSupport(t *testing.T) {
 		},
 	}
 
-	s := GraphiteSerializer{
+	s := Serializer{
 		TagSupport: true,
 		Separator:  ".",
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			m, err := metric.New(tt.metric_name, tt.tags, tt.fields, now)
+			m, err := metric.New(tt.metricName, tt.tags, tt.fields, now)
 			assert.NoError(t, err)
 			actual, _ := s.SerializeBatch([]cua.Metric{m, m})
 			require.Equal(t, tt.expected, string(actual))

@@ -9,23 +9,23 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs/system"
 )
 
-type MemStats struct {
+type Stats struct {
 	ps       system.PS
 	platform string
 }
 
-func (_ *MemStats) Description() string {
+func (*Stats) Description() string {
 	return "Read metrics about memory usage"
 }
 
-func (_ *MemStats) SampleConfig() string { return "" }
+func (*Stats) SampleConfig() string { return "" }
 
-func (m *MemStats) Init() error {
-	m.platform = runtime.GOOS
+func (s *Stats) Init() error {
+	s.platform = runtime.GOOS
 	return nil
 }
 
-func (s *MemStats) Gather(acc cua.Accumulator) error {
+func (s *Stats) Gather(acc cua.Accumulator) error {
 	vm, err := s.ps.VMStat()
 	if err != nil {
 		return fmt.Errorf("error getting virtual memory info: %w", err)
@@ -99,6 +99,6 @@ func (s *MemStats) Gather(acc cua.Accumulator) error {
 func init() {
 	ps := system.NewSystemPS()
 	inputs.Add("mem", func() cua.Input {
-		return &MemStats{ps: ps}
+		return &Stats{ps: ps}
 	})
 }

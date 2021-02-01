@@ -1,4 +1,4 @@
-package powerdns_recursor
+package powerdnsrecursor
 
 import (
 	"net"

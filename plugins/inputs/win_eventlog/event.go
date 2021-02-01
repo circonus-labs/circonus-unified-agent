@@ -2,7 +2,7 @@
 
 //revive:disable-next-line:var-naming
 // Package win_eventlog Input plugin to collect Windows Event Log messages
-package win_eventlog
+package wineventlog
 
 // Event is the event entry representation
 // Only the most common elements are processed, human-readable data is rendered in Message

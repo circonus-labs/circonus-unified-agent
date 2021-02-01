@@ -27,8 +27,8 @@ type tags struct {
 // Lustre proc files can change between versions, so we want to future-proof
 // by letting people choose what to look at.
 type Lustre2 struct {
-	Ost_procfiles []string `toml:"ost_procfiles"`
-	Mds_procfiles []string `toml:"mds_procfiles"`
+	OstProcfiles []string `toml:"ost_procfiles"`
+	MdsProcfiles []string `toml:"mds_procfiles"`
 
 	// allFields maps and OST name to the metric fields associated with that OST
 	allFields map[tags]map[string]interface{}
@@ -60,7 +60,7 @@ type mapping struct {
 	// tag      string // Additional tag to add for this metric
 }
 
-var wanted_ost_fields = []*mapping{
+var wantedOstFfields = []*mapping{
 	{
 		inProc:   "write_bytes",
 		field:    6,
@@ -92,7 +92,7 @@ var wanted_ost_fields = []*mapping{
 	},
 }
 
-var wanted_ost_jobstats_fields = []*mapping{
+var wantedOstJobstatsFields = []*mapping{
 	{ // The read line has several fields, so we need to differentiate what they are
 		inProc:   "read",
 		field:    3,
@@ -225,7 +225,7 @@ var wanted_ost_jobstats_fields = []*mapping{
 	},
 }
 
-var wanted_mds_fields = []*mapping{
+var wantedMdsFields = []*mapping{
 	{
 		inProc: "open",
 	},
@@ -276,7 +276,7 @@ var wanted_mds_fields = []*mapping{
 	},
 }
 
-var wanted_mdt_jobstats_fields = []*mapping{
+var wantedMdtJobstatsFields = []*mapping{
 	{
 		inProc:   "open",
 		field:    3,
@@ -445,59 +445,59 @@ func (l *Lustre2) Gather(acc cua.Accumulator) error {
 	//l.allFields = make(map[string]map[string]interface{})
 	l.allFields = make(map[tags]map[string]interface{})
 
-	if len(l.Ost_procfiles) == 0 {
+	if len(l.OstProcfiles) == 0 {
 		// read/write bytes are in obdfilter/<ost_name>/stats
 		err := l.GetLustreProcStats("/proc/fs/lustre/obdfilter/*/stats",
-			wanted_ost_fields, acc)
+			wantedOstFfields, acc)
 		if err != nil {
 			return err
 		}
 		// cache counters are in osd-ldiskfs/<ost_name>/stats
 		err = l.GetLustreProcStats("/proc/fs/lustre/osd-ldiskfs/*/stats",
-			wanted_ost_fields, acc)
+			wantedOstFfields, acc)
 		if err != nil {
 			return err
 		}
 		// per job statistics are in obdfilter/<ost_name>/job_stats
 		err = l.GetLustreProcStats("/proc/fs/lustre/obdfilter/*/job_stats",
-			wanted_ost_jobstats_fields, acc)
+			wantedOstJobstatsFields, acc)
 		if err != nil {
 			return err
 		}
 	}
 
-	if len(l.Mds_procfiles) == 0 {
+	if len(l.MdsProcfiles) == 0 {
 		// Metadata server stats
 		err := l.GetLustreProcStats("/proc/fs/lustre/mdt/*/md_stats",
-			wanted_mds_fields, acc)
+			wantedMdsFields, acc)
 		if err != nil {
 			return err
 		}
 
 		// Metadata target job stats
 		err = l.GetLustreProcStats("/proc/fs/lustre/mdt/*/job_stats",
-			wanted_mdt_jobstats_fields, acc)
+			wantedMdtJobstatsFields, acc)
 		if err != nil {
 			return err
 		}
 	}
 
-	for _, procfile := range l.Ost_procfiles {
-		ost_fields := wanted_ost_fields
+	for _, procfile := range l.OstProcfiles {
+		ostFields := wantedOstFfields
 		if strings.HasSuffix(procfile, "job_stats") {
-			ost_fields = wanted_ost_jobstats_fields
+			ostFields = wantedOstJobstatsFields
 		}
-		err := l.GetLustreProcStats(procfile, ost_fields, acc)
+		err := l.GetLustreProcStats(procfile, ostFields, acc)
 		if err != nil {
 			return err
 		}
 	}
-	for _, procfile := range l.Mds_procfiles {
-		mdt_fields := wanted_mds_fields
+	for _, procfile := range l.MdsProcfiles {
+		mdtFields := wantedMdsFields
 		if strings.HasSuffix(procfile, "job_stats") {
-			mdt_fields = wanted_mdt_jobstats_fields
+			mdtFields = wantedMdtJobstatsFields
 		}
-		err := l.GetLustreProcStats(procfile, mdt_fields, acc)
+		err := l.GetLustreProcStats(procfile, mdtFields, acc)
 		if err != nil {
 			return err
 		}

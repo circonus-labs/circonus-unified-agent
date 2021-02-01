@@ -14,7 +14,7 @@ import (
 )
 
 type Server struct {
-	Url          *url.URL
+	URL          *url.URL
 	session      *gorethink.Session
 	serverStatus serverStatus
 }
@@ -56,7 +56,7 @@ func (s *Server) validateVersion() error {
 
 	majorVersion, err := strconv.Atoi(strings.Split(versionString, "")[0])
 	if err != nil || majorVersion < 2 {
-		return fmt.Errorf("unsupported major version %s\n", versionString)
+		return fmt.Errorf("unsupported major version %s", versionString)
 	}
 	return nil
 }
@@ -76,9 +76,9 @@ func (s *Server) getServerStatus() error {
 	if err != nil {
 		return errors.New("could not parse server_status results")
 	}
-	host, port, err := net.SplitHostPort(s.Url.Host)
+	host, port, err := net.SplitHostPort(s.URL.Host)
 	if err != nil {
-		return fmt.Errorf("unable to determine provided hostname from %s\n", s.Url.Host)
+		return fmt.Errorf("unable to determine provided hostname from %s", s.URL.Host)
 	}
 	driverPort, _ := strconv.Atoi(port)
 	for _, ss := range serverStatuses {
@@ -90,12 +90,12 @@ func (s *Server) getServerStatus() error {
 		}
 	}
 
-	return fmt.Errorf("unable to determine host id from server_status with %s", s.Url.Host)
+	return fmt.Errorf("unable to determine host id from server_status with %s", s.URL.Host)
 }
 
 func (s *Server) getDefaultTags() map[string]string {
 	tags := make(map[string]string)
-	tags["rethinkdb_host"] = s.Url.Host
+	tags["rethinkdb_host"] = s.URL.Host
 	tags["rethinkdb_hostname"] = s.serverStatus.Network.Hostname
 	return tags
 }
@@ -137,7 +137,7 @@ var MemberTracking = []string{
 }
 
 func (s *Server) addMemberStats(acc cua.Accumulator) error {
-	cursor, err := gorethink.DB("rethinkdb").Table("stats").Get([]string{"server", s.serverStatus.Id}).Run(s.session)
+	cursor, err := gorethink.DB("rethinkdb").Table("stats").Get([]string{"server", s.serverStatus.ID}).Run(s.session)
 	if err != nil {
 		return fmt.Errorf("member stats query error: %w", err)
 	}
@@ -174,7 +174,7 @@ func (s *Server) addTableStats(acc cua.Accumulator) error {
 	}
 	for _, table := range tables {
 		cursor, err := gorethink.DB("rethinkdb").Table("stats").
-			Get([]string{"table_server", table.Id, s.serverStatus.Id}).
+			Get([]string{"table_server", table.ID, s.serverStatus.ID}).
 			Run(s.session)
 		if err != nil {
 			return fmt.Errorf("table stats query error: %w", err)

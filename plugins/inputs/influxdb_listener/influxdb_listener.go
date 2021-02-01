@@ -1,4 +1,4 @@
-package influxdb_listener
+package influxdblistener
 
 import (
 	"compress/gzip"
@@ -308,7 +308,7 @@ func (h *InfluxDBListener) handleWrite() http.HandlerFunc {
 			// Continue parsing metrics even if some are malformed
 			var perr *influx.ParseError
 			if errors.As(err, &perr) {
-				parseErrorCount += 1
+				parseErrorCount++
 				errStr := perr.Error()
 				if firstParseErrorStr == "" {
 					firstParseErrorStr = errStr

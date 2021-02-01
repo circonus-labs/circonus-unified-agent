@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs/zipkin/codec"
-	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs/zipkin/codec/jsonV1"
+	jsonv1 "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/zipkin/codec/jsonV1"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs/zipkin/codec/thrift"
 	"github.com/gorilla/mux"
 )
@@ -124,7 +124,7 @@ func (s *SpanHandler) Spans(w http.ResponseWriter, r *http.Request) {
 func ContentDecoder(r *http.Request) (codec.Decoder, error) {
 	contentType := r.Header.Get("Content-Type")
 	if contentType == "" {
-		return &jsonV1.JSON{}, nil
+		return &jsonv1.JSON{}, nil
 	}
 
 	for _, v := range strings.Split(contentType, ",") {
@@ -133,7 +133,7 @@ func ContentDecoder(r *http.Request) (codec.Decoder, error) {
 			break
 		}
 		if t == "application/json" {
-			return &jsonV1.JSON{}, nil
+			return &jsonv1.JSON{}, nil
 		} else if t == "application/x-thrift" {
 			return &thrift.Thrift{}, nil
 		}

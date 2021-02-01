@@ -247,7 +247,7 @@ func simulatedDist(ticker Ticker, clock *clock.Mock) Distribution {
 	for !clock.Now().After(until) {
 		select {
 		case tm := <-ticker.Elapsed():
-			dist.Buckets[tm.Second()] += 1
+			dist.Buckets[tm.Second()]++
 			dist.Count++
 			dist.Waittime += tm.Sub(last).Seconds()
 			last = tm

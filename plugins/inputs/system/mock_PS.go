@@ -20,7 +20,7 @@ type MockPS struct {
 }
 
 type MockPSDisk struct {
-	*SystemPS
+	*SysPS
 	*mock.Mock
 }
 

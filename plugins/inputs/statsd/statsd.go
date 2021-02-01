@@ -20,9 +20,9 @@ import (
 )
 
 const (
-	// UDP_MAX_PACKET_SIZE is the UDP packet limit, see
+	// udpMaxPacketSize is the UDP packet limit, see
 	// https://en.wikipedia.org/wiki/User_Datagram_Protocol#Packet_structure
-	UDP_MAX_PACKET_SIZE int = 64 * 1024
+	udpMaxPacketSize int = 64 * 1024
 
 	defaultFieldName = "value"
 
@@ -117,7 +117,7 @@ type Statsd struct {
 	TCPKeepAlive       bool               `toml:"tcp_keep_alive"`
 	TCPKeepAlivePeriod *internal.Duration `toml:"tcp_keep_alive_period"`
 
-	graphiteParser *graphite.GraphiteParser
+	graphiteParser *graphite.Parser
 
 	acc cua.Accumulator
 
@@ -182,7 +182,7 @@ type cachedtimings struct {
 	tags   map[string]string
 }
 
-func (_ *Statsd) Description() string {
+func (*Statsd) Description() string {
 	return "Statsd UDP/TCP Server"
 }
 
@@ -245,7 +245,7 @@ const sampleConfig = `
   percentile_limit = 1000
 `
 
-func (_ *Statsd) SampleConfig() string {
+func (*Statsd) SampleConfig() string {
 	return sampleConfig
 }
 
@@ -459,7 +459,7 @@ func (s *Statsd) udpListen(conn *net.UDPConn) error {
 		_ = s.UDPlistener.SetReadBuffer(s.ReadBufferSize)
 	}
 
-	buf := make([]byte, UDP_MAX_PACKET_SIZE)
+	buf := make([]byte, udpMaxPacketSize)
 	for {
 		select {
 		case <-s.done:

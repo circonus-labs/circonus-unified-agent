@@ -20,8 +20,8 @@ const bucketLeftTag = "gt"
 // bucketNegInf is the left bucket border for infinite values
 const bucketNegInf = "-Inf"
 
-// HistogramAggregator is aggregator with histogram configs and particular histograms for defined metrics
-type HistogramAggregator struct {
+// Histogram is aggregator with histogram configs and particular histograms for defined metrics
+type Histogram struct {
 	Configs      []config `toml:"config"`
 	ResetBuckets bool     `toml:"reset"`
 	Cumulative   bool     `toml:"cumulative"`
@@ -64,8 +64,8 @@ type groupedByCountFields struct {
 }
 
 // NewHistogramAggregator creates new histogram aggregator
-func NewHistogramAggregator() *HistogramAggregator {
-	h := &HistogramAggregator{
+func NewHistogramAggregator() *Histogram {
+	h := &Histogram{
 		Cumulative: true,
 	}
 	h.buckets = make(bucketsByMetrics)
@@ -108,17 +108,17 @@ var sampleConfig = `
 `
 
 // SampleConfig returns sample of config
-func (h *HistogramAggregator) SampleConfig() string {
+func (h *Histogram) SampleConfig() string {
 	return sampleConfig
 }
 
 // Description returns description of aggregator plugin
-func (h *HistogramAggregator) Description() string {
+func (h *Histogram) Description() string {
 	return "Create aggregate histograms."
 }
 
 // Add adds new hit to the buckets
-func (h *HistogramAggregator) Add(in cua.Metric) {
+func (h *Histogram) Add(in cua.Metric) {
 	bucketsByField := make(map[string][]float64)
 	for field := range in.Fields() {
 		buckets := h.getBuckets(in.Name(), field)
@@ -158,7 +158,7 @@ func (h *HistogramAggregator) Add(in cua.Metric) {
 }
 
 // Push returns histogram values for metrics
-func (h *HistogramAggregator) Push(acc cua.Accumulator) {
+func (h *Histogram) Push(acc cua.Accumulator) {
 	metricsWithGroupedFields := []groupedByCountFields{}
 
 	for _, aggregate := range h.cache {
@@ -173,7 +173,7 @@ func (h *HistogramAggregator) Push(acc cua.Accumulator) {
 }
 
 // groupFieldsByBuckets groups fields by metric buckets which are represented as tags
-func (h *HistogramAggregator) groupFieldsByBuckets(
+func (h *Histogram) groupFieldsByBuckets(
 	metricsWithGroupedFields *[]groupedByCountFields,
 	name string,
 	field string,
@@ -204,7 +204,7 @@ func (h *HistogramAggregator) groupFieldsByBuckets(
 }
 
 // groupField groups field by count value
-func (h *HistogramAggregator) groupField(
+func (h *Histogram) groupField(
 	metricsWithGroupedFields *[]groupedByCountFields,
 	name string,
 	field string,
@@ -231,7 +231,7 @@ func (h *HistogramAggregator) groupField(
 // Reset does nothing by default, because we typically need to collect counts for a long time.
 // Otherwise if config parameter 'reset' has 'true' value, we will get a histogram
 // with a small amount of the distribution. However in some use cases a reset is useful.
-func (h *HistogramAggregator) Reset() {
+func (h *Histogram) Reset() {
 	if h.ResetBuckets {
 		h.resetCache()
 		h.buckets = make(bucketsByMetrics)
@@ -239,12 +239,12 @@ func (h *HistogramAggregator) Reset() {
 }
 
 // resetCache resets cached counts(hits) in the buckets
-func (h *HistogramAggregator) resetCache() {
+func (h *Histogram) resetCache() {
 	h.cache = make(map[uint64]metricHistogramCollection)
 }
 
 // getBuckets finds buckets and returns them
-func (h *HistogramAggregator) getBuckets(metric string, field string) []float64 {
+func (h *Histogram) getBuckets(metric string, field string) []float64 {
 	if buckets, ok := h.buckets[metric][field]; ok {
 		return buckets
 	}

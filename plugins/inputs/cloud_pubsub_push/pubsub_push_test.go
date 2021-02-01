@@ -1,4 +1,4 @@
-package cloud_pubsub_push
+package cloudpubsubpush
 
 import (
 	"context"

@@ -14,13 +14,13 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/plugins/processors"
 )
 
-type config struct {
+type Config struct {
 	Inputs     map[string][]toml.Primitive
 	Processors map[string][]toml.Primitive
 	Outputs    map[string][]toml.Primitive
 }
 
-type loadedConfig struct {
+type LoadedConfig struct {
 	Input     cua.Input
 	Processor cua.StreamingProcessor
 	Output    cua.Output
@@ -49,14 +49,14 @@ func (s *Shim) LoadConfig(filePath *string) error {
 }
 
 // LoadConfig loads the config and returns inputs that later need to be loaded.
-func LoadConfig(filePath *string) (loaded loadedConfig, err error) {
+func LoadConfig(filePath *string) (loaded LoadedConfig, err error) {
 	var data string
-	conf := config{}
+	conf := Config{}
 	if filePath != nil && *filePath != "" {
 
 		b, err := ioutil.ReadFile(*filePath)
 		if err != nil {
-			return loadedConfig{}, err
+			return LoadedConfig{}, err
 		}
 
 		data = expandEnvVars(b)
@@ -64,13 +64,13 @@ func LoadConfig(filePath *string) (loaded loadedConfig, err error) {
 	} else {
 		conf, err = DefaultImportedPlugins()
 		if err != nil {
-			return loadedConfig{}, err
+			return LoadedConfig{}, err
 		}
 	}
 
 	md, err := toml.Decode(data, &conf)
 	if err != nil {
-		return loadedConfig{}, err
+		return LoadedConfig{}, err
 	}
 
 	return createPluginsWithTomlConfig(md, conf)
@@ -86,8 +86,8 @@ func getEnv(key string) string {
 	return envVarEscaper.Replace(v)
 }
 
-func createPluginsWithTomlConfig(md toml.MetaData, conf config) (loadedConfig, error) {
-	loadedConf := loadedConfig{}
+func createPluginsWithTomlConfig(md toml.MetaData, conf Config) (LoadedConfig, error) {
+	loadedConf := LoadedConfig{}
 
 	for name, primitives := range conf.Inputs {
 		creator, ok := inputs.Inputs[name]
@@ -150,8 +150,8 @@ func createPluginsWithTomlConfig(md toml.MetaData, conf config) (loadedConfig, e
 // DefaultImportedPlugins defaults to whatever plugins happen to be loaded and
 // have registered themselves with the registry. This makes loading plugins
 // without having to define a config dead easy.
-func DefaultImportedPlugins() (config, error) {
-	conf := config{
+func DefaultImportedPlugins() (Config, error) {
+	conf := Config{
 		Inputs:     map[string][]toml.Primitive{},
 		Processors: map[string][]toml.Primitive{},
 		Outputs:    map[string][]toml.Primitive{},

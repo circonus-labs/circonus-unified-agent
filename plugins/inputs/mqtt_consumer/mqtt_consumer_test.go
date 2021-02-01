@@ -1,4 +1,4 @@
-package mqtt_consumer
+package mqttconsumer
 
 import (
 	"testing"

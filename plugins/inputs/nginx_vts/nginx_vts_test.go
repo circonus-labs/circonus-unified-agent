@@ -1,4 +1,4 @@
-package nginx_vts
+package nginxvts
 
 import (
 	"fmt"

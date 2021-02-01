@@ -1,5 +1,5 @@
 // Package x509_cert reports metrics from an SSL certificate.
-package x509_cert
+package x509cert
 
 import (
 	"bytes"

@@ -1,6 +1,6 @@
 // +build !windows
 
-package intel_rdt
+package intelrdt
 
 import (
 	"bufio"
@@ -63,15 +63,15 @@ type processMeasurement struct {
 }
 
 // All gathering is done in the Start function
-func (r *IntelRDT) Gather(_ cua.Accumulator) error {
+func (*IntelRDT) Gather(_ cua.Accumulator) error {
 	return nil
 }
 
-func (r *IntelRDT) Description() string {
+func (*IntelRDT) Description() string {
 	return "Intel Resource Director Technology plugin"
 }
 
-func (r *IntelRDT) SampleConfig() string {
+func (*IntelRDT) SampleConfig() string {
 	return `
 	## Optionally set sampling interval to Nx100ms. 
 	## This value is propagated to pqos tool. Interval format is defined by pqos itself.
@@ -238,16 +238,16 @@ func (r *IntelRDT) createArgsAndStartPQOS(ctx context.Context) {
 	if len(r.parsedCores) != 0 {
 		coresArg := createArgCores(r.parsedCores)
 		args = append(args, coresArg)
-		go r.readData(args, nil, ctx)
+		go r.readData(ctx, args, nil)
 
 	} else if len(r.processesPIDsMap) != 0 {
 		processArg := createArgProcess(r.processesPIDsMap)
 		args = append(args, processArg)
-		go r.readData(args, r.processesPIDsMap, ctx)
+		go r.readData(ctx, args, r.processesPIDsMap)
 	}
 }
 
-func (r *IntelRDT) readData(args []string, processesPIDsAssociation map[string]string, ctx context.Context) {
+func (r *IntelRDT) readData(ctx context.Context, args []string, processesPIDsAssociation map[string]string) {
 	r.wg.Add(1)
 	defer r.wg.Done()
 

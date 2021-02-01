@@ -1,24 +1,24 @@
 package mandrill
 
-type Event interface {
-	Tags() map[string]string
-	Fields() map[string]interface{}
-}
+// type Event interface {
+// 	Tags() map[string]string
+// 	Fields() map[string]interface{}
+// }
 
-type MandrillEvent struct {
+type Event struct {
 	EventName string `json:"event"`
 	TimeStamp int64  `json:"ts"`
-	Id        string `json:"_id"`
+	ID        string `json:"_id"`
 }
 
-func (me *MandrillEvent) Tags() map[string]string {
+func (me *Event) Tags() map[string]string {
 	return map[string]string{
 		"event": me.EventName,
 	}
 }
 
-func (me *MandrillEvent) Fields() map[string]interface{} {
+func (me *Event) Fields() map[string]interface{} {
 	return map[string]interface{}{
-		"id": me.Id,
+		"id": me.ID,
 	}
 }

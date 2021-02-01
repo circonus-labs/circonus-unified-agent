@@ -11,7 +11,7 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs/system"
 )
 
-type NetIOStats struct {
+type IOStats struct {
 	filter filter.Filter
 	ps     system.PS
 
@@ -20,7 +20,7 @@ type NetIOStats struct {
 	Interfaces          []string
 }
 
-func (_ *NetIOStats) Description() string {
+func (*IOStats) Description() string {
 	return "Read metrics about network interface usage"
 }
 
@@ -38,11 +38,11 @@ var netSampleConfig = `
   ##
 `
 
-func (_ *NetIOStats) SampleConfig() string {
+func (*IOStats) SampleConfig() string {
 	return netSampleConfig
 }
 
-func (s *NetIOStats) Gather(acc cua.Accumulator) error {
+func (s *IOStats) Gather(acc cua.Accumulator) error {
 	netio, err := s.ps.NetIO()
 	if err != nil {
 		return fmt.Errorf("error getting net io info: %w", err)
@@ -129,6 +129,6 @@ func (s *NetIOStats) Gather(acc cua.Accumulator) error {
 
 func init() {
 	inputs.Add("net", func() cua.Input {
-		return &NetIOStats{ps: system.NewSystemPS()}
+		return &IOStats{ps: system.NewSystemPS()}
 	})
 }

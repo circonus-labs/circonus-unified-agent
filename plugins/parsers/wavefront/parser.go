@@ -14,7 +14,7 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/metric"
 )
 
-const MAX_BUFFER_SIZE = 2
+const MaxBufferSize = 2
 
 type Point struct {
 	Name      string
@@ -24,7 +24,7 @@ type Point struct {
 	Tags      map[string]string
 }
 
-type WavefrontParser struct {
+type Parser struct {
 	parsers     *sync.Pool
 	defaultTags map[string]string
 }
@@ -40,7 +40,7 @@ type PointParser struct {
 	scanBuf  bytes.Buffer // buffer reused for scanning tokens
 	writeBuf bytes.Buffer // buffer reused for parsing elements
 	Elements []ElementParser
-	parent   *WavefrontParser
+	parent   *Parser
 }
 
 // Returns a slice of ElementParser's for the Graphite format
@@ -54,8 +54,8 @@ func NewWavefrontElements() []ElementParser {
 	return elements
 }
 
-func NewWavefrontParser(defaultTags map[string]string) *WavefrontParser {
-	wp := &WavefrontParser{defaultTags: defaultTags}
+func NewWavefrontParser(defaultTags map[string]string) *Parser {
+	wp := &Parser{defaultTags: defaultTags}
 	wp.parsers = &sync.Pool{
 		New: func() interface{} {
 			return NewPointParser(wp)
@@ -64,12 +64,12 @@ func NewWavefrontParser(defaultTags map[string]string) *WavefrontParser {
 	return wp
 }
 
-func NewPointParser(parent *WavefrontParser) *PointParser {
+func NewPointParser(parent *Parser) *PointParser {
 	elements := NewWavefrontElements()
 	return &PointParser{Elements: elements, parent: parent}
 }
 
-func (p *WavefrontParser) ParseLine(line string) (cua.Metric, error) {
+func (p *Parser) ParseLine(line string) (cua.Metric, error) {
 	buf := []byte(line)
 
 	metrics, err := p.Parse(buf)
@@ -84,7 +84,7 @@ func (p *WavefrontParser) ParseLine(line string) (cua.Metric, error) {
 	return nil, nil
 }
 
-func (p *WavefrontParser) Parse(buf []byte) ([]cua.Metric, error) {
+func (p *Parser) Parse(buf []byte) ([]cua.Metric, error) {
 	pp := p.parsers.Get().(*PointParser)
 	defer p.parsers.Put(pp)
 	return pp.Parse(buf)
@@ -129,7 +129,7 @@ func (p *PointParser) Parse(buf []byte) ([]cua.Metric, error) {
 	return metrics, nil
 }
 
-func (p *WavefrontParser) SetDefaultTags(tags map[string]string) {
+func (p *Parser) SetDefaultTags(tags map[string]string) {
 	p.defaultTags = tags
 }
 
@@ -171,9 +171,9 @@ func (p *PointParser) convertPointToAgentMetric(points []Point) ([]cua.Metric, e
 func (p *PointParser) scan() (Token, string) {
 	// If we have a token on the buffer, then return it.
 	if p.buf.n != 0 {
-		idx := p.buf.n % MAX_BUFFER_SIZE
+		idx := p.buf.n % MaxBufferSize
 		tok, lit := p.buf.tok[idx], p.buf.lit[idx]
-		p.buf.n -= 1
+		p.buf.n--
 		return tok, lit
 	}
 
@@ -189,8 +189,8 @@ func (p *PointParser) scan() (Token, string) {
 func (p *PointParser) buffer(tok Token, lit string) {
 	// create the buffer if it is empty
 	if len(p.buf.tok) == 0 {
-		p.buf.tok = make([]Token, MAX_BUFFER_SIZE)
-		p.buf.lit = make([]string, MAX_BUFFER_SIZE)
+		p.buf.tok = make([]Token, MaxBufferSize)
+		p.buf.lit = make([]string, MaxBufferSize)
 	}
 
 	// for now assume a simple circular buffer of length two
@@ -204,9 +204,9 @@ func (p *PointParser) unscan() {
 }
 
 func (p *PointParser) unscanTokens(n int) {
-	if n > MAX_BUFFER_SIZE {
+	if n > MaxBufferSize {
 		// just log for now
-		log.Printf("cannot unscan more than %d tokens", MAX_BUFFER_SIZE)
+		log.Printf("cannot unscan more than %d tokens", MaxBufferSize)
 	}
 	p.buf.n += n
 }

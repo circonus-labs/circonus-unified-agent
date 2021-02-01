@@ -1,4 +1,4 @@
-package linux_sysctl_fs
+package linuxsysctlfs
 
 import (
 	"bytes"
@@ -19,10 +19,10 @@ type SysctlFS struct {
 var sysctlFSDescription = `Provides Linux sysctl fs metrics`
 var sysctlFSSampleConfig = ``
 
-func (_ SysctlFS) Description() string {
+func (*SysctlFS) Description() string {
 	return sysctlFSDescription
 }
-func (_ SysctlFS) SampleConfig() string {
+func (*SysctlFS) SampleConfig() string {
 	return sysctlFSSampleConfig
 }
 

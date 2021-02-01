@@ -363,7 +363,7 @@ func (c *GNMI) handleTelemetryField(update *gnmi.Update, tags map[string]string,
 		if err := json.Unmarshal(jsondata, &value); err != nil {
 			c.acc.AddError(fmt.Errorf("failed to parse JSON value: %w", err))
 		} else {
-			flattener := jsonparser.JSONFlattener{Fields: fields}
+			flattener := jsonparser.Flattener{Fields: fields}
 			_ = flattener.FullFlattenJSON(name, value, true, true)
 		}
 	}

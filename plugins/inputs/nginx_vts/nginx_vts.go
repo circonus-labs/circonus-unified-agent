@@ -1,4 +1,4 @@
-package nginx_vts
+package nginxvts
 
 import (
 	"bufio"
@@ -119,7 +119,7 @@ func (n *NginxVTS) gatherURL(addr *url.URL, acc cua.Accumulator) error {
 	}
 }
 
-type NginxVTSResponse struct {
+type VTSResponse struct {
 	Connections struct {
 		Active   uint64 `json:"active"`
 		Reading  uint64 `json:"reading"`
@@ -197,7 +197,7 @@ type Cache struct {
 
 func gatherStatusURL(r *bufio.Reader, tags map[string]string, acc cua.Accumulator) error {
 	dec := json.NewDecoder(r)
-	status := &NginxVTSResponse{}
+	status := &VTSResponse{}
 	if err := dec.Decode(status); err != nil {
 		return fmt.Errorf("Error while decoding JSON response")
 	}

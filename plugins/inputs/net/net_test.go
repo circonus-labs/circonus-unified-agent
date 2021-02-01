@@ -58,7 +58,7 @@ func TestNetStats(t *testing.T) {
 
 	mps.On("NetConnections").Return(netstats, nil)
 
-	err = (&NetIOStats{ps: &mps, skipChecks: true}).Gather(&acc)
+	err = (&IOStats{ps: &mps, skipChecks: true}).Gather(&acc)
 	require.NoError(t, err)
 
 	ntags := map[string]string{
@@ -88,7 +88,7 @@ func TestNetStats(t *testing.T) {
 
 	acc.Metrics = nil
 
-	err = (&NetStats{&mps}).Gather(&acc)
+	err = (&Stats{&mps}).Gather(&acc)
 	require.NoError(t, err)
 
 	fields3 := map[string]interface{}{
@@ -109,7 +109,7 @@ func TestNetStats(t *testing.T) {
 	acc.AssertContainsTaggedFields(t, "netstat", fields3, make(map[string]string))
 
 	acc.Metrics = nil
-	err = (&NetIOStats{ps: &mps, IgnoreProtocolStats: true}).Gather(&acc)
+	err = (&IOStats{ps: &mps, IgnoreProtocolStats: true}).Gather(&acc)
 	require.NoError(t, err)
 
 	acc.AssertDoesNotContainsTaggedFields(t, "netstat", fields3, make(map[string]string))

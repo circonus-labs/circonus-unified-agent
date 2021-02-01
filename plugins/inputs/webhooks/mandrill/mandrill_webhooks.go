@@ -12,12 +12,12 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type MandrillWebhook struct {
+type Webhook struct {
 	Path string
 	acc  cua.Accumulator
 }
 
-func (md *MandrillWebhook) Register(router *mux.Router, acc cua.Accumulator) {
+func (md *Webhook) Register(router *mux.Router, acc cua.Accumulator) {
 	router.HandleFunc(md.Path, md.returnOK).Methods("HEAD")
 	router.HandleFunc(md.Path, md.eventHandler).Methods("POST")
 
@@ -25,11 +25,11 @@ func (md *MandrillWebhook) Register(router *mux.Router, acc cua.Accumulator) {
 	md.acc = acc
 }
 
-func (md *MandrillWebhook) returnOK(w http.ResponseWriter, r *http.Request) {
+func (md *Webhook) returnOK(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (md *MandrillWebhook) eventHandler(w http.ResponseWriter, r *http.Request) {
+func (md *Webhook) eventHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -41,7 +41,7 @@ func (md *MandrillWebhook) eventHandler(w http.ResponseWriter, r *http.Request) 
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	var events []MandrillEvent
+	var events []Event
 	err = json.Unmarshal([]byte(data.Get("mandrill_events")), &events)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)

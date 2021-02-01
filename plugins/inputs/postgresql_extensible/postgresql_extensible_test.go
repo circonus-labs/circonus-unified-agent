@@ -1,4 +1,4 @@
-package postgresql_extensible
+package postgresqlextensible
 
 import (
 	"errors"

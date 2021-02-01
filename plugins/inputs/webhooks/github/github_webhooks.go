@@ -13,19 +13,19 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type GithubWebhook struct {
+type Webhook struct {
 	Path   string
 	Secret string
 	acc    cua.Accumulator
 }
 
-func (gh *GithubWebhook) Register(router *mux.Router, acc cua.Accumulator) {
+func (gh *Webhook) Register(router *mux.Router, acc cua.Accumulator) {
 	router.HandleFunc(gh.Path, gh.eventHandler).Methods("POST")
 	log.Printf("I! Started the webhooks_github on %s\n", gh.Path)
 	gh.acc = acc
 }
 
-func (gh *GithubWebhook) eventHandler(w http.ResponseWriter, r *http.Request) {
+func (gh *Webhook) eventHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	eventType := r.Header.Get("X-Github-Event")
 	data, err := ioutil.ReadAll(r.Body)

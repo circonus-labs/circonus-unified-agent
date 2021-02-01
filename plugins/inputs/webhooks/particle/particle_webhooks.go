@@ -35,17 +35,17 @@ func (e *event) Time() (time.Time, error) {
 	return time.Parse("2006-01-02T15:04:05Z", e.PublishedAt)
 }
 
-type ParticleWebhook struct {
+type Webhook struct {
 	Path string
 	acc  cua.Accumulator
 }
 
-func (rb *ParticleWebhook) Register(router *mux.Router, acc cua.Accumulator) {
+func (rb *Webhook) Register(router *mux.Router, acc cua.Accumulator) {
 	router.HandleFunc(rb.Path, rb.eventHandler).Methods("POST")
 	rb.acc = acc
 }
 
-func (rb *ParticleWebhook) eventHandler(w http.ResponseWriter, r *http.Request) {
+func (rb *Webhook) eventHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	e := newEvent()
 	if err := json.NewDecoder(r.Body).Decode(e); err != nil {

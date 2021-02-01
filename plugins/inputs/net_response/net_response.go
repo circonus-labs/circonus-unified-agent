@@ -1,4 +1,4 @@
-package net_response
+package netresponse
 
 import (
 	"bufio"

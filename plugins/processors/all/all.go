@@ -1,5 +1,6 @@
 package all
 
+//nolint:golint
 import (
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/processors/clone"
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/processors/converter"

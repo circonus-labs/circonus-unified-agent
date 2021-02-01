@@ -2,6 +2,7 @@ package phpfpm
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"net"
 	"strconv"
@@ -12,7 +13,7 @@ import (
 func newFcgiClient(h string, args ...interface{}) (*conn, error) {
 	var con net.Conn
 	if len(args) != 1 {
-		return nil, errors.New("fcgi: not enough params")
+		return nil, fmt.Errorf("fcgi: not enough params")
 	}
 
 	var err error
@@ -24,7 +25,7 @@ func newFcgiClient(h string, args ...interface{}) (*conn, error) {
 		laddr := net.UnixAddr{Name: args[0].(string), Net: h}
 		con, err = net.DialUnix(h, nil, &laddr)
 	default:
-		err = errors.New("fcgi: we only accept int (port) or string (socket) params.")
+		err = fmt.Errorf("fcgi: we only accept int (port) or string (socket) params")
 	}
 	fcgi := &conn{
 		rwc: con,
@@ -38,20 +39,20 @@ func (client *conn) Request(
 	requestData string,
 ) (retout []byte, reterr []byte, err error) {
 	defer client.rwc.Close()
-	var reqId uint16 = 1
+	var reqID uint16 = 1
 
-	err = client.writeBeginRequest(reqId, uint16(roleResponder), 0)
+	err = client.writeBeginRequest(reqID, uint16(roleResponder), 0)
 	if err != nil {
 		return
 	}
 
-	err = client.writePairs(typeParams, reqId, env)
+	err = client.writePairs(typeParams, reqID, env)
 	if err != nil {
 		return
 	}
 
 	if len(requestData) > 0 {
-		if err = client.writeRecord(typeStdin, reqId, []byte(requestData)); err != nil {
+		if err = client.writeRecord(typeStdin, reqID, []byte(requestData)); err != nil {
 			return
 		}
 	}

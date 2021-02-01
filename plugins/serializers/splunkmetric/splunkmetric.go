@@ -8,7 +8,7 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 )
 
-type serializer struct {
+type Serializer struct {
 	HecRouting              bool
 	SplunkmetricMultiMetric bool
 }
@@ -30,16 +30,16 @@ type HECTimeSeries struct {
 }
 
 // NewSerializer Setup our new serializer
-func NewSerializer(splunkmetric_hec_routing bool, splunkmetric_multimetric bool) (*serializer, error) {
+func NewSerializer(splunkmetricHecRouting bool, splunkmetricMultimetric bool) (*Serializer, error) {
 	/*	Define output params */
-	s := &serializer{
-		HecRouting:              splunkmetric_hec_routing,
-		SplunkmetricMultiMetric: splunkmetric_multimetric,
+	s := &Serializer{
+		HecRouting:              splunkmetricHecRouting,
+		SplunkmetricMultiMetric: splunkmetricMultimetric,
 	}
 	return s, nil
 }
 
-func (s *serializer) Serialize(metric cua.Metric) ([]byte, error) {
+func (s *Serializer) Serialize(metric cua.Metric) ([]byte, error) {
 
 	m, err := s.createObject(metric)
 	if err != nil {
@@ -49,7 +49,7 @@ func (s *serializer) Serialize(metric cua.Metric) ([]byte, error) {
 	return m, nil
 }
 
-func (s *serializer) SerializeBatch(metrics []cua.Metric) ([]byte, error) {
+func (s *Serializer) SerializeBatch(metrics []cua.Metric) ([]byte, error) {
 
 	var serialized []byte
 
@@ -65,7 +65,7 @@ func (s *serializer) SerializeBatch(metrics []cua.Metric) ([]byte, error) {
 	return serialized, nil
 }
 
-func (s *serializer) createMulti(metric cua.Metric, dataGroup HECTimeSeries, commonTags CommonTags) (metricGroup []byte, err error) {
+func (s *Serializer) createMulti(metric cua.Metric, dataGroup HECTimeSeries, commonTags CommonTags) (metricGroup []byte, err error) {
 	/* When splunkmetric_multimetric is true, then we can write out multiple name=value pairs as part of the same
 	** event payload. This only works when the time, host, and dimensions are the same for every name=value pair
 	** in the timeseries data.
@@ -112,7 +112,7 @@ func (s *serializer) createMulti(metric cua.Metric, dataGroup HECTimeSeries, com
 	return metricGroup, nil
 }
 
-func (s *serializer) createSingle(metric cua.Metric, dataGroup HECTimeSeries, commonTags CommonTags) (metricGroup []byte, err error) {
+func (s *Serializer) createSingle(metric cua.Metric, dataGroup HECTimeSeries, commonTags CommonTags) (metricGroup []byte, err error) {
 	/* The default mode is to generate one JSON entity per metric (required for pre-8.0 Splunks)
 	**
 	** The format for single metric is 'nameOfMetric = valueOfMetric'
@@ -160,7 +160,7 @@ func (s *serializer) createSingle(metric cua.Metric, dataGroup HECTimeSeries, co
 	return metricGroup, nil
 }
 
-func (s *serializer) createObject(metric cua.Metric) (metricGroup []byte, err error) {
+func (s *Serializer) createObject(metric cua.Metric) (metricGroup []byte, err error) {
 
 	/*  Splunk supports one metric json object, and does _not_ support an array of JSON objects.
 	     ** Splunk has the following required names for the metric store:

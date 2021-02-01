@@ -9,7 +9,7 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/internal"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
-	_ "github.com/jackc/pgx/stdlib"
+	_ "github.com/jackc/pgx/stdlib" //nolint:golint
 )
 
 type Postgresql struct {
@@ -104,26 +104,26 @@ func (p *Postgresql) Gather(acc cua.Accumulator) error {
 
 	query = `SELECT * FROM pg_stat_bgwriter`
 
-	bg_writer_row, err := p.DB.Query(query)
+	bgWriterRow, err := p.DB.Query(query)
 	if err != nil {
 		return err
 	}
 
-	defer bg_writer_row.Close()
+	defer bgWriterRow.Close()
 
 	// grab the column information from the result
-	if columns, err = bg_writer_row.Columns(); err != nil {
+	if columns, err = bgWriterRow.Columns(); err != nil {
 		return err
 	}
 
-	for bg_writer_row.Next() {
-		err = p.accRow(bg_writer_row, acc, columns)
+	for bgWriterRow.Next() {
+		err = p.accRow(bgWriterRow, acc, columns)
 		if err != nil {
 			return err
 		}
 	}
 
-	return bg_writer_row.Err()
+	return bgWriterRow.Err()
 }
 
 type scanner interface {

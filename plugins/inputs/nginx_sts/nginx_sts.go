@@ -1,4 +1,4 @@
-package nginx_sts
+package nginxsts
 
 import (
 	"bufio"
@@ -17,8 +17,8 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
 )
 
-type NginxSTS struct {
-	Urls            []string          `toml:"urls"`
+type STS struct {
+	URLs            []string          `toml:"urls"`
 	ResponseTimeout internal.Duration `toml:"response_timeout"`
 	tls.ClientConfig
 
@@ -40,15 +40,15 @@ var sampleConfig = `
   # insecure_skip_verify = false
 `
 
-func (n *NginxSTS) SampleConfig() string {
+func (*STS) SampleConfig() string {
 	return sampleConfig
 }
 
-func (n *NginxSTS) Description() string {
+func (*STS) Description() string {
 	return "Read Nginx virtual host traffic status module information (nginx-module-sts)"
 }
 
-func (n *NginxSTS) Gather(acc cua.Accumulator) error {
+func (n *STS) Gather(acc cua.Accumulator) error {
 	var wg sync.WaitGroup
 
 	// Create an HTTP client that is re-used for each
@@ -62,7 +62,7 @@ func (n *NginxSTS) Gather(acc cua.Accumulator) error {
 		n.client = client
 	}
 
-	for _, u := range n.Urls {
+	for _, u := range n.URLs {
 		addr, err := url.Parse(u)
 		if err != nil {
 			acc.AddError(fmt.Errorf("Unable to parse address '%s': %w", u, err))
@@ -80,7 +80,7 @@ func (n *NginxSTS) Gather(acc cua.Accumulator) error {
 	return nil
 }
 
-func (n *NginxSTS) createHTTPClient() (*http.Client, error) {
+func (n *STS) createHTTPClient() (*http.Client, error) {
 	if n.ResponseTimeout.Duration < time.Second {
 		n.ResponseTimeout.Duration = time.Second * 5
 	}
@@ -100,7 +100,7 @@ func (n *NginxSTS) createHTTPClient() (*http.Client, error) {
 	return client, nil
 }
 
-func (n *NginxSTS) gatherURL(addr *url.URL, acc cua.Accumulator) error {
+func (n *STS) gatherURL(addr *url.URL, acc cua.Accumulator) error {
 	resp, err := n.client.Get(addr.String())
 	if err != nil {
 		return fmt.Errorf("error making HTTP request to %s: %w", addr.String(), err)
@@ -119,7 +119,7 @@ func (n *NginxSTS) gatherURL(addr *url.URL, acc cua.Accumulator) error {
 	}
 }
 
-type NginxSTSResponse struct {
+type STSResponse struct {
 	Connections struct {
 		Active   uint64 `json:"active"`
 		Reading  uint64 `json:"reading"`
@@ -179,7 +179,7 @@ type Upstream struct {
 
 func gatherStatusURL(r *bufio.Reader, tags map[string]string, acc cua.Accumulator) error {
 	dec := json.NewDecoder(r)
-	status := &NginxSTSResponse{}
+	status := &STSResponse{}
 	if err := dec.Decode(status); err != nil {
 		return fmt.Errorf("Error while decoding JSON response")
 	}
@@ -299,6 +299,6 @@ func getTags(addr *url.URL) map[string]string {
 
 func init() {
 	inputs.Add("nginx_sts", func() cua.Input {
-		return &NginxSTS{}
+		return &STS{}
 	})
 }

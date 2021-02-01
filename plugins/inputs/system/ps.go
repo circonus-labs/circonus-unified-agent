@@ -40,17 +40,17 @@ type PSDiskDeps interface {
 // 	}
 // }
 
-func NewSystemPS() *SystemPS {
-	return &SystemPS{&SystemPSDisk{}}
+func NewSystemPS() *SysPS {
+	return &SysPS{&SysPSDisk{}}
 }
 
-type SystemPS struct {
+type SysPS struct {
 	PSDiskDeps
 }
 
-type SystemPSDisk struct{}
+type SysPSDisk struct{}
 
-func (s *SystemPS) CPUTimes(perCPU, totalCPU bool) ([]cpu.TimesStat, error) {
+func (s *SysPS) CPUTimes(perCPU, totalCPU bool) ([]cpu.TimesStat, error) {
 	var cpuTimes []cpu.TimesStat
 	if perCPU {
 		if perCPUTimes, err := cpu.Times(true); err == nil {
@@ -69,7 +69,7 @@ func (s *SystemPS) CPUTimes(perCPU, totalCPU bool) ([]cpu.TimesStat, error) {
 	return cpuTimes, nil
 }
 
-func (s *SystemPS) DiskUsage(
+func (s *SysPS) DiskUsage(
 	mountPointFilter []string,
 	fstypeExclude []string,
 ) ([]*disk.UsageStat, []*disk.PartitionStat, error) {
@@ -140,36 +140,36 @@ func (s *SystemPS) DiskUsage(
 	return usage, partitions, nil
 }
 
-func (s *SystemPS) NetProto() ([]net.ProtoCountersStat, error) {
+func (s *SysPS) NetProto() ([]net.ProtoCountersStat, error) {
 	return net.ProtoCounters(nil)
 }
 
-func (s *SystemPS) NetIO() ([]net.IOCountersStat, error) {
+func (s *SysPS) NetIO() ([]net.IOCountersStat, error) {
 	return net.IOCounters(true)
 }
 
-func (s *SystemPS) NetConnections() ([]net.ConnectionStat, error) {
+func (s *SysPS) NetConnections() ([]net.ConnectionStat, error) {
 	return net.Connections("all")
 }
 
-func (s *SystemPS) DiskIO(names []string) (map[string]disk.IOCountersStat, error) {
+func (s *SysPS) DiskIO(names []string) (map[string]disk.IOCountersStat, error) {
 	m, err := disk.IOCounters(names...)
-	if errors.Is(err, internal.NotImplementedError) {
+	if errors.Is(err, internal.ErrNotImplemented) {
 		return nil, nil
 	}
 
 	return m, err
 }
 
-func (s *SystemPS) VMStat() (*mem.VirtualMemoryStat, error) {
+func (s *SysPS) VMStat() (*mem.VirtualMemoryStat, error) {
 	return mem.VirtualMemory()
 }
 
-func (s *SystemPS) SwapStat() (*mem.SwapMemoryStat, error) {
+func (s *SysPS) SwapStat() (*mem.SwapMemoryStat, error) {
 	return mem.SwapMemory()
 }
 
-func (s *SystemPS) Temperature() ([]host.TemperatureStat, error) {
+func (s *SysPS) Temperature() ([]host.TemperatureStat, error) {
 	temp, err := host.SensorsTemperatures()
 	if err != nil {
 		var hwerr *host.Warnings
@@ -180,18 +180,18 @@ func (s *SystemPS) Temperature() ([]host.TemperatureStat, error) {
 	return temp, nil
 }
 
-func (s *SystemPSDisk) Partitions(all bool) ([]disk.PartitionStat, error) {
+func (s *SysPSDisk) Partitions(all bool) ([]disk.PartitionStat, error) {
 	return disk.Partitions(all)
 }
 
-func (s *SystemPSDisk) OSGetenv(key string) string {
+func (s *SysPSDisk) OSGetenv(key string) string {
 	return os.Getenv(key)
 }
 
-func (s *SystemPSDisk) OSStat(name string) (os.FileInfo, error) {
+func (s *SysPSDisk) OSStat(name string) (os.FileInfo, error) {
 	return os.Stat(name)
 }
 
-func (s *SystemPSDisk) PSDiskUsage(path string) (*disk.UsageStat, error) {
+func (s *SysPSDisk) PSDiskUsage(path string) (*disk.UsageStat, error) {
 	return disk.Usage(path)
 }

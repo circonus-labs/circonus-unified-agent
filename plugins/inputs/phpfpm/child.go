@@ -7,7 +7,6 @@ package phpfpm
 // This file implements FastCGI from the perspective of a child process.
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -24,16 +23,16 @@ import (
 // it's converted to an http.Request.
 type request struct {
 	pw        *io.PipeWriter
-	reqId     uint16
+	reqID     uint16
 	params    map[string]string
 	buf       [1024]byte
 	rawParams []byte
 	keepConn  bool
 }
 
-func newRequest(reqId uint16, flags uint8) *request {
+func newRequest(reqID uint16, flags uint8) *request {
 	r := &request{
-		reqId:    reqId,
+		reqID:    reqID,
 		params:   map[string]string{},
 		keepConn: flags&flagKeepConn != 0,
 	}
@@ -79,7 +78,7 @@ func newResponse(c *child, req *request) *response {
 	return &response{
 		req:    req,
 		header: http.Header{},
-		w:      newWriter(c.conn, typeStdout, req.reqId),
+		w:      newWriter(c.conn, typeStdout, req.reqID),
 	}
 }
 
@@ -159,21 +158,21 @@ func (c *child) serve() {
 	}
 }
 
-var errCloseConn = errors.New("fcgi: connection should be closed")
+var errCloseConn = fmt.Errorf("fcgi: connection should be closed")
 
 var emptyBody = ioutil.NopCloser(strings.NewReader(""))
 
 // ErrRequestAborted is returned by Read when a handler attempts to read the
 // body of a request that has been aborted by the web server.
-var ErrRequestAborted = errors.New("fcgi: request aborted by web server")
+var ErrRequestAborted = fmt.Errorf("fcgi: request aborted by web server")
 
 // ErrConnClosed is returned by Read when a handler attempts to read the body of
 // a request after the connection to the web server has been closed.
-var ErrConnClosed = errors.New("fcgi: connection to web server closed")
+var ErrConnClosed = fmt.Errorf("fcgi: connection to web server closed")
 
 func (c *child) handleRecord(rec *record) error {
 	c.mu.Lock()
-	req, ok := c.requests[rec.h.Id]
+	req, ok := c.requests[rec.h.ID]
 	c.mu.Unlock()
 	if !ok && rec.h.Type != typeBeginRequest && rec.h.Type != typeGetValues {
 		// The spec says to ignore unknown request IDs.
@@ -185,7 +184,7 @@ func (c *child) handleRecord(rec *record) error {
 		if req != nil {
 			// The server is trying to begin a request with the same ID
 			// as an in-progress request. This is an error.
-			return errors.New("fcgi: received ID that is already in-flight")
+			return fmt.Errorf("fcgi: received ID that is already in-flight")
 		}
 
 		var br beginRequest
@@ -193,12 +192,12 @@ func (c *child) handleRecord(rec *record) error {
 			return err
 		}
 		if br.role != roleResponder {
-			_ = c.conn.writeEndRequest(rec.h.Id, 0, statusUnknownRole)
+			_ = c.conn.writeEndRequest(rec.h.ID, 0, statusUnknownRole)
 			return nil
 		}
-		req = newRequest(rec.h.Id, br.flags)
+		req = newRequest(rec.h.ID, br.flags)
 		c.mu.Lock()
-		c.requests[rec.h.Id] = req
+		c.requests[rec.h.ID] = req
 		c.mu.Unlock()
 		return nil
 	case typeParams:
@@ -240,9 +239,9 @@ func (c *child) handleRecord(rec *record) error {
 		return nil
 	case typeAbortRequest:
 		c.mu.Lock()
-		delete(c.requests, rec.h.Id)
+		delete(c.requests, rec.h.ID)
 		c.mu.Unlock()
-		_ = c.conn.writeEndRequest(rec.h.Id, 0, statusRequestComplete)
+		_ = c.conn.writeEndRequest(rec.h.ID, 0, statusRequestComplete)
 		if req.pw != nil {
 			_ = req.pw.CloseWithError(ErrRequestAborted)
 		}
@@ -265,16 +264,16 @@ func (c *child) serveRequest(req *request, body io.ReadCloser) {
 	if err != nil {
 		// there was an error reading the request
 		r.WriteHeader(http.StatusInternalServerError)
-		_ = c.conn.writeRecord(typeStderr, req.reqId, []byte(err.Error()))
+		_ = c.conn.writeRecord(typeStderr, req.reqID, []byte(err.Error()))
 	} else {
 		httpReq.Body = body
 		c.handler.ServeHTTP(r, httpReq)
 	}
 	r.Close()
 	c.mu.Lock()
-	delete(c.requests, req.reqId)
+	delete(c.requests, req.reqID)
 	c.mu.Unlock()
-	_ = c.conn.writeEndRequest(req.reqId, 0, statusRequestComplete)
+	_ = c.conn.writeEndRequest(req.reqID, 0, statusRequestComplete)
 
 	// Consume the entire body, so the host isn't still writing to
 	// us when we close the socket below in the !keepConn case,

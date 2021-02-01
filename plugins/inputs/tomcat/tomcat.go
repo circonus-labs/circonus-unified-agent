@@ -14,12 +14,12 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
 )
 
-type TomcatStatus struct {
-	TomcatJvm        TomcatJvm         `xml:"jvm"`
-	TomcatConnectors []TomcatConnector `xml:"connector"`
+type Status struct {
+	JVM        JVM         `xml:"jvm"`
+	Connectors []Connector `xml:"connector"`
 }
 
-type TomcatJvm struct {
+type JVM struct {
 	JvmMemory      JvmMemoryStat       `xml:"memory"`
 	JvmMemoryPools []JvmMemoryPoolStat `xml:"memorypool"`
 }
@@ -39,7 +39,7 @@ type JvmMemoryPoolStat struct {
 	UsageUsed      int64  `xml:"usageUsed,attr"`
 }
 
-type TomcatConnector struct {
+type Connector struct {
 	Name        string      `xml:"name,attr"`
 	ThreadInfo  ThreadInfo  `xml:"threadInfo"`
 	RequestInfo RequestInfo `xml:"requestInfo"`
@@ -99,7 +99,7 @@ func (s *Tomcat) SampleConfig() string {
 
 func (s *Tomcat) Gather(acc cua.Accumulator) error {
 	if s.client == nil {
-		client, err := s.createHttpClient()
+		client, err := s.createHTTPClient()
 		if err != nil {
 			return err
 		}
@@ -130,19 +130,19 @@ func (s *Tomcat) Gather(acc cua.Accumulator) error {
 			resp.StatusCode, s.URL)
 	}
 
-	var status TomcatStatus
+	var status Status
 	_ = xml.NewDecoder(resp.Body).Decode(&status)
 
 	// add tomcat_jvm_memory measurements
 	tcm := map[string]interface{}{
-		"free":  status.TomcatJvm.JvmMemory.Free,
-		"total": status.TomcatJvm.JvmMemory.Total,
-		"max":   status.TomcatJvm.JvmMemory.Max,
+		"free":  status.JVM.JvmMemory.Free,
+		"total": status.JVM.JvmMemory.Total,
+		"max":   status.JVM.JvmMemory.Max,
 	}
 	acc.AddFields("tomcat_jvm_memory", tcm, nil)
 
 	// add tomcat_jvm_memorypool measurements
-	for _, mp := range status.TomcatJvm.JvmMemoryPools {
+	for _, mp := range status.JVM.JvmMemoryPools {
 		tcmpTags := map[string]string{
 			"name": mp.Name,
 			"type": mp.Type,
@@ -159,7 +159,7 @@ func (s *Tomcat) Gather(acc cua.Accumulator) error {
 	}
 
 	// add tomcat_connector measurements
-	for _, c := range status.TomcatConnectors {
+	for _, c := range status.Connectors {
 		name, err := strconv.Unquote(c.Name)
 		if err != nil {
 			name = c.Name
@@ -187,7 +187,7 @@ func (s *Tomcat) Gather(acc cua.Accumulator) error {
 	return nil
 }
 
-func (s *Tomcat) createHttpClient() (*http.Client, error) {
+func (s *Tomcat) createHTTPClient() (*http.Client, error) {
 	tlsConfig, err := s.ClientConfig.TLSConfig()
 	if err != nil {
 		return nil, err

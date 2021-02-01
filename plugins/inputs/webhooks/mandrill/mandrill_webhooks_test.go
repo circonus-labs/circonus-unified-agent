@@ -10,7 +10,7 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/testutil"
 )
 
-func postWebhooks(md *MandrillWebhook, eventBody string) *httptest.ResponseRecorder {
+func postWebhooks(md *Webhook, eventBody string) *httptest.ResponseRecorder {
 	body := url.Values{}
 	body.Set("mandrill_events", eventBody)
 	req, _ := http.NewRequest("POST", "/mandrill", strings.NewReader(body.Encode()))
@@ -21,7 +21,7 @@ func postWebhooks(md *MandrillWebhook, eventBody string) *httptest.ResponseRecor
 	return w
 }
 
-func headRequest(md *MandrillWebhook) *httptest.ResponseRecorder {
+func headRequest(md *Webhook) *httptest.ResponseRecorder {
 	req, _ := http.NewRequest("HEAD", "/mandrill", strings.NewReader(""))
 	w := httptest.NewRecorder()
 
@@ -31,7 +31,7 @@ func headRequest(md *MandrillWebhook) *httptest.ResponseRecorder {
 }
 
 func TestHead(t *testing.T) {
-	md := &MandrillWebhook{Path: "/mandrill"}
+	md := &Webhook{Path: "/mandrill"}
 	resp := headRequest(md)
 	if resp.Code != http.StatusOK {
 		t.Errorf("HEAD returned HTTP status code %v.\nExpected %v", resp.Code, http.StatusOK)
@@ -40,7 +40,7 @@ func TestHead(t *testing.T) {
 
 func TestSendEvent(t *testing.T) {
 	var acc testutil.Accumulator
-	md := &MandrillWebhook{Path: "/mandrill", acc: &acc}
+	md := &Webhook{Path: "/mandrill", acc: &acc}
 	resp := postWebhooks(md, "["+SendEventJSON()+"]")
 	if resp.Code != http.StatusOK {
 		t.Errorf("POST send returned HTTP status code %v.\nExpected %v", resp.Code, http.StatusOK)
@@ -59,7 +59,7 @@ func TestSendEvent(t *testing.T) {
 
 func TestMultipleEvents(t *testing.T) {
 	var acc testutil.Accumulator
-	md := &MandrillWebhook{Path: "/mandrill", acc: &acc}
+	md := &Webhook{Path: "/mandrill", acc: &acc}
 	resp := postWebhooks(md, "["+SendEventJSON()+","+HardBounceEventJSON()+"]")
 	if resp.Code != http.StatusOK {
 		t.Errorf("POST send returned HTTP status code %v.\nExpected %v", resp.Code, http.StatusOK)

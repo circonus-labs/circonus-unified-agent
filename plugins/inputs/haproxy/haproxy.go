@@ -62,24 +62,24 @@ var sampleConfig = `
   # insecure_skip_verify = false
 `
 
-func (r *haproxy) SampleConfig() string {
+func (*haproxy) SampleConfig() string {
 	return sampleConfig
 }
 
-func (r *haproxy) Description() string {
+func (*haproxy) Description() string {
 	return "Read metrics of haproxy, via socket or csv stats page"
 }
 
 // Reads stats from all configured servers accumulates stats.
 // Returns one of the errors encountered while gather stats (if any).
-func (g *haproxy) Gather(acc cua.Accumulator) error {
-	if len(g.Servers) == 0 {
-		return g.gatherServer("http://127.0.0.1:1936/haproxy?stats", acc)
+func (h *haproxy) Gather(acc cua.Accumulator) error {
+	if len(h.Servers) == 0 {
+		return h.gatherServer("http://127.0.0.1:1936/haproxy?stats", acc)
 	}
 
-	endpoints := make([]string, 0, len(g.Servers))
+	endpoints := make([]string, 0, len(h.Servers))
 
-	for _, endpoint := range g.Servers {
+	for _, endpoint := range h.Servers {
 
 		if strings.HasPrefix(endpoint, "http") {
 			endpoints = append(endpoints, endpoint)
@@ -106,7 +106,7 @@ func (g *haproxy) Gather(acc cua.Accumulator) error {
 	for _, server := range endpoints {
 		go func(serv string) {
 			defer wg.Done()
-			if err := g.gatherServer(serv, acc); err != nil {
+			if err := h.gatherServer(serv, acc); err != nil {
 				acc.AddError(err)
 			}
 		}(server)
@@ -116,7 +116,7 @@ func (g *haproxy) Gather(acc cua.Accumulator) error {
 	return nil
 }
 
-func (g *haproxy) gatherServerSocket(addr string, acc cua.Accumulator) error {
+func (h *haproxy) gatherServerSocket(addr string, acc cua.Accumulator) error {
 	socketPath := getSocketAddr(addr)
 
 	c, err := net.Dial("unix", socketPath)
@@ -131,16 +131,16 @@ func (g *haproxy) gatherServerSocket(addr string, acc cua.Accumulator) error {
 		return fmt.Errorf("Could not write to socket '%s': %w", addr, errw)
 	}
 
-	return g.importCsvResult(c, acc, socketPath)
+	return h.importCsvResult(c, acc, socketPath)
 }
 
-func (g *haproxy) gatherServer(addr string, acc cua.Accumulator) error {
+func (h *haproxy) gatherServer(addr string, acc cua.Accumulator) error {
 	if !strings.HasPrefix(addr, "http") {
-		return g.gatherServerSocket(addr, acc)
+		return h.gatherServerSocket(addr, acc)
 	}
 
-	if g.client == nil {
-		tlsCfg, err := g.ClientConfig.TLSConfig()
+	if h.client == nil {
+		tlsCfg, err := h.ClientConfig.TLSConfig()
 		if err != nil {
 			return err
 		}
@@ -152,7 +152,7 @@ func (g *haproxy) gatherServer(addr string, acc cua.Accumulator) error {
 			Transport: tr,
 			Timeout:   time.Duration(4 * time.Second),
 		}
-		g.client = client
+		h.client = client
 	}
 
 	if !strings.HasSuffix(addr, ";csv") {
@@ -175,11 +175,11 @@ func (g *haproxy) gatherServer(addr string, acc cua.Accumulator) error {
 		addr = u.String()
 	}
 
-	if g.Username != "" || g.Password != "" {
-		req.SetBasicAuth(g.Username, g.Password)
+	if h.Username != "" || h.Password != "" {
+		req.SetBasicAuth(h.Username, h.Password)
 	}
 
-	res, err := g.client.Do(req)
+	res, err := h.client.Do(req)
 	if err != nil {
 		return fmt.Errorf("unable to connect to haproxy server '%s': %w", addr, err)
 	}
@@ -189,7 +189,7 @@ func (g *haproxy) gatherServer(addr string, acc cua.Accumulator) error {
 		return fmt.Errorf("unable to get valid stat result from '%s', http response code : %d", addr, res.StatusCode)
 	}
 
-	if err := g.importCsvResult(res.Body, acc, u.Host); err != nil {
+	if err := h.importCsvResult(res.Body, acc, u.Host); err != nil {
 		return fmt.Errorf("unable to parse stat result from '%s': %w", addr, err)
 	}
 
@@ -201,9 +201,8 @@ func getSocketAddr(sock string) string {
 
 	if len(socketAddr) >= 2 {
 		return socketAddr[1]
-	} else {
-		return socketAddr[0]
 	}
+	return socketAddr[0]
 }
 
 var typeNames = []string{"frontend", "backend", "server", "listener"}
@@ -222,7 +221,7 @@ var fieldRenames = map[string]string{
 	"hrsp_other": "http_response.other",
 }
 
-func (g *haproxy) importCsvResult(r io.Reader, acc cua.Accumulator, host string) error {
+func (h *haproxy) importCsvResult(r io.Reader, acc cua.Accumulator, host string) error {
 	csvr := csv.NewReader(r)
 	now := time.Now()
 
@@ -259,7 +258,7 @@ func (g *haproxy) importCsvResult(r io.Reader, acc cua.Accumulator, host string)
 
 			colName := headers[i]
 			fieldName := colName
-			if !g.KeepFieldNames {
+			if !h.KeepFieldNames {
 				if fieldRename, ok := fieldRenames[colName]; ok {
 					fieldName = fieldRename
 				}

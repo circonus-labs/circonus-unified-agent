@@ -16,7 +16,7 @@ import (
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
-	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs/linux_sysctl_fs"
+	linuxsysctlfs "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/linux_sysctl_fs"
 )
 
 type Processes struct {
@@ -129,7 +129,7 @@ func (p *Processes) gatherFromPS(fields map[string]interface{}) error {
 
 // get process states from /proc/(pid)/stat files
 func (p *Processes) gatherFromProc(fields map[string]interface{}) error {
-	filenames, err := filepath.Glob(linux_sysctl_fs.GetHostProc() + "/[0-9]*/stat")
+	filenames, err := filepath.Glob(linuxsysctlfs.GetHostProc() + "/[0-9]*/stat")
 	if err != nil {
 		return err
 	}

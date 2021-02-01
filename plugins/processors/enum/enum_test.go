@@ -24,12 +24,12 @@ func createTestMetric() cua.Metric {
 	return metric
 }
 
-func calculateProcessedValues(mapper EnumMapper, metric cua.Metric) map[string]interface{} {
+func calculateProcessedValues(mapper Mapper, metric cua.Metric) map[string]interface{} {
 	processed := mapper.Apply(metric)
 	return processed[0].Fields()
 }
 
-func calculateProcessedTags(mapper EnumMapper, metric cua.Metric) map[string]string {
+func calculateProcessedTags(mapper Mapper, metric cua.Metric) map[string]string {
 	processed := mapper.Apply(metric)
 	return processed[0].Tags()
 }
@@ -47,7 +47,7 @@ func assertTagValue(t *testing.T, expected interface{}, tag string, tags map[str
 }
 
 func TestRetainsMetric(t *testing.T) {
-	mapper := EnumMapper{}
+	mapper := Mapper{}
 	source := createTestMetric()
 
 	target := mapper.Apply(source)[0]
@@ -63,7 +63,7 @@ func TestRetainsMetric(t *testing.T) {
 }
 
 func TestMapsSingleStringValueTag(t *testing.T) {
-	mapper := EnumMapper{Mappings: []Mapping{{Tag: "tag", ValueMappings: map[string]interface{}{"tag_value": "valuable"}}}}
+	mapper := Mapper{Mappings: []Mapping{{Tag: "tag", ValueMappings: map[string]interface{}{"tag_value": "valuable"}}}}
 
 	tags := calculateProcessedTags(mapper, createTestMetric())
 
@@ -71,7 +71,7 @@ func TestMapsSingleStringValueTag(t *testing.T) {
 }
 
 func TestNoFailureOnMappingsOnNonSupportedValuedFields(t *testing.T) {
-	mapper := EnumMapper{Mappings: []Mapping{{Field: "float_value", ValueMappings: map[string]interface{}{"3.14": "pi"}}}}
+	mapper := Mapper{Mappings: []Mapping{{Field: "float_value", ValueMappings: map[string]interface{}{"3.14": "pi"}}}}
 
 	fields := calculateProcessedValues(mapper, createTestMetric())
 
@@ -107,17 +107,17 @@ func TestMappings(t *testing.T) {
 	}
 
 	for _, mapping := range mappings {
-		field_name := mapping["field_name"][0].(string)
+		fieldName := mapping["field_name"][0].(string)
 		for index := range mapping["target_value"] {
-			mapper := EnumMapper{Mappings: []Mapping{{Field: field_name, ValueMappings: map[string]interface{}{mapping["target_value"][index].(string): mapping["mapped_value"][index]}}}}
+			mapper := Mapper{Mappings: []Mapping{{Field: fieldName, ValueMappings: map[string]interface{}{mapping["target_value"][index].(string): mapping["mapped_value"][index]}}}}
 			fields := calculateProcessedValues(mapper, createTestMetric())
-			assertFieldValue(t, mapping["expected_value"][index], field_name, fields)
+			assertFieldValue(t, mapping["expected_value"][index], fieldName, fields)
 		}
 	}
 }
 
 func TestMapsToDefaultValueOnUnknownSourceValue(t *testing.T) {
-	mapper := EnumMapper{Mappings: []Mapping{{Field: "string_value", Default: int64(42), ValueMappings: map[string]interface{}{"other": int64(1)}}}}
+	mapper := Mapper{Mappings: []Mapping{{Field: "string_value", Default: int64(42), ValueMappings: map[string]interface{}{"other": int64(1)}}}}
 
 	fields := calculateProcessedValues(mapper, createTestMetric())
 
@@ -125,7 +125,7 @@ func TestMapsToDefaultValueOnUnknownSourceValue(t *testing.T) {
 }
 
 func TestDoNotMapToDefaultValueKnownSourceValue(t *testing.T) {
-	mapper := EnumMapper{Mappings: []Mapping{{Field: "string_value", Default: int64(42), ValueMappings: map[string]interface{}{"test": int64(1)}}}}
+	mapper := Mapper{Mappings: []Mapping{{Field: "string_value", Default: int64(42), ValueMappings: map[string]interface{}{"test": int64(1)}}}}
 
 	fields := calculateProcessedValues(mapper, createTestMetric())
 
@@ -133,7 +133,7 @@ func TestDoNotMapToDefaultValueKnownSourceValue(t *testing.T) {
 }
 
 func TestNoMappingWithoutDefaultOrDefinedMappingValue(t *testing.T) {
-	mapper := EnumMapper{Mappings: []Mapping{{Field: "string_value", ValueMappings: map[string]interface{}{"other": int64(1)}}}}
+	mapper := Mapper{Mappings: []Mapping{{Field: "string_value", ValueMappings: map[string]interface{}{"other": int64(1)}}}}
 
 	fields := calculateProcessedValues(mapper, createTestMetric())
 
@@ -141,7 +141,7 @@ func TestNoMappingWithoutDefaultOrDefinedMappingValue(t *testing.T) {
 }
 
 func TestWritesToDestination(t *testing.T) {
-	mapper := EnumMapper{Mappings: []Mapping{{Field: "string_value", Dest: "string_code", ValueMappings: map[string]interface{}{"test": int64(1)}}}}
+	mapper := Mapper{Mappings: []Mapping{{Field: "string_value", Dest: "string_code", ValueMappings: map[string]interface{}{"test": int64(1)}}}}
 
 	fields := calculateProcessedValues(mapper, createTestMetric())
 
@@ -151,7 +151,7 @@ func TestWritesToDestination(t *testing.T) {
 
 func TestDoNotWriteToDestinationWithoutDefaultOrDefinedMapping(t *testing.T) {
 	field := "string_code"
-	mapper := EnumMapper{Mappings: []Mapping{{Field: "string_value", Dest: field, ValueMappings: map[string]interface{}{"other": int64(1)}}}}
+	mapper := Mapper{Mappings: []Mapping{{Field: "string_value", Dest: field, ValueMappings: map[string]interface{}{"other": int64(1)}}}}
 
 	fields := calculateProcessedValues(mapper, createTestMetric())
 

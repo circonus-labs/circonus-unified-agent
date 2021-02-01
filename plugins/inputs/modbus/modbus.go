@@ -336,12 +336,11 @@ func validateFieldContainers(t []fieldContainer, n string) error {
 		}
 
 		//search name duplicate
-		canonical_name := item.Measurement + "." + item.Name
-		if nameEncountered[canonical_name] {
+		canonicalName := item.Measurement + "." + item.Name
+		if nameEncountered[canonicalName] {
 			return fmt.Errorf("name '%s' is duplicated in measurement '%s' '%s' - '%s'", item.Name, item.Measurement, n, item.Name)
-		} else {
-			nameEncountered[canonical_name] = true
 		}
+		nameEncountered[canonicalName] = true
 
 		if n == cInputRegisters || n == cHoldingRegisters {
 			// search byte order
@@ -461,16 +460,16 @@ func (m *Modbus) getFields() error {
 
 		if register.Type == cInputRegisters || register.Type == cHoldingRegisters {
 			for i := 0; i < len(register.Fields); i++ {
-				var values_t []byte
+				var values []byte
 
 				for j := 0; j < len(register.Fields[i].Address); j++ {
 					tempArray := rawValues[register.Fields[i].Address[j]]
 					for x := 0; x < len(tempArray); x++ {
-						values_t = append(values_t, tempArray[x])
+						values = append(values, tempArray[x])
 					}
 				}
 
-				register.Fields[i].value = convertDataType(register.Fields[i], values_t)
+				register.Fields[i].value = convertDataType(register.Fields[i], values)
 			}
 
 		}
@@ -688,7 +687,7 @@ func (m *Modbus) Gather(acc cua.Accumulator) error {
 	}
 
 	timestamp := time.Now()
-	for retry := 0; retry <= m.Retries; retry += 1 {
+	for retry := 0; retry <= m.Retries; retry++ {
 		timestamp = time.Now()
 		err := m.getFields()
 		if err != nil {

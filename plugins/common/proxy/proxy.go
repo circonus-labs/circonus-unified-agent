@@ -10,9 +10,9 @@ type HTTPProxy struct {
 	HTTPProxyURL string `toml:"http_proxy_url"`
 }
 
-type proxyFunc func(req *http.Request) (*url.URL, error)
+type ProxyFunc func(req *http.Request) (*url.URL, error) //nolint:golint
 
-func (p *HTTPProxy) Proxy() (proxyFunc, error) {
+func (p *HTTPProxy) Proxy() (ProxyFunc, error) {
 	if len(p.HTTPProxyURL) > 0 {
 		url, err := url.Parse(p.HTTPProxyURL)
 		if err != nil {

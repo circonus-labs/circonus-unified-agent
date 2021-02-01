@@ -120,7 +120,7 @@ func (c *Ceph) gatherAdminSocketStats(acc cua.Accumulator) error {
 		for tag, metrics := range data {
 			acc.AddFields(measurement,
 				map[string]interface{}(metrics),
-				map[string]string{"type": s.sockType, "id": s.sockId, "collection": tag})
+				map[string]string{"type": s.sockType, "id": s.sockID, "collection": tag})
 		}
 	}
 	return nil
@@ -226,13 +226,13 @@ var findSockets = func(c *Ceph) ([]*socket, error) {
 
 		if sockType == typeOsd || sockType == typeMon || sockType == typeMds || sockType == typeRgw {
 			path := filepath.Join(c.SocketDir, f)
-			sockets = append(sockets, &socket{parseSockId(f, sockPrefix, c.SocketSuffix), sockType, path})
+			sockets = append(sockets, &socket{parseSockID(f, sockPrefix, c.SocketSuffix), sockType, path})
 		}
 	}
 	return sockets, nil
 }
 
-func parseSockId(fname, prefix, suffix string) string {
+func parseSockID(fname, prefix, suffix string) string {
 	s := fname
 	s = strings.TrimPrefix(s, prefix)
 	s = strings.TrimSuffix(s, suffix)
@@ -241,7 +241,7 @@ func parseSockId(fname, prefix, suffix string) string {
 }
 
 type socket struct {
-	sockId   string
+	sockID   string
 	sockType string
 	socket   string
 }
@@ -342,8 +342,8 @@ func (c *Ceph) exec(command string) (string, error) {
 	return output, nil
 }
 
-// CephStatus is used to unmarshal "ceph -s" output
-type CephStatus struct {
+// Status is used to unmarshal "ceph -s" output
+type Status struct {
 	Health struct {
 		Status        string `json:"status"`
 		OverallStatus string `json:"overall_status"`
@@ -380,12 +380,12 @@ type CephStatus struct {
 
 // decodeStatus decodes the output of 'ceph -s'
 func decodeStatus(acc cua.Accumulator, input string) error {
-	data := &CephStatus{}
+	data := &Status{}
 	if err := json.Unmarshal([]byte(input), data); err != nil {
 		return fmt.Errorf("failed to parse json: '%s': %w", input, err)
 	}
 
-	decoders := []func(cua.Accumulator, *CephStatus) error{
+	decoders := []func(cua.Accumulator, *Status) error{
 		decodeStatusHealth,
 		decodeStatusOsdmap,
 		decodeStatusPgmap,
@@ -402,7 +402,7 @@ func decodeStatus(acc cua.Accumulator, input string) error {
 }
 
 // decodeStatusHealth decodes the health portion of the output of 'ceph status'
-func decodeStatusHealth(acc cua.Accumulator, data *CephStatus) error {
+func decodeStatusHealth(acc cua.Accumulator, data *Status) error {
 	fields := map[string]interface{}{
 		"status":         data.Health.Status,
 		"overall_status": data.Health.OverallStatus,
@@ -412,7 +412,7 @@ func decodeStatusHealth(acc cua.Accumulator, data *CephStatus) error {
 }
 
 // decodeStatusOsdmap decodes the OSD map portion of the output of 'ceph -s'
-func decodeStatusOsdmap(acc cua.Accumulator, data *CephStatus) error {
+func decodeStatusOsdmap(acc cua.Accumulator, data *Status) error {
 	fields := map[string]interface{}{
 		"epoch":            data.OSDMap.OSDMap.Epoch,
 		"num_osds":         data.OSDMap.OSDMap.NumOSDs,
@@ -427,7 +427,7 @@ func decodeStatusOsdmap(acc cua.Accumulator, data *CephStatus) error {
 }
 
 // decodeStatusPgmap decodes the PG map portion of the output of 'ceph -s'
-func decodeStatusPgmap(acc cua.Accumulator, data *CephStatus) error {
+func decodeStatusPgmap(acc cua.Accumulator, data *Status) error {
 	fields := map[string]interface{}{
 		"version":          data.PGMap.Version,
 		"num_pgs":          data.PGMap.NumPGs,
@@ -446,7 +446,7 @@ func decodeStatusPgmap(acc cua.Accumulator, data *CephStatus) error {
 }
 
 // decodeStatusPgmapState decodes the PG map state portion of the output of 'ceph -s'
-func decodeStatusPgmapState(acc cua.Accumulator, data *CephStatus) error {
+func decodeStatusPgmapState(acc cua.Accumulator, data *Status) error {
 	for _, pgState := range data.PGMap.PGsByState {
 		tags := map[string]string{
 			"state": pgState.StateName,
@@ -459,8 +459,8 @@ func decodeStatusPgmapState(acc cua.Accumulator, data *CephStatus) error {
 	return nil
 }
 
-// CephDF is used to unmarshal 'ceph df' output
-type CephDf struct {
+// DF is used to unmarshal 'ceph df' output
+type Df struct {
 	Stats struct {
 		TotalSpace      *float64 `json:"total_space"` // pre ceph 0.84
 		TotalUsed       *float64 `json:"total_used"`  // pre ceph 0.84
@@ -483,7 +483,7 @@ type CephDf struct {
 
 // decodeDf decodes the output of 'ceph df'
 func decodeDf(acc cua.Accumulator, input string) error {
-	data := &CephDf{}
+	data := &Df{}
 	if err := json.Unmarshal([]byte(input), data); err != nil {
 		return fmt.Errorf("failed to parse json: '%s': %w", input, err)
 	}
@@ -517,8 +517,8 @@ func decodeDf(acc cua.Accumulator, input string) error {
 	return nil
 }
 
-// CephOSDPoolStats is used to unmarshal 'ceph osd pool stats' output
-type CephOSDPoolStats []struct {
+// OSDPoolStats is used to unmarshal 'ceph osd pool stats' output
+type OSDPoolStats []struct {
 	PoolName     string `json:"pool_name"`
 	ClientIORate struct {
 		ReadBytesSec  float64  `json:"read_bytes_sec"`
@@ -536,7 +536,7 @@ type CephOSDPoolStats []struct {
 
 // decodeOsdPoolStats decodes the output of 'ceph osd pool stats'
 func decodeOsdPoolStats(acc cua.Accumulator, input string) error {
-	data := CephOSDPoolStats{}
+	data := OSDPoolStats{}
 	if err := json.Unmarshal([]byte(input), &data); err != nil {
 		return fmt.Errorf("failed to parse json: '%s': %w", input, err)
 	}

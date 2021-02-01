@@ -1,6 +1,6 @@
 // +build windows
 
-package win_perf_counters
+package winperfcounters
 
 import (
 	"errors"
@@ -137,7 +137,7 @@ var sampleConfig = `
     Measurement = "win_swap"
 `
 
-type Win_PerfCounters struct {
+type WinPerfCounters struct {
 	PrintValid bool
 	//deprecated: determined dynamically
 	PreVistaSupport         bool
@@ -170,7 +170,7 @@ type counter struct {
 	instance      string
 	measurement   string
 	includeTotal  bool
-	counterHandle PDH_HCOUNTER
+	counterHandle PdhHCounter
 }
 
 type instanceGrouping struct {
@@ -236,18 +236,18 @@ func extractCounterInfoFromCounterPath(counterPath string) (object string, insta
 	return
 }
 
-func (m *Win_PerfCounters) Description() string {
+func (m *WinPerfCounters) Description() string {
 	return "Input plugin to counterPath Performance Counters on Windows operating systems"
 }
 
-func (m *Win_PerfCounters) SampleConfig() string {
+func (m *WinPerfCounters) SampleConfig() string {
 	return sampleConfig
 }
 
 //objectName string, counter string, instance string, measurement string, include_total bool
-func (m *Win_PerfCounters) AddItem(counterPath string, objectName string, instance string, counterName string, measurement string, includeTotal bool) error {
+func (m *WinPerfCounters) AddItem(counterPath string, objectName string, instance string, counterName string, measurement string, includeTotal bool) error {
 	var err error
-	var counterHandle PDH_HCOUNTER
+	var counterHandle PdhHCounter
 	if !m.query.IsVistaOrNewer() {
 		counterHandle, err = m.query.AddCounterToQuery(counterPath)
 		if err != nil {
@@ -305,7 +305,7 @@ func (m *Win_PerfCounters) AddItem(counterPath string, objectName string, instan
 	return nil
 }
 
-func (m *Win_PerfCounters) ParseConfig() error {
+func (m *WinPerfCounters) ParseConfig() error {
 	var counterPath string
 
 	if len(m.Object) > 0 {
@@ -334,14 +334,12 @@ func (m *Win_PerfCounters) ParseConfig() error {
 			}
 		}
 		return nil
-	} else {
-		err := errors.New("no performance objects configured")
-		return err
 	}
-
+	err := errors.New("no performance objects configured")
+	return err
 }
 
-func (m *Win_PerfCounters) Gather(acc cua.Accumulator) error {
+func (m *WinPerfCounters) Gather(acc cua.Accumulator) error {
 	// Parse the config once
 	var err error
 
@@ -466,11 +464,11 @@ func addCounterMeasurement(metric *counter, instanceName string, value float64, 
 
 func isKnownCounterDataError(err error) bool {
 	var pdhErr (*PdhError)
-	if errors.As(err, &pdhErr) && (pdhErr.ErrorCode == PDH_INVALID_DATA ||
-		pdhErr.ErrorCode == PDH_CALC_NEGATIVE_DENOMINATOR ||
-		pdhErr.ErrorCode == PDH_CALC_NEGATIVE_VALUE ||
-		pdhErr.ErrorCode == PDH_CSTATUS_INVALID_DATA ||
-		pdhErr.ErrorCode == PDH_NO_DATA) {
+	if errors.As(err, &pdhErr) && (pdhErr.ErrorCode == pdhInvalidData ||
+		pdhErr.ErrorCode == pdhCalcNegativeDenominator ||
+		pdhErr.ErrorCode == pdhCalcNegativeValue ||
+		pdhErr.ErrorCode == pdhCStatusInvalidData ||
+		pdhErr.ErrorCode == pdhNoData) {
 		return true
 	}
 	return false
@@ -478,6 +476,6 @@ func isKnownCounterDataError(err error) bool {
 
 func init() {
 	inputs.Add("win_perf_counters", func() cua.Input {
-		return &Win_PerfCounters{query: &PerformanceQueryImpl{}, CountersRefreshInterval: internal.Duration{Duration: time.Second * 60}}
+		return &WinPerfCounters{query: &PerformanceQueryImpl{}, CountersRefreshInterval: internal.Duration{Duration: time.Second * 60}}
 	})
 }

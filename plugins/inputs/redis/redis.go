@@ -17,14 +17,14 @@ import (
 	"github.com/go-redis/redis"
 )
 
-type RedisCommand struct {
+type command struct {
 	Command []interface{}
 	Field   string
 	Type    string
 }
 
 type Redis struct {
-	Commands []*RedisCommand
+	Commands []*command
 	Servers  []string
 	Password string
 	tls.ClientConfig
@@ -41,12 +41,12 @@ type Client interface {
 	BaseTags() map[string]string
 }
 
-type RedisClient struct {
+type redisClient struct {
 	client *redis.Client
 	tags   map[string]string
 }
 
-func (r *RedisClient) Do(returnType string, args ...interface{}) (interface{}, error) {
+func (r *redisClient) Do(returnType string, args ...interface{}) (interface{}, error) {
 	rawVal := r.client.Do(args...)
 
 	switch returnType {
@@ -61,11 +61,11 @@ func (r *RedisClient) Do(returnType string, args ...interface{}) (interface{}, e
 	}
 }
 
-func (r *RedisClient) Info() *redis.StringCmd {
+func (r *redisClient) Info() *redis.StringCmd {
 	return r.client.Info("ALL")
 }
 
-func (r *RedisClient) BaseTags() map[string]string {
+func (r *redisClient) BaseTags() map[string]string {
 	tags := make(map[string]string)
 	for k, v := range r.tags {
 		tags[k] = v
@@ -181,7 +181,7 @@ func (r *Redis) init(acc cua.Accumulator) error {
 			tags["port"] = u.Port()
 		}
 
-		r.clients[i] = &RedisClient{
+		r.clients[i] = &redisClient{
 			client: client,
 			tags:   tags,
 		}
@@ -249,7 +249,7 @@ func gatherInfoOutput(
 	tags map[string]string,
 ) error {
 	var section string
-	var keyspace_hits, keyspace_misses int64
+	var keyspaceHits, keyspaceMisses int64
 
 	scanner := bufio.NewScanner(rdr)
 	fields := make(map[string]interface{})
@@ -321,9 +321,9 @@ func gatherInfoOutput(
 		if ival, err := strconv.ParseInt(val, 10, 64); err == nil {
 			switch name {
 			case "keyspace_hits":
-				keyspace_hits = ival
+				keyspaceHits = ival
 			case "keyspace_misses":
-				keyspace_misses = ival
+				keyspaceMisses = ival
 			case "rdb_last_save_time":
 				// influxdb can't calculate this, so we have to do it
 				fields["rdb_last_save_time_elapsed"] = time.Now().Unix() - ival
@@ -347,11 +347,11 @@ func gatherInfoOutput(
 
 		fields[metric] = val
 	}
-	var keyspace_hitrate float64 = 0.0
-	if keyspace_hits != 0 || keyspace_misses != 0 {
-		keyspace_hitrate = float64(keyspace_hits) / float64(keyspace_hits+keyspace_misses)
+	var keyspaceHitRate float64 = 0.0
+	if keyspaceHits != 0 || keyspaceMisses != 0 {
+		keyspaceHitRate = float64(keyspaceHits) / float64(keyspaceHits+keyspaceMisses)
 	}
-	fields["keyspace_hitrate"] = keyspace_hitrate
+	fields["keyspace_hitrate"] = keyspaceHitRate
 	acc.AddFields("redis", fields, tags)
 	return nil
 }
@@ -364,12 +364,12 @@ func gatherKeyspaceLine(
 	name string,
 	line string,
 	acc cua.Accumulator,
-	global_tags map[string]string,
+	globalTags map[string]string,
 ) {
 	if strings.Contains(line, "keys=") {
 		fields := make(map[string]interface{})
 		tags := make(map[string]string)
-		for k, v := range global_tags {
+		for k, v := range globalTags {
 			tags[k] = v
 		}
 		tags["database"] = name
@@ -393,7 +393,7 @@ func gatherCommandstateLine(
 	name string,
 	line string,
 	acc cua.Accumulator,
-	global_tags map[string]string,
+	globalTags map[string]string,
 ) {
 	if !strings.HasPrefix(name, "cmdstat") {
 		return
@@ -401,7 +401,7 @@ func gatherCommandstateLine(
 
 	fields := make(map[string]interface{})
 	tags := make(map[string]string)
-	for k, v := range global_tags {
+	for k, v := range globalTags {
 		tags[k] = v
 	}
 	tags["command"] = strings.TrimPrefix(name, "cmdstat_")
@@ -438,11 +438,11 @@ func gatherReplicationLine(
 	name string,
 	line string,
 	acc cua.Accumulator,
-	global_tags map[string]string,
+	globalTags map[string]string,
 ) {
 	fields := make(map[string]interface{})
 	tags := make(map[string]string)
-	for k, v := range global_tags {
+	for k, v := range globalTags {
 		tags[k] = v
 	}
 

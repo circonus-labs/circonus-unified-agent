@@ -1,4 +1,4 @@
-package kafka_consumer_legacy
+package kafkaconsumerlegacy
 
 import (
 	"strings"

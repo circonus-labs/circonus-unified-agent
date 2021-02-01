@@ -105,7 +105,7 @@ func TestGetMap(t *testing.T) {
 	err := d.Init()
 	require.NoError(t, err)
 
-	expected := nameMap{
+	expected := NameMap{
 		1: "ifname1",
 		2: "ifname2",
 	}
@@ -113,7 +113,7 @@ func TestGetMap(t *testing.T) {
 	var remoteCalls int32
 
 	// Mock the snmp transaction
-	d.getMapRemote = func(agent string) (nameMap, error) {
+	d.getMapRemote = func(agent string) (NameMap, error) {
 		atomic.AddInt32(&remoteCalls, 1)
 		return expected, nil
 	}

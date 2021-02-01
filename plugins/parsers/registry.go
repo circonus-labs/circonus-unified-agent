@@ -7,7 +7,7 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/plugins/parsers/collectd"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/parsers/csv"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/parsers/dropwizard"
-	"github.com/circonus-labs/circonus-unified-agent/plugins/parsers/form_urlencoded"
+	formurlencoded "github.com/circonus-labs/circonus-unified-agent/plugins/parsers/form_urlencoded"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/parsers/graphite"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/parsers/grok"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/parsers/influx"
@@ -257,7 +257,7 @@ func newGrokParser(metricName string,
 }
 
 func NewNagiosParser() (Parser, error) {
-	return &nagios.NagiosParser{}, nil
+	return &nagios.Parser{}, nil
 }
 
 func NewInfluxParser() (Parser, error) {
@@ -278,7 +278,7 @@ func NewValueParser(
 	dataType string,
 	defaultTags map[string]string,
 ) (Parser, error) {
-	return &value.ValueParser{
+	return &value.Parser{
 		MetricName:  metricName,
 		DataType:    dataType,
 		DefaultTags: defaultTags,
@@ -333,7 +333,7 @@ func NewFormUrlencodedParser(
 	defaultTags map[string]string,
 	tagKeys []string,
 ) (Parser, error) {
-	return &form_urlencoded.Parser{
+	return &formurlencoded.Parser{
 		MetricName:  metricName,
 		DefaultTags: defaultTags,
 		TagKeys:     tagKeys,

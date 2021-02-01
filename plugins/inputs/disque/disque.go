@@ -64,18 +64,18 @@ var ErrProtocolError = errors.New("disque protocol error")
 
 // Reads stats from all configured servers accumulates stats.
 // Returns one of the errors encountered while gather stats (if any).
-func (g *Disque) Gather(acc cua.Accumulator) error {
-	if len(g.Servers) == 0 {
+func (r *Disque) Gather(acc cua.Accumulator) error {
+	if len(r.Servers) == 0 {
 		url := &url.URL{
 			Host: ":7711",
 		}
-		_ = g.gatherServer(url, acc)
+		_ = r.gatherServer(url, acc)
 		return nil
 	}
 
 	var wg sync.WaitGroup
 
-	for _, serv := range g.Servers {
+	for _, serv := range r.Servers {
 		u, err := url.Parse(serv)
 		if err != nil {
 			acc.AddError(fmt.Errorf("Unable to parse to address '%s': %w", serv, err))
@@ -89,7 +89,7 @@ func (g *Disque) Gather(acc cua.Accumulator) error {
 		wg.Add(1)
 		go func(serv string) {
 			defer wg.Done()
-			acc.AddError(g.gatherServer(u, acc))
+			acc.AddError(r.gatherServer(u, acc))
 		}(serv)
 	}
 
@@ -100,8 +100,8 @@ func (g *Disque) Gather(acc cua.Accumulator) error {
 
 const defaultPort = "7711"
 
-func (g *Disque) gatherServer(addr *url.URL, acc cua.Accumulator) error {
-	if g.c == nil {
+func (r *Disque) gatherServer(addr *url.URL, acc cua.Accumulator) error {
+	if r.c == nil {
 
 		_, _, err := net.SplitHostPort(addr.Host)
 		if err != nil {
@@ -118,9 +118,9 @@ func (g *Disque) gatherServer(addr *url.URL, acc cua.Accumulator) error {
 			if set && pwd != "" {
 				_, _ = c.Write([]byte(fmt.Sprintf("AUTH %s\r\n", pwd)))
 
-				r := bufio.NewReader(c)
+				rdr := bufio.NewReader(c)
 
-				line, err := r.ReadString('\n')
+				line, err := rdr.ReadString('\n')
 				if err != nil {
 					return err
 				}
@@ -130,17 +130,17 @@ func (g *Disque) gatherServer(addr *url.URL, acc cua.Accumulator) error {
 			}
 		}
 
-		g.c = c
+		r.c = c
 	}
 
 	// Extend connection
-	_ = g.c.SetDeadline(time.Now().Add(defaultTimeout))
+	_ = r.c.SetDeadline(time.Now().Add(defaultTimeout))
 
-	_, _ = g.c.Write([]byte("info\r\n"))
+	_, _ = r.c.Write([]byte("info\r\n"))
 
-	r := bufio.NewReader(g.c)
+	rdr := bufio.NewReader(r.c)
 
-	line, err := r.ReadString('\n')
+	line, err := rdr.ReadString('\n')
 	if err != nil {
 		return err
 	}
@@ -163,7 +163,7 @@ func (g *Disque) gatherServer(addr *url.URL, acc cua.Accumulator) error {
 	fields := make(map[string]interface{})
 	tags := map[string]string{"disque_host": addr.String()}
 	for read < sz {
-		line, err := r.ReadString('\n')
+		line, err := rdr.ReadString('\n')
 		if err != nil {
 			return err
 		}

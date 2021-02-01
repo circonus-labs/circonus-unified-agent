@@ -1,4 +1,4 @@
-package riemann_listener
+package riemannlistener
 
 import (
 	"log"

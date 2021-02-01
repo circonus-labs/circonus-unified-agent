@@ -1,4 +1,4 @@
-package reverse_dns
+package reversedns
 
 import (
 	"time"
@@ -63,7 +63,7 @@ type lookupEntry struct {
 }
 
 type ReverseDNS struct {
-	reverseDNSCache *ReverseDNSCache
+	reverseDNSCache *RDNSCache
 	acc             cua.Accumulator
 	parallel        parallel.Parallel
 

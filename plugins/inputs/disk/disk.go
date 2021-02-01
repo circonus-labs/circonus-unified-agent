@@ -9,7 +9,7 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs/system"
 )
 
-type DiskStats struct {
+type Stats struct {
 	ps system.PS
 
 	// Legacy support
@@ -19,7 +19,7 @@ type DiskStats struct {
 	IgnoreFS    []string `toml:"ignore_fs"`
 }
 
-func (_ *DiskStats) Description() string {
+func (*Stats) Description() string {
 	return "Read metrics about disk usage by mount point"
 }
 
@@ -32,11 +32,11 @@ var diskSampleConfig = `
   ignore_fs = ["tmpfs", "devtmpfs", "devfs", "iso9660", "overlay", "aufs", "squashfs"]
 `
 
-func (_ *DiskStats) SampleConfig() string {
+func (*Stats) SampleConfig() string {
 	return diskSampleConfig
 }
 
-func (s *DiskStats) Gather(acc cua.Accumulator) error {
+func (s *Stats) Gather(acc cua.Accumulator) error {
 	// Legacy support:
 	if len(s.Mountpoints) != 0 {
 		s.MountPoints = s.Mountpoints
@@ -59,9 +59,9 @@ func (s *DiskStats) Gather(acc cua.Accumulator) error {
 			"fstype": du.Fstype,
 			"mode":   mountOpts.Mode(),
 		}
-		var used_percent float64
+		var usedPercent float64
 		if du.Used+du.Free > 0 {
-			used_percent = float64(du.Used) /
+			usedPercent = float64(du.Used) /
 				(float64(du.Used) + float64(du.Free)) * 100
 		}
 
@@ -69,7 +69,7 @@ func (s *DiskStats) Gather(acc cua.Accumulator) error {
 			"total":        du.Total,
 			"free":         du.Free,
 			"used":         du.Used,
-			"used_percent": used_percent,
+			"used_percent": usedPercent,
 			"inodes_total": du.InodesTotal,
 			"inodes_free":  du.InodesFree,
 			"inodes_used":  du.InodesUsed,
@@ -108,6 +108,6 @@ func parseOptions(opts string) MountOptions {
 func init() {
 	ps := system.NewSystemPS()
 	inputs.Add("disk", func() cua.Input {
-		return &DiskStats{ps: ps}
+		return &Stats{ps: ps}
 	})
 }

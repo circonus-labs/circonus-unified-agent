@@ -8,7 +8,7 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/plugins/processors"
 )
 
-type TemplateProcessor struct {
+type Processor struct {
 	Tag      string     `toml:"tag"`
 	Template string     `toml:"template"`
 	Log      cua.Logger `toml:"-"`
@@ -25,19 +25,19 @@ const sampleConfig = `
   template = '{{ .Tag "hostname" }}.{{ .Tag "level" }}'
 `
 
-func (r *TemplateProcessor) SampleConfig() string {
+func (r *Processor) SampleConfig() string {
 	return sampleConfig
 }
 
-func (r *TemplateProcessor) Description() string {
+func (r *Processor) Description() string {
 	return "Uses a Go template to create a new tag"
 }
 
-func (r *TemplateProcessor) Apply(in ...cua.Metric) []cua.Metric {
+func (r *Processor) Apply(in ...cua.Metric) []cua.Metric {
 	// for each metric in "in" array
 	for _, metric := range in {
 		var b strings.Builder
-		newM := TemplateMetric{metric}
+		newM := Metric{metric}
 
 		// supply TemplateMetric and Template from configuration to Template.Execute
 		err := r.tmpl.Execute(&b, &newM)
@@ -51,7 +51,7 @@ func (r *TemplateProcessor) Apply(in ...cua.Metric) []cua.Metric {
 	return in
 }
 
-func (r *TemplateProcessor) Init() error {
+func (r *Processor) Init() error {
 	// create template
 	t, err := template.New("configured_template").Parse(r.Template)
 
@@ -61,6 +61,6 @@ func (r *TemplateProcessor) Init() error {
 
 func init() {
 	processors.Add("template", func() cua.Processor {
-		return &TemplateProcessor{}
+		return &Processor{}
 	})
 }

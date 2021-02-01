@@ -42,7 +42,7 @@ func (pg *Pgrep) Pattern(pattern string) ([]PID, error) {
 	return find(pg.path, args)
 }
 
-func (pg *Pgrep) Uid(user string) ([]PID, error) {
+func (pg *Pgrep) UID(user string) ([]PID, error) {
 	args := []string{"-u", user}
 	return find(pg.path, args)
 }

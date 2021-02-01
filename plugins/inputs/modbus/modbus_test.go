@@ -677,7 +677,7 @@ func TestRetrySuccessful(t *testing.T) {
 			if retries >= maxretries {
 				except = &mbserver.Success
 			}
-			retries += 1
+			retries++
 
 			return data, except
 		})
@@ -752,7 +752,7 @@ func TestRetryFail(t *testing.T) {
 	counter := 0
 	serv.RegisterFunctionHandler(1,
 		func(s *mbserver.Server, frame mbserver.Framer) ([]byte, *mbserver.Exception) {
-			counter += 1
+			counter++
 			data := make([]byte, 2)
 			data[0] = byte(1)
 			data[1] = byte(0)

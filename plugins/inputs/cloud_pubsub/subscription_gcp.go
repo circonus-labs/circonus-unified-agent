@@ -1,9 +1,10 @@
-package cloud_pubsub
+package cloudpubsub
 
 import (
-	"cloud.google.com/go/pubsub"
 	"context"
 	"time"
+
+	"cloud.google.com/go/pubsub"
 )
 
 type (

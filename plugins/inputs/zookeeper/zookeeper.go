@@ -72,9 +72,8 @@ func (z *Zookeeper) dial(ctx context.Context, addr string) (net.Conn, error) {
 			dialer.Deadline = deadline
 		}
 		return tls.DialWithDialer(&dialer, "tcp", addr, z.tlsConfig)
-	} else {
-		return dialer.DialContext(ctx, "tcp", addr)
 	}
+	return dialer.DialContext(ctx, "tcp", addr)
 }
 
 // Gather reads stats from all configured servers accumulates stats
@@ -108,7 +107,7 @@ func (z *Zookeeper) Gather(acc cua.Accumulator) error {
 }
 
 func (z *Zookeeper) gatherServer(ctx context.Context, address string, acc cua.Accumulator) error {
-	var zookeeper_state string
+	var zookeeperState string
 	_, _, err := net.SplitHostPort(address)
 	if err != nil {
 		address = address + ":2181"
@@ -146,7 +145,7 @@ func (z *Zookeeper) gatherServer(ctx context.Context, address string, acc cua.Ac
 
 		measurement := strings.TrimPrefix(parts[1], "zk_")
 		if measurement == "server_state" {
-			zookeeper_state = parts[2]
+			zookeeperState = parts[2]
 		} else {
 			sValue := string(parts[2])
 
@@ -167,7 +166,7 @@ func (z *Zookeeper) gatherServer(ctx context.Context, address string, acc cua.Ac
 	tags := map[string]string{
 		"server": srv,
 		"port":   service[1],
-		"state":  zookeeper_state,
+		"state":  zookeeperState,
 	}
 	acc.AddFields("zookeeper", fields, tags)
 

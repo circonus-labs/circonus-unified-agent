@@ -30,7 +30,7 @@
 
 // +build windows
 
-package win_perf_counters
+package winperfcounters
 
 // Union specialization for double values
 type PDH_FMT_COUNTERVALUE_DOUBLE struct {

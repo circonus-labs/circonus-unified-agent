@@ -1,4 +1,4 @@
-package nginx_upstream_check
+package nginxupstreamcheck
 
 import (
 	"encoding/json"
@@ -47,7 +47,7 @@ const sampleConfig = `
 
 const description = "Read nginx_upstream_check module status information (https://github.com/yaoweibin/nginx_upstream_check_module)"
 
-type NginxUpstreamCheck struct {
+type UpstreamCheck struct {
 	URL string `toml:"url"`
 
 	Username   string            `toml:"username"`
@@ -61,8 +61,8 @@ type NginxUpstreamCheck struct {
 	client *http.Client
 }
 
-func NewNginxUpstreamCheck() *NginxUpstreamCheck {
-	return &NginxUpstreamCheck{
+func NewUpstreamCheck() *UpstreamCheck {
+	return &UpstreamCheck{
 		URL:        "http://127.0.0.1/status?format=json",
 		Method:     "GET",
 		Headers:    make(map[string]string),
@@ -73,27 +73,27 @@ func NewNginxUpstreamCheck() *NginxUpstreamCheck {
 
 func init() {
 	inputs.Add("nginx_upstream_check", func() cua.Input {
-		return NewNginxUpstreamCheck()
+		return NewUpstreamCheck()
 	})
 }
 
-func (check *NginxUpstreamCheck) SampleConfig() string {
+func (check *UpstreamCheck) SampleConfig() string {
 	return sampleConfig
 }
 
-func (check *NginxUpstreamCheck) Description() string {
+func (check *UpstreamCheck) Description() string {
 	return description
 }
 
-type NginxUpstreamCheckData struct {
+type UpstreamCheckData struct {
 	Servers struct {
-		Total      uint64                     `json:"total"`
-		Generation uint64                     `json:"generation"`
-		Server     []NginxUpstreamCheckServer `json:"server"`
+		Total      uint64                `json:"total"`
+		Generation uint64                `json:"generation"`
+		Server     []UpstreamCheckServer `json:"server"`
 	} `json:"servers"`
 }
 
-type NginxUpstreamCheckServer struct {
+type UpstreamCheckServer struct {
 	Index    uint64 `json:"index"`
 	Upstream string `json:"upstream"`
 	Name     string `json:"name"`
@@ -104,8 +104,8 @@ type NginxUpstreamCheckServer struct {
 	Port     uint16 `json:"port"`
 }
 
-// createHttpClient create a clients to access API
-func (check *NginxUpstreamCheck) createHttpClient() (*http.Client, error) {
+// createHTTPClient create a clients to access API
+func (check *UpstreamCheck) createHTTPClient() (*http.Client, error) {
 	tlsConfig, err := check.ClientConfig.TLSConfig()
 	if err != nil {
 		return nil, err
@@ -122,7 +122,7 @@ func (check *NginxUpstreamCheck) createHttpClient() (*http.Client, error) {
 }
 
 // gatherJsonData query the data source and parse the response JSON
-func (check *NginxUpstreamCheck) gatherJsonData(url string, value interface{}) error {
+func (check *UpstreamCheck) gatherJSONData(url string, value interface{}) error {
 
 	var method string
 	if check.Method != "" {
@@ -166,9 +166,9 @@ func (check *NginxUpstreamCheck) gatherJsonData(url string, value interface{}) e
 	return nil
 }
 
-func (check *NginxUpstreamCheck) Gather(accumulator cua.Accumulator) error {
+func (check *UpstreamCheck) Gather(accumulator cua.Accumulator) error {
 	if check.client == nil {
-		client, err := check.createHttpClient()
+		client, err := check.createHTTPClient()
 
 		if err != nil {
 			return err
@@ -190,10 +190,10 @@ func (check *NginxUpstreamCheck) Gather(accumulator cua.Accumulator) error {
 
 }
 
-func (check *NginxUpstreamCheck) gatherStatusData(url string, accumulator cua.Accumulator) error {
-	checkData := &NginxUpstreamCheckData{}
+func (check *UpstreamCheck) gatherStatusData(url string, accumulator cua.Accumulator) error {
+	checkData := &UpstreamCheckData{}
 
-	err := check.gatherJsonData(url, checkData)
+	err := check.gatherJSONData(url, checkData)
 	if err != nil {
 		return err
 	}
@@ -221,7 +221,7 @@ func (check *NginxUpstreamCheck) gatherStatusData(url string, accumulator cua.Ac
 	return nil
 }
 
-func (check *NginxUpstreamCheck) getStatusCode(status string) uint8 {
+func (check *UpstreamCheck) getStatusCode(status string) uint8 {
 	switch status {
 	case "up":
 		return 1

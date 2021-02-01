@@ -10,7 +10,7 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/models"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs/exec"
-	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs/http_listener_v2"
+	httplistenerv2 "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/http_listener_v2"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs/memcached"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs/procstat"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/parsers"
@@ -193,7 +193,7 @@ func TestConfig_LoadSpecialTypes(t *testing.T) {
 	assert.NoError(t, err)
 	require.Equal(t, 1, len(c.Inputs))
 
-	inputHTTPListener, ok := c.Inputs[0].Input.(*http_listener_v2.HTTPListenerV2)
+	inputHTTPListener, ok := c.Inputs[0].Input.(*httplistenerv2.HTTPListenerV2)
 	assert.Equal(t, true, ok)
 	// Tests duration parsing.
 	assert.Equal(t, internal.Duration{Duration: time.Second}, inputHTTPListener.WriteTimeout)

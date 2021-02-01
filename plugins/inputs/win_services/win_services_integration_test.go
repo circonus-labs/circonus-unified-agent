@@ -1,7 +1,7 @@
 // +build windows
 
 //these tests must be run under administrator account
-package win_services
+package winservices
 
 import (
 	"testing"

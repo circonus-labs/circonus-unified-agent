@@ -10,18 +10,18 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type PapertrailWebhook struct {
+type Webhook struct {
 	Path string
 	acc  cua.Accumulator
 }
 
-func (pt *PapertrailWebhook) Register(router *mux.Router, acc cua.Accumulator) {
+func (pt *Webhook) Register(router *mux.Router, acc cua.Accumulator) {
 	router.HandleFunc(pt.Path, pt.eventHandler).Methods("POST")
 	log.Printf("I! Started the papertrail_webhook on %s", pt.Path)
 	pt.acc = acc
 }
 
-func (pt *PapertrailWebhook) eventHandler(w http.ResponseWriter, r *http.Request) {
+func (pt *Webhook) eventHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("Content-Type") != "application/x-www-form-urlencoded" {
 		http.Error(w, "Unsupported Media Type", http.StatusUnsupportedMediaType)
 		return

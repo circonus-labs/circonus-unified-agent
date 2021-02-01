@@ -11,7 +11,7 @@ import (
 )
 
 func TestName(t *testing.T) {
-	plugin := TemplateProcessor{
+	plugin := Processor{
 		Tag:      "measurement",
 		Template: "{{ .Name }}",
 	}
@@ -50,7 +50,7 @@ func TestTagTemplateConcatenate(t *testing.T) {
 	now := time.Now()
 
 	// Create Template processor
-	tmp := TemplateProcessor{Tag: "topic", Template: `{{.Tag "hostname"}}.{{ .Tag "level" }}`}
+	tmp := Processor{Tag: "topic", Template: `{{.Tag "hostname"}}.{{ .Tag "level" }}`}
 	// manually init
 	err := tmp.Init()
 
@@ -73,7 +73,7 @@ func TestMetricMissingTagsIsNotLost(t *testing.T) {
 	now := time.Now()
 
 	// Create Template processor
-	tmp := TemplateProcessor{Tag: "topic", Template: `{{.Tag "hostname"}}.{{ .Tag "level" }}`}
+	tmp := Processor{Tag: "topic", Template: `{{.Tag "hostname"}}.{{ .Tag "level" }}`}
 	// manually init
 	err := tmp.Init()
 
@@ -97,7 +97,7 @@ func TestTagAndFieldConcatenate(t *testing.T) {
 	now := time.Now()
 
 	// Create Template processor
-	tmp := TemplateProcessor{Tag: "LocalTemp", Template: `{{.Tag "location"}} is {{ .Field "temperature" }}`}
+	tmp := Processor{Tag: "LocalTemp", Template: `{{.Tag "location"}} is {{ .Field "temperature" }}`}
 	// manually init
 	err := tmp.Init()
 

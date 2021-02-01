@@ -8,18 +8,18 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 )
 
-type serializer struct {
+type Serializer struct {
 	TimestampUnits time.Duration
 }
 
-func NewSerializer(timestampUnits time.Duration) (*serializer, error) {
-	s := &serializer{
+func NewSerializer(timestampUnits time.Duration) (*Serializer, error) {
+	s := &Serializer{
 		TimestampUnits: truncateDuration(timestampUnits),
 	}
 	return s, nil
 }
 
-func (s *serializer) Serialize(metric cua.Metric) ([]byte, error) {
+func (s *Serializer) Serialize(metric cua.Metric) ([]byte, error) {
 	m := s.createObject(metric)
 	serialized, err := json.Marshal(m)
 	if err != nil {
@@ -30,7 +30,7 @@ func (s *serializer) Serialize(metric cua.Metric) ([]byte, error) {
 	return serialized, nil
 }
 
-func (s *serializer) SerializeBatch(metrics []cua.Metric) ([]byte, error) {
+func (s *Serializer) SerializeBatch(metrics []cua.Metric) ([]byte, error) {
 	objects := make([]interface{}, 0, len(metrics))
 	for _, metric := range metrics {
 		m := s.createObject(metric)
@@ -48,7 +48,7 @@ func (s *serializer) SerializeBatch(metrics []cua.Metric) ([]byte, error) {
 	return serialized, nil
 }
 
-func (s *serializer) createObject(metric cua.Metric) map[string]interface{} {
+func (s *Serializer) createObject(metric cua.Metric) map[string]interface{} {
 	m := make(map[string]interface{}, 4)
 
 	tags := make(map[string]string, len(metric.TagList()))

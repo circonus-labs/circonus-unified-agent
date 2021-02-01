@@ -30,12 +30,12 @@ func init() {
 type Webhooks struct {
 	ServiceAddress string
 
-	Github     *github.GithubWebhook
-	Filestack  *filestack.FilestackWebhook
-	Mandrill   *mandrill.MandrillWebhook
-	Rollbar    *rollbar.RollbarWebhook
-	Papertrail *papertrail.PapertrailWebhook
-	Particle   *particle.ParticleWebhook
+	Github     *github.Webhook
+	Filestack  *filestack.Webhook
+	Mandrill   *mandrill.Webhook
+	Rollbar    *rollbar.Webhook
+	Papertrail *papertrail.Webhook
+	Particle   *particle.Webhook
 
 	srv *http.Server
 }
@@ -44,7 +44,7 @@ func NewWebhooks() *Webhooks {
 	return &Webhooks{}
 }
 
-func (wb *Webhooks) SampleConfig() string {
+func (*Webhooks) SampleConfig() string {
 	return `
   ## Address and port to host Webhook listener on
   service_address = ":1619"
@@ -70,18 +70,18 @@ func (wb *Webhooks) SampleConfig() string {
 `
 }
 
-func (wb *Webhooks) Description() string {
+func (*Webhooks) Description() string {
 	return "A Webhooks Event collector"
 }
 
-func (wb *Webhooks) Gather(_ cua.Accumulator) error {
+func (*Webhooks) Gather(_ cua.Accumulator) error {
 	return nil
 }
 
 // Looks for fields which implement Webhook interface
-func (wb *Webhooks) AvailableWebhooks() []Webhook {
+func (wh *Webhooks) AvailableWebhooks() []Webhook {
 	webhooks := make([]Webhook, 0)
-	s := reflect.ValueOf(wb).Elem()
+	s := reflect.ValueOf(wh).Elem()
 	for i := 0; i < s.NumField(); i++ {
 		f := s.Field(i)
 
@@ -99,16 +99,16 @@ func (wb *Webhooks) AvailableWebhooks() []Webhook {
 	return webhooks
 }
 
-func (wb *Webhooks) Start(acc cua.Accumulator) error {
+func (wh *Webhooks) Start(acc cua.Accumulator) error {
 	r := mux.NewRouter()
 
-	for _, webhook := range wb.AvailableWebhooks() {
+	for _, webhook := range wh.AvailableWebhooks() {
 		webhook.Register(r, acc)
 	}
 
-	wb.srv = &http.Server{Handler: r}
+	wh.srv = &http.Server{Handler: r}
 
-	ln, err := net.Listen("tcp", wb.ServiceAddress)
+	ln, err := net.Listen("tcp", wh.ServiceAddress)
 	if err != nil {
 		log.Fatalf("E! Error starting server: %v", err)
 		return err
@@ -116,19 +116,19 @@ func (wb *Webhooks) Start(acc cua.Accumulator) error {
 	}
 
 	go func() {
-		if err := wb.srv.Serve(ln); err != nil {
+		if err := wh.srv.Serve(ln); err != nil {
 			if !errors.Is(err, http.ErrServerClosed) {
 				acc.AddError(fmt.Errorf("E! Error listening: %w", err))
 			}
 		}
 	}()
 
-	log.Printf("I! Started the webhooks service on %s\n", wb.ServiceAddress)
+	log.Printf("I! Started the webhooks service on %s\n", wh.ServiceAddress)
 
 	return nil
 }
 
-func (rb *Webhooks) Stop() {
-	rb.srv.Close()
+func (wh *Webhooks) Stop() {
+	wh.srv.Close()
 	log.Println("I! Stopping the Webhooks service")
 }

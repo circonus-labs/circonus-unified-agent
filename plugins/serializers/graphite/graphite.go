@@ -13,7 +13,7 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/filter"
 )
 
-const DEFAULT_TEMPLATE = "host.tags.measurement.field"
+const defaultTemplate = "host.tags.measurement.field"
 
 var (
 	allowedChars = regexp.MustCompile(`[^a-zA-Z0-9-:._=\p{L}]`)
@@ -30,20 +30,20 @@ var (
 	fieldDeleter = strings.NewReplacer(".FIELDNAME", "", "FIELDNAME.", "")
 )
 
-type GraphiteTemplate struct {
+type Template struct {
 	Filter filter.Filter
 	Value  string
 }
 
-type GraphiteSerializer struct {
+type Serializer struct {
 	Prefix     string
 	Template   string
 	TagSupport bool
 	Separator  string
-	Templates  []*GraphiteTemplate
+	Templates  []*Template
 }
 
-func (s *GraphiteSerializer) Serialize(metric cua.Metric) ([]byte, error) {
+func (s *Serializer) Serialize(metric cua.Metric) ([]byte, error) {
 	out := []byte{}
 
 	// Convert UnixNano to Unix timestamps
@@ -97,7 +97,7 @@ func (s *GraphiteSerializer) Serialize(metric cua.Metric) ([]byte, error) {
 	return out, nil
 }
 
-func (s *GraphiteSerializer) SerializeBatch(metrics []cua.Metric) ([]byte, error) {
+func (s *Serializer) SerializeBatch(metrics []cua.Metric) ([]byte, error) {
 	var batch bytes.Buffer
 	for _, m := range metrics {
 		buf, err := s.Serialize(m)
@@ -119,9 +119,8 @@ func formatValue(value interface{}) string {
 	case bool:
 		if v {
 			return "1"
-		} else {
-			return "0"
 		}
+		return "0"
 	case uint64:
 		return strconv.FormatUint(v, 10)
 	case int64:
@@ -155,7 +154,7 @@ func SerializeBucketName(
 	prefix string,
 ) string {
 	if template == "" {
-		template = DEFAULT_TEMPLATE
+		template = defaultTemplate
 	}
 	tagsCopy := make(map[string]string)
 	for k, v := range tags {
@@ -201,8 +200,8 @@ func SerializeBucketName(
 	return prefix + "." + strings.Join(out, ".")
 }
 
-func InitGraphiteTemplates(templates []string) ([]*GraphiteTemplate, string, error) {
-	var graphiteTemplates []*GraphiteTemplate
+func InitGraphiteTemplates(templates []string) ([]*Template, string, error) {
+	var graphiteTemplates []*Template
 	defaultTemplate := ""
 
 	for i, t := range templates {
@@ -214,11 +213,10 @@ func InitGraphiteTemplates(templates []string) ([]*GraphiteTemplate, string, err
 		if len(parts) == 1 {
 			if parts[0] == "" {
 				return nil, "", fmt.Errorf("missing template at position: %d", i)
-			} else {
-				// Override default template
-				defaultTemplate = t
-				continue
 			}
+			// Override default template
+			defaultTemplate = t
+			continue
 		}
 
 		if len(parts) > 2 {
@@ -231,7 +229,7 @@ func InitGraphiteTemplates(templates []string) ([]*GraphiteTemplate, string, err
 			return nil, "", err
 		}
 
-		graphiteTemplates = append(graphiteTemplates, &GraphiteTemplate{
+		graphiteTemplates = append(graphiteTemplates, &Template{
 			Filter: tFilter,
 			Value:  parts[1],
 		})
@@ -297,16 +295,16 @@ func buildTags(tags map[string]string) string {
 	}
 	sort.Strings(keys)
 
-	var tag_str string
+	var tagStr string
 	for i, k := range keys {
-		tag_value := strings.Replace(tags[k], ".", "_", -1)
+		tagValue := strings.Replace(tags[k], ".", "_", -1)
 		if i == 0 {
-			tag_str += tag_value
+			tagStr += tagValue
 		} else {
-			tag_str += "." + tag_value
+			tagStr += "." + tagValue
 		}
 	}
-	return tag_str
+	return tagStr
 }
 
 func sanitize(value string) string {

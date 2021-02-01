@@ -110,11 +110,7 @@ func sortMetrics(metrics []MetricAggregation, field string, reverse bool) {
 	less := func(i, j int) bool {
 		iv := metrics[i].values[field]
 		jv := metrics[j].values[field]
-		if iv < jv {
-			return true
-		} else {
-			return false
-		}
+		return iv < jv
 	}
 
 	if reverse {
@@ -413,7 +409,7 @@ func (t *TopK) getAggregationFunction(aggOperation string) (func([]cua.Metric, [
 						continue
 					}
 					mean[field] += val
-					meanCounters[field] += 1
+					meanCounters[field]++
 				}
 			}
 			// Divide by the number of recorded measurements collected for every field

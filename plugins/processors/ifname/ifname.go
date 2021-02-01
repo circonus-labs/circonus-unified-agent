@@ -74,11 +74,11 @@ var sampleConfig = `
   # cache_ttl = "8h"
 `
 
-type nameMap map[uint64]string
-type keyType = string
-type valType = nameMap
+type NameMap map[uint64]string
+type KeyType = string
+type ValType = NameMap
 
-type mapFunc func(agent string) (nameMap, error)
+type mapFunc func(agent string) (NameMap, error)
 type makeTableFunc func(string) (*si.Table, error)
 
 type sigMap map[string](chan struct{})
@@ -143,13 +143,13 @@ func (d *IfName) addTag(metric cua.Metric) error {
 		return nil
 	}
 
-	num_s, ok := metric.GetTag(d.SourceTag)
+	numSrc, ok := metric.GetTag(d.SourceTag)
 	if !ok {
 		d.Log.Warn("Source tag missing.")
 		return nil
 	}
 
-	num, err := strconv.ParseUint(num_s, 10, 64)
+	num, err := strconv.ParseUint(numSrc, 10, 64)
 	if err != nil {
 		return fmt.Errorf("couldn't parse source tag as uint")
 	}
@@ -238,7 +238,7 @@ func (d *IfName) Stop() error {
 
 // getMap gets the interface names map either from cache or from the SNMP
 // agent
-func (d *IfName) getMap(agent string) (entry nameMap, age time.Duration, err error) {
+func (d *IfName) getMap(agent string) (entry NameMap, age time.Duration, err error) {
 	var sig chan struct{}
 
 	// Check cache
@@ -268,9 +268,8 @@ func (d *IfName) getMap(agent string) (entry nameMap, age time.Duration, err err
 		d.rwLock.RUnlock()
 		if ok {
 			return m, age, nil
-		} else {
-			return nil, 0, fmt.Errorf("getting remote table from cache")
 		}
+		return nil, 0, fmt.Errorf("getting remote table from cache")
 	}
 
 	// The cache missed and this is the first request for this
@@ -299,7 +298,7 @@ func (d *IfName) getMap(agent string) (entry nameMap, age time.Duration, err err
 	return m, 0, nil
 }
 
-func (d *IfName) getMapRemoteNoMock(agent string) (nameMap, error) {
+func (d *IfName) getMapRemoteNoMock(agent string) (NameMap, error) {
 	gs := d.gsBase
 	err := gs.SetAgent(agent)
 	if err != nil {
@@ -313,7 +312,7 @@ func (d *IfName) getMapRemoteNoMock(agent string) (nameMap, error) {
 
 	//try ifXtable and ifName first.  if that fails, fall back to
 	//ifTable and ifDescr
-	var m nameMap
+	var m NameMap
 	m, err = buildMap(gs, d.ifXTable, "ifName")
 	if err == nil {
 		return m, nil
@@ -363,7 +362,7 @@ func makeTableNoMock(tableName string) (*si.Table, error) {
 	return &tab, nil
 }
 
-func buildMap(gs snmp.GosnmpWrapper, tab *si.Table, column string) (nameMap, error) {
+func buildMap(gs snmp.GosnmpWrapper, tab *si.Table, column string) (NameMap, error) {
 	var err error
 
 	rtab, err := tab.Build(gs, true)
@@ -376,23 +375,23 @@ func buildMap(gs snmp.GosnmpWrapper, tab *si.Table, column string) (nameMap, err
 		return nil, fmt.Errorf("empty table")
 	}
 
-	t := make(nameMap)
+	t := make(NameMap)
 	for _, v := range rtab.Rows {
-		i_str, ok := v.Tags["index"]
+		istr, ok := v.Tags["index"]
 		if !ok {
 			//should always have an index tag because the table should
 			//always have IndexAsTag true
 			return nil, fmt.Errorf("no index tag")
 		}
-		i, err := strconv.ParseUint(i_str, 10, 64)
+		i, err := strconv.ParseUint(istr, 10, 64)
 		if err != nil {
 			return nil, fmt.Errorf("index tag isn't a uint")
 		}
-		name_if, ok := v.Fields[column]
+		nameIf, ok := v.Fields[column]
 		if !ok {
 			return nil, fmt.Errorf("field %s is missing", column)
 		}
-		name, ok := name_if.(string)
+		name, ok := nameIf.(string)
 		if !ok {
 			return nil, fmt.Errorf("field %s isn't a string", column)
 		}

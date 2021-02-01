@@ -8,13 +8,13 @@ type Infiniband struct {
 	Log cua.Logger `toml:"-"`
 }
 
-// Sample configuration for plugin
 var InfinibandConfig = ``
 
-func (_ *Infiniband) SampleConfig() string {
+// SampleConfig example configuration for plugin
+func (*Infiniband) SampleConfig() string {
 	return InfinibandConfig
 }
 
-func (_ *Infiniband) Description() string {
+func (*Infiniband) Description() string {
 	return "Gets counters from all InfiniBand cards and ports installed"
 }

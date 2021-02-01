@@ -9,7 +9,7 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/testutil"
 )
 
-func postWebhooks(rb *ParticleWebhook, eventBody string) *httptest.ResponseRecorder {
+func postWebhooks(rb *Webhook, eventBody string) *httptest.ResponseRecorder {
 	req, _ := http.NewRequest("POST", "/", strings.NewReader(eventBody))
 	w := httptest.NewRecorder()
 	w.Code = 500
@@ -22,7 +22,7 @@ func postWebhooks(rb *ParticleWebhook, eventBody string) *httptest.ResponseRecor
 func TestNewItem(t *testing.T) {
 	t.Parallel()
 	var acc testutil.Accumulator
-	rb := &ParticleWebhook{Path: "/particle", acc: &acc}
+	rb := &Webhook{Path: "/particle", acc: &acc}
 	resp := postWebhooks(rb, NewItemJSON())
 	if resp.Code != http.StatusOK {
 		t.Errorf("POST new_item returned HTTP status code %v.\nExpected %v", resp.Code, http.StatusOK)
@@ -50,7 +50,7 @@ func TestNewItem(t *testing.T) {
 func TestUnknowItem(t *testing.T) {
 	t.Parallel()
 	var acc testutil.Accumulator
-	rb := &ParticleWebhook{Path: "/particle", acc: &acc}
+	rb := &Webhook{Path: "/particle", acc: &acc}
 	resp := postWebhooks(rb, UnknowJSON())
 	if resp.Code != http.StatusOK {
 		t.Errorf("POST unknown returned HTTP status code %v.\nExpected %v", resp.Code, http.StatusOK)

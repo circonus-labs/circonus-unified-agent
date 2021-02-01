@@ -214,7 +214,7 @@ func (d *PortName) Apply(metrics ...cua.Metric) []cua.Metric {
 	return metrics
 }
 
-func (h *PortName) Init() error {
+func (*PortName) Init() error {
 	services = make(sMap)
 	readServicesFile()
 	return nil

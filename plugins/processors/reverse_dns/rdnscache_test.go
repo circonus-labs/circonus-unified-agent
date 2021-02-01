@@ -1,4 +1,4 @@
-package reverse_dns
+package reversedns
 
 import (
 	"context"

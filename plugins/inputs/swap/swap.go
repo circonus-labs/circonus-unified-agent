@@ -8,17 +8,17 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs/system"
 )
 
-type SwapStats struct {
+type Stats struct {
 	ps system.PS
 }
 
-func (_ *SwapStats) Description() string {
+func (*Stats) Description() string {
 	return "Read metrics about swap memory usage"
 }
 
-func (_ *SwapStats) SampleConfig() string { return "" }
+func (*Stats) SampleConfig() string { return "" }
 
-func (s *SwapStats) Gather(acc cua.Accumulator) error {
+func (s *Stats) Gather(acc cua.Accumulator) error {
 	swap, err := s.ps.SwapStat()
 	if err != nil {
 		return fmt.Errorf("error getting swap memory info: %w", err)
@@ -43,6 +43,6 @@ func (s *SwapStats) Gather(acc cua.Accumulator) error {
 func init() {
 	ps := system.NewSystemPS()
 	inputs.Add("swap", func() cua.Input {
-		return &SwapStats{ps: ps}
+		return &Stats{ps: ps}
 	})
 }

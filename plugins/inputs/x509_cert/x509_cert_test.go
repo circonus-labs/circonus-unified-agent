@@ -1,4 +1,4 @@
-package x509_cert
+package x509cert
 
 import (
 	"crypto/tls"

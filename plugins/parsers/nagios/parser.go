@@ -74,7 +74,7 @@ func TryAddState(runErr error, metrics []cua.Metric) ([]cua.Metric, error) {
 	return metrics, nil
 }
 
-type NagiosParser struct {
+type Parser struct {
 	MetricName  string
 	DefaultTags map[string]string
 }
@@ -86,16 +86,16 @@ var (
 	nagiosRegExp    = regexp.MustCompile(`^([^=]+)=([\d\.\-\+eE]+)([\w\/%]*);?([\d\.\-\+eE:~@]+)?;?([\d\.\-\+eE:~@]+)?;?([\d\.\-\+eE]+)?;?([\d\.\-\+eE]+)?;?\s*`)
 )
 
-func (p *NagiosParser) ParseLine(line string) (cua.Metric, error) {
+func (p *Parser) ParseLine(line string) (cua.Metric, error) {
 	metrics, err := p.Parse([]byte(line))
 	return metrics[0], err
 }
 
-func (p *NagiosParser) SetDefaultTags(tags map[string]string) {
+func (p *Parser) SetDefaultTags(tags map[string]string) {
 	p.DefaultTags = tags
 }
 
-func (p *NagiosParser) Parse(buf []byte) ([]cua.Metric, error) {
+func (p *Parser) Parse(buf []byte) ([]cua.Metric, error) {
 	ts := time.Now().UTC()
 
 	s := bufio.NewScanner(bytes.NewReader(buf))

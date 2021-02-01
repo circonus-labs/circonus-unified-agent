@@ -55,12 +55,12 @@ func (ep *ValueParser) parse(p *PointParser, pt *Point) error {
 	}
 
 	p.writeBuf.Reset()
-	if tok == MINUS_SIGN {
+	if tok == MINUSSIGN {
 		p.writeBuf.WriteString(lit)
 		tok, lit = p.scan()
 	}
 
-	for tok != EOF && (tok == LETTER || tok == NUMBER || tok == DOT || tok == MINUS_SIGN) {
+	for tok != EOF && (tok == LETTER || tok == NUMBER || tok == DOT || tok == MINUSSIGN) {
 		p.writeBuf.WriteString(lit)
 		tok, lit = p.scan()
 	}
@@ -225,7 +225,7 @@ func parseLiteral(p *PointParser) (string, error) {
 	}
 
 	p.writeBuf.Reset()
-	for tok != EOF && tok > literal_beg && tok < literal_end {
+	for tok != EOF && tok > literalBeg && tok < literalEnd {
 		p.writeBuf.WriteString(lit)
 		tok, lit = p.scan()
 		if tok == DELTA {

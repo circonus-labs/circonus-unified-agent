@@ -9,17 +9,17 @@ const (
 	WS
 
 	// Literals
-	literal_beg
+	literalBeg
 	LETTER // metric name, source/point tags
 	NUMBER
-	MINUS_SIGN
+	MINUSSIGN
 	UNDERSCORE
 	DOT
 	SLASH
 	BACKSLASH
 	COMMA
 	DELTA
-	literal_end
+	literalEnd
 
 	// Misc characters
 	QUOTES

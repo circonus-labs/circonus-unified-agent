@@ -1,4 +1,4 @@
-package azure_storage_queue
+package azurestoragequeue
 
 import (
 	"context"

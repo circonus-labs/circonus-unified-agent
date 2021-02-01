@@ -12,7 +12,7 @@ func (i *Infiniband) Init() error {
 	return nil
 }
 
-func (_ *Infiniband) Gather(acc cua.Accumulator) error {
+func (*Infiniband) Gather(acc cua.Accumulator) error {
 	return nil
 }
 

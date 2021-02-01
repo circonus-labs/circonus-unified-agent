@@ -1,4 +1,4 @@
-package linux_sysctl_fs
+package linuxsysctlfs
 
 import (
 	"io/ioutil"

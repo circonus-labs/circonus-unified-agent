@@ -1,3 +1,3 @@
 // +build !linux
 
-package kernel_vmstat
+package kernelvmstat

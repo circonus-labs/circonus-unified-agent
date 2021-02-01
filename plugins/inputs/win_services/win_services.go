@@ -1,6 +1,6 @@
 // +build windows
 
-package win_services
+package winservices
 
 import (
 	"errors"
@@ -74,9 +74,8 @@ func (rmr *MgProvider) Connect() (WinServiceManager, error) {
 	scmgr, err := mgr.Connect()
 	if err != nil {
 		return nil, err
-	} else {
-		return &WinSvcMgr{scmgr}, nil
 	}
+	return &WinSvcMgr{scmgr}, nil
 }
 
 var sampleConfig = `

@@ -17,25 +17,25 @@ func TestAvailableWebhooks(t *testing.T) {
 		t.Errorf("expected to %v.\nGot %v", expected, wb.AvailableWebhooks())
 	}
 
-	wb.Github = &github.GithubWebhook{Path: "/github"}
+	wb.Github = &github.Webhook{Path: "/github"}
 	expected = append(expected, wb.Github)
 	if !reflect.DeepEqual(wb.AvailableWebhooks(), expected) {
 		t.Errorf("expected to be %v.\nGot %v", expected, wb.AvailableWebhooks())
 	}
 
-	wb.Rollbar = &rollbar.RollbarWebhook{Path: "/rollbar"}
+	wb.Rollbar = &rollbar.Webhook{Path: "/rollbar"}
 	expected = append(expected, wb.Rollbar)
 	if !reflect.DeepEqual(wb.AvailableWebhooks(), expected) {
 		t.Errorf("expected to be %v.\nGot %v", expected, wb.AvailableWebhooks())
 	}
 
-	wb.Papertrail = &papertrail.PapertrailWebhook{Path: "/papertrail"}
+	wb.Papertrail = &papertrail.Webhook{Path: "/papertrail"}
 	expected = append(expected, wb.Papertrail)
 	if !reflect.DeepEqual(wb.AvailableWebhooks(), expected) {
 		t.Errorf("expected to be %v.\nGot %v", expected, wb.AvailableWebhooks())
 	}
 
-	wb.Particle = &particle.ParticleWebhook{Path: "/particle"}
+	wb.Particle = &particle.Webhook{Path: "/particle"}
 	expected = append(expected, wb.Particle)
 	if !reflect.DeepEqual(wb.AvailableWebhooks(), expected) {
 		t.Errorf("expected to be %v.\nGot %v", expected, wb.AvailableWebhooks())

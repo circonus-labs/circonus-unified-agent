@@ -10,7 +10,7 @@ import (
 	"github.com/shirou/gopsutil/cpu"
 )
 
-type CPUStats struct {
+type Stats struct {
 	ps        system.PS
 	lastStats map[string]cpu.TimesStat
 
@@ -20,15 +20,15 @@ type CPUStats struct {
 	ReportActive   bool `toml:"report_active"`
 }
 
-func NewCPUStats(ps system.PS) *CPUStats {
-	return &CPUStats{
+func NewCPUStats(ps system.PS) *Stats {
+	return &Stats{
 		ps:             ps,
 		CollectCPUTime: true,
 		ReportActive:   true,
 	}
 }
 
-func (_ *CPUStats) Description() string {
+func (*Stats) Description() string {
 	return "Read metrics about cpu usage"
 }
 
@@ -43,11 +43,11 @@ var sampleConfig = `
   report_active = false
 `
 
-func (_ *CPUStats) SampleConfig() string {
+func (*Stats) SampleConfig() string {
 	return sampleConfig
 }
 
-func (s *CPUStats) Gather(acc cua.Accumulator) error {
+func (s *Stats) Gather(acc cua.Accumulator) error {
 	times, err := s.ps.CPUTimes(s.PerCPU, s.TotalCPU)
 	if err != nil {
 		return fmt.Errorf("error getting CPU info: %w", err)
@@ -59,8 +59,8 @@ func (s *CPUStats) Gather(acc cua.Accumulator) error {
 			"cpu": cts.CPU,
 		}
 
-		total := totalCpuTime(cts)
-		active := activeCpuTime(cts)
+		total := totalCPUTime(cts)
+		active := activeCPUTime(cts)
 
 		if s.CollectCPUTime {
 			// Add cpu time metrics
@@ -77,7 +77,7 @@ func (s *CPUStats) Gather(acc cua.Accumulator) error {
 				"time_guest_nice": cts.GuestNice,
 			}
 			if s.ReportActive {
-				fieldsC["time_active"] = activeCpuTime(cts)
+				fieldsC["time_active"] = activeCPUTime(cts)
 			}
 			acc.AddCounter("cpu", fieldsC, tags, now)
 		}
@@ -92,8 +92,8 @@ func (s *CPUStats) Gather(acc cua.Accumulator) error {
 		if !ok {
 			continue
 		}
-		lastTotal := totalCpuTime(lastCts)
-		lastActive := activeCpuTime(lastCts)
+		lastTotal := totalCPUTime(lastCts)
+		lastActive := activeCPUTime(lastCts)
 		totalDelta := total - lastTotal
 
 		if totalDelta < 0 {
@@ -131,20 +131,20 @@ func (s *CPUStats) Gather(acc cua.Accumulator) error {
 	return err
 }
 
-func totalCpuTime(t cpu.TimesStat) float64 {
+func totalCPUTime(t cpu.TimesStat) float64 {
 	total := t.User + t.System + t.Nice + t.Iowait + t.Irq + t.Softirq + t.Steal +
 		t.Idle
 	return total
 }
 
-func activeCpuTime(t cpu.TimesStat) float64 {
-	active := totalCpuTime(t) - t.Idle
+func activeCPUTime(t cpu.TimesStat) float64 {
+	active := totalCPUTime(t) - t.Idle
 	return active
 }
 
 func init() {
 	inputs.Add("cpu", func() cua.Input {
-		return &CPUStats{
+		return &Stats{
 			PerCPU:   true,
 			TotalCPU: true,
 			ps:       system.NewSystemPS(),

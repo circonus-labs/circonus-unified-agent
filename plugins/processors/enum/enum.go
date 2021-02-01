@@ -32,7 +32,7 @@ var sampleConfig = `
       red = 3
 `
 
-type EnumMapper struct {
+type Mapper struct {
 	Mappings []Mapping `toml:"mapping"`
 }
 
@@ -44,22 +44,22 @@ type Mapping struct {
 	ValueMappings map[string]interface{}
 }
 
-func (mapper *EnumMapper) SampleConfig() string {
+func (mapper *Mapper) SampleConfig() string {
 	return sampleConfig
 }
 
-func (mapper *EnumMapper) Description() string {
+func (mapper *Mapper) Description() string {
 	return "Map enum values according to given table."
 }
 
-func (mapper *EnumMapper) Apply(in ...cua.Metric) []cua.Metric {
+func (mapper *Mapper) Apply(in ...cua.Metric) []cua.Metric {
 	for i := 0; i < len(in); i++ {
 		in[i] = mapper.applyMappings(in[i])
 	}
 	return in
 }
 
-func (mapper *EnumMapper) applyMappings(metric cua.Metric) cua.Metric {
+func (mapper *Mapper) applyMappings(metric cua.Metric) cua.Metric {
 	for _, mapping := range mapper.Mappings {
 		if mapping.Field != "" {
 			if originalValue, isPresent := metric.GetField(mapping.Field); isPresent {
@@ -135,6 +135,6 @@ func writeTag(metric cua.Metric, name string, value string) {
 
 func init() {
 	processors.Add("enum", func() cua.Processor {
-		return &EnumMapper{}
+		return &Mapper{}
 	})
 }

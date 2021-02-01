@@ -16,7 +16,7 @@ const (
 	DefaultAuthFile = "/etc/collectd/auth_file"
 )
 
-type CollectdParser struct {
+type Parser struct {
 	// DefaultTags will be added to every parsed metric
 	DefaultTags map[string]string
 
@@ -26,7 +26,7 @@ type CollectdParser struct {
 	popts           network.ParseOpts
 }
 
-func (p *CollectdParser) SetParseOpts(popts *network.ParseOpts) {
+func (p *Parser) SetParseOpts(popts *network.ParseOpts) {
 	p.popts = *popts
 }
 
@@ -35,7 +35,7 @@ func NewCollectdParser(
 	securityLevel string,
 	typesDB []string,
 	split string,
-) (*CollectdParser, error) {
+) (*Parser, error) {
 	popts := network.ParseOpts{}
 
 	switch securityLevel {
@@ -67,12 +67,12 @@ func NewCollectdParser(
 		}
 	}
 
-	parser := CollectdParser{popts: popts,
+	parser := Parser{popts: popts,
 		ParseMultiValue: split}
 	return &parser, nil
 }
 
-func (p *CollectdParser) Parse(buf []byte) ([]cua.Metric, error) {
+func (p *Parser) Parse(buf []byte) ([]cua.Metric, error) {
 	valueLists, err := network.Parse(buf, p.popts)
 	if err != nil {
 		return nil, fmt.Errorf("Collectd parser error: %w", err)
@@ -97,7 +97,7 @@ func (p *CollectdParser) Parse(buf []byte) ([]cua.Metric, error) {
 	return metrics, nil
 }
 
-func (p *CollectdParser) ParseLine(line string) (cua.Metric, error) {
+func (p *Parser) ParseLine(line string) (cua.Metric, error) {
 	metrics, err := p.Parse([]byte(line))
 	if err != nil {
 		return nil, err
@@ -110,7 +110,7 @@ func (p *CollectdParser) ParseLine(line string) (cua.Metric, error) {
 	return metrics[0], nil
 }
 
-func (p *CollectdParser) SetDefaultTags(tags map[string]string) {
+func (p *Parser) SetDefaultTags(tags map[string]string) {
 	p.DefaultTags = tags
 }
 

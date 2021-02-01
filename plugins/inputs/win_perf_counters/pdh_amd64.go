@@ -30,46 +30,46 @@
 
 // +build windows
 
-package win_perf_counters
+package winperfcounters
 
 // Union specialization for double values
-type PDH_FMT_COUNTERVALUE_DOUBLE struct {
+type PdhFmtCountervalueDouble struct {
 	CStatus     uint32
 	DoubleValue float64
 }
 
 // Union specialization for 64 bit integer values
-type PDH_FMT_COUNTERVALUE_LARGE struct {
+type PdhFmtCountervalueLarge struct {
 	CStatus    uint32
 	LargeValue int64
 }
 
 // Union specialization for long values
-type PDH_FMT_COUNTERVALUE_LONG struct {
+type PdhFmtCountervalueLong struct {
 	CStatus   uint32
 	LongValue int32
 	padding   [4]byte //nolint:structcheck
 }
 
-type PDH_FMT_COUNTERVALUE_ITEM_DOUBLE struct {
+type PdhFmtCountervalueItemDouble struct {
 	SzName   *uint16
-	FmtValue PDH_FMT_COUNTERVALUE_DOUBLE
+	FmtValue PdhFmtCountervalueDouble
 }
 
 // Union specialization for 'large' values, used by PdhGetFormattedCounterArrayLarge()
-type PDH_FMT_COUNTERVALUE_ITEM_LARGE struct {
+type PdhFmtCountervalueItemLarge struct {
 	SzName   *uint16 // pointer to a string
-	FmtValue PDH_FMT_COUNTERVALUE_LARGE
+	FmtValue PdhFmtCountervalueLarge
 }
 
 // Union specialization for long values, used by PdhGetFormattedCounterArrayLong()
-type PDH_FMT_COUNTERVALUE_ITEM_LONG struct {
+type PdhFmtCountervalueItemLong struct {
 	SzName   *uint16 // pointer to a string
-	FmtValue PDH_FMT_COUNTERVALUE_LONG
+	FmtValue PdhFmtCountervalueLong
 }
 
-//PDH_COUNTER_INFO structure contains information describing the properties of a counter. This information also includes the counter path.
-type PDH_COUNTER_INFO struct {
+//PdhCounterInfo structure contains information describing the properties of a counter. This information also includes the counter path.
+type PdhCounterInfo struct {
 	//Size of the structure, including the appended strings, in bytes.
 	DwLength uint32
 	//Counter type. For a list of counter types, see the Counter Types section of the <a "href=http://go.microsoft.com/fwlink/p/?linkid=84422">Windows Server 2003 Deployment Kit</a>.

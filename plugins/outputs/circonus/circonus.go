@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"time"
 
 	cgm "github.com/circonus-labs/circonus-gometrics/v3"
 	"github.com/circonus-labs/circonus-unified-agent/config"
@@ -43,7 +44,7 @@ type Circonus struct {
 func (c *Circonus) Init() error {
 
 	if c.APIToken == "" {
-		return fmt.Errorf("circonus api token is requried")
+		return fmt.Errorf("circonus api token is required")
 	}
 
 	if c.APIApp == "" {
@@ -77,7 +78,7 @@ func (c *Circonus) Init() error {
 
 	if c.CheckNamePrefix == "" {
 		hn, err := os.Hostname()
-		if err != nil {
+		if err != nil || hn == "" {
 			hn = "unknown"
 		}
 		c.CheckNamePrefix = hn
@@ -122,7 +123,7 @@ var sampleConfig = `
 
 var description = "Configuration for Circonus output plugin."
 
-// Conenct creates the client connection to the Circonus broker.
+// Conenct creates the initial check the plugin will use
 func (c *Circonus) Connect() error {
 	if c.APIToken == "" {
 		c.Log.Error("Circonus API Token is required, unable to initialize check(s)")
@@ -138,12 +139,21 @@ func (c *Circonus) Connect() error {
 		return err
 	}
 
+	c.emitAgentVersion()
+	go func() {
+		for range time.NewTicker(5 * time.Minute).C {
+			c.emitAgentVersion()
+		}
+	}()
+
+	return nil
+}
+
+func (c *Circonus) emitAgentVersion() {
 	if defaultDest := c.checks["*"]; defaultDest != nil {
 		agentVersion := inter.Version()
 		defaultDest.SetText("cua_version", agentVersion)
 	}
-
-	return nil
 }
 
 // Write is used to write metric data to Circonus checks.
@@ -249,13 +259,12 @@ func (l logshim) Printf(fmt string, args ...interface{}) {
 
 // initCheck initializes cgm instance for the plugin identified by id
 func (c *Circonus) initCheck(id string) error {
-	checkType := "httptrap:cua:" + runtime.GOOS + ":"
-
+	plugID := id
 	if id == "*" {
-		checkType += "default"
-	} else {
-		checkType += id
+		plugID = "default"
 	}
+
+	checkType := "httptrap:cua:" + plugID + ":" + runtime.GOOS
 
 	cfg := &cgm.Config{}
 	cfg.Debug = c.DebugCGM
@@ -267,6 +276,8 @@ func (c *Circonus) initCheck(id string) error {
 		cfg.CheckManager.Broker.ID = c.Broker
 	}
 	cfg.CheckManager.Check.InstanceID = strings.Replace(checkType, "httptrap", c.CheckNamePrefix, 1)
+	cfg.CheckManager.Check.TargetHost = c.CheckNamePrefix
+	cfg.CheckManager.Check.DisplayName = c.CheckNamePrefix + " " + plugID + " (" + runtime.GOOS + ")"
 	cfg.CheckManager.Check.Type = checkType
 
 	m, err := cgm.New(cfg)
@@ -394,7 +405,7 @@ func (c *Circonus) buildCumulativeHistogram(defaultDest *cgm.CirconusMetrics, m 
 }
 
 // convertTags reformats cua tags to cgm tags
-func (c *Circonus) convertTags(pluginName, pluginInstanceID string, tags []*cua.Tag) cgm.Tags {
+func (c *Circonus) convertTags(pluginName, pluginInstanceID string, tags []*cua.Tag) cgm.Tags { //nolint:unparam
 	var ctags cgm.Tags
 
 	if len(tags) == 0 && pluginName == "" {
@@ -419,6 +430,7 @@ func (c *Circonus) convertTags(pluginName, pluginInstanceID string, tags []*cua.
 	if pluginName != "" {
 		ctags = append(ctags, cgm.Tag{Category: "input_plugin", Value: pluginName})
 	}
+
 	// if pluginInstanceID != "" {
 	// 	ctags = append(ctags, cgm.Tag{Category: "input_instance_id", Value: pluginInstanceID})
 	// }

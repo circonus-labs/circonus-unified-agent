@@ -6,11 +6,28 @@ run:
     - plugins/parsers/influx/*
 
 linters:
-  enable:
-    - asciicheck
-    # - nolintlint # different linters with different GOOS fire issues GOOS=linux 'structcheck' unused, under GOOS=darwin it's required
-    - errorlint
-    # - ifshort # doesn't really work... (x := someFunc(); if x ... then x used later, linter complains var isn't used)
-    - gofmt
-    - golint
   fast: true
+  enable:
+    - gofmt
+    - govet
+    - errcheck
+    - staticcheck
+    # - unused
+    - gosimple
+    - structcheck
+    - varcheck
+    - ineffassign
+    - deadcode
+    - typecheck
+    - golint
+    - gosec
+    - interfacer
+    - misspell
+    - unparam
+    - prealloc
+    - scopelint
+    - gocritic
+    - asciicheck
+    - errorlint
+    # - nolintlint # different linters with different GOOS fire issues GOOS=linux 'structcheck' unused, under GOOS=darwin it's required
+    # - ifshort # doesn't really work... (x := someFunc(); if x ... then x used later, linter complains var isn't used)

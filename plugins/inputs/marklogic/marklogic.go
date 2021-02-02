@@ -149,7 +149,7 @@ func (c *Marklogic) Gather(accumulator cua.Accumulator) error {
 
 	// Range over all source URL's appended to the struct
 	for _, serv := range c.Sources {
-		//fmt.Printf("Encoded URL is %q\n", serv)
+		// fmt.Printf("Encoded URL is %q\n", serv)
 		wg.Add(1)
 		go func(serv string) {
 			defer wg.Done()

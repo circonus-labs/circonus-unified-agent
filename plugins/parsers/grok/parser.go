@@ -216,7 +216,7 @@ func (p *Parser) ParseLine(line string) (cua.Metric, error) {
 	fields := make(map[string]interface{})
 	tags := make(map[string]string)
 
-	//add default tags
+	// add default tags
 	for k, v := range p.DefaultTags {
 		tags[k] = v
 	}
@@ -290,7 +290,7 @@ func (p *Parser) ParseLine(line string) (cua.Metric, error) {
 
 			if len(parts) == 2 {
 				padded := fmt.Sprintf("%-9s", parts[1])
-				nsString := strings.Replace(padded[:9], " ", "0", -1)
+				nsString := strings.ReplaceAll(padded[:9], " ", "0")
 				nanosec, err := strconv.ParseInt(nsString, 10, 64)
 				if err != nil {
 					log.Printf("E! Error parsing %s to timestamp: %s", v, err)
@@ -356,7 +356,7 @@ func (p *Parser) ParseLine(line string) (cua.Metric, error) {
 		case DROP:
 		// goodbye!
 		default:
-			v = strings.Replace(v, ",", ".", -1)
+			v = strings.ReplaceAll(v, ",", ".")
 			ts, err := time.ParseInLocation(t, v, p.loc)
 			if err == nil {
 				if ts.Year() == 0 {
@@ -533,7 +533,7 @@ func (t *tsModder) tsMod(ts time.Time) time.Time {
 			if a > 0 {
 				break
 			}
-			d = d * 10
+			d *= 10
 			counter++
 		}
 
@@ -551,7 +551,7 @@ func (t *tsModder) tsMod(ts time.Time) time.Time {
 	if t.incrn == 999 && t.incr > time.Nanosecond {
 		t.rollover = t.incr * t.incrn
 		t.incrn = 1
-		t.incr = t.incr / 1000
+		t.incr /= 1000
 		if t.incr < time.Nanosecond {
 			t.incr = time.Nanosecond
 		}

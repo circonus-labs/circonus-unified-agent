@@ -107,7 +107,8 @@ func TestWriteSecureNoClientAuth(t *testing.T) {
 	noClientAuthClient := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
-				RootCAs: cas,
+				RootCAs:    cas,
+				MinVersion: tls.VersionTLS12,
 			},
 		},
 	}
@@ -297,8 +298,8 @@ func TestWriteLargeLine(t *testing.T) {
 	resp, err := http.Post(createURL(listener, "http", "/api/v2/write", "bucket=mybucket"), "", bytes.NewBuffer([]byte(hugeMetric+testMsgs)))
 	require.NoError(t, err)
 	resp.Body.Close()
-	//todo: with the new parser, long lines aren't a problem.  Do we need to skip them?
-	//require.EqualValues(t, 400, resp.StatusCode)
+	// TODO: with the new parser, long lines aren't a problem.  Do we need to skip them?
+	// require.EqualValues(t, 400, resp.StatusCode)
 
 	expected := testutil.MustMetric(
 		"super_long_metric",

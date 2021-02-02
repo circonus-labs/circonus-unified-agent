@@ -91,6 +91,7 @@ func TestConfig(t *testing.T) {
 	)
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			apc.Servers = tt.servers
 
@@ -155,7 +156,7 @@ func TestApcupsdGather(t *testing.T) {
 	)
 
 	for _, tt := range tests {
-
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 
@@ -209,7 +210,7 @@ func genOutput() [][]byte {
 		"FIRMWARE : 857.L3 .I USB FW:L3",
 	}
 
-	var out [][]byte
+	var out [][]byte //nolint:prealloc
 	for _, kv := range kvs {
 		lenb, kvb := kvBytes(kv)
 		out = append(out, lenb)
@@ -224,7 +225,7 @@ func genBadOutput() [][]byte {
 		"STATFLAG : 0x08Status Flag",
 	}
 
-	var out [][]byte
+	var out [][]byte //nolint:prealloc
 	for _, kv := range kvs {
 		lenb, kvb := kvBytes(kv)
 		out = append(out, lenb)

@@ -266,6 +266,7 @@ var ColDataStats = map[string]string{
 
 func (d *MDBData) AddDbStats() {
 	for _, dbstat := range d.StatLine.DbStatsLines {
+		dbstat := dbstat // G601
 		dbStatLine := reflect.ValueOf(&dbstat).Elem()
 		newDbData := &DbData{
 			Name:   dbstat.Name,
@@ -282,6 +283,7 @@ func (d *MDBData) AddDbStats() {
 
 func (d *MDBData) AddColStats() {
 	for _, colstat := range d.StatLine.ColStatsLines {
+		colstat := colstat // G601
 		colStatLine := reflect.ValueOf(&colstat).Elem()
 		newColData := &ColData{
 			Name:   colstat.Name,
@@ -299,6 +301,7 @@ func (d *MDBData) AddColStats() {
 
 func (d *MDBData) AddShardHostStats() {
 	for host, hostStat := range d.StatLine.ShardHostStatsLines {
+		hostStat := hostStat // G601
 		hostStatLine := reflect.ValueOf(&hostStat).Elem()
 		newDbData := &DbData{
 			Name:   host,

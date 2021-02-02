@@ -33,6 +33,7 @@ func TestSplitRepositoryNameWithWorkingExample(t *testing.T) {
 	}
 
 	for _, tt := range validRepositoryNames {
+		tt := tt
 		t.Run(tt.fullName, func(t *testing.T) {
 			owner, repository, _ := splitRepositoryName(tt.fullName)
 
@@ -48,6 +49,7 @@ func TestSplitRepositoryNameWithNoSlash(t *testing.T) {
 	}
 
 	for _, tt := range invalidRepositoryNames {
+		tt := tt
 		t.Run(tt, func(t *testing.T) {
 			_, _, err := splitRepositoryName(tt)
 

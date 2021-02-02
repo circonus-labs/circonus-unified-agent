@@ -12,7 +12,7 @@ import (
 
 var TestTimeout = internal.Duration{Duration: time.Second}
 
-func OpenntpdCTL(output string, Timeout internal.Duration, useSudo bool) func(string, internal.Duration, bool) (*bytes.Buffer, error) {
+func OpenntpdCTL(output string, timeout internal.Duration, useSudo bool) func(string, internal.Duration, bool) (*bytes.Buffer, error) {
 	return func(string, internal.Duration, bool) (*bytes.Buffer, error) {
 		return bytes.NewBuffer([]byte(output)), nil
 	}

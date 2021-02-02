@@ -184,13 +184,14 @@ func TestWinPerfcountersConfigGet2(t *testing.T) {
 	err := m.ParseConfig()
 	require.NoError(t, err)
 
-	if len(m.counters) == 1 {
+	switch {
+	case len(m.counters) == 1:
 		require.NoError(t, nil)
-	} else if len(m.counters) == 0 {
+	case len(m.counters) == 0:
 		var errorstring1 = "No results returned from the counterPath"
 		err2 := errors.New(errorstring1)
 		require.NoError(t, err2)
-	} else if len(m.counters) > 1 {
+	case len(m.counters) > 1:
 		var errorstring1 = fmt.Sprintf("Too many results returned from the counterPath: %v", len(m.counters))
 		err2 := errors.New(errorstring1)
 		require.NoError(t, err2)
@@ -231,18 +232,13 @@ func TestWinPerfcountersConfigGet3(t *testing.T) {
 	err := m.ParseConfig()
 	require.NoError(t, err)
 
-	if len(m.counters) == 2 {
+	switch {
+	case len(m.counters) == 2:
 		require.NoError(t, nil)
-	} else if len(m.counters) < 2 {
-
-		var errorstring1 = fmt.Sprintf("Too few results returned from the counterPath: %v", len(m.counters))
-		err2 := errors.New(errorstring1)
-		require.NoError(t, err2)
-	} else if len(m.counters) > 2 {
-
-		var errorstring1 = fmt.Sprintf("Too many results returned from the counterPath: %v", len(m.counters))
-		err2 := errors.New(errorstring1)
-		require.NoError(t, err2)
+	case len(m.counters) < 2:
+		require.NoError(t, fmt.Errorf("Too few results returned from the counterPath: %v", len(m.counters)))
+	case len(m.counters) > 2:
+		require.NoError(t, fmt.Errorf("Too many results returned from the counterPath: %v", len(m.counters)))
 	}
 }
 
@@ -280,18 +276,13 @@ func TestWinPerfcountersConfigGet4(t *testing.T) {
 	err := m.ParseConfig()
 	require.NoError(t, err)
 
-	if len(m.counters) == 2 {
+	switch {
+	case len(m.counters) == 2:
 		require.NoError(t, nil)
-	} else if len(m.counters) < 2 {
-
-		var errorstring1 = fmt.Sprintf("Too few results returned from the counterPath: %v", len(m.counters))
-		err2 := errors.New(errorstring1)
-		require.NoError(t, err2)
-	} else if len(m.counters) > 2 {
-
-		var errorstring1 = fmt.Sprintf("Too many results returned from the counterPath: %v", len(m.counters))
-		err2 := errors.New(errorstring1)
-		require.NoError(t, err2)
+	case len(m.counters) < 2:
+		require.NoError(t, fmt.Errorf("Too few results returned from the counterPath: %v", len(m.counters)))
+	case len(m.counters) > 2:
+		require.NoError(t, fmt.Errorf("Too many results returned from the counterPath: %v", len(m.counters)))
 	}
 }
 
@@ -330,16 +321,13 @@ func TestWinPerfcountersConfigGet5(t *testing.T) {
 	err := m.ParseConfig()
 	require.NoError(t, err)
 
-	if len(m.counters) == 4 {
+	switch {
+	case len(m.counters) == 4:
 		require.NoError(t, nil)
-	} else if len(m.counters) < 4 {
-		var errorstring1 = fmt.Sprintf("Too few results returned from the counterPath: %v", len(m.counters))
-		err2 := errors.New(errorstring1)
-		require.NoError(t, err2)
-	} else if len(m.counters) > 4 {
-		var errorstring1 = fmt.Sprintf("Too many results returned from the counterPath: %v", len(m.counters))
-		err2 := errors.New(errorstring1)
-		require.NoError(t, err2)
+	case len(m.counters) < 4:
+		require.NoError(t, fmt.Errorf("Too few results returned from the counterPath: %v", len(m.counters)))
+	case len(m.counters) > 4:
+		require.NoError(t, fmt.Errorf("Too many results returned from the counterPath: %v", len(m.counters)))
 	}
 }
 
@@ -412,16 +400,13 @@ func TestWinPerfcountersConfigGet7(t *testing.T) {
 	err := m.ParseConfig()
 	require.NoError(t, err)
 
-	if len(m.counters) == 2 {
+	switch {
+	case len(m.counters) == 2:
 		require.NoError(t, nil)
-	} else if len(m.counters) < 2 {
-		var errorstring1 = fmt.Sprintf("Too few results returned from the counterPath: %v", len(m.counters))
-		err2 := errors.New(errorstring1)
-		require.NoError(t, err2)
-	} else if len(m.counters) > 2 {
-		var errorstring1 = fmt.Sprintf("Too many results returned from the counterPath: %v", len(m.counters))
-		err2 := errors.New(errorstring1)
-		require.NoError(t, err2)
+	case len(m.counters) < 2:
+		require.NoError(t, fmt.Errorf("Too few results returned from the counterPath: %v", len(m.counters)))
+	case len(m.counters) > 2:
+		require.NoError(t, fmt.Errorf("Too many results returned from the counterPath: %v", len(m.counters)))
 	}
 }
 

@@ -66,6 +66,7 @@ func BenchmarkInfluxDBV2Listener_serveWrite(b *testing.B) {
 	}
 
 	for _, bm := range benchmarks {
+		bm := bm
 		b.Run(bm.name, func(b *testing.B) {
 			listener := newListener()
 

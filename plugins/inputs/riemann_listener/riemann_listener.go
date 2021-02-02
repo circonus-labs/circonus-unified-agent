@@ -138,7 +138,7 @@ func (rsl *riemannListener) removeConnection(c net.Conn) {
 	rsl.connectionsMtx.Unlock()
 }
 
-//Utilities
+// Utilities
 
 /*
 readMessages will read Riemann messages in binary format
@@ -228,7 +228,7 @@ func (rsl *riemannListener) read(conn net.Conn) {
 
 }
 
-func riemannReturnResponse(conn net.Conn) {
+func riemannReturnResponse(conn io.Writer) {
 	t := true
 	message := new(riemangoProto.Msg)
 	message.Ok = &t
@@ -250,7 +250,7 @@ func riemannReturnResponse(conn net.Conn) {
 	}
 }
 
-func riemannReturnErrorResponse(conn net.Conn, errorMessage string) {
+func riemannReturnErrorResponse(conn io.Writer, errorMessage string) {
 	t := false
 	message := new(riemangoProto.Msg)
 	message.Ok = &t
@@ -269,7 +269,7 @@ func riemannReturnErrorResponse(conn net.Conn, errorMessage string) {
 		checkError(err)
 	}
 	if _, err = conn.Write(returnData); err != nil {
-		log.Println("Somethign")
+		log.Println("Something")
 		checkError(err)
 	}
 }
@@ -372,8 +372,7 @@ func processOsSignals(cancelFunc context.CancelFunc) {
 	signal.Notify(signalChan, os.Interrupt)
 	for {
 		sig := <-signalChan
-		switch sig {
-		case os.Interrupt:
+		if sig == os.Interrupt {
 			log.Println("Signal SIGINT is received, probably due to `Ctrl-C`, exiting ...")
 			cancelFunc()
 			return

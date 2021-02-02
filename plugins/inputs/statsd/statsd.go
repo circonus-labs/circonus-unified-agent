@@ -405,7 +405,7 @@ func (s *Statsd) Start(ac cua.Accumulator) error {
 		s.wg.Add(1)
 		go func() {
 			defer s.wg.Done()
-			_ = s.parser()
+			s.parser()
 		}()
 	}
 	s.Log.Infof("Started the statsd service on %q", s.ServiceAddress)
@@ -499,11 +499,11 @@ func (s *Statsd) udpListen(conn *net.UDPConn) error {
 // parser monitors the s.in channel, if there is a packet ready, it parses the
 // packet into statsd strings and then calls parseStatsdLine, which parses a
 // single statsd metric into a struct.
-func (s *Statsd) parser() error {
+func (s *Statsd) parser() {
 	for {
 		select {
 		case <-s.done:
-			return nil
+			return
 		case in := <-s.in:
 			start := time.Now()
 			lines := strings.Split(in.Buffer.String(), "\n")
@@ -704,8 +704,8 @@ func (s *Statsd) parseName(bucket string) (string, string, map[string]string) {
 	}
 
 	if s.ConvertNames {
-		name = strings.Replace(name, ".", "_", -1)
-		name = strings.Replace(name, "-", "__", -1)
+		name = strings.ReplaceAll(name, ".", "_")
+		name = strings.ReplaceAll(name, "-", "__")
 	}
 	if field == "" {
 		field = defaultFieldName

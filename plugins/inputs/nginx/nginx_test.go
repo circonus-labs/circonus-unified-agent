@@ -41,11 +41,12 @@ func TestNginxGeneratesMetrics(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var rsp string
 
-		if r.URL.Path == "/stub_status" {
+		switch r.URL.Path {
+		case "/stub_status":
 			rsp = nginxSampleResponse
-		} else if r.URL.Path == "/tengine_status" {
+		case "/tengine_status":
 			rsp = tengineSampleResponse
-		} else {
+		default:
 			panic("Cannot handle request")
 		}
 
@@ -98,11 +99,12 @@ func TestNginxGeneratesMetrics(t *testing.T) {
 	host, port, err := net.SplitHostPort(addr.Host)
 	if err != nil {
 		host = addr.Host
-		if addr.Scheme == "http" {
+		switch addr.Scheme {
+		case "http":
 			port = "80"
-		} else if addr.Scheme == "https" {
+		case "https":
 			port = "443"
-		} else {
+		default:
 			port = ""
 		}
 	}

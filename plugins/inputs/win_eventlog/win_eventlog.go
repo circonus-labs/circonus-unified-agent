@@ -158,6 +158,8 @@ loop:
 		}
 
 		for _, event := range events {
+			event := event
+
 			// Prepare fields names usage counter
 			var fieldsUsage = map[string]int{}
 

@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	_ "net/http/pprof" // Comment this line to disable pprof endpoint.
+	_ "net/http/pprof" //nolint:gosec // G108 -- Comment this line to disable pprof endpoint.
 	"os"
 	"os/signal"
 	"sort"
@@ -77,8 +77,8 @@ var stop chan struct{}
 func reloadLoop(
 	inputFilters []string,
 	outputFilters []string,
-	aggregatorFilters []string,
-	processorFilters []string,
+	aggregatorFilters []string, //nolint:unparam
+	processorFilters []string, //nolint:unparam
 ) {
 	reload := make(chan bool, 1)
 	reload <- true

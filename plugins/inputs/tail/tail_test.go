@@ -96,7 +96,7 @@ func TestTailDosLineEndings(t *testing.T) {
 }
 
 func TestGrokParseLogFilesWithMultiline(t *testing.T) {
-	//we make sure the timeout won't kick in
+	// we make sure the timeout won't kick in
 	duration, _ := time.ParseDuration("100s")
 
 	tt := NewTail()
@@ -212,7 +212,7 @@ func TestGrokParseLogFilesWithMultilineTimeout(t *testing.T) {
 }
 
 func TestGrokParseLogFilesWithMultilineTailerCloseFlushesMultilineBuffer(t *testing.T) {
-	//we make sure the timeout won't kick in
+	// we make sure the timeout won't kick in
 	duration := 100 * time.Second
 
 	tt := NewTail()
@@ -488,6 +488,7 @@ func TestCharacterEncoding(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			tt.plugin.SetParserFunc(func() (parsers.Parser, error) {
 				handler := influx.NewMetricHandler()

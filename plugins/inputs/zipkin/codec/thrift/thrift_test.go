@@ -46,6 +46,7 @@ func Test_endpointHost(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			e := endpoint{tt.args.h}
 			if got := e.Host(); got != tt.want {
@@ -82,6 +83,7 @@ func Test_endpointName(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			e := endpoint{tt.args.h}
 			if got := e.Name(); got != tt.want {
@@ -191,6 +193,7 @@ func TestUnmarshalThrift(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			dat, err := ioutil.ReadFile(tt.filename)
 			if err != nil {

@@ -53,9 +53,6 @@ type MQTTConsumer struct {
 
 	parser parsers.Parser
 
-	// Legacy metric buffer support; deprecated in v0.10.3
-	MetricBuffer int
-
 	PersistentSession bool
 	ClientID          string `toml:"client_id"`
 	tls.ClientConfig
@@ -77,7 +74,7 @@ type MQTTConsumer struct {
 
 var sampleConfig = `
   ## Broker URLs for the MQTT server or cluster.  To connect to multiple
-  ## clusters or standalone servers, use a seperate plugin instance.
+  ## clusters or standalone servers, use a separate plugin instance.
   ##   example: servers = ["tcp://localhost:1883"]
   ##            servers = ["ssl://localhost:1883"]
   ##            servers = ["ws://localhost:1883"]
@@ -240,7 +237,7 @@ func (m *MQTTConsumer) connect() error {
 	subscribeToken.Wait()
 	if subscribeToken.Error() != nil {
 		m.acc.AddError(fmt.Errorf("subscription error: topics: %s: %w",
-			strings.Join(m.Topics[:], ","), subscribeToken.Error()))
+			strings.Join(m.Topics, ","), subscribeToken.Error()))
 	}
 
 	return nil

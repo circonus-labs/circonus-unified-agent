@@ -355,7 +355,7 @@ func (c *GNMI) handleTelemetryField(update *gnmi.Update, tags map[string]string,
 		jsondata = val.JsonVal
 	}
 
-	name := strings.Replace(path, "-", "_", -1)
+	name := strings.ReplaceAll(path, "-", "_")
 	fields := make(map[string]interface{})
 	if value != nil {
 		fields[name] = value
@@ -395,7 +395,7 @@ func (c *GNMI) handlePath(path *gnmi.Path, tags map[string]string, prefix string
 
 		if tags != nil {
 			for key, val := range elem.Key {
-				key = strings.Replace(key, "-", "_", -1)
+				key = strings.ReplaceAll(key, "-", "_")
 
 				// Use short-form of key if possible
 				if _, exists := tags[key]; exists {
@@ -411,7 +411,7 @@ func (c *GNMI) handlePath(path *gnmi.Path, tags map[string]string, prefix string
 	return builder.String(), aliasPath
 }
 
-//ParsePath from XPath-like string to gNMI path structure
+// ParsePath from XPath-like string to gNMI path structure
 func parsePath(origin string, path string, target string) (*gnmi.Path, error) {
 	var err error
 	gnmiPath := gnmi.Path{Origin: origin, Target: target}
@@ -423,10 +423,11 @@ func parsePath(origin string, path string, target string) (*gnmi.Path, error) {
 	elem := &gnmi.PathElem{}
 	start, name, value, end := 0, -1, -1, -1
 
-	path = path + "/"
+	path += "/"
 
 	for i := 0; i < len(path); i++ {
-		if path[i] == '[' {
+		switch path[i] {
+		case '[':
 			if name >= 0 {
 				break
 			}
@@ -435,18 +436,18 @@ func parsePath(origin string, path string, target string) (*gnmi.Path, error) {
 				elem.Key = make(map[string]string)
 			}
 			name = i + 1
-		} else if path[i] == '=' {
+		case '=':
 			if name <= 0 || value >= 0 {
 				break
 			}
 			value = i + 1
-		} else if path[i] == ']' {
+		case ']':
 			if name <= 0 || value <= name {
 				break
 			}
 			elem.Key[path[name:value-1]] = strings.Trim(path[value:i], "'\"")
 			name, value = -1, -1
-		} else if path[i] == '/' {
+		case '/':
 			if name < 0 {
 				if end < 0 {
 					end = i

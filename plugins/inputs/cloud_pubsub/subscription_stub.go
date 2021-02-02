@@ -24,6 +24,7 @@ type receiveFunc func(ctx context.Context, f func(context.Context, message)) err
 
 func testMessagesError(s *stubSub, expectedErr error) receiveFunc {
 	return func(ctx context.Context, f func(context.Context, message)) error {
+		_ = s // unused param
 		return expectedErr
 	}
 }

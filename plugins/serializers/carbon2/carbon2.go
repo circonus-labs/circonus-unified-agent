@@ -78,13 +78,13 @@ func (s *Serializer) createObject(metric cua.Metric) []byte {
 		}
 
 		for _, tag := range metric.TagList() {
-			m.WriteString(strings.Replace(tag.Key, " ", "_", -1))
+			m.WriteString(strings.ReplaceAll(tag.Key, " ", "_"))
 			m.WriteString("=")
 			value := tag.Value
 			if len(value) == 0 {
 				value = "null"
 			}
-			m.WriteString(strings.Replace(value, " ", "_", -1))
+			m.WriteString(strings.ReplaceAll(value, " ", "_"))
 			m.WriteString(" ")
 		}
 		m.WriteString(" ")
@@ -110,15 +110,15 @@ func (s *Serializer) IsMetricsFormatUnset() bool {
 
 func serializeMetricFieldSeparate(name, fieldName string) string {
 	return fmt.Sprintf("metric=%s field=%s ",
-		strings.Replace(name, " ", "_", -1),
-		strings.Replace(fieldName, " ", "_", -1),
+		strings.ReplaceAll(name, " ", "_"),
+		strings.ReplaceAll(fieldName, " ", "_"),
 	)
 }
 
 func serializeMetricIncludeField(name, fieldName string) string {
 	return fmt.Sprintf("metric=%s_%s ",
-		strings.Replace(name, " ", "_", -1),
-		strings.Replace(fieldName, " ", "_", -1),
+		strings.ReplaceAll(name, " ", "_"),
+		strings.ReplaceAll(fieldName, " ", "_"),
 	)
 }
 

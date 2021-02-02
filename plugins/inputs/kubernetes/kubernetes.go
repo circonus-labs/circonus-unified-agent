@@ -77,12 +77,12 @@ func init() {
 	})
 }
 
-//SampleConfig returns a sample config
+// SampleConfig returns a sample config
 func (k *Kubernetes) SampleConfig() string {
 	return sampleConfig
 }
 
-//Description returns the description of this plugin
+// Description returns the description of this plugin
 func (k *Kubernetes) Description() string {
 	return "Read metrics from the kubernetes kubelet api"
 }
@@ -111,7 +111,7 @@ func (k *Kubernetes) Init() error {
 	return nil
 }
 
-//Gather collects kubernetes metrics from a given URL
+// Gather collects kubernetes metrics from a given URL
 func (k *Kubernetes) Gather(acc cua.Accumulator) error {
 	acc.AddError(k.gatherSummary(k.URL, acc))
 	return nil
@@ -133,13 +133,13 @@ func (k *Kubernetes) gatherSummary(baseURL string, acc cua.Accumulator) error {
 		return err
 	}
 
-	podInfos, err := k.gatherPodInfo(baseURL)
+	podInfo, err := k.gatherPodInfo(baseURL)
 	if err != nil {
 		return err
 	}
 	buildSystemContainerMetrics(summaryMetrics, acc)
 	buildNodeMetrics(summaryMetrics, acc)
-	buildPodMetrics(baseURL, summaryMetrics, podInfos, k.labelFilter, acc)
+	buildPodMetrics(summaryMetrics, podInfo, k.labelFilter, acc)
 	return nil
 }
 
@@ -197,11 +197,11 @@ func (k *Kubernetes) gatherPodInfo(baseURL string) ([]Metadata, error) {
 	if err != nil {
 		return nil, err
 	}
-	var podInfos []Metadata
+	podInfo := make([]Metadata, 0, len(podAPI.Items))
 	for _, podMetadata := range podAPI.Items {
-		podInfos = append(podInfos, podMetadata.Metadata)
+		podInfo = append(podInfo, podMetadata.Metadata)
 	}
-	return podInfos, nil
+	return podInfo, nil
 }
 
 func (k *Kubernetes) LoadJSON(url string, v interface{}) error {
@@ -243,7 +243,7 @@ func (k *Kubernetes) LoadJSON(url string, v interface{}) error {
 	return nil
 }
 
-func buildPodMetrics(baseURL string, summaryMetrics *SummaryMetrics, podInfo []Metadata, labelFilter filter.Filter, acc cua.Accumulator) {
+func buildPodMetrics(summaryMetrics *SummaryMetrics, podInfo []Metadata, labelFilter filter.Filter, acc cua.Accumulator) {
 	for _, pod := range summaryMetrics.Pods {
 		for _, container := range pod.Containers {
 			tags := map[string]string{

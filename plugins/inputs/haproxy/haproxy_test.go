@@ -40,7 +40,7 @@ func (s statServer) serverSocket(l net.Listener) {
 }
 
 func TestHaproxyGeneratesMetricsWithAuthentication(t *testing.T) {
-	//We create a fake server to return test data
+	// We create a fake server to return test data
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		username, password, ok := r.BasicAuth()
 		if !ok {
@@ -58,7 +58,7 @@ func TestHaproxyGeneratesMetricsWithAuthentication(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	//Now we tested again above server, with our authentication data
+	// Now we tested again above server, with our authentication data
 	r := &haproxy{
 		Servers: []string{strings.Replace(ts.URL, "http://", "http://user:password@", 1)},
 	}
@@ -78,7 +78,7 @@ func TestHaproxyGeneratesMetricsWithAuthentication(t *testing.T) {
 	fields := HaproxyGetFieldValues()
 	acc.AssertContainsTaggedFields(t, "haproxy", fields, tags)
 
-	//Here, we should get error because we don't pass authentication data
+	// Here, we should get error because we don't pass authentication data
 	r = &haproxy{
 		Servers: []string{ts.URL},
 	}
@@ -164,8 +164,8 @@ func TestHaproxyGeneratesMetricsUsingSocket(t *testing.T) {
 	require.NotEmpty(t, acc.Errors)
 }
 
-//When not passing server config, we default to localhost
-//We just want to make sure we did request stat from localhost
+// When not passing server config, we default to localhost
+// We just want to make sure we did request stat from localhost
 func TestHaproxyDefaultGetFromLocalhost(t *testing.T) {
 	r := &haproxy{}
 

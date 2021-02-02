@@ -1,7 +1,7 @@
 package filestat
 
 import (
-	"crypto/md5"
+	"crypto/sha256"
 	"fmt"
 	"io"
 	"os"
@@ -23,13 +23,13 @@ const sampleConfig = `
   ##
   files = ["/var/log/**.log"]
 
-  ## If true, read the entire file and calculate an md5 checksum.
-  md5 = false
+  ## If true, read the entire file and calculate an sha256 checksum.
+  sha256 = false
 `
 
 type FileStat struct {
-	Md5   bool
-	Files []string
+	SHA256 bool
+	Files  []string
 
 	Log cua.Logger
 
@@ -95,12 +95,12 @@ func (f *FileStat) Gather(acc cua.Accumulator) error {
 				fields["modification_time"] = fileInfo.ModTime().UnixNano()
 			}
 
-			if f.Md5 {
-				md5, err := getMd5(fileName)
+			if f.SHA256 {
+				sig, err := getSHA256(fileName)
 				if err != nil {
 					acc.AddError(err)
 				} else {
-					fields["md5_sum"] = md5
+					fields["sha256_sum"] = sig
 				}
 			}
 
@@ -111,15 +111,32 @@ func (f *FileStat) Gather(acc cua.Accumulator) error {
 	return nil
 }
 
-// Read given file and calculate an md5 hash.
-func getMd5(file string) (string, error) {
+// // Read given file and calculate an md5 hash.
+// func getMd5(file string) (string, error) {
+// 	of, err := os.Open(file)
+// 	if err != nil {
+// 		return "", err
+// 	}
+// 	defer of.Close()
+
+// 	hash := md5.New()
+// 	_, err = io.Copy(hash, of)
+// 	if err != nil {
+// 		// fatal error
+// 		return "", err
+// 	}
+// 	return fmt.Sprintf("%x", hash.Sum(nil)), nil
+// }
+
+// Read given file and calculate an sha256 hash.
+func getSHA256(file string) (string, error) {
 	of, err := os.Open(file)
 	if err != nil {
 		return "", err
 	}
 	defer of.Close()
 
-	hash := md5.New()
+	hash := sha256.New()
 	_, err = io.Copy(hash, of)
 	if err != nil {
 		// fatal error

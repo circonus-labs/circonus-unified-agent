@@ -201,7 +201,7 @@ func (h *GrayLog) gatherServer(
 //    void
 func (h *GrayLog) flatten(item map[string]interface{}, fields map[string]interface{}, id string) {
 	if id != "" {
-		id = id + "_"
+		id += "_"
 	}
 	for k, i := range item {
 		switch x := i.(type) {

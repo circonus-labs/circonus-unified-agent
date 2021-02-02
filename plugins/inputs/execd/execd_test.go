@@ -101,6 +101,7 @@ func TestParsesLinesContainingNewline(t *testing.T) {
 	}
 
 	for _, test := range cases {
+		test := test
 		t.Run(test.Name, func(t *testing.T) {
 			line := fmt.Sprintf("event message=\"%v\" 1587128639239000000", test.Value)
 

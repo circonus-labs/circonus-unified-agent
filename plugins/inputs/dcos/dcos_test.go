@@ -194,6 +194,7 @@ func TestAddNodeMetrics(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			var acc testutil.Accumulator
 			dcos := &DCOS{}
@@ -266,6 +267,7 @@ func TestAddContainerMetrics(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			var acc testutil.Accumulator
 			dcos := &DCOS{}
@@ -340,6 +342,7 @@ func TestAddAppMetrics(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			var acc testutil.Accumulator
 			dcos := &DCOS{}
@@ -424,6 +427,7 @@ func TestGatherFilterNode(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			var acc testutil.Accumulator
 			dcos := &DCOS{

@@ -335,6 +335,7 @@ func TestTable(t *testing.T) {
 	services = readServices(r)
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			p := PortName{
 				SourceTag:       tt.tag,

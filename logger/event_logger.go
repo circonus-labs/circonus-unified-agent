@@ -21,7 +21,7 @@ func (t *eventLogger) Write(b []byte) (n int, err error) {
 	n = len(b)
 	if loc == nil {
 		err = t.logger.Info(b)
-	} else if n > 2 { //skip empty log messages
+	} else if n > 2 { // skip empty log messages
 		line := strings.Trim(string(b[loc[1]:]), " \t\r\n")
 		switch rune(b[loc[0]]) {
 		case 'I':

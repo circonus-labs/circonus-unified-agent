@@ -64,6 +64,7 @@ func TestWinEventLog_shouldExcludeEmptyField(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			if gotShould := tt.w.shouldExcludeEmptyField(tt.args.field, tt.args.fieldType, tt.args.fieldValue); gotShould != tt.wantShould {
 				t.Errorf("WinEventLog.shouldExcludeEmptyField() = %v, want %v", gotShould, tt.wantShould)
@@ -123,6 +124,7 @@ func TestWinEventLog_shouldProcessField(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			gotShould, gotList := tt.w.shouldProcessField(tt.args.field)
 			if gotShould != tt.wantShould {

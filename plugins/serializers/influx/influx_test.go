@@ -534,6 +534,7 @@ var tests = []struct {
 
 func TestSerializer(t *testing.T) {
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			serializer := NewSerializer()
 			serializer.SetMaxLineBytes(tt.maxBytes)
@@ -551,6 +552,7 @@ func TestSerializer(t *testing.T) {
 
 func BenchmarkSerializer(b *testing.B) {
 	for _, tt := range tests {
+		tt := tt
 		b.Run(tt.name, func(b *testing.B) {
 			serializer := NewSerializer()
 			serializer.SetMaxLineBytes(tt.maxBytes)

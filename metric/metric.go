@@ -139,7 +139,7 @@ func (m *metric) AddPrefix(prefix string) {
 }
 
 func (m *metric) AddSuffix(suffix string) {
-	m.name = m.name + suffix
+	m.name += suffix
 }
 
 func (m *metric) AddTag(key, value string) {

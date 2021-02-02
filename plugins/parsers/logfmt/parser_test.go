@@ -5,18 +5,18 @@ import (
 	"time"
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
-	"github.com/circonus-labs/circonus-unified-agent/metric"
 	"github.com/circonus-labs/circonus-unified-agent/testutil"
 )
 
-func MustMetric(t *testing.T, m *testutil.Metric) cua.Metric {
-	t.Helper()
-	v, err := metric.New(m.Measurement, m.Tags, m.Fields, m.Time)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return v
-}
+// unused
+// func MustMetric(t *testing.T, m *testutil.Metric) cua.Metric {
+// 	t.Helper()
+// 	v, err := metric.New(m.Measurement, m.Tags, m.Fields, m.Time)
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	return v
+// }
 
 func TestParse(t *testing.T) {
 	tests := []struct {
@@ -144,6 +144,7 @@ func TestParse(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			l := Parser{
 				MetricName: tt.measurement,
@@ -211,6 +212,7 @@ func TestParseLine(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			l := Parser{
 				MetricName: tt.measurement,

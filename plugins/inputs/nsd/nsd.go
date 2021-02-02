@@ -61,32 +61,32 @@ func (s *NSD) SampleConfig() string {
 }
 
 // Shell out to nsd_stat and return the output
-func nsdRunner(cmdName string, Timeout internal.Duration, UseSudo bool, Server string, ConfigFile string) (*bytes.Buffer, error) {
+func nsdRunner(cmdName string, timeout internal.Duration, useSudo bool, server string, configFile string) (*bytes.Buffer, error) {
 	cmdArgs := []string{"stats_noreset"}
 
-	if Server != "" {
-		host, port, err := net.SplitHostPort(Server)
+	if server != "" {
+		host, port, err := net.SplitHostPort(server)
 		if err == nil {
-			Server = host + "@" + port
+			server = host + "@" + port
 		}
 
-		cmdArgs = append([]string{"-s", Server}, cmdArgs...)
+		cmdArgs = append([]string{"-s", server}, cmdArgs...)
 	}
 
-	if ConfigFile != "" {
-		cmdArgs = append([]string{"-c", ConfigFile}, cmdArgs...)
+	if configFile != "" {
+		cmdArgs = append([]string{"-c", configFile}, cmdArgs...)
 	}
 
 	cmd := exec.Command(cmdName, cmdArgs...)
 
-	if UseSudo {
+	if useSudo {
 		cmdArgs = append([]string{cmdName}, cmdArgs...)
 		cmd = exec.Command("sudo", cmdArgs...)
 	}
 
 	var out bytes.Buffer
 	cmd.Stdout = &out
-	err := internal.RunTimeout(cmd, Timeout.Duration)
+	err := internal.RunTimeout(cmd, timeout.Duration)
 	if err != nil {
 		return &out, fmt.Errorf("error running nsd-control: %w (%s %v)", err, cmdName, cmdArgs)
 	}
@@ -130,7 +130,7 @@ func (s *NSD) Gather(acc cua.Accumulator) error {
 				serverID := strings.TrimPrefix(statTokens[0], "server")
 				if _, err := strconv.Atoi(serverID); err == nil {
 					serverTokens := statTokens[1:]
-					field := strings.Join(serverTokens[:], "_")
+					field := strings.Join(serverTokens, "_")
 					if fieldsServers[serverID] == nil {
 						fieldsServers[serverID] = make(map[string]interface{})
 					}
@@ -138,7 +138,7 @@ func (s *NSD) Gather(acc cua.Accumulator) error {
 				}
 			}
 		} else {
-			field := strings.Replace(stat, ".", "_", -1)
+			field := strings.ReplaceAll(stat, ".", "_")
 			fields[field] = fieldValue
 		}
 	}

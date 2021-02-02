@@ -109,16 +109,17 @@ func TestNoCoreDataHandling(t *testing.T) {
 
 func createMockServer() *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.Contains(r.URL.Path, "/solr/admin/cores") {
+		switch {
+		case strings.Contains(r.URL.Path, "/solr/admin/cores"):
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprintln(w, statusResponse)
-		} else if strings.Contains(r.URL.Path, "solr/main/admin") {
+		case strings.Contains(r.URL.Path, "solr/main/admin"):
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprintln(w, mBeansMainResponse)
-		} else if strings.Contains(r.URL.Path, "solr/core1/admin") {
+		case strings.Contains(r.URL.Path, "solr/core1/admin"):
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprintln(w, mBeansCore1Response)
-		} else {
+		default:
 			w.WriteHeader(http.StatusNotFound)
 			fmt.Fprintln(w, "nope")
 		}
@@ -128,16 +129,17 @@ func createMockServer() *httptest.Server {
 func createMockNoCoreDataServer() *httptest.Server {
 	var nodata string
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.Contains(r.URL.Path, "/solr/admin/cores") {
+		switch {
+		case strings.Contains(r.URL.Path, "/solr/admin/cores"):
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprintln(w, statusResponse)
-		} else if strings.Contains(r.URL.Path, "solr/main/admin") {
+		case strings.Contains(r.URL.Path, "solr/main/admin"):
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprintln(w, nodata)
-		} else if strings.Contains(r.URL.Path, "solr/core1/admin") {
+		case strings.Contains(r.URL.Path, "solr/core1/admin"):
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprintln(w, nodata)
-		} else {
+		default:
 			w.WriteHeader(http.StatusNotFound)
 			fmt.Fprintln(w, "nope")
 		}
@@ -146,16 +148,17 @@ func createMockNoCoreDataServer() *httptest.Server {
 
 func createMockSolr3Server() *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.Contains(r.URL.Path, "/solr/admin/cores") {
+		switch {
+		case strings.Contains(r.URL.Path, "/solr/admin/cores"):
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprintln(w, statusResponse)
-		} else if strings.Contains(r.URL.Path, "solr/main/admin") {
+		case strings.Contains(r.URL.Path, "solr/main/admin"):
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprintln(w, mBeansSolr3MainResponse)
-		} else if strings.Contains(r.URL.Path, "solr/core1/admin") {
+		case strings.Contains(r.URL.Path, "solr/core1/admin"):
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprintln(w, mBeansSolr3MainResponse)
-		} else {
+		default:
 			w.WriteHeader(http.StatusNotFound)
 			fmt.Fprintln(w, "nope")
 		}
@@ -164,13 +167,14 @@ func createMockSolr3Server() *httptest.Server {
 
 func createMockSolr7Server() *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.Contains(r.URL.Path, "/solr/admin/cores") {
+		switch {
+		case strings.Contains(r.URL.Path, "/solr/admin/cores"):
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprintln(w, statusResponse)
-		} else if strings.Contains(r.URL.Path, "solr/main/admin") {
+		case strings.Contains(r.URL.Path, "solr/main/admin"):
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprintln(w, mBeansSolr7Response)
-		} else {
+		default:
 			w.WriteHeader(http.StatusNotFound)
 			fmt.Fprintln(w, "nope")
 		}

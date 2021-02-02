@@ -259,6 +259,7 @@ func TestTruncate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			res := truncate(*tt.bufF())
 			require.Equal(t, tt.expF().Bytes(), res.Bytes())

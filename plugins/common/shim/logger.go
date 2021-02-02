@@ -78,8 +78,7 @@ func setLoggerOnPlugin(i interface{}, log cua.Logger) {
 		return
 	}
 
-	switch field.Type().String() {
-	case "cua.Logger":
+	if field.Type().String() == "cua.Logger" {
 		if field.CanSet() {
 			field.Set(reflect.ValueOf(log))
 		}

@@ -101,7 +101,7 @@ func dictPop(b *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) 
 	type HasDelete interface {
 		Delete(k starlark.Value) (starlark.Value, bool, error)
 	}
-	if v, found, err := b.Receiver().(HasDelete).Delete(k); err != nil {
+	if v, found, err := b.Receiver().(HasDelete).Delete(k); err != nil { //nolint:gocritic
 		return starlark.None, fmt.Errorf("%s: %w", b.Name(), err) // dict is frozen or key is unhashable
 	} else if found {
 		return v, nil
@@ -129,7 +129,7 @@ func dictGet(b *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) 
 	if err := starlark.UnpackPositionalArgs(b.Name(), args, kwargs, 1, &key, &dflt); err != nil {
 		return starlark.None, fmt.Errorf("%s: %w", b.Name(), err)
 	}
-	if v, ok, err := b.Receiver().(starlark.Mapping).Get(key); err != nil {
+	if v, ok, err := b.Receiver().(starlark.Mapping).Get(key); err != nil { //nolint:gocritic
 		return starlark.None, fmt.Errorf("%s: %w", b.Name(), err)
 	} else if ok {
 		return v, nil

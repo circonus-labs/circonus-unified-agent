@@ -29,7 +29,7 @@ func TestSocketListener_tcp(t *testing.T) {
 	testMissingService(t, sl)
 }
 func testStats(t *testing.T, sl *RiemannSocketListener) {
-	c := riemanngo.NewTCPClient("127.0.0.1:5555", 5*time.Second)
+	c := riemanngo.NewTCPClient(sl.ServiceAddress, 5*time.Second)
 	err := c.Connect()
 	if err != nil {
 		log.Println("Error")
@@ -43,7 +43,7 @@ func testStats(t *testing.T, sl *RiemannSocketListener) {
 
 }
 func testMissingService(t *testing.T, sl *RiemannSocketListener) {
-	c := riemanngo.NewTCPClient("127.0.0.1:5555", 5*time.Second)
+	c := riemanngo.NewTCPClient(sl.ServiceAddress, 5*time.Second)
 	err := c.Connect()
 	if err != nil {
 		panic(err)

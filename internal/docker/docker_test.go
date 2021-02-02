@@ -50,6 +50,7 @@ func TestParseImage(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run("parse name "+tt.image, func(t *testing.T) {
 			imageName, imageVersion := docker.ParseImage(tt.image)
 			require.Equal(t, tt.parsedName, imageName)

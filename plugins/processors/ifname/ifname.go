@@ -278,7 +278,7 @@ func (d *IfName) getMap(agent string) (entry NameMap, age time.Duration, err err
 	// Make the SNMP request
 	m, err = d.getMapRemote(agent)
 	if err != nil {
-		//failure.  signal without saving to cache
+		// failure.  signal without saving to cache
 		d.rwLock.Lock()
 		close(sig)
 		delete(d.sigs, agent)
@@ -310,8 +310,8 @@ func (d *IfName) getMapRemoteNoMock(agent string) (NameMap, error) {
 		return nil, fmt.Errorf("connecting when fetching interface names: %w", err)
 	}
 
-	//try ifXtable and ifName first.  if that fails, fall back to
-	//ifTable and ifDescr
+	// try ifXtable and ifName first.  if that fails, fall back to
+	// ifTable and ifDescr
 	var m NameMap
 	m, err = buildMap(gs, d.ifXTable, "ifName")
 	if err == nil {
@@ -355,7 +355,7 @@ func makeTableNoMock(tableName string) (*si.Table, error) {
 
 	err = tab.Init()
 	if err != nil {
-		//Init already wraps
+		// Init already wraps
 		return nil, err
 	}
 
@@ -367,7 +367,7 @@ func buildMap(gs snmp.GosnmpWrapper, tab *si.Table, column string) (NameMap, err
 
 	rtab, err := tab.Build(gs, true)
 	if err != nil {
-		//Build already wraps
+		// Build already wraps
 		return nil, err
 	}
 
@@ -379,8 +379,8 @@ func buildMap(gs snmp.GosnmpWrapper, tab *si.Table, column string) (NameMap, err
 	for _, v := range rtab.Rows {
 		istr, ok := v.Tags["index"]
 		if !ok {
-			//should always have an index tag because the table should
-			//always have IndexAsTag true
+			// should always have an index tag because the table should
+			// always have IndexAsTag true
 			return nil, fmt.Errorf("no index tag")
 		}
 		i, err := strconv.ParseUint(istr, 10, 64)

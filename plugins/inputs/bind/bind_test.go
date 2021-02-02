@@ -137,6 +137,7 @@ func TestBindJsonStats(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
+		tc := tc
 		t.Run(tc.counterType, func(t *testing.T) {
 			tags := map[string]string{
 				"url":    url,
@@ -338,6 +339,7 @@ func TestBindXmlStatsV2(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
+		tc := tc
 		t.Run(tc.counterType, func(t *testing.T) {
 			tags := map[string]string{
 				"url":    url,
@@ -562,6 +564,7 @@ func TestBindXmlStatsV3(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
+		tc := tc
 		t.Run(tc.counterType, func(t *testing.T) {
 			tags := map[string]string{
 				"url":    url,

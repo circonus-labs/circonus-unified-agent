@@ -85,13 +85,13 @@ func loadWirelessTable(table []byte) ([]*wirelessInterface, error) {
 	lines := bytes.Split(table, newLineByte)
 
 	// iterate over interfaces
-	for i := 2; i < len(lines); i = i + 1 {
+	for i := 2; i < len(lines); i++ {
 		if len(lines[i]) == 0 {
 			continue
 		}
 		values := make([]int64, 0, interfaceFieldLength)
 		fields := strings.Fields(string(lines[i]))
-		for j := 1; j < len(fields); j = j + 1 {
+		for j := 1; j < len(fields); j++ {
 			v, err := strconv.ParseInt(strings.Trim(fields[j], "."), 10, 64)
 			if err != nil {
 				return nil, err

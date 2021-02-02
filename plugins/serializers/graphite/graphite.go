@@ -60,7 +60,7 @@ func (s *Serializer) Serialize(metric cua.Metric) ([]byte, error) {
 			metricString := fmt.Sprintf("%s %s %d\n",
 				// insert "field" section of template
 				bucket,
-				//bucket,
+				// bucket,
 				fieldValue,
 				timestamp)
 			point := []byte(metricString)
@@ -176,7 +176,7 @@ func SerializeBucketName(
 		default:
 			// This is a tag being applied
 			if tagvalue, ok := tagsCopy[templatePart]; ok {
-				out = append(out, strings.Replace(tagvalue, ".", "_", -1))
+				out = append(out, strings.ReplaceAll(tagvalue, ".", "_"))
 				delete(tagsCopy, templatePart)
 			}
 		}
@@ -201,7 +201,7 @@ func SerializeBucketName(
 }
 
 func InitGraphiteTemplates(templates []string) ([]*Template, string, error) {
-	var graphiteTemplates []*Template
+	graphiteTemplates := make([]*Template, 0, len(templates))
 	defaultTemplate := ""
 
 	for i, t := range templates {
@@ -249,7 +249,7 @@ func SerializeBucketNameWithTags(
 	field string,
 ) string {
 	var out string
-	var tagsCopy []string
+	tagsCopy := make([]string, 0, len(tags))
 	for k, v := range tags {
 		if k == "name" {
 			k = "_name"
@@ -289,7 +289,7 @@ func InsertField(bucket, fieldName string) string {
 }
 
 func buildTags(tags map[string]string) string {
-	var keys []string
+	keys := make([]string, 0, len(tags))
 	for k := range tags {
 		keys = append(keys, k)
 	}
@@ -297,7 +297,7 @@ func buildTags(tags map[string]string) string {
 
 	var tagStr string
 	for i, k := range keys {
-		tagValue := strings.Replace(tags[k], ".", "_", -1)
+		tagValue := strings.ReplaceAll(tags[k], ".", "_")
 		if i == 0 {
 			tagStr += tagValue
 		} else {

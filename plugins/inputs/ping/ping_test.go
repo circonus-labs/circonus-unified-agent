@@ -369,6 +369,7 @@ func TestErrorWithHostNamePingGather(t *testing.T) {
 	}
 
 	for _, param := range params {
+		param := param
 		var acc testutil.Accumulator
 		p := Ping{
 			Urls: []string{"www.amazon.com"},

@@ -324,6 +324,7 @@ func TestAlignDuration(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			actual := AlignDuration(tt.now, tt.interval)
 			require.Equal(t, tt.expected, actual)
@@ -358,6 +359,7 @@ func TestAlignTime(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			actual := AlignTime(tt.now, tt.interval)
 			require.Equal(t, tt.expected, actual)
@@ -470,6 +472,7 @@ func TestParseTimestamp(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			tm, err := ParseTimestamp(tt.format, tt.timestamp, tt.location)
 			if tt.err {

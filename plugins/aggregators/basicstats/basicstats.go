@@ -52,8 +52,8 @@ type basicstats struct {
 	diff     float64
 	rate     float64
 	interval time.Duration
-	M2       float64   //intermediate value for variance/stdev
-	LAST     float64   //intermediate value for diff
+	M2       float64   // intermediate value for variance/stdev
+	LAST     float64   // intermediate value for diff
 	TIME     time.Time // intermediate value for rate
 }
 
@@ -125,30 +125,30 @@ func (b *BasicStats) Add(in cua.Metric) {
 				}
 
 				tmp := b.cache[id].fields[field.Key]
-				//https://en.m.wikipedia.org/wiki/Algorithms_for_calculating_variance
-				//variable initialization
+				// https://en.m.wikipedia.org/wiki/Algorithms_for_calculating_variance
+				// variable initialization
 				x := fv
 				mean := tmp.mean
 				M2 := tmp.M2
-				//counter compute
+				// counter compute
 				n := tmp.count + 1
 				tmp.count = n
-				//mean compute
+				// mean compute
 				delta := x - mean
-				mean = mean + delta/n
+				mean += delta / n
 				tmp.mean = mean
-				//variance/stdev compute
-				M2 = M2 + delta*(x-mean)
+				// variance/stdev compute
+				M2 += delta * (x - mean)
 				tmp.M2 = M2
-				//max/min compute
+				// max/min compute
 				if fv < tmp.min {
 					tmp.min = fv
 				} else if fv > tmp.max {
 					tmp.max = fv
 				}
-				//sum compute
+				// sum compute
 				tmp.sum += fv
-				//diff compute
+				// diff compute
 				tmp.diff = fv - tmp.LAST
 				// interval compute
 				tmp.interval = in.Time().Sub(tmp.TIME)
@@ -156,7 +156,7 @@ func (b *BasicStats) Add(in cua.Metric) {
 				if !in.Time().Equal(tmp.TIME) {
 					tmp.rate = tmp.diff / tmp.interval.Seconds()
 				}
-				//store final data
+				// store final data
 				b.cache[id].fields[field.Key] = tmp
 			}
 		}
@@ -184,7 +184,7 @@ func (b *BasicStats) Push(acc cua.Accumulator) {
 				fields[k+"_sum"] = v.sum
 			}
 
-			//v.count always >=1
+			// v.count always >=1
 			if v.count > 1 {
 				variance := v.M2 / (v.count - 1)
 
@@ -211,7 +211,7 @@ func (b *BasicStats) Push(acc cua.Accumulator) {
 				}
 
 			}
-			//if count == 1 StdDev = infinite => so I won't send data
+			// if count == 1 StdDev = infinite => so I won't send data
 		}
 
 		if len(fields) > 0 {

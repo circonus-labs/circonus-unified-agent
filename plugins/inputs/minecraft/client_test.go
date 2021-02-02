@@ -93,14 +93,13 @@ func TestClient_Player(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			connector := &MockConnector{
 				conn: &MockConnection{commands: tt.commands},
 			}
 
-			client, err := newClient(connector)
-			require.NoError(t, err)
-
+			client := newClient(connector)
 			actual, err := client.Players()
 			require.NoError(t, err)
 
@@ -178,14 +177,13 @@ func TestClient_Scores(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			connector := &MockConnector{
 				conn: &MockConnection{commands: tt.commands},
 			}
 
-			client, err := newClient(connector)
-			require.NoError(t, err)
-
+			client := newClient(connector)
 			actual, err := client.Scores(tt.player)
 			require.NoError(t, err)
 

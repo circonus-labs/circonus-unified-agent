@@ -116,6 +116,7 @@ func (o *Options) processMetric(metric cua.Metric) {
 	}
 	// Rel
 	for _, v := range o.Rel {
+		v := v
 		o.applyFunc(v.BaseOpts, func(s string) string {
 			relPath, _ := filepath.Rel(v.BasePath, s)
 			return relPath

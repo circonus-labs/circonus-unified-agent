@@ -230,7 +230,7 @@ func (b *burrow) createClient() (*http.Client, error) {
 	return client, nil
 }
 
-func (b *burrow) getResponse(u *url.URL) (*apiResponse, error) {
+func (b *burrow) getResponse(u fmt.Stringer) (*apiResponse, error) {
 	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
 	if err != nil {
 		return nil, err

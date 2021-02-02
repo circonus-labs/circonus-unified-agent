@@ -136,7 +136,7 @@ func (n *Apache) gatherURL(addr *url.URL, acc cua.Accumulator) error {
 		line := sc.Text()
 		if strings.Contains(line, ":") {
 			parts := strings.SplitN(line, ":", 2)
-			key, part := strings.Replace(parts[0], " ", "", -1), strings.TrimSpace(parts[1])
+			key, part := strings.ReplaceAll(parts[0], " ", ""), strings.TrimSpace(parts[1])
 
 			switch key {
 			case "Scoreboard":
@@ -211,11 +211,12 @@ func getTags(addr *url.URL) map[string]string {
 	host, port, err := net.SplitHostPort(h)
 	if err != nil {
 		host = addr.Host
-		if addr.Scheme == "http" {
+		switch addr.Scheme {
+		case "http":
 			port = "80"
-		} else if addr.Scheme == "https" {
+		case "https":
 			port = "443"
-		} else {
+		default:
 			port = ""
 		}
 	}

@@ -24,7 +24,7 @@ func TestSuricataLarge(t *testing.T) {
 	dir, err := ioutil.TempDir("", "test")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
-	tmpfn := filepath.Join(dir, fmt.Sprintf("t%d", rand.Int63()))
+	tmpfn := filepath.Join(dir, fmt.Sprintf("t%d", rand.Int63())) //nolint:gosec // G404
 
 	s := Suricata{
 		Source:    tmpfn,
@@ -53,7 +53,7 @@ func TestSuricata(t *testing.T) {
 	dir, err := ioutil.TempDir("", "test")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
-	tmpfn := filepath.Join(dir, fmt.Sprintf("t%d", rand.Int63()))
+	tmpfn := filepath.Join(dir, fmt.Sprintf("t%d", rand.Int63())) //nolint:gosec // G404
 
 	s := Suricata{
 		Source:    tmpfn,
@@ -97,7 +97,7 @@ func TestThreadStats(t *testing.T) {
 	dir, err := ioutil.TempDir("", "test")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
-	tmpfn := filepath.Join(dir, fmt.Sprintf("t%d", rand.Int63()))
+	tmpfn := filepath.Join(dir, fmt.Sprintf("t%d", rand.Int63())) //nolint:gosec // G404
 
 	s := Suricata{
 		Source:    tmpfn,
@@ -142,7 +142,7 @@ func TestSuricataInvalid(t *testing.T) {
 	dir, err := ioutil.TempDir("", "test")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
-	tmpfn := filepath.Join(dir, fmt.Sprintf("t%d", rand.Int63()))
+	tmpfn := filepath.Join(dir, fmt.Sprintf("t%d", rand.Int63())) //nolint:gosec // G404
 
 	s := Suricata{
 		Source: tmpfn,
@@ -166,7 +166,7 @@ func TestSuricataInvalid(t *testing.T) {
 }
 
 func TestSuricataInvalidPath(t *testing.T) {
-	tmpfn := fmt.Sprintf("/t%d/X", rand.Int63())
+	tmpfn := fmt.Sprintf("/t%d/X", rand.Int63()) //nolint:gosec // G404
 	s := Suricata{
 		Source: tmpfn,
 		Log: testutil.Logger{
@@ -182,7 +182,7 @@ func TestSuricataTooLongLine(t *testing.T) {
 	dir, err := ioutil.TempDir("", "test")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
-	tmpfn := filepath.Join(dir, fmt.Sprintf("t%d", rand.Int63()))
+	tmpfn := filepath.Join(dir, fmt.Sprintf("t%d", rand.Int63())) //nolint:gosec // G404
 
 	s := Suricata{
 		Source: tmpfn,
@@ -209,7 +209,7 @@ func TestSuricataEmptyJSON(t *testing.T) {
 	dir, err := ioutil.TempDir("", "test")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
-	tmpfn := filepath.Join(dir, fmt.Sprintf("t%d", rand.Int63()))
+	tmpfn := filepath.Join(dir, fmt.Sprintf("t%d", rand.Int63())) //nolint:gosec // G404
 
 	s := Suricata{
 		Source: tmpfn,
@@ -236,7 +236,7 @@ func TestSuricataDisconnectSocket(t *testing.T) {
 	dir, err := ioutil.TempDir("", "test")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
-	tmpfn := filepath.Join(dir, fmt.Sprintf("t%d", rand.Int63()))
+	tmpfn := filepath.Join(dir, fmt.Sprintf("t%d", rand.Int63())) //nolint:gosec // G404
 
 	s := Suricata{
 		Source: tmpfn,
@@ -268,7 +268,7 @@ func TestSuricataStartStop(t *testing.T) {
 	dir, err := ioutil.TempDir("", "test")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
-	tmpfn := filepath.Join(dir, fmt.Sprintf("t%d", rand.Int63()))
+	tmpfn := filepath.Join(dir, fmt.Sprintf("t%d", rand.Int63())) //nolint:gosec // G404
 
 	s := Suricata{
 		Source: tmpfn,

@@ -402,12 +402,13 @@ const batchWeatherResponse = `
 func TestForecastGeneratesMetrics(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var rsp string
-		if r.URL.Path == "/data/2.5/forecast" {
+		switch r.URL.Path {
+		case "/data/2.5/forecast":
 			rsp = sampleStatusResponse
 			w.Header()["Content-Type"] = []string{"application/json"}
-		} else if r.URL.Path == "/data/2.5/group" {
+		case "/data/2.5/group":
 			rsp = sampleNoContent
-		} else {
+		default:
 			panic("Cannot handle request")
 		}
 
@@ -486,12 +487,13 @@ func TestForecastGeneratesMetrics(t *testing.T) {
 func TestWeatherGeneratesMetrics(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var rsp string
-		if r.URL.Path == "/data/2.5/group" {
+		switch r.URL.Path {
+		case "/data/2.5/group":
 			rsp = groupWeatherResponse
 			w.Header()["Content-Type"] = []string{"application/json"}
-		} else if r.URL.Path == "/data/2.5/forecast" {
+		case "/data/2.5/forecast":
 			rsp = sampleNoContent
-		} else {
+		default:
 			panic("Cannot handle request")
 		}
 
@@ -689,12 +691,13 @@ func TestRainMetrics(t *testing.T) {
 func TestBatchWeatherGeneratesMetrics(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var rsp string
-		if r.URL.Path == "/data/2.5/group" {
+		switch r.URL.Path {
+		case "/data/2.5/group":
 			rsp = batchWeatherResponse
 			w.Header()["Content-Type"] = []string{"application/json"}
-		} else if r.URL.Path == "/data/2.5/forecast" {
+		case "/data/2.5/forecast":
 			rsp = sampleNoContent
-		} else {
+		default:
 			panic("Cannot handle request")
 		}
 

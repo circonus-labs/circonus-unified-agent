@@ -24,23 +24,25 @@ func (s *PointScanner) read() rune {
 	return ch
 }
 
-// unread places the previously read rune back on the reader.
-func (s *PointScanner) unread() {
-	_ = s.r.UnreadRune()
-}
+// unused
+// // unread places the previously read rune back on the reader.
+// func (s *PointScanner) unread() {
+// 	_ = s.r.UnreadRune()
+// }
 
 // Scan returns the next token and literal value.
 func (s *PointScanner) Scan() (Token, string) {
 
 	// Read the next rune
 	ch := s.read()
-	if isWhitespace(ch) {
+	switch {
+	case isWhitespace(ch):
 		return WS, string(ch)
-	} else if isLetter(ch) {
+	case isLetter(ch):
 		return LETTER, string(ch)
-	} else if isNumber(ch) {
+	case isNumber(ch):
 		return NUMBER, string(ch)
-	} else if isDelta(ch) {
+	case isDelta(ch):
 		return DELTA, string(ch)
 	}
 

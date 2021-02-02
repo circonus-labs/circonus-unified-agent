@@ -164,7 +164,7 @@ func (m *Modbus) Description() string {
 }
 
 func (m *Modbus) Init() error {
-	//check device name
+	// check device name
 	if m.Name == "" {
 		return fmt.Errorf("device name is empty")
 	}
@@ -264,7 +264,8 @@ func connect(m *Modbus) error {
 		m.isConnected = true
 		return nil
 	case "file":
-		if m.TransmissionMode == "RTU" {
+		switch m.TransmissionMode {
+		case "RTU":
 			m.rtuHandler = mb.NewRTUClientHandler(u.Path)
 			m.rtuHandler.Timeout = m.Timeout.Duration
 			m.rtuHandler.SlaveId = byte(m.SlaveID)
@@ -279,7 +280,7 @@ func connect(m *Modbus) error {
 			}
 			m.isConnected = true
 			return nil
-		} else if m.TransmissionMode == "ASCII" {
+		case "ASCII":
 			m.asciiHandler = mb.NewASCIIClientHandler(u.Path)
 			m.asciiHandler.Timeout = m.Timeout.Duration
 			m.asciiHandler.SlaveId = byte(m.SlaveID)
@@ -294,7 +295,7 @@ func connect(m *Modbus) error {
 			}
 			m.isConnected = true
 			return nil
-		} else {
+		default:
 			return fmt.Errorf("invalid protocol '%s' - '%s' ", u.Scheme, m.TransmissionMode)
 		}
 	default:
@@ -313,13 +314,14 @@ func disconnect(m *Modbus) error {
 		m.tcpHandler.Close()
 		return nil
 	case "file":
-		if m.TransmissionMode == "RTU" {
+		switch m.TransmissionMode {
+		case "RTU":
 			m.rtuHandler.Close()
 			return nil
-		} else if m.TransmissionMode == "ASCII" {
+		case "ASCII":
 			m.asciiHandler.Close()
 			return nil
-		} else {
+		default:
 			return fmt.Errorf("invalid protocol '%s' - '%s' ", u.Scheme, m.TransmissionMode)
 		}
 	default:
@@ -330,12 +332,12 @@ func disconnect(m *Modbus) error {
 func validateFieldContainers(t []fieldContainer, n string) error {
 	nameEncountered := map[string]bool{}
 	for _, item := range t {
-		//check empty name
+		// check empty name
 		if item.Name == "" {
 			return fmt.Errorf("empty name in '%s'", n)
 		}
 
-		//search name duplicate
+		// search name duplicate
 		canonicalName := item.Measurement + "." + item.Name
 		if nameEncountered[canonicalName] {
 			return fmt.Errorf("name '%s' is duplicated in measurement '%s' '%s' - '%s'", item.Name, item.Measurement, n, item.Name)
@@ -402,15 +404,16 @@ func removeDuplicates(elements []uint16) []uint16 {
 }
 
 func readRegisterValues(m *Modbus, rt string, rr registerRange) ([]byte, error) {
-	if rt == cDiscreteInputs {
+	switch rt {
+	case cDiscreteInputs:
 		return m.client.ReadDiscreteInputs(uint16(rr.address), uint16(rr.length))
-	} else if rt == cCoils {
+	case cCoils:
 		return m.client.ReadCoils(uint16(rr.address), uint16(rr.length))
-	} else if rt == cInputRegisters {
+	case cInputRegisters:
 		return m.client.ReadInputRegisters(uint16(rr.address), uint16(rr.length))
-	} else if rt == cHoldingRegisters {
+	case cHoldingRegisters:
 		return m.client.ReadHoldingRegisters(uint16(rr.address), uint16(rr.length))
-	} else {
+	default:
 		return []byte{}, fmt.Errorf("not Valid function")
 	}
 }
@@ -431,7 +434,7 @@ func (m *Modbus) getFields() error {
 				for _, readValue := range readValues {
 					for bitPosition := 0; bitPosition < 8; bitPosition++ {
 						bitRawValues[address] = getBitValue(readValue, bitPosition)
-						address = address + 1
+						address++
 						if address+1 > rr.length {
 							break
 						}
@@ -444,7 +447,7 @@ func (m *Modbus) getFields() error {
 				batchSize := 2
 				for batchSize < len(readValues) {
 					rawValues[address] = readValues[0:batchSize:batchSize]
-					address = address + 1
+					address++
 					readValues = readValues[batchSize:]
 				}
 
@@ -515,27 +518,29 @@ func convertDataType(t fieldContainer, bytes []byte) interface{} {
 		f64 := math.Float64frombits(e64)
 		return scaleFloat64(t.Scale, f64)
 	case "FIXED":
-		if len(bytes) == 2 {
+		switch len(bytes) {
+		case 2:
 			e16 := convertEndianness16(t.ByteOrder, bytes)
 			f16 := int16(e16)
 			return scale16toFloat(t.Scale, f16)
-		} else if len(bytes) == 4 {
+		case 4:
 			e32 := convertEndianness32(t.ByteOrder, bytes)
 			f32 := int32(e32)
 			return scale32toFloat(t.Scale, f32)
-		} else {
+		default:
 			e64 := convertEndianness64(t.ByteOrder, bytes)
 			f64 := int64(e64)
 			return scale64toFloat(t.Scale, f64)
 		}
 	case "FLOAT32", "UFIXED":
-		if len(bytes) == 2 {
+		switch len(bytes) {
+		case 2:
 			e16 := convertEndianness16(t.ByteOrder, bytes)
 			return scale16UtoFloat(t.Scale, e16)
-		} else if len(bytes) == 4 {
+		case 4:
 			e32 := convertEndianness32(t.ByteOrder, bytes)
 			return scale32UtoFloat(t.Scale, e32)
-		} else {
+		default:
 			e64 := convertEndianness64(t.ByteOrder, bytes)
 			return scale64UtoFloat(t.Scale, e64)
 		}

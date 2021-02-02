@@ -165,7 +165,7 @@ func nameValuePair11(nameData, valueData string) []byte {
 
 func makeRecord(
 	recordType recType,
-	requestID uint16,
+	requestID uint16, //nolint:unparam
 	contentData []byte,
 ) []byte {
 	requestIDB1 := byte(requestID >> 8)
@@ -234,6 +234,7 @@ func (nopWriteCloser) Close() error {
 // isn't met. See issue 6934.
 func TestChildServeCleansUp(t *testing.T) {
 	for _, tt := range cleanUpTests {
+		tt := tt
 		input := make([]byte, len(tt.input))
 		copy(input, tt.input)
 		rc := nopWriteCloser{bytes.NewBuffer(input)}

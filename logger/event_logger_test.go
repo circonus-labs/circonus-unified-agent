@@ -30,7 +30,7 @@ type Event struct {
 
 func getEventLog(t *testing.T, since time.Time) []Event {
 	timeStr := since.UTC().Format(time.RFC3339)
-	cmd := exec.Command("wevtutil", "qe", "Application", "/rd:true", "/q:Event[System[TimeCreated[@SystemTime >= '"+timeStr+"'] and Provider[@Name='CirconusUnifiedAgent']]]")
+	cmd := exec.Command("wevtutil", "qe", "Application", "/rd:true", "/q:Event[System[TimeCreated[@SystemTime >= '"+timeStr+"'] and Provider[@Name='CirconusUnifiedAgent']]]") //nolint:gosec // G204
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	err := cmd.Run()
@@ -79,7 +79,7 @@ func TestRestrictedEventLog(t *testing.T) {
 	}
 
 	SetupLogging(config)
-	//separate previous log messages by small delay
+	// separate previous log messages by small delay
 	time.Sleep(time.Second)
 	now := time.Now()
 	log.Println("I! Info message")

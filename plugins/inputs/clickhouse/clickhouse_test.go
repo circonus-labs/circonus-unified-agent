@@ -481,7 +481,7 @@ func TestWrongJSONMarshalling(t *testing.T) {
 				Data interface{} `json:"data"`
 			}
 			enc := json.NewEncoder(w)
-			//wrong data section json
+			// wrong data section json
 			_ = enc.Encode(result{
 				Data: []struct{}{},
 			})
@@ -549,39 +549,38 @@ func TestOfflineServer(t *testing.T) {
 }
 
 func TestAutoDiscovery(t *testing.T) {
-	var (
-		ts = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			type result struct {
-				Data interface{} `json:"data"`
-			}
-			enc := json.NewEncoder(w)
-			switch query := r.URL.Query().Get("query"); {
-			case strings.Contains(query, "system.clusters"):
-				_ = enc.Encode(result{
-					Data: []struct {
-						Cluster  string   `json:"test"`
-						Hostname string   `json:"localhost"`
-						ShardNum chUInt64 `json:"shard_num"`
-					}{
-						{
-							Cluster:  "test_database",
-							Hostname: "test_table",
-							ShardNum: 1,
-						},
-					},
-				})
-			}
-		}))
-		ch = &ClickHouse{
-			Servers: []string{
-				ts.URL,
-			},
-			Username:      "default",
-			AutoDiscovery: true,
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		type result struct {
+			Data interface{} `json:"data"`
 		}
-		acc = &testutil.Accumulator{}
-	)
-	defer ts.Close()
-	_ = ch.Gather(acc)
+		enc := json.NewEncoder(w)
+		if strings.Contains(r.URL.Query().Get("query"), "system.clusters") {
+			_ = enc.Encode(result{
+				Data: []struct {
+					Cluster  string   `json:"test"`
+					Hostname string   `json:"localhost"`
+					ShardNum chUInt64 `json:"shard_num"`
+				}{
+					{
+						Cluster:  "test_database",
+						Hostname: "test_table",
+						ShardNum: 1,
+					},
+				},
+			})
+		}
+	}))
+	ch := &ClickHouse{
+		Servers: []string{
+			ts.URL,
+		},
+		Username:      "default",
+		AutoDiscovery: true,
+	}
+	acc := &testutil.Accumulator{}
 
+	defer ts.Close()
+	if err := ch.Gather(acc); err != nil {
+		assert.NoError(t, err, "gather error")
+	}
 }

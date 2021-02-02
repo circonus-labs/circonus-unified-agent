@@ -55,7 +55,7 @@ func (s *Stats) Gather(acc cua.Accumulator) error {
 		mountOpts := parseOptions(partitions[i].Opts)
 		tags := map[string]string{
 			"path":   du.Path,
-			"device": strings.Replace(partitions[i].Device, "/dev/", "", -1),
+			"device": strings.ReplaceAll(partitions[i].Device, "/dev/", ""),
 			"fstype": du.Fstype,
 			"mode":   mountOpts.Mode(),
 		}
@@ -83,11 +83,12 @@ func (s *Stats) Gather(acc cua.Accumulator) error {
 type MountOptions []string
 
 func (opts MountOptions) Mode() string {
-	if opts.exists("rw") {
+	switch {
+	case opts.exists("rw"):
 		return "rw"
-	} else if opts.exists("ro") {
+	case opts.exists("ro"):
 		return "ro"
-	} else {
+	default:
 		return "unknown"
 	}
 }

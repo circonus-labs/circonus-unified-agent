@@ -15,6 +15,7 @@ import (
 func TestUpdateCounters(t *testing.T) {
 	ras := newRas()
 	for _, mce := range testData {
+		mce := mce
 		ras.updateCounters(&mce)
 	}
 
@@ -96,6 +97,7 @@ func TestMultipleSockets(t *testing.T) {
 		},
 	}
 	for _, mce := range testData {
+		mce := mce
 		ras.updateCounters(&mce)
 	}
 	assert.Equal(t, 4, len(ras.cpuSocketCounters), "Should contain counters for four sockets")

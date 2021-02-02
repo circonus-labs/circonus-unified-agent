@@ -83,7 +83,7 @@ func (r *Regex) Apply(in ...cua.Metric) []cua.Metric {
 
 		for _, converter := range r.Fields {
 			if value, ok := metric.GetField(converter.Key); ok {
-				switch value := value.(type) {
+				switch value := value.(type) { //nolint:gocritic
 				case string:
 					if key, newValue := r.convert(converter, value); newValue != "" {
 						metric.AddField(key, newValue)

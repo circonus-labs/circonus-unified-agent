@@ -244,7 +244,7 @@ func TestGenerateStatisticsInputParams(t *testing.T) {
 	c.updateWindow(now)
 
 	statFilter, _ := filter.NewIncludeExcludeFilter(nil, nil)
-	queries, _ := c.getDataQueries([]filteredMetric{{metrics: []*cloudwatch.Metric{m}, statFilter: statFilter}})
+	queries := c.getDataQueries([]filteredMetric{{metrics: []*cloudwatch.Metric{m}, statFilter: statFilter}})
 	params := c.getDataInputs(queries)
 
 	assert.EqualValues(t, *params.EndTime, now.Add(-time.Duration(c.Delay)))
@@ -281,7 +281,7 @@ func TestGenerateStatisticsInputParamsFiltered(t *testing.T) {
 	c.updateWindow(now)
 
 	statFilter, _ := filter.NewIncludeExcludeFilter([]string{"average", "sample_count"}, nil)
-	queries, _ := c.getDataQueries([]filteredMetric{{metrics: []*cloudwatch.Metric{m}, statFilter: statFilter}})
+	queries := c.getDataQueries([]filteredMetric{{metrics: []*cloudwatch.Metric{m}, statFilter: statFilter}})
 	params := c.getDataInputs(queries)
 
 	assert.EqualValues(t, *params.EndTime, now.Add(-time.Duration(c.Delay)))

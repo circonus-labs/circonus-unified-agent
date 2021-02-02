@@ -10,11 +10,11 @@ import (
 )
 
 func mustMetric(
-	name string,
+	name string, //nolint:unparam
 	tags map[string]string,
 	fields map[string]interface{},
 	tm time.Time,
-	tp ...cua.ValueType,
+	tp ...cua.ValueType, //nolint:unparam
 ) cua.Metric {
 	m, err := New(name, tags, fields, tm, tp...)
 	if err != nil {
@@ -158,6 +158,7 @@ func TestTracking(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			d := &deliveries{
 				Info: make(map[cua.TrackingID]cua.DeliveryInfo),
@@ -284,6 +285,7 @@ func TestGroupTracking(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			d := &deliveries{
 				Info: make(map[cua.TrackingID]cua.DeliveryInfo),

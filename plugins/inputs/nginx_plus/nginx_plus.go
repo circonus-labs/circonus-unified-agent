@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -125,11 +126,12 @@ func getTags(addr *url.URL) map[string]string {
 	host, port, err := net.SplitHostPort(h)
 	if err != nil {
 		host = addr.Host
-		if addr.Scheme == "http" {
+		switch addr.Scheme {
+		case "http":
 			port = "80"
-		} else if addr.Scheme == "https" {
+		case "https":
 			port = "443"
-		} else {
+		default:
 			port = ""
 		}
 	}
@@ -283,7 +285,7 @@ type Status struct {
 	} `json:"stream"`
 }
 
-func gatherStatusURL(r *bufio.Reader, tags map[string]string, acc cua.Accumulator) error {
+func gatherStatusURL(r io.Reader, tags map[string]string, acc cua.Accumulator) error {
 	dec := json.NewDecoder(r)
 	status := &Status{}
 	if err := dec.Decode(status); err != nil {

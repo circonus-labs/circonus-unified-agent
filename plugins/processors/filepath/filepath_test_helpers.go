@@ -92,6 +92,7 @@ func getSmokeTestInputMetrics(path string) []cua.Metric {
 
 func runTestOptionsApply(t *testing.T, tests []testCase) {
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.o.Apply(tt.inputMetrics...)
 			testutil.RequireMetricsEqual(t, tt.expectedMetrics, got, testutil.SortMetrics(), testutil.IgnoreTime())

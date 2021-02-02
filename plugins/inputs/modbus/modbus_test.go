@@ -88,6 +88,7 @@ func TestCoils(t *testing.T) {
 	client := m.NewClient(handler)
 
 	for _, ct := range coilTests {
+		ct := ct
 		t.Run(ct.name, func(t *testing.T) {
 			_, err = client.WriteMultipleCoils(ct.address, ct.quantity, ct.write)
 			assert.NoError(t, err)
@@ -623,6 +624,7 @@ func TestHoldingRegisters(t *testing.T) {
 	client := m.NewClient(handler)
 
 	for _, hrt := range holdingRegisterTests {
+		hrt := hrt
 		t.Run(hrt.name, func(t *testing.T) {
 			_, err = client.WriteMultipleRegisters(hrt.address[0], hrt.quantity, hrt.write)
 			assert.NoError(t, err)

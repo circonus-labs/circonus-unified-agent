@@ -138,6 +138,7 @@ func getTestCasesForNonTransparent() []testCaseStream {
 
 func testStrictNonTransparent(t *testing.T, protocol string, address string, wantTLS bool, keepAlive *internal.Duration) {
 	for _, tc := range getTestCasesForNonTransparent() {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			// Creation of a strict mode receiver
 			receiver := newTCPSyslogReceiver(protocol+"://"+address, keepAlive, 0, false, framing.NonTransparent)
@@ -192,8 +193,9 @@ func testStrictNonTransparent(t *testing.T, protocol string, address string, wan
 	}
 }
 
-func testBestEffortNonTransparent(t *testing.T, protocol string, address string, wantTLS bool, keepAlive *internal.Duration) {
+func testBestEffortNonTransparent(t *testing.T, protocol string, address string, wantTLS bool, keepAlive *internal.Duration) { //nolint:unparam
 	for _, tc := range getTestCasesForNonTransparent() {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			// Creation of a best effort mode receiver
 			receiver := newTCPSyslogReceiver(protocol+"://"+address, keepAlive, 0, true, framing.NonTransparent)

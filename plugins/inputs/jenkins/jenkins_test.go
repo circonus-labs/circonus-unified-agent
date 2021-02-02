@@ -296,6 +296,7 @@ func TestGatherNodeData(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
 			ts := httptest.NewServer(test.input)
 			defer ts.Close()
@@ -387,6 +388,7 @@ func TestInitialize(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
 			te := test.input.initialize(mockClient)
 			if !test.wantErr && te != nil {
@@ -784,6 +786,7 @@ func TestGatherJobs(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
 			ts := httptest.NewServer(test.input)
 			defer ts.Close()

@@ -153,13 +153,13 @@ func TestServeHTTP(t *testing.T) {
 		}()
 
 		wg.Add(1)
-		go func(status int, d chan cua.Metric) {
+		go func(d chan cua.Metric) {
 			defer wg.Done()
 			for m := range d {
 				ro.AddMetric(m)
 				_ = ro.Write()
 			}
-		}(test.status, dst)
+		}(dst)
 
 		ctx, cancel := context.WithTimeout(req.Context(), pubPush.WriteTimeout.Duration)
 		req = req.WithContext(ctx)

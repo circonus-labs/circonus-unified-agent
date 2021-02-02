@@ -87,7 +87,7 @@ func TestGather(t *testing.T) {
 func fakeExecCommand(command string, args ...string) *exec.Cmd {
 	cs := []string{"-test.run=TestHelperProcess", "--", command}
 	cs = append(cs, args...)
-	cmd := exec.Command(os.Args[0], cs...)
+	cmd := exec.Command(os.Args[0], cs...) //nolint:gosec // G204
 	cmd.Env = []string{"GO_WANT_HELPER_PROCESS=1"}
 	return cmd
 }
@@ -109,13 +109,14 @@ func TestHelperProcess(t *testing.T) {
 		fmt.Fprint(os.Stdout, execStatusOutput)
 		os.Exit(0)
 	} else if len(args) == 2 && args[0] == "status" {
-		if args[1] == "sshd" {
+		switch args[1] {
+		case "sshd":
 			fmt.Fprint(os.Stdout, execStatusSshdOutput)
 			os.Exit(0)
-		} else if args[1] == "postfix" {
+		case "postfix":
 			fmt.Fprint(os.Stdout, execStatusPostfixOutput)
 			os.Exit(0)
-		} else if args[1] == "dovecot" {
+		case "dovecot":
 			fmt.Fprint(os.Stdout, execStatusDovecotOutput)
 			os.Exit(0)
 		}

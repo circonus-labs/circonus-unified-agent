@@ -26,7 +26,7 @@ func lessFunc(lhs, rhs *metricDiff) bool {
 	}
 
 	for i := 0; ; i++ {
-		if i >= len(lhs.Tags) && i >= len(rhs.Tags) {
+		if i >= len(lhs.Tags) && i >= len(rhs.Tags) { //nolint:gocritic
 			break
 		} else if i >= len(lhs.Tags) {
 			return true
@@ -43,7 +43,7 @@ func lessFunc(lhs, rhs *metricDiff) bool {
 	}
 
 	for i := 0; ; i++ {
-		if i >= len(lhs.Fields) && i >= len(rhs.Fields) {
+		if i >= len(lhs.Fields) && i >= len(rhs.Fields) { //nolint:gocritic
 			break
 		} else if i >= len(lhs.Fields) {
 			return true

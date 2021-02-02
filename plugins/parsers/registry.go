@@ -123,7 +123,7 @@ type Config struct {
 	// used if TagsPath is empty or doesn't return any tags
 	DropwizardTagPathsMap map[string]string `toml:"dropwizard_tag_paths_map"`
 
-	//grok patterns
+	// grok patterns
 	GrokPatterns           []string `toml:"grok_patterns"`
 	GrokNamedPatterns      []string `toml:"grok_named_patterns"`
 	GrokCustomPatterns     string   `toml:"grok_custom_patterns"`
@@ -131,7 +131,7 @@ type Config struct {
 	GrokTimezone           string   `toml:"grok_timezone"`
 	GrokUniqueTimestamp    string   `toml:"grok_unique_timestamp"`
 
-	//csv configuration
+	// csv configuration
 	CSVColumnNames       []string `toml:"csv_column_names"`
 	CSVColumnTypes       []string `toml:"csv_column_types"`
 	CSVComment           string   `toml:"csv_comment"`

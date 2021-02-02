@@ -108,7 +108,7 @@ func NewClient(ctx context.Context, u *url.URL, vs *VSphere) (*Client, error) {
 	}
 	// Use a default TLS config if it's missing
 	if tlsCfg == nil {
-		tlsCfg = &tls.Config{}
+		tlsCfg = &tls.Config{MinVersion: tls.VersionTLS12}
 	}
 	if vs.Username != "" {
 		u.User = url.UserPassword(vs.Username, vs.Password)

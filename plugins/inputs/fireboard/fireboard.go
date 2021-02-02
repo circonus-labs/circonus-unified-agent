@@ -124,7 +124,7 @@ func (r *Fireboard) Gather(acc cua.Accumulator) error {
 func scale(n int) string {
 	switch n {
 	case 1:
-		return "Celcius"
+		return "Celsius"
 	case 2:
 		return "Fahrenheit"
 	default:

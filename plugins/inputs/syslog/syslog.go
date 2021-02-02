@@ -385,7 +385,7 @@ func fields(msg syslog.Message, s *Syslog) map[string]interface{} {
 	flds["facility_code"] = int(*msg.Facility())
 
 	if msg.Timestamp() != nil {
-		flds["timestamp"] = (*msg.Timestamp()).UnixNano()
+		flds["timestamp"] = msg.Timestamp().UnixNano()
 	}
 
 	if msg.ProcID() != nil {
@@ -397,9 +397,7 @@ func fields(msg syslog.Message, s *Syslog) map[string]interface{} {
 	}
 
 	if msg.Message() != nil {
-		flds["message"] = strings.TrimRightFunc(*msg.Message(), func(r rune) bool {
-			return unicode.IsSpace(r)
-		})
+		flds["message"] = strings.TrimRightFunc(*msg.Message(), unicode.IsSpace)
 	}
 
 	if msg.StructuredData() != nil {

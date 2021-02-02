@@ -219,7 +219,7 @@ func (p *phpfpm) gatherHTTP(addr string, acc cua.Accumulator) error {
 }
 
 // Import stat data into system
-func importMetric(r io.Reader, acc cua.Accumulator, addr string) poolStat {
+func importMetric(r io.Reader, acc cua.Accumulator, addr string) {
 	stats := make(poolStat)
 	var currentPool string
 
@@ -267,12 +267,10 @@ func importMetric(r io.Reader, acc cua.Accumulator, addr string) poolStat {
 		}
 		fields := make(map[string]interface{})
 		for k, v := range stats[pool] {
-			fields[strings.Replace(k, " ", "_", -1)] = v
+			fields[strings.ReplaceAll(k, " ", "_")] = v
 		}
 		acc.AddFields("phpfpm", fields, tags)
 	}
-
-	return stats
 }
 
 func expandUrls(urls []string) ([]string, error) {

@@ -226,10 +226,10 @@ type point struct {
 	fields map[string]interface{}
 }
 
-func (d *DCOS) createPoints(acc cua.Accumulator, m *Metrics) []*point {
+func (d *DCOS) createPoints(m *Metrics) []*point {
 	points := make(map[string]*point)
 	for _, dp := range m.Datapoints {
-		fieldKey := strings.Replace(dp.Name, ".", "_", -1)
+		fieldKey := strings.ReplaceAll(dp.Name, ".", "_")
 
 		tags := dp.Tags
 		if tags == nil {
@@ -237,7 +237,7 @@ func (d *DCOS) createPoints(acc cua.Accumulator, m *Metrics) []*point {
 		}
 
 		if dp.Unit == "bytes" && !strings.HasSuffix(fieldKey, "_bytes") {
-			fieldKey = fieldKey + "_bytes"
+			fieldKey += "_bytes"
 		}
 
 		if strings.HasPrefix(fieldKey, "dcos_metrics_module_") {
@@ -291,7 +291,7 @@ func (d *DCOS) createPoints(acc cua.Accumulator, m *Metrics) []*point {
 func (d *DCOS) addMetrics(acc cua.Accumulator, cluster, mname string, m *Metrics, tagDimensions []string) {
 	tm := time.Now()
 
-	points := d.createPoints(acc, m)
+	points := d.createPoints(m)
 
 	for _, p := range points {
 		tags := make(map[string]string)
@@ -388,15 +388,17 @@ func (d *DCOS) createCredentials() (Credentials, error) {
 			PrivateKey: privateKey,
 		}
 		return creds, nil
-	} else if d.TokenFile != "" {
+	}
+
+	if d.TokenFile != "" {
 		creds := &TokenCreds{
 			Path: d.TokenFile,
 		}
 		return creds, nil
-	} else {
-		creds := &NullCreds{}
-		return creds, nil
 	}
+
+	creds := &NullCreds{}
+	return creds, nil
 }
 
 func (d *DCOS) createFilters() error {

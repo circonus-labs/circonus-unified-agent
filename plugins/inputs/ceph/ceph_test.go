@@ -154,13 +154,14 @@ func TestFindSockets(t *testing.T) {
 
 func assertFoundSocket(t *testing.T, dir, sockType string, i int, sockets []*socket) {
 	var prefix string
-	if sockType == typeOsd {
+	switch sockType {
+	case typeOsd:
 		prefix = osdPrefix
-	} else if sockType == typeMds {
+	case typeMds:
 		prefix = mdsPrefix
-	} else if sockType == typeRgw {
+	case typeRgw:
 		prefix = rgwPrefix
-	} else {
+	default:
 		prefix = monPrefix
 	}
 	expected := filepath.Join(dir, sockFile(prefix, i))
@@ -184,7 +185,7 @@ func createTestFiles(dir string, st *SockTest) {
 	writeFile := func(prefix string, i int) {
 		f := sockFile(prefix, i)
 		fpath := filepath.Join(dir, f)
-		_ = ioutil.WriteFile(fpath, []byte(""), 0777)
+		_ = ioutil.WriteFile(fpath, []byte(""), 0600)
 	}
 	tstFileApply(st, writeFile)
 }
@@ -2058,7 +2059,7 @@ var cephODSPoolStatsDump = `
       "pool_id": 3,
       "recovery": { "degraded_objects": 18446744073709551562,
           "degraded_total": 412,
-          "degrated_ratio": "-13.107"},
+          "degraded_ratio": "-13.107"},
       "recovery_rate": { "recovering_objects_per_sec": 279,
           "recovering_bytes_per_sec": 176401059,
           "recovering_keys_per_sec": 0},

@@ -191,10 +191,10 @@ func getTestdataDir() string {
 
 	if runtime.GOOS == "windows" {
 		chunks = strings.Split(dir, "\\")
-		testDirectory = strings.Join(chunks[:], "\\") + "\\testdata"
+		testDirectory = strings.Join(chunks, "\\") + "\\testdata"
 	} else {
 		chunks = strings.Split(dir, "/")
-		testDirectory = strings.Join(chunks[:], "/") + "/testdata"
+		testDirectory = strings.Join(chunks, "/") + "/testdata"
 	}
 	return testDirectory
 }

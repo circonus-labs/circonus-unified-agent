@@ -115,14 +115,15 @@ func (m *FakePerformanceQuery) findCounterByPath(counterPath string) *testCounte
 	return nil
 }
 
-func (m *FakePerformanceQuery) findCounterByHandle(counterHandle PdhHCounter) *testCounter {
-	for _, c := range m.counters {
-		if c.handle == counterHandle {
-			return &c
-		}
-	}
-	return nil
-}
+// unused
+// func (m *FakePerformanceQuery) findCounterByHandle(counterHandle PdhHCounter) *testCounter {
+// 	for _, c := range m.counters {
+// 		if c.handle == counterHandle {
+// 			return &c
+// 		}
+// 	}
+// 	return nil
+// }
 
 func (m *FakePerformanceQuery) GetFormattedCounterArrayDouble(hCounter PdhHCounter) ([]CounterValue, error) {
 	if !m.openCalled {
@@ -169,7 +170,7 @@ func (m *FakePerformanceQuery) IsVistaOrNewer() bool {
 	return m.vistaAndNewer
 }
 
-func createPerfObject(measurement string, object string, instances []string, counters []string, failOnMissing bool, includeTotal bool) []perfobject {
+func createPerfObject(measurement string, object string, instances []string, counters []string, failOnMissing bool, includeTotal bool) []perfobject { //nolint:unparam
 	PerfObject := perfobject{
 		ObjectName:    object,
 		Instances:     instances,
@@ -708,7 +709,7 @@ func TestGatherInvalidDataIgnore(t *testing.T) {
 	acc1.AssertContainsTaggedFields(t, measurement, fields1, tags1)
 }
 
-//tests with expansion
+// tests with expansion
 func TestGatherRefreshingWithExpansion(t *testing.T) {
 	var err error
 	if testing.Short() {
@@ -778,7 +779,7 @@ func TestGatherRefreshingWithExpansion(t *testing.T) {
 		"objectname": "O",
 	}
 
-	//test before elapsing CounterRefreshRate counters are not refreshed
+	// test before elapsing CounterRefreshRate counters are not refreshed
 	err = m.Gather(&acc2)
 	require.NoError(t, err)
 	assert.Len(t, m.counters, 4)
@@ -849,7 +850,7 @@ func TestGatherRefreshingWithoutExpansion(t *testing.T) {
 		"objectname": "O",
 	}
 	acc1.AssertContainsTaggedFields(t, measurement, fields2, tags2)
-	//test finding new instance
+	// test finding new instance
 	cps2 := []string{"\\O(I1)\\C1", "\\O(I1)\\C2", "\\O(I2)\\C1", "\\O(I2)\\C2", "\\O(I3)\\C1", "\\O(I3)\\C2"}
 	fpm = &FakePerformanceQuery{
 		counters: createCounterMap(append([]string{"\\O(*)\\C1", "\\O(*)\\C2"}, cps2...), []float64{0, 0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6}, []uint32{0, 0, 0, 0, 0, 0, 0, 0}),
@@ -872,7 +873,7 @@ func TestGatherRefreshingWithoutExpansion(t *testing.T) {
 		"objectname": "O",
 	}
 
-	//test before elapsing CounterRefreshRate counters are not refreshed
+	// test before elapsing CounterRefreshRate counters are not refreshed
 	err = m.Gather(&acc2)
 	require.NoError(t, err)
 	assert.Len(t, m.counters, 2)
@@ -881,7 +882,7 @@ func TestGatherRefreshingWithoutExpansion(t *testing.T) {
 	acc2.AssertContainsTaggedFields(t, measurement, fields1, tags1)
 	acc2.AssertContainsTaggedFields(t, measurement, fields2, tags2)
 	acc2.AssertContainsTaggedFields(t, measurement, fields3, tags3)
-	//test changed configuration
+	// test changed configuration
 	perfObjects = createPerfObject(measurement, "O", []string{"*"}, []string{"C1", "C2", "C3"}, true, false)
 	cps3 := []string{"\\O(I1)\\C1", "\\O(I1)\\C2", "\\O(I1)\\C3", "\\O(I2)\\C1", "\\O(I2)\\C2", "\\O(I2)\\C3"}
 	fpm = &FakePerformanceQuery{

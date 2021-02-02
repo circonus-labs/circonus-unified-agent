@@ -139,7 +139,7 @@ var sampleConfig = `
 
 type WinPerfCounters struct {
 	PrintValid bool
-	//deprecated: determined dynamically
+	// Deprecated: determined dynamically
 	PreVistaSupport         bool
 	UsePerfCounterTime      bool
 	Object                  []perfobject
@@ -244,7 +244,7 @@ func (m *WinPerfCounters) SampleConfig() string {
 	return sampleConfig
 }
 
-//objectName string, counter string, instance string, measurement string, include_total bool
+// objectName string, counter string, instance string, measurement string, include_total bool
 func (m *WinPerfCounters) AddItem(counterPath string, objectName string, instance string, counterName string, measurement string, includeTotal bool) error {
 	var err error
 	var counterHandle PdhHCounter
@@ -355,7 +355,7 @@ func (m *WinPerfCounters) Gather(acc cua.Accumulator) error {
 		if err = m.ParseConfig(); err != nil {
 			return err
 		}
-		//some counters need two data samples before computing a value
+		// some counters need two data samples before computing a value
 		if err = m.query.CollectData(); err != nil {
 			return err
 		}
@@ -385,7 +385,7 @@ func (m *WinPerfCounters) Gather(acc cua.Accumulator) error {
 		if m.UseWildcardsExpansion {
 			value, err := m.query.GetFormattedCounterValueDouble(metric.counterHandle)
 			if err != nil {
-				//ignore invalid data  as some counters from process instances returns this sometimes
+				// ignore invalid data  as some counters from process instances returns this sometimes
 				if !isKnownCounterDataError(err) {
 					return fmt.Errorf("error while getting value for counter %s: %w", metric.counterPath, err)
 				}
@@ -396,7 +396,7 @@ func (m *WinPerfCounters) Gather(acc cua.Accumulator) error {
 		} else {
 			counterValues, err := m.query.GetFormattedCounterArrayDouble(metric.counterHandle)
 			if err != nil {
-				//ignore invalid data  as some counters from process instances returns this sometimes
+				// ignore invalid data  as some counters from process instances returns this sometimes
 				if !isKnownCounterDataError(err) {
 					return fmt.Errorf("error while getting value for counter %s: %w", metric.counterPath, err)
 				}

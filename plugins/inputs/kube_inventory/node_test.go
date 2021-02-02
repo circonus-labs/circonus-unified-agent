@@ -125,10 +125,10 @@ func TestNode(t *testing.T) {
 		}
 		acc := new(testutil.Accumulator)
 		for _, node := range ((v.handler.responseMap["/nodes/"]).(*v1.NodeList)).Items {
-			err := ks.gatherNode(*node, acc)
-			if err != nil {
-				t.Errorf("Failed to gather node - %s", err.Error())
-			}
+			ks.gatherNode(*node, acc)
+			// if err != nil {
+			// 	t.Errorf("Failed to gather node - %s", err.Error())
+			// }
 		}
 
 		err := acc.FirstError()
@@ -143,8 +143,7 @@ func TestNode(t *testing.T) {
 			for i := range v.output.Metrics {
 				measurement := v.output.Metrics[i].Measurement
 				var keyTag string
-				switch measurement {
-				case nodeMeasurement:
+				if measurement == nodeMeasurement {
 					keyTag = "node"
 				}
 				var j int

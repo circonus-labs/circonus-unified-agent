@@ -38,7 +38,7 @@ func fakeExecCmd(_ internal.Duration, x string, y ...string) ([]byte, error) {
 	return nil, fmt.Errorf("mock " + x + " " + strings.Join(y, " "))
 }
 
-func sendTrap(t *testing.T, port uint16, now uint32, trap gosnmp.SnmpTrap, version gosnmp.SnmpVersion, secLevel string, username string, authProto string, authPass string, privProto string, privPass string, contextName string, engineID string) {
+func sendTrap(t *testing.T, port uint16, trap gosnmp.SnmpTrap, version gosnmp.SnmpVersion, secLevel string, username string, authProto string, authPass string, privProto string, privPass string, contextName string, engineID string) {
 	var s gosnmp.GoSNMP
 
 	if version == gosnmp.Version3 {
@@ -60,14 +60,14 @@ func sendTrap(t *testing.T, port uint16, now uint32, trap gosnmp.SnmpTrap, versi
 			authenticationProtocol = gosnmp.MD5
 		case "sha":
 			authenticationProtocol = gosnmp.SHA
-		//case "sha224":
-		//	authenticationProtocol = gosnmp.SHA224
-		//case "sha256":
-		//	authenticationProtocol = gosnmp.SHA256
-		//case "sha384":
-		//	authenticationProtocol = gosnmp.SHA384
-		//case "sha512":
-		//	authenticationProtocol = gosnmp.SHA512
+		// case "sha224":
+		// 	authenticationProtocol = gosnmp.SHA224
+		// case "sha256":
+		// 	authenticationProtocol = gosnmp.SHA256
+		// case "sha384":
+		// 	authenticationProtocol = gosnmp.SHA384
+		// case "sha512":
+		// 	authenticationProtocol = gosnmp.SHA512
 		case "":
 			authenticationProtocol = gosnmp.NoAuth
 		default:
@@ -175,7 +175,7 @@ func TestReceiveTrap(t *testing.T) {
 		entries []entry
 		metrics []cua.Metric
 	}{
-		//ordinary v2c coldStart trap
+		// ordinary v2c coldStart trap
 		{
 			name:    "v2c coldStart",
 			version: gosnmp.Version2c,
@@ -234,10 +234,10 @@ func TestReceiveTrap(t *testing.T) {
 				),
 			},
 		},
-		//Check that we're not running snmptranslate to look up oids
-		//when we shouldn't be.  This sends and receives a valid trap
-		//but metric production should fail because the oids aren't in
-		//the cache and oid lookup is intentionally mocked to fail.
+		// Check that we're not running snmptranslate to look up oids
+		// when we shouldn't be.  This sends and receives a valid trap
+		// but metric production should fail because the oids aren't in
+		// the cache and oid lookup is intentionally mocked to fail.
 		{
 			name:    "missing oid",
 			version: gosnmp.Version2c,
@@ -255,10 +255,10 @@ func TestReceiveTrap(t *testing.T) {
 					},
 				},
 			},
-			entries: []entry{}, //nothing in cache
+			entries: []entry{}, // nothing in cache
 			metrics: []cua.Metric{},
 		},
-		//v1 enterprise specific trap
+		// v1 enterprise specific trap
 		{
 			name:    "v1 trap enterprise",
 			version: gosnmp.Version1,
@@ -312,7 +312,7 @@ func TestReceiveTrap(t *testing.T) {
 				),
 			},
 		},
-		//v1 generic trap
+		// v1 generic trap
 		{
 			name:    "v1 trap generic",
 			version: gosnmp.Version1,
@@ -326,7 +326,7 @@ func TestReceiveTrap(t *testing.T) {
 				},
 				Enterprise:   ".1.2.3",
 				AgentAddress: "10.20.30.40",
-				GenericTrap:  0, //coldStart
+				GenericTrap:  0, // coldStart
 				SpecificTrap: 0,
 				Timestamp:    uint(now),
 			},
@@ -366,7 +366,7 @@ func TestReceiveTrap(t *testing.T) {
 				),
 			},
 		},
-		//ordinary v3 coldStart trap no auth and no priv
+		// ordinary v3 coldStart trap no auth and no priv
 		{
 			name:        "v3 coldStart noAuthNoPriv",
 			version:     gosnmp.Version3,
@@ -430,7 +430,7 @@ func TestReceiveTrap(t *testing.T) {
 				),
 			},
 		},
-		//ordinary v3 coldstart trap SHA auth and no priv
+		// ordinary v3 coldstart trap SHA auth and no priv
 		{
 			name:      "v3 coldStart authShaNoPriv",
 			version:   gosnmp.Version3,
@@ -741,7 +741,7 @@ func TestReceiveTrap(t *testing.T) {
 					),
 				},
 			},*/
-		//ordinary v3 coldstart trap SHA auth and no priv
+		// ordinary v3 coldstart trap SHA auth and no priv
 		{
 			name:      "v3 coldStart authShaNoPriv",
 			version:   gosnmp.Version3,
@@ -803,7 +803,7 @@ func TestReceiveTrap(t *testing.T) {
 				),
 			},
 		},
-		//ordinary v3 coldstart trap MD5 auth and no priv
+		// ordinary v3 coldstart trap MD5 auth and no priv
 		{
 			name:      "v3 coldStart authMD5NoPriv",
 			version:   gosnmp.Version3,
@@ -865,7 +865,7 @@ func TestReceiveTrap(t *testing.T) {
 				),
 			},
 		},
-		//ordinary v3 coldStart SHA trap auth and AES priv
+		// ordinary v3 coldStart SHA trap auth and AES priv
 		{
 			name:      "v3 coldStart authSHAPrivAES",
 			version:   gosnmp.Version3,
@@ -929,7 +929,7 @@ func TestReceiveTrap(t *testing.T) {
 				),
 			},
 		},
-		//ordinary v3 coldStart SHA trap auth and DES priv
+		// ordinary v3 coldStart SHA trap auth and DES priv
 		{
 			name:      "v3 coldStart authSHAPrivDES",
 			version:   gosnmp.Version3,
@@ -993,7 +993,7 @@ func TestReceiveTrap(t *testing.T) {
 				),
 			},
 		},
-		//ordinary v3 coldStart SHA trap auth and AES192 priv
+		// ordinary v3 coldStart SHA trap auth and AES192 priv
 		{
 			name:      "v3 coldStart authSHAPrivAES192",
 			version:   gosnmp.Version3,
@@ -1057,7 +1057,7 @@ func TestReceiveTrap(t *testing.T) {
 				),
 			},
 		},
-		//ordinary v3 coldStart SHA trap auth and AES192C priv
+		// ordinary v3 coldStart SHA trap auth and AES192C priv
 		{
 			name:      "v3 coldStart authSHAPrivAES192C",
 			version:   gosnmp.Version3,
@@ -1121,7 +1121,7 @@ func TestReceiveTrap(t *testing.T) {
 				),
 			},
 		},
-		//ordinary v3 coldStart SHA trap auth and AES256 priv
+		// ordinary v3 coldStart SHA trap auth and AES256 priv
 		{
 			name:      "v3 coldStart authSHAPrivAES256",
 			version:   gosnmp.Version3,
@@ -1185,7 +1185,7 @@ func TestReceiveTrap(t *testing.T) {
 				),
 			},
 		},
-		//ordinary v3 coldStart SHA trap auth and AES256C priv
+		// ordinary v3 coldStart SHA trap auth and AES256C priv
 		{
 			name:      "v3 coldStart authSHAPrivAES256C",
 			version:   gosnmp.Version3,
@@ -1251,6 +1251,7 @@ func TestReceiveTrap(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			// We would prefer to specify port 0 and let the network
 			// stack choose an unused port for us but TrapListener
@@ -1299,7 +1300,7 @@ func TestReceiveTrap(t *testing.T) {
 			}
 
 			// Send the trap
-			sendTrap(t, port, now, tt.trap, tt.version, tt.secLevel, tt.secName, tt.authProto, tt.authPass, tt.privProto, tt.privPass, tt.contextName, tt.engineID)
+			sendTrap(t, port, tt.trap, tt.version, tt.secLevel, tt.secName, tt.authProto, tt.authPass, tt.privProto, tt.privPass, tt.contextName, tt.engineID)
 
 			// Wait for trap to be received
 			select {

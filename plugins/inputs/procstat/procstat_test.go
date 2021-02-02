@@ -23,12 +23,12 @@ func init() {
 }
 func mockExecCommand(arg0 string, args ...string) *exec.Cmd {
 	args = append([]string{"-test.run=TestMockExecCommand", "--", arg0}, args...)
-	cmd := exec.Command(os.Args[0], args...)
+	cmd := exec.Command(os.Args[0], args...) //nolint:gosec // G204
 	cmd.Stderr = os.Stderr
 	return cmd
 }
 func TestMockExecCommand(t *testing.T) {
-	var cmd []string
+	cmd := make([]string, 0, len(os.Args))
 	for _, arg := range os.Args {
 		if string(arg) == "--" {
 			cmd = []string{}
@@ -63,7 +63,7 @@ type testPgrep struct {
 	err  error
 }
 
-func pidFinder(pids []PID, err error) func() (PIDFinder, error) {
+func pidFinder(pids []PID, err error) func() (PIDFinder, error) { //nolint:unparam
 	return func() (PIDFinder, error) {
 		return &testPgrep{
 			pids: pids,
@@ -363,30 +363,28 @@ func TestGather_systemdUnitPIDs(t *testing.T) {
 		createPIDFinder: pidFinder([]PID{}, nil),
 		SystemdUnit:     "TestGather_systemdUnitPIDs",
 	}
-	var acc testutil.Accumulator
-	pids, tags, err := p.findPids(&acc)
+	pids, tags, err := p.findPids()
 	require.NoError(t, err)
 	assert.Equal(t, []PID{11408}, pids)
 	assert.Equal(t, "TestGather_systemdUnitPIDs", tags["systemd_unit"])
 }
 
 func TestGather_cgroupPIDs(t *testing.T) {
-	//no cgroups in windows
+	// no cgroups in windows
 	if runtime.GOOS == "windows" {
 		t.Skip("no cgroups in windows")
 	}
 	td, err := ioutil.TempDir("", "")
 	require.NoError(t, err)
 	defer os.RemoveAll(td)
-	err = ioutil.WriteFile(filepath.Join(td, "cgroup.procs"), []byte("1234\n5678\n"), 0644)
+	err = ioutil.WriteFile(filepath.Join(td, "cgroup.procs"), []byte("1234\n5678\n"), 0600)
 	require.NoError(t, err)
 
 	p := Procstat{
 		createPIDFinder: pidFinder([]PID{}, nil),
 		CGroup:          td,
 	}
-	var acc testutil.Accumulator
-	pids, tags, err := p.findPids(&acc)
+	pids, tags, err := p.findPids()
 	require.NoError(t, err)
 	assert.Equal(t, []PID{1234, 5678}, pids)
 	assert.Equal(t, td, tags["cgroup"])

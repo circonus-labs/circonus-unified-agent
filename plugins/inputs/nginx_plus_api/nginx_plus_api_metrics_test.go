@@ -1294,11 +1294,12 @@ func prepareAddr(t *testing.T, ts *httptest.Server) (*url.URL, string, string) {
 
 	if err != nil {
 		host = addr.Host
-		if addr.Scheme == "http" {
+		switch addr.Scheme {
+		case "http":
 			port = "80"
-		} else if addr.Scheme == "https" {
+		case "https":
 			port = "443"
-		} else {
+		default:
 			port = ""
 		}
 	}
@@ -1306,7 +1307,7 @@ func prepareAddr(t *testing.T, ts *httptest.Server) (*url.URL, string, string) {
 	return addr, host, port
 }
 
-func prepareEndpoint(t *testing.T, path string, apiVersion int64, payload string) (*httptest.Server, *NginxPlusAPI) {
+func prepareEndpoint(t *testing.T, path string, apiVersion int64, payload string) (*httptest.Server, *NginxPlusAPI) { //nolint:unparam
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var rsp string
 

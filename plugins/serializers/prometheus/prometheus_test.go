@@ -160,6 +160,7 @@ cpu_time_idle{host="example.org"} 42 1574279268000
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			s, err := NewSerializer(FormatConfig{
 				MetricSortOrder: SortMetrics,
@@ -675,6 +676,7 @@ rpc_duration_seconds_count 2693
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			s, err := NewSerializer(FormatConfig{
 				MetricSortOrder: SortMetrics,

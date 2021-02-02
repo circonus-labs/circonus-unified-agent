@@ -322,11 +322,12 @@ func (s *Stackdriver) Gather(acc cua.Accumulator) error {
 // Returns the start and end time for the next collection.
 func (s *Stackdriver) updateWindow(prevEnd time.Time) (time.Time, time.Time) {
 	var start time.Time
-	if s.Window.Duration != 0 {
+	switch {
+	case s.Window.Duration != 0:
 		start = time.Now().Add(-s.Delay.Duration).Add(-s.Window.Duration)
-	} else if prevEnd.IsZero() {
+	case prevEnd.IsZero():
 		start = time.Now().Add(-s.Delay.Duration).Add(-defaultWindow.Duration)
-	} else {
+	default:
 		start = prevEnd
 	}
 	end := time.Now().Add(-s.Delay.Duration)
@@ -674,11 +675,12 @@ func distributionToCircHisto(s *Stackdriver,
 	ret := make(map[string]int64)
 
 	var numBuckets int32
-	if linearBuckets != nil {
+	switch {
+	case linearBuckets != nil:
 		numBuckets = linearBuckets.NumFiniteBuckets + 2
-	} else if exponentialBuckets != nil {
+	case exponentialBuckets != nil:
 		numBuckets = exponentialBuckets.NumFiniteBuckets + 2
-	} else {
+	default:
 		numBuckets = int32(len(explicitBuckets.Bounds)) + 1
 	}
 
@@ -701,16 +703,17 @@ func distributionToCircHisto(s *Stackdriver,
 
 		if localCount > 0 {
 			var upperBound float64
-			if i == 0 {
+			switch {
+			case i == 0:
 				upperBound = 0
-			} else if i == numBuckets-1 {
+			case i == numBuckets-1:
 				upperBound = 10e+127
-			} else if linearBuckets != nil {
+			case linearBuckets != nil:
 				upperBound = linearBuckets.Offset + (linearBuckets.Width * float64(i))
-			} else if exponentialBuckets != nil {
+			case exponentialBuckets != nil:
 				width := math.Pow(exponentialBuckets.GrowthFactor, float64(i))
 				upperBound = exponentialBuckets.Scale * width
-			} else if explicitBuckets != nil {
+			case explicitBuckets != nil:
 				upperBound = explicitBuckets.Bounds[i]
 			}
 			s.Log.Debugf("Adding bucket H[%e]=%d\n", upperBound, localCount)

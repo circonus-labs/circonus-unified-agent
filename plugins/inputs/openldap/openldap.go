@@ -110,13 +110,14 @@ func (o *Openldap) Gather(acc cua.Accumulator) error {
 			acc.AddError(err)
 			return nil
 		}
-		if o.TLS == "ldaps" {
+		switch o.TLS {
+		case "ldaps":
 			l, err = ldap.DialTLS("tcp", fmt.Sprintf("%s:%d", o.Host, o.Port), tlsConfig)
 			if err != nil {
 				acc.AddError(err)
 				return nil
 			}
-		} else if o.TLS == "starttls" {
+		case "starttls":
 			l, err = ldap.Dial("tcp", fmt.Sprintf("%s:%d", o.Host, o.Port))
 			if err != nil {
 				acc.AddError(err)
@@ -127,7 +128,7 @@ func (o *Openldap) Gather(acc cua.Accumulator) error {
 				acc.AddError(err)
 				return nil
 			}
-		} else {
+		default:
 			acc.AddError(fmt.Errorf("Invalid setting for ssl: %s", o.TLS))
 			return nil
 		}
@@ -199,8 +200,8 @@ func dnToMetric(dn string, o *Openldap) string {
 		var metricParts []string
 
 		dn = strings.Trim(dn, " ")
-		dn = strings.Replace(dn, " ", "_", -1)
-		dn = strings.Replace(dn, "cn=", "", -1)
+		dn = strings.ReplaceAll(dn, " ", "_")
+		dn = strings.ReplaceAll(dn, "cn=", "")
 		dn = strings.ToLower(dn)
 		metricParts = strings.Split(dn, ",")
 		for i, j := 0, len(metricParts)-1; i < j; i, j = i+1, j-1 {
@@ -209,12 +210,12 @@ func dnToMetric(dn string, o *Openldap) string {
 		return strings.Join(metricParts[1:], "_")
 	}
 	metricName := strings.Trim(dn, " ")
-	metricName = strings.Replace(metricName, " ", "_", -1)
+	metricName = strings.ReplaceAll(metricName, " ", "_")
 	metricName = strings.ToLower(metricName)
 	metricName = strings.TrimPrefix(metricName, "cn=")
-	metricName = strings.Replace(metricName, strings.ToLower("cn=Monitor"), "", -1)
-	metricName = strings.Replace(metricName, "cn=", "_", -1)
-	return strings.Replace(metricName, ",", "", -1)
+	metricName = strings.ReplaceAll(metricName, strings.ToLower("cn=Monitor"), "")
+	metricName = strings.ReplaceAll(metricName, "cn=", "_")
+	return strings.ReplaceAll(metricName, ",", "")
 }
 
 func init() {

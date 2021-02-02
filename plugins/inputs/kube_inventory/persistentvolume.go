@@ -15,14 +15,15 @@ func collectPersistentVolumes(ctx context.Context, acc cua.Accumulator, ki *Kube
 		return
 	}
 	for _, pv := range list.Items {
-		if err = ki.gatherPersistentVolume(*pv, acc); err != nil {
-			acc.AddError(err)
-			return
-		}
+		ki.gatherPersistentVolume(*pv, acc)
+		// if err = ki.gatherPersistentVolume(*pv, acc); err != nil {
+		// 	acc.AddError(err)
+		// 	return
+		// }
 	}
 }
 
-func (ki *KubernetesInventory) gatherPersistentVolume(pv v1.PersistentVolume, acc cua.Accumulator) error {
+func (ki *KubernetesInventory) gatherPersistentVolume(pv v1.PersistentVolume, acc cua.Accumulator) {
 	phaseType := 5
 	switch strings.ToLower(pv.Status.GetPhase()) {
 	case "bound":
@@ -46,6 +47,4 @@ func (ki *KubernetesInventory) gatherPersistentVolume(pv v1.PersistentVolume, ac
 	}
 
 	acc.AddFields(persistentVolumeMeasurement, fields, tags)
-
-	return nil
 }

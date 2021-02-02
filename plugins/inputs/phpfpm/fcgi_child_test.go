@@ -10,10 +10,8 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"net"
 	"net/http"
-	"net/http/cgi"
-	"os"
+	"net/http/cgi" //nolint:gosec // G504 - it's for an internal test
 	"strings"
 	"sync"
 	"time"
@@ -302,29 +300,29 @@ func (c *child) cleanUp() {
 	}
 }
 
-// Serve accepts incoming FastCGI connections on the listener l, creating a new
-// goroutine for each. The goroutine reads requests and then calls handler
-// to reply to them.
-// If l is nil, Serve accepts connections from os.Stdin.
-// If handler is nil, http.DefaultServeMux is used.
-func Serve(l net.Listener, handler http.Handler) error {
-	if l == nil {
-		var err error
-		l, err = net.FileListener(os.Stdin)
-		if err != nil {
-			return err
-		}
-		defer l.Close()
-	}
-	if handler == nil {
-		handler = http.DefaultServeMux
-	}
-	for {
-		rw, err := l.Accept()
-		if err != nil {
-			return err
-		}
-		c := newChild(rw, handler)
-		go c.serve()
-	}
-}
+// // Serve accepts incoming FastCGI connections on the listener l, creating a new
+// // goroutine for each. The goroutine reads requests and then calls handler
+// // to reply to them.
+// // If l is nil, Serve accepts connections from os.Stdin.
+// // If handler is nil, http.DefaultServeMux is used.
+// func Serve(l net.Listener, handler http.Handler) error {
+// 	if l == nil {
+// 		var err error
+// 		l, err = net.FileListener(os.Stdin)
+// 		if err != nil {
+// 			return err
+// 		}
+// 		defer l.Close()
+// 	}
+// 	if handler == nil {
+// 		handler = http.DefaultServeMux
+// 	}
+// 	for {
+// 		rw, err := l.Accept()
+// 		if err != nil {
+// 			return err
+// 		}
+// 		c := newChild(rw, handler)
+// 		go c.serve()
+// 	}
+// }

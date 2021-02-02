@@ -166,13 +166,13 @@ func (d *PacketDecoder) decodeFlowSample(r io.Reader) (t SampleDataFlowSampleExp
 		return t, err
 	}
 	t.InputIfFormat = t.InputIfIndex >> 30
-	t.InputIfIndex = t.InputIfIndex & 0x3FFFFFFF
+	t.InputIfIndex &= 0x3FFFFFFF
 
 	if err := read(r, &t.OutputIfIndex, "OutputIfIndex"); err != nil {
 		return t, err
 	}
 	t.OutputIfFormat = t.OutputIfIndex >> 30
-	t.OutputIfIndex = t.OutputIfIndex & 0x3FFFFFFF
+	t.OutputIfIndex &= 0x3FFFFFFF
 
 	switch t.SourceIDIndex {
 	case t.OutputIfIndex:
@@ -338,12 +338,12 @@ func (d *PacketDecoder) decodeIPv4Header(r io.Reader) (h IPV4Header, err error) 
 		return h, err
 	}
 	h.InternetHeaderLength = h.Version & 0x0F
-	h.Version = h.Version & 0xF0
+	h.Version &= 0xF0
 	if err := read(r, &h.DSCP, "DSCP"); err != nil {
 		return h, err
 	}
 	h.ECN = h.DSCP & 0x03
-	h.DSCP = h.DSCP >> 2
+	h.DSCP >>= 2
 	if err := read(r, &h.TotalLength, "TotalLength"); err != nil {
 		return h, err
 	}
@@ -354,7 +354,7 @@ func (d *PacketDecoder) decodeIPv4Header(r io.Reader) (h IPV4Header, err error) 
 		return h, err
 	}
 	h.Flags = uint8(h.FragmentOffset >> 13)
-	h.FragmentOffset = h.FragmentOffset & 0x1FFF
+	h.FragmentOffset &= 0x1FFF
 	if err := read(r, &h.TTL, "TTL"); err != nil {
 		return h, err
 	}

@@ -47,7 +47,7 @@ func TestDefaultsUsed(t *testing.T) {
 	dfltFiles = []string{fname}
 
 	count := 1234321
-	_ = ioutil.WriteFile(tmpFile.Name(), []byte(strconv.Itoa(count)), 0660)
+	_ = ioutil.WriteFile(tmpFile.Name(), []byte(strconv.Itoa(count)), 0600)
 	c := &Conntrack{}
 	acc := &testutil.Accumulator{}
 
@@ -75,8 +75,8 @@ func TestConfigsUsed(t *testing.T) {
 
 	count := 1234321
 	max := 9999999
-	_ = ioutil.WriteFile(cntFile.Name(), []byte(strconv.Itoa(count)), 0660)
-	_ = ioutil.WriteFile(maxFile.Name(), []byte(strconv.Itoa(max)), 0660)
+	_ = ioutil.WriteFile(cntFile.Name(), []byte(strconv.Itoa(count)), 0600)
+	_ = ioutil.WriteFile(maxFile.Name(), []byte(strconv.Itoa(max)), 0600)
 	c := &Conntrack{}
 	acc := &testutil.Accumulator{}
 

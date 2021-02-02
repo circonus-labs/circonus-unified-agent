@@ -328,8 +328,8 @@ func (n *NginxPlusAPI) gatherHTTPUpstreamsMetrics(addr *url.URL, acc cua.Accumul
 				"healthchecks_fails":     peer.HealthChecks.Fails,
 				"healthchecks_unhealthy": peer.HealthChecks.Unhealthy,
 				"downtime":               peer.Downtime,
-				//"selected":               peer.Selected.toInt64,
-				//"downstart":              peer.Downstart.toInt64,
+				// "selected":               peer.Selected.toInt64,
+				// "downstart":              peer.Downstart.toInt64,
 			}
 			if peer.HealthChecks.LastPassed != nil {
 				peerFields["healthchecks_last_passed"] = *peer.HealthChecks.LastPassed
@@ -564,11 +564,12 @@ func getTags(addr *url.URL) map[string]string {
 	host, port, err := net.SplitHostPort(h)
 	if err != nil {
 		host = addr.Host
-		if addr.Scheme == "http" {
+		switch addr.Scheme {
+		case "http":
 			port = "80"
-		} else if addr.Scheme == "https" {
+		case "https":
 			port = "443"
-		} else {
+		default:
 			port = ""
 		}
 	}

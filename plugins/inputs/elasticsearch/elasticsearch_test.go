@@ -30,7 +30,7 @@ type transportMock struct {
 	body       string
 }
 
-func newTransportMock(statusCode int, body string) http.RoundTripper {
+func newTransportMock(statusCode int, body string) http.RoundTripper { //nolint:unparam
 	return &transportMock{
 		statusCode: statusCode,
 		body:       body,

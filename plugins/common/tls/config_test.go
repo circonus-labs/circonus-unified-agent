@@ -88,6 +88,7 @@ func TestClientConfig(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			tlsConfig, err := tt.client.TLSConfig()
 			if !tt.expNil {
@@ -265,6 +266,7 @@ func TestServerConfig(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			tlsConfig, err := tt.server.TLSConfig()
 			if !tt.expNil {

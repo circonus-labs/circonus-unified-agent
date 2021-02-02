@@ -216,7 +216,7 @@ func TestGather(t *testing.T) {
 func fakeExecCommand(command string, args ...string) *exec.Cmd {
 	cs := []string{"-test.run=TestHelperProcess", "--", command}
 	cs = append(cs, args...)
-	cmd := exec.Command(os.Args[0], cs...)
+	cmd := exec.Command(os.Args[0], cs...) //nolint:gosec // G204
 	cmd.Env = []string{"GO_WANT_HELPER_PROCESS=1"}
 	return cmd
 }
@@ -406,7 +406,7 @@ func TestGatherV2(t *testing.T) {
 		fields map[string]interface{}
 		tags   map[string]string
 	}{
-		//SEL              | 72h | ns  |  7.1 | No Reading
+		// SEL              | 72h | ns  |  7.1 | No Reading
 		{
 			map[string]interface{}{
 				"value": float64(0),
@@ -438,7 +438,7 @@ func TestGatherV2(t *testing.T) {
 		fields map[string]interface{}
 		tags   map[string]string
 	}{
-		//SEL              | 72h | ns  |  7.1 | No Reading
+		// SEL              | 72h | ns  |  7.1 | No Reading
 		{
 			map[string]interface{}{
 				"value": float64(0),
@@ -450,7 +450,7 @@ func TestGatherV2(t *testing.T) {
 				"status_desc": "no_reading",
 			},
 		},
-		//Intrusion        | 73h | ok  |  7.1 |
+		// Intrusion        | 73h | ok  |  7.1 |
 		{
 			map[string]interface{}{
 				"value": float64(0),
@@ -462,7 +462,7 @@ func TestGatherV2(t *testing.T) {
 				"status_desc": "ok",
 			},
 		},
-		//Fan1             | 30h | ok  |  7.1 | 5040 RPM
+		// Fan1             | 30h | ok  |  7.1 | 5040 RPM
 		{
 			map[string]interface{}{
 				"value": float64(5040),
@@ -474,7 +474,7 @@ func TestGatherV2(t *testing.T) {
 				"unit":        "rpm",
 			},
 		},
-		//Inlet Temp       | 04h | ok  |  7.1 | 25 degrees C
+		// Inlet Temp       | 04h | ok  |  7.1 | 25 degrees C
 		{
 			map[string]interface{}{
 				"value": float64(25),
@@ -486,7 +486,7 @@ func TestGatherV2(t *testing.T) {
 				"unit":        "degrees_c",
 			},
 		},
-		//USB Cable Pres   | 50h | ok  |  7.1 | Connected
+		// USB Cable Pres   | 50h | ok  |  7.1 | Connected
 		{
 			map[string]interface{}{
 				"value": float64(0),
@@ -498,7 +498,7 @@ func TestGatherV2(t *testing.T) {
 				"status_desc": "connected",
 			},
 		},
-		//Current 1        | 6Ah | ok  | 10.1 | 7.20 Amps
+		// Current 1        | 6Ah | ok  | 10.1 | 7.20 Amps
 		{
 			map[string]interface{}{
 				"value": float64(7.2),
@@ -510,7 +510,7 @@ func TestGatherV2(t *testing.T) {
 				"unit":        "amps",
 			},
 		},
-		//Power Supply 1   | 03h | ok  | 10.1 | 110 Watts, Presence detected
+		// Power Supply 1   | 03h | ok  | 10.1 | 110 Watts, Presence detected
 		{
 			map[string]interface{}{
 				"value": float64(110),
@@ -535,7 +535,7 @@ func TestGatherV2(t *testing.T) {
 func fakeExecCommandV2(command string, args ...string) *exec.Cmd {
 	cs := []string{"-test.run=TestHelperProcessV2", "--", command}
 	cs = append(cs, args...)
-	cmd := exec.Command(os.Args[0], cs...)
+	cmd := exec.Command(os.Args[0], cs...) //nolint:gosec // G204
 	cmd.Env = []string{"GO_WANT_HELPER_PROCESS=1"}
 	return cmd
 }
@@ -648,6 +648,7 @@ func Test_parseV1(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			var acc testutil.Accumulator
 
@@ -741,6 +742,7 @@ func Test_parseV2(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			var acc testutil.Accumulator
 			if err := parseV2(&acc, tt.args.hostname, tt.args.cmdOut, tt.args.measuredAt); (err != nil) != tt.wantErr {

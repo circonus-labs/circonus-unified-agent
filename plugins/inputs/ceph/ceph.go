@@ -323,7 +323,7 @@ func (c *Ceph) exec(command string) (string, error) {
 	cmdArgs := []string{"--conf", c.CephConfig, "--name", c.CephUser, "--format", "json"}
 	cmdArgs = append(cmdArgs, strings.Split(command, " ")...)
 
-	cmd := exec.Command(c.CephBinary, cmdArgs...)
+	cmd := exec.Command(c.CephBinary, cmdArgs...) //nolint:gosec
 
 	var out bytes.Buffer
 	cmd.Stdout = &out
@@ -336,8 +336,8 @@ func (c *Ceph) exec(command string) (string, error) {
 
 	// Ceph doesn't sanitize its output, and may return invalid JSON.  Patch this
 	// up for them, as having some inaccurate data is better than none.
-	output = strings.Replace(output, "-inf", "0", -1)
-	output = strings.Replace(output, "inf", "0", -1)
+	output = strings.ReplaceAll(output, "-inf", "0")
+	output = strings.ReplaceAll(output, "inf", "0")
 
 	return output, nil
 }

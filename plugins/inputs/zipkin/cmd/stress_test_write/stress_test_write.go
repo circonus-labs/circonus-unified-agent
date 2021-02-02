@@ -48,24 +48,25 @@ func init() {
 func main() {
 	flag.Parse()
 	var hostname = fmt.Sprintf("http://%s:9411/api/v1/spans", ZipkinServerHost)
+
 	collector, err := zipkin.NewHTTPCollector(
 		hostname,
 		zipkin.HTTPBatchSize(BatchSize),
 		zipkin.HTTPMaxBacklog(MaxBackLog),
 		zipkin.HTTPBatchInterval(time.Duration(BatchTimeInterval)*time.Second))
-	defer func() {
-		_ = collector.Close()
-	}()
 	if err != nil {
 		log.Fatalf("Error initializing zipkin http collector: %v\n", err)
 	}
 
 	tracer, err := zipkin.NewTracer(
 		zipkin.NewRecorder(collector, false, "127.0.0.1:0", "Trivial"))
-
 	if err != nil {
 		log.Fatalf("Error: %v\n", err)
 	}
+
+	defer func() {
+		_ = collector.Close()
+	}()
 
 	log.Printf("Writing %d spans to zipkin server at %s\n", SpanCount, hostname)
 	for i := 0; i < SpanCount; i++ {

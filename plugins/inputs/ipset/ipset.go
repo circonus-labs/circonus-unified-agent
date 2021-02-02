@@ -90,7 +90,7 @@ func (ipset *Ipset) Gather(acc cua.Accumulator) error {
 	return nil
 }
 
-func setList(Timeout internal.Duration, UseSudo bool) (*bytes.Buffer, error) {
+func setList(timeout internal.Duration, useSudo bool) (*bytes.Buffer, error) {
 	// Is ipset installed ?
 	ipsetPath, err := exec.LookPath("ipset")
 	if err != nil {
@@ -98,7 +98,7 @@ func setList(Timeout internal.Duration, UseSudo bool) (*bytes.Buffer, error) {
 	}
 	var args []string
 	cmdName := ipsetPath
-	if UseSudo {
+	if useSudo {
 		cmdName = "sudo"
 		args = append(args, ipsetPath)
 	}
@@ -108,7 +108,7 @@ func setList(Timeout internal.Duration, UseSudo bool) (*bytes.Buffer, error) {
 
 	var out bytes.Buffer
 	cmd.Stdout = &out
-	err = internal.RunTimeout(cmd, Timeout.Duration)
+	err = internal.RunTimeout(cmd, timeout.Duration)
 	if err != nil {
 		return &out, fmt.Errorf("error running ipset save: %w", err)
 	}

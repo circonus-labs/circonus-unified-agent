@@ -32,15 +32,16 @@ func (s *Shim) LoadConfig(filePath *string) error {
 	if err != nil {
 		return err
 	}
-	if conf.Input != nil {
+	switch {
+	case conf.Input != nil:
 		if err = s.AddInput(conf.Input); err != nil {
 			return fmt.Errorf("Failed to add Input: %w", err)
 		}
-	} else if conf.Processor != nil {
+	case conf.Processor != nil:
 		if err = s.AddStreamingProcessor(conf.Processor); err != nil {
 			return fmt.Errorf("Failed to add Processor: %w", err)
 		}
-	} else if conf.Output != nil {
+	case conf.Output != nil:
 		if err = s.AddOutput(conf.Output); err != nil {
 			return fmt.Errorf("Failed to add Output: %w", err)
 		}

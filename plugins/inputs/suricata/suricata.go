@@ -89,7 +89,7 @@ func (s *Suricata) Stop() {
 	s.wg.Wait()
 }
 
-func (s *Suricata) readInput(ctx context.Context, acc cua.Accumulator, conn net.Conn) error {
+func (s *Suricata) readInput(ctx context.Context, acc cua.Accumulator, conn io.Reader) error {
 	reader := bufio.NewReaderSize(conn, InBufSize)
 	for {
 		select {

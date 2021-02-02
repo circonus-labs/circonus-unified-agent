@@ -17,12 +17,12 @@ func newFcgiClient(h string, args ...interface{}) (*conn, error) {
 	}
 
 	var err error
-	switch args[0].(type) {
+	switch arg := args[0].(type) {
 	case int:
-		addr := h + ":" + strconv.FormatInt(int64(args[0].(int)), 10)
+		addr := h + ":" + strconv.FormatInt(int64(arg), 10)
 		con, err = net.Dial("tcp", addr)
 	case string:
-		laddr := net.UnixAddr{Name: args[0].(string), Net: h}
+		laddr := net.UnixAddr{Name: arg, Net: h}
 		con, err = net.DialUnix(h, nil, &laddr)
 	default:
 		err = fmt.Errorf("fcgi: we only accept int (port) or string (socket) params")

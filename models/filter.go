@@ -139,11 +139,12 @@ func (f *Filter) shouldNamePass(key string) bool {
 		return f.nameDrop.Match(key)
 	}
 
-	if f.namePass != nil && f.nameDrop != nil {
+	switch {
+	case f.namePass != nil && f.nameDrop != nil:
 		return pass(f) && drop(f)
-	} else if f.namePass != nil {
+	case f.namePass != nil:
 		return pass(f)
-	} else if f.nameDrop != nil {
+	case f.nameDrop != nil:
 		return drop(f)
 	}
 
@@ -153,11 +154,12 @@ func (f *Filter) shouldNamePass(key string) bool {
 // shouldFieldPass returns true if the metric should pass, false if should drop
 // based on the drop/pass filter parameters
 func (f *Filter) shouldFieldPass(key string) bool {
-	if f.fieldPass != nil && f.fieldDrop != nil {
+	switch {
+	case f.fieldPass != nil && f.fieldDrop != nil:
 		return f.fieldPass.Match(key) && !f.fieldDrop.Match(key)
-	} else if f.fieldPass != nil {
+	case f.fieldPass != nil:
 		return f.fieldPass.Match(key)
-	} else if f.fieldDrop != nil {
+	case f.fieldDrop != nil:
 		return !f.fieldDrop.Match(key)
 	}
 	return true
@@ -199,14 +201,14 @@ func (f *Filter) shouldTagsPass(tags []*cua.Tag) bool {
 	}
 
 	// Add additional logic in case where both parameters are set.
-	// see: https://github.com/circonus-labs/circonus-unified-agent/issues/2860
-	if f.TagPass != nil && f.TagDrop != nil {
+	switch {
+	case f.TagPass != nil && f.TagDrop != nil:
 		// return true only in case when tag pass and won't be dropped (true, true).
 		// in case when the same tag should be passed and dropped it will be dropped (true, false).
 		return pass(f) && drop(f)
-	} else if f.TagPass != nil {
+	case f.TagPass != nil:
 		return pass(f)
-	} else if f.TagDrop != nil {
+	case f.TagDrop != nil:
 		return drop(f)
 	}
 

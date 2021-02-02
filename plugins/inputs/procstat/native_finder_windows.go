@@ -18,8 +18,8 @@ func (pg *NativeFinder) Pattern(pattern string) ([]PID, error) {
 	for _, p := range procs {
 		name, err := p.Name()
 		if err != nil {
-			//skip, this can be caused by the pid no longer existing
-			//or you having no permissions to access it
+			// skip, this can be caused by the pid no longer existing
+			// or you having no permissions to access it
 			continue
 		}
 		if regxPattern.MatchString(name) {

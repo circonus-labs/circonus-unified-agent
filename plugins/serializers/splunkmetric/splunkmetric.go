@@ -2,7 +2,6 @@ package splunkmetric
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
@@ -41,10 +40,11 @@ func NewSerializer(splunkmetricHecRouting bool, splunkmetricMultimetric bool) (*
 
 func (s *Serializer) Serialize(metric cua.Metric) ([]byte, error) {
 
-	m, err := s.createObject(metric)
-	if err != nil {
-		return nil, fmt.Errorf("D! [serializer.splunkmetric] Dropping invalid metric: %s", metric.Name())
-	}
+	m := s.createObject(metric)
+	// createObject always returns nil
+	// if err != nil {
+	// 	return nil, fmt.Errorf("D! [serializer.splunkmetric] Dropping invalid metric: %s", metric.Name())
+	// }
 
 	return m, nil
 }
@@ -54,10 +54,12 @@ func (s *Serializer) SerializeBatch(metrics []cua.Metric) ([]byte, error) {
 	var serialized []byte
 
 	for _, metric := range metrics {
-		m, err := s.createObject(metric)
-		if err != nil {
-			return nil, fmt.Errorf("D! [serializer.splunkmetric] Dropping invalid metric: %s", metric.Name())
-		} else if m != nil {
+		m := s.createObject(metric)
+		// createObject always returns nil
+		// if err != nil {
+		// 	return nil, fmt.Errorf("D! [serializer.splunkmetric] Dropping invalid metric: %s", metric.Name())
+		// }
+		if m != nil {
 			serialized = append(serialized, m...)
 		}
 	}
@@ -160,7 +162,9 @@ func (s *Serializer) createSingle(metric cua.Metric, dataGroup HECTimeSeries, co
 	return metricGroup, nil
 }
 
-func (s *Serializer) createObject(metric cua.Metric) (metricGroup []byte, err error) {
+func (s *Serializer) createObject(metric cua.Metric) []byte {
+
+	var metricGroup []byte
 
 	/*  Splunk supports one metric json object, and does _not_ support an array of JSON objects.
 	     ** Splunk has the following required names for the metric store:
@@ -179,13 +183,14 @@ func (s *Serializer) createObject(metric cua.Metric) (metricGroup []byte, err er
 
 	// Break tags out into key(n)=value(t) pairs
 	for n, t := range metric.Tags() {
-		if n == "host" {
+		switch n {
+		case "host":
 			commonTags.Host = t
-		} else if n == "index" {
+		case "index":
 			commonTags.Index = t
-		} else if n == "source" {
+		case "source":
 			commonTags.Source = t
-		} else {
+		default:
 			commonTags.Fields[n] = t
 		}
 	}
@@ -198,7 +203,7 @@ func (s *Serializer) createObject(metric cua.Metric) (metricGroup []byte, err er
 	}
 
 	// Return the metric group regardless of if it's multimetric or single metric.
-	return metricGroup, nil
+	return metricGroup
 }
 
 func verifyValue(v interface{}) (value interface{}, valid bool) {

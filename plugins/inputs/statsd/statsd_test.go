@@ -2,6 +2,7 @@ package statsd
 
 import (
 	"fmt"
+	"io"
 	"net"
 	"sync"
 	"testing"
@@ -157,7 +158,7 @@ func BenchmarkUDP(b *testing.B) {
 	}
 }
 
-func sendRequests(conn net.Conn, wg *sync.WaitGroup) {
+func sendRequests(conn io.Writer, wg *sync.WaitGroup) {
 	defer wg.Done()
 	for i := 0; i < 25000; i++ {
 		fmt.Fprint(conn, testMsg)
@@ -980,6 +981,7 @@ func TestParse_DataDogTags(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			var acc testutil.Accumulator
 

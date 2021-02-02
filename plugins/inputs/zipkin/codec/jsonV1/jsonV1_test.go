@@ -448,6 +448,7 @@ func TestJSON_Decode(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			j := &JSON{}
 			got, err := j.Decode(tt.octets)
@@ -496,6 +497,7 @@ func Test_span_Trace(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			s := &span{
 				TraceID: tt.TraceID,
@@ -546,6 +548,7 @@ func Test_span_SpanID(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			s := &span{
 				ID: tt.ID,
@@ -591,6 +594,7 @@ func Test_span_Parent(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			s := &span{
 				ParentID: tt.ParentID,
@@ -625,6 +629,7 @@ func Test_span_Timestamp(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			s := &span{
 				Time: tt.Time,
@@ -654,6 +659,7 @@ func Test_span_Duration(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			s := &span{
 				Dur: tt.dur,
@@ -699,6 +705,7 @@ func Test_annotation(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			an := annotation(tt.fields)
 			a := &an
@@ -750,6 +757,7 @@ func Test_binaryAnnotation(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			bin := binaryAnnotation(tt.fields)
 			b := &bin
@@ -793,6 +801,7 @@ func Test_endpoint_Host(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			e := &endpoint{
 				Ipv4: tt.fields.Ipv4,
@@ -818,6 +827,7 @@ func Test_endpoint_Name(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			e := &endpoint{
 				ServiceName: tt.ServiceName,
@@ -868,6 +878,7 @@ func TestTraceIDFromString(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := TraceIDFromString(tt.s)
 			if (err != nil) != tt.wantErr {
@@ -905,6 +916,7 @@ func TestIDFromString(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := IDFromString(tt.s)
 			if (err != nil) != tt.wantErr {

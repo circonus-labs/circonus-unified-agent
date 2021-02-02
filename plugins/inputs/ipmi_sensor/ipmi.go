@@ -165,14 +165,15 @@ func parseV1(acc cua.Accumulator, hostname string, cmdOut []byte, measuredTS tim
 		description := ipmiFields["description"]
 
 		// handle hex description field
-		if strings.HasPrefix(description, "0x") {
+		switch {
+		case strings.HasPrefix(description, "0x"):
 			descriptionInt, err := strconv.ParseInt(description, 0, 64)
 			if err != nil {
 				continue
 			}
 
 			fields["value"] = float64(descriptionInt)
-		} else if strings.Index(description, " ") > 0 {
+		case strings.Index(description, " ") > 0:
 			// split middle column into value and unit
 			valunit := strings.SplitN(description, " ", 2)
 			var err error
@@ -183,7 +184,7 @@ func parseV1(acc cua.Accumulator, hostname string, cmdOut []byte, measuredTS tim
 			if len(valunit) > 1 {
 				tags["unit"] = transform(valunit[1])
 			}
-		} else {
+		default:
 			fields["value"] = 0.0
 		}
 
@@ -280,7 +281,7 @@ func trim(s string) string {
 func transform(s string) string {
 	s = trim(s)
 	s = strings.ToLower(s)
-	return strings.Replace(s, " ", "_", -1)
+	return strings.ReplaceAll(s, " ", "_")
 }
 
 func init() {

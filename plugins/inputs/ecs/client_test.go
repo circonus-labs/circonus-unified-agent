@@ -74,6 +74,7 @@ func TestEcsClient_PollSync(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			got, got1, err := PollSync(tt.mock)
 
@@ -151,6 +152,7 @@ func TestEcsClient_Task(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			c := &Connection{
 				client:  tt.client,
@@ -225,6 +227,7 @@ func TestEcsClient_ContainerStats(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			c := &Connection{
 				client:   tt.client,
@@ -267,6 +270,7 @@ func TestResolveTaskURL(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			baseURL, err := url.Parse(tt.base)
 			assert.NoError(t, err)
@@ -304,6 +308,7 @@ func TestResolveStatsURL(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			baseURL, err := url.Parse(tt.base)
 			assert.NoError(t, err)

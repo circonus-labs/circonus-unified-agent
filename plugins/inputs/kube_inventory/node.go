@@ -14,14 +14,15 @@ func collectNodes(ctx context.Context, acc cua.Accumulator, ki *KubernetesInvent
 		return
 	}
 	for _, n := range list.Items {
-		if err = ki.gatherNode(*n, acc); err != nil {
-			acc.AddError(err)
-			return
-		}
+		ki.gatherNode(*n, acc)
+		// if err = ki.gatherNode(*n, acc); err != nil {
+		// 	acc.AddError(err)
+		// 	return
+		// }
 	}
 }
 
-func (ki *KubernetesInventory) gatherNode(n v1.Node, acc cua.Accumulator) error {
+func (ki *KubernetesInventory) gatherNode(n v1.Node, acc cua.Accumulator) {
 	fields := map[string]interface{}{}
 	tags := map[string]string{
 		"node_name": *n.Metadata.Name,
@@ -50,6 +51,4 @@ func (ki *KubernetesInventory) gatherNode(n v1.Node, acc cua.Accumulator) error 
 	}
 
 	acc.AddFields(nodeMeasurement, fields, tags)
-
-	return nil
 }

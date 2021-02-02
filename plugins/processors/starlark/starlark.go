@@ -223,7 +223,7 @@ func init() {
 	})
 }
 
-func loadFunc(thread *starlark.Thread, module string, logger cua.Logger) (starlark.StringDict, error) {
+func loadFunc(thread *starlark.Thread, module string, logger cua.Logger) (starlark.StringDict, error) { //nolint:unparam
 	switch module {
 	case "json.star":
 		return starlark.StringDict{

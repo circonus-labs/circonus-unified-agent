@@ -68,7 +68,9 @@ func init() {
 
 func (smi *NvidiaSMI) pollSMI() ([]byte, error) {
 	// Construct and execute metrics query
-	ret, err := internal.CombinedOutputTimeout(exec.Command(smi.BinPath, "-q", "-x"), smi.Timeout.Duration)
+	ret, err := internal.CombinedOutputTimeout(
+		exec.Command(smi.BinPath, "-q", "-x"), //nolint:gosec // G204
+		smi.Timeout.Duration)
 	if err != nil {
 		return nil, err
 	}

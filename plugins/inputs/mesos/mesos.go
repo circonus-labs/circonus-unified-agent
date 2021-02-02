@@ -528,48 +528,49 @@ type TaskStats struct {
 	Statistics  map[string]interface{} `json:"statistics"`
 }
 
-func (m *Mesos) gatherSlaveTaskMetrics(u *url.URL, acc cua.Accumulator) error {
-	var metrics []TaskStats
+// this is unused
+// func (m *Mesos) gatherSlaveTaskMetrics(u *url.URL, acc cua.Accumulator) error {
+// 	var metrics []TaskStats
 
-	tags := map[string]string{
-		"server": u.Hostname(),
-		"url":    urlTag(u),
-	}
+// 	tags := map[string]string{
+// 		"server": u.Hostname(),
+// 		"url":    urlTag(u),
+// 	}
 
-	resp, err := m.client.Get(withPath(u, "/monitor/statistics").String())
+// 	resp, err := m.client.Get(withPath(u, "/monitor/statistics").String())
 
-	if err != nil {
-		return err
-	}
+// 	if err != nil {
+// 		return err
+// 	}
 
-	data, err := ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
-	if err != nil {
-		return err
-	}
+// 	data, err := ioutil.ReadAll(resp.Body)
+// 	resp.Body.Close()
+// 	if err != nil {
+// 		return err
+// 	}
 
-	if err = json.Unmarshal([]byte(data), &metrics); err != nil {
-		return errors.New("Error decoding JSON response")
-	}
+// 	if err = json.Unmarshal([]byte(data), &metrics); err != nil {
+// 		return errors.New("Error decoding JSON response")
+// 	}
 
-	for _, task := range metrics {
-		tags["framework_id"] = task.FrameworkID
+// 	for _, task := range metrics {
+// 		tags["framework_id"] = task.FrameworkID
 
-		jf := jsonparser.Flattener{}
-		err = jf.FlattenJSON("", task.Statistics)
+// 		jf := jsonparser.Flattener{}
+// 		err = jf.FlattenJSON("", task.Statistics)
 
-		if err != nil {
-			return err
-		}
+// 		if err != nil {
+// 			return err
+// 		}
 
-		timestamp := time.Unix(int64(jf.Fields["timestamp"].(float64)), 0)
-		jf.Fields["executor_id"] = task.ExecutorID
+// 		timestamp := time.Unix(int64(jf.Fields["timestamp"].(float64)), 0)
+// 		jf.Fields["executor_id"] = task.ExecutorID
 
-		acc.AddFields("mesos_tasks", jf.Fields, tags, timestamp)
-	}
+// 		acc.AddFields("mesos_tasks", jf.Fields, tags, timestamp)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func withPath(u *url.URL, path string) *url.URL {
 	c := *u

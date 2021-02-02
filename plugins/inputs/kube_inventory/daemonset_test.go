@@ -107,10 +107,10 @@ func TestDaemonSet(t *testing.T) {
 		_ = ks.createSelectorFilters()
 		acc := new(testutil.Accumulator)
 		for _, dset := range ((v.handler.responseMap["/daemonsets/"]).(*v1.DaemonSetList)).Items {
-			err := ks.gatherDaemonSet(*dset, acc)
-			if err != nil {
-				t.Errorf("Failed to gather daemonset - %s", err.Error())
-			}
+			ks.gatherDaemonSet(*dset, acc)
+			// if err != nil {
+			// 	t.Errorf("Failed to gather daemonset - %s", err.Error())
+			// }
 		}
 
 		err := acc.FirstError()
@@ -283,10 +283,10 @@ func TestDaemonSetSelectorFilter(t *testing.T) {
 		_ = ks.createSelectorFilters()
 		acc := new(testutil.Accumulator)
 		for _, dset := range ((v.handler.responseMap["/daemonsets/"]).(*v1.DaemonSetList)).Items {
-			err := ks.gatherDaemonSet(*dset, acc)
-			if err != nil {
-				t.Errorf("Failed to gather daemonset - %s", err.Error())
-			}
+			ks.gatherDaemonSet(*dset, acc)
+			// if err != nil {
+			// 	t.Errorf("Failed to gather daemonset - %s", err.Error())
+			// }
 		}
 
 		// Grab selector tags

@@ -16,8 +16,8 @@ type mockedCommandResult struct {
 
 func mockExecCommand(arg0 string, args ...string) *exec.Cmd {
 	args = append([]string{"-test.run=TestMockExecCommand", "--", arg0}, args...)
-	cmd := exec.Command(os.Args[0], args...)
-	cmd.Stderr = os.Stderr // so the test output shows errors
+	cmd := exec.Command(os.Args[0], args...) //nolint:gosec // G204
+	cmd.Stderr = os.Stderr                   // so the test output shows errors
 	return cmd
 }
 
@@ -25,7 +25,7 @@ func mockExecCommand(arg0 string, args ...string) *exec.Cmd {
 //
 // Idea based on https://github.com/golang/go/blob/7c31043/src/os/exec/exec_test.go#L568
 func TestMockExecCommand(t *testing.T) {
-	var cmd []string
+	cmd := make([]string, 0, len(os.Args))
 	for _, arg := range os.Args {
 		if string(arg) == "--" {
 			cmd = []string{}

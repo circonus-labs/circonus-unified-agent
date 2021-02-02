@@ -36,6 +36,7 @@ func Test_MicroToTime(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			if got := MicroToTime(tt.micro); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("microToTime() = %v, want %v", got, tt.want)
@@ -110,6 +111,7 @@ func Test_minMax(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.now != nil {
 				now = tt.now
@@ -179,6 +181,7 @@ func Test_guessTimestamp(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.now != nil {
 				now = tt.now
@@ -223,6 +226,7 @@ func Test_convertDuration(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			if got := convertDuration(tt.span); got != tt.want {
 				t.Errorf("convertDuration() = %v, want %v", got, tt.want)
@@ -261,6 +265,7 @@ func Test_parentID(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := parentID(tt.span)
 			if (err != nil) != tt.wantErr {
@@ -349,6 +354,7 @@ func Test_serviceEndpoint(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			if got := serviceEndpoint(tt.ann, tt.bann); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("serviceEndpoint() = %v, want %v", got, tt.want)
@@ -391,6 +397,7 @@ func TestNewBinaryAnnotations(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			if got := NewBinaryAnnotations(tt.annotations, tt.endpoint); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewBinaryAnnotations() = %v, want %v", got, tt.want)
@@ -433,6 +440,7 @@ func TestNewAnnotations(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			if got := NewAnnotations(tt.annotations, tt.endpoint); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewAnnotations() = %v, want %v", got, tt.want)
@@ -523,6 +531,7 @@ func TestNewTrace(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.now != nil {
 				now = tt.now

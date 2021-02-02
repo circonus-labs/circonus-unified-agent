@@ -504,7 +504,7 @@ func TestHttpJsonBOM(t *testing.T) {
 	require.NoError(t, err)
 }
 
-//for testing issue #4260
+// for testing issue #4260
 func TestJSONParseNestedArray(t *testing.T) {
 	testString := `{
 	"total_devices": 5,
@@ -937,6 +937,7 @@ func TestParse(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			parser, err := New(tt.config)
 			require.NoError(t, err)

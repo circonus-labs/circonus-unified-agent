@@ -103,10 +103,10 @@ func TestService(t *testing.T) {
 		_ = ks.createSelectorFilters()
 		acc := new(testutil.Accumulator)
 		for _, service := range ((v.handler.responseMap["/service/"]).(*v1.ServiceList)).Items {
-			err := ks.gatherService(*service, acc)
-			if err != nil {
-				t.Errorf("Failed to gather service - %s", err.Error())
-			}
+			ks.gatherService(*service, acc)
+			// if err != nil {
+			// 	t.Errorf("Failed to gather service - %s", err.Error())
+			// }
 		}
 
 		err := acc.FirstError()
@@ -274,10 +274,10 @@ func TestServiceSelectorFilter(t *testing.T) {
 		_ = ks.createSelectorFilters()
 		acc := new(testutil.Accumulator)
 		for _, service := range ((v.handler.responseMap["/service/"]).(*v1.ServiceList)).Items {
-			err := ks.gatherService(*service, acc)
-			if err != nil {
-				t.Errorf("Failed to gather service - %s", err.Error())
-			}
+			ks.gatherService(*service, acc)
+			// if err != nil {
+			// 	t.Errorf("Failed to gather service - %s", err.Error())
+			// }
 		}
 
 		// Grab selector tags

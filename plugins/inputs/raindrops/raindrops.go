@@ -164,11 +164,12 @@ func (r *Raindrops) getTags(addr *url.URL) map[string]string {
 	host, port, err := net.SplitHostPort(h)
 	if err != nil {
 		host = addr.Host
-		if addr.Scheme == "http" {
+		switch addr.Scheme {
+		case "http":
 			port = "80"
-		} else if addr.Scheme == "https" {
+		case "https":
 			port = "443"
-		} else {
+		default:
 			port = ""
 		}
 	}

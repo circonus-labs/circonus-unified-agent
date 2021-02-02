@@ -64,7 +64,7 @@ func find(path string, args []string) ([]PID, error) {
 func run(path string, args []string) (string, error) {
 	out, err := exec.Command(path, args...).Output()
 
-	//if exit code 1, ie no processes found, do not return error
+	// if exit code 1, ie no processes found, do not return error
 	if i, _ := internal.ExitStatus(err); i == 1 {
 		return "", nil
 	}

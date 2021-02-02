@@ -93,7 +93,7 @@ func runAsWindowsService(inputFilters, outputFilters, aggregatorFilters, process
 		if *fConfigDirectory != "" {
 			svcConfig.Arguments = append(svcConfig.Arguments, "--config-directory", *fConfigDirectory)
 		}
-		//set servicename to service cmd line, to have a custom name after relaunch as a service
+		// set servicename to service cmd line, to have a custom name after relaunch as a service
 		svcConfig.Arguments = append(svcConfig.Arguments, "--service-name", *fServiceName)
 
 		err := service.Control(s, *fService)
@@ -104,7 +104,7 @@ func runAsWindowsService(inputFilters, outputFilters, aggregatorFilters, process
 	} else {
 		winlogger, err := s.Logger(nil)
 		if err == nil {
-			//When in service mode, register eventlog target andd setup default logging to eventlog
+			// When in service mode, register eventlog target and setup default logging to eventlog
 			logger.RegisterEventLogger(winlogger)
 			logger.SetupLogging(logger.LogConfig{LogTarget: logger.LogTargetEventlog})
 		}

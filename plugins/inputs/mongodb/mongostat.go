@@ -665,7 +665,7 @@ type StatLine struct {
 	// Document fields
 	DeletedD, InsertedD, ReturnedD, UpdatedD int64
 
-	//Commands fields
+	// Commands fields
 	AggregateCommandTotal, AggregateCommandFailed         int64
 	CountCommandTotal, CountCommandFailed                 int64
 	DeleteCommandTotal, DeleteCommandFailed               int64
@@ -1123,13 +1123,14 @@ func NewStatLine(oldMongo, newMongo MongoStatus, key string, all bool, sampleSec
 			returnVal.ReplSetName = setName
 		}
 		// BEGIN code modification
-		if newStat.Repl.IsMaster.(bool) {
+		switch {
+		case newStat.Repl.IsMaster.(bool):
 			returnVal.NodeType = "PRI"
-		} else if newStat.Repl.Secondary != nil && newStat.Repl.Secondary.(bool) {
+		case newStat.Repl.Secondary != nil && newStat.Repl.Secondary.(bool):
 			returnVal.NodeType = "SEC"
-		} else if newStat.Repl.ArbiterOnly != nil && newStat.Repl.ArbiterOnly.(bool) {
+		case newStat.Repl.ArbiterOnly != nil && newStat.Repl.ArbiterOnly.(bool):
 			returnVal.NodeType = "ARB"
-		} else {
+		default:
 			returnVal.NodeType = "UNK"
 		}
 		// END code modification
@@ -1210,7 +1211,7 @@ func NewStatLine(oldMongo, newMongo MongoStatus, key string, all bool, sampleSec
 
 	if newStat.GlobalLock != nil {
 		hasWT := (newStat.WiredTiger != nil && oldStat.WiredTiger != nil)
-		//If we have wiredtiger stats, use those instead
+		// If we have wiredtiger stats, use those instead
 		if newStat.GlobalLock.CurrentQueue != nil {
 			if hasWT {
 				returnVal.QueuedReaders = newStat.GlobalLock.CurrentQueue.Readers + newStat.GlobalLock.ActiveClients.Readers - newStat.WiredTiger.Concurrent.Read.Out

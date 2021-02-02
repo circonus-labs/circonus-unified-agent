@@ -169,19 +169,19 @@ func processPingOutput(out string) (int, int, int, float64, float64, float64, fl
 	var trans, recv, ttl int = 0, 0, -1
 	var min, avg, max, stddev float64 = -1.0, -1.0, -1.0, -1.0
 	// Set this error to nil if we find a 'transmitted' line
-	err := errors.New("Fatal error processing ping output")
+	err := fmt.Errorf("fatal error processing ping output")
 	lines := strings.Split(out, "\n")
 	for _, line := range lines {
+		switch {
 		// Reading only first TTL, ignoring other TTL messages
-		if ttl == -1 && (strings.Contains(line, "ttl=") || strings.Contains(line, "hlim=")) {
+		case ttl == -1 && (strings.Contains(line, "ttl=") || strings.Contains(line, "hlim=")):
 			ttl, err = getTTL(line)
-		} else if strings.Contains(line, "transmitted") &&
-			strings.Contains(line, "received") {
+		case strings.Contains(line, "transmitted") && strings.Contains(line, "received"):
 			trans, recv, err = getPacketStats(line, trans, recv)
 			if err != nil {
 				return trans, recv, ttl, min, avg, max, stddev, err
 			}
-		} else if strings.Contains(line, "min/avg/max") {
+		case strings.Contains(line, "min/avg/max"):
 			min, avg, max, stddev, err = checkRoundTripTimeStats(line, min, avg, max, stddev)
 			if err != nil {
 				return trans, recv, ttl, min, avg, max, stddev, err
@@ -191,11 +191,13 @@ func processPingOutput(out string) (int, int, int, float64, float64, float64, fl
 	return trans, recv, ttl, min, avg, max, stddev, err
 }
 
-func getPacketStats(line string, trans, recv int) (int, int, error) { //nolint:staticcheck
+func getPacketStats(line string, trans, recv int) (int, int, error) { //nolint:staticcheck,unparam
 	stats := strings.Split(line, ", ")
 
+	var err error
+
 	// Transmitted packets
-	trans, err := strconv.Atoi(strings.Split(stats[0], " ")[0])
+	trans, err = strconv.Atoi(strings.Split(stats[0], " ")[0])
 	if err != nil {
 		return trans, recv, err
 	}
@@ -212,27 +214,33 @@ func getTTL(line string) (int, error) {
 	return strconv.Atoi(ttlMatch[2])
 }
 
-func checkRoundTripTimeStats(line string, min, avg, max, stddev float64) (float64, float64, float64, float64, error) { //nolint:staticcheck
+func checkRoundTripTimeStats(line string, min, avg, max, stddev float64) (float64, float64, float64, float64, error) { //nolint:staticcheck,unparam
 	stats := strings.Split(line, " ")[3]
 	data := strings.Split(stats, "/")
 
-	min, err := strconv.ParseFloat(data[0], 64)
+	var err error
+
+	min, err = strconv.ParseFloat(data[0], 64)
 	if err != nil {
 		return min, avg, max, stddev, err
 	}
+
 	avg, err = strconv.ParseFloat(data[1], 64)
 	if err != nil {
 		return min, avg, max, stddev, err
 	}
+
 	max, err = strconv.ParseFloat(data[2], 64)
 	if err != nil {
 		return min, avg, max, stddev, err
 	}
+
 	if len(data) == 4 {
 		stddev, err = strconv.ParseFloat(data[3], 64)
 		if err != nil {
 			return min, avg, max, stddev, err
 		}
 	}
+
 	return min, avg, max, stddev, err
 }

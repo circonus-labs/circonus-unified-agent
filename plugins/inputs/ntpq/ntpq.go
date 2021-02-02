@@ -49,11 +49,7 @@ func (n *NTPQ) Gather(acc cua.Accumulator) error {
 
 	// Due to problems with a parsing, we have to use regexp expression in order
 	// to remove string that starts from '(' and ends with space
-	// see: https://github.com/circonus-labs/circonus-unified-agent/issues/2386
-	reg, err := regexp.Compile(`\s+\([\S]*`)
-	if err != nil {
-		return err
-	}
+	reg := regexp.MustCompile(`\s+\([\S]*`)
 
 	lineCounter := 0
 	numColumns := 0
@@ -63,7 +59,6 @@ func (n *NTPQ) Gather(acc cua.Accumulator) error {
 
 		tags := make(map[string]string)
 		// if there is an ntpq state prefix, remove it and make it it's own tag
-		// see https://github.com/circonus-labs/circonus-unified-agent/issues/1161
 		if strings.ContainsAny(string(line[0]), "*#o+x.-") {
 			tags["state_prefix"] = string(line[0])
 			line = strings.TrimLeft(line, "*#o+x.-")

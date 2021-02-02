@@ -146,7 +146,7 @@ func (m *MongoDB) gatherServer(server *Server, acc cua.Accumulator) error {
 
 		if m.Ssl.Enabled {
 			// Deprecated TLS config
-			tlsConfig = &tls.Config{}
+			tlsConfig = &tls.Config{MinVersion: tls.VersionTLS12}
 			if len(m.Ssl.CaCerts) > 0 {
 				roots := x509.NewCertPool()
 				for _, caCert := range m.Ssl.CaCerts {

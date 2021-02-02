@@ -380,6 +380,7 @@ func TestContainerLabels(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			var acc testutil.Accumulator
 
@@ -498,6 +499,7 @@ func TestContainerNames(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			var acc testutil.Accumulator
 
@@ -704,6 +706,7 @@ func TestContainerStatus(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			var (
 				acc           testutil.Accumulator
@@ -986,6 +989,7 @@ func TestContainerStateFilter(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			var acc testutil.Accumulator
 
@@ -1065,6 +1069,7 @@ func TestContainerName(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			d := Docker{
 				Log:       testutil.Logger{},
@@ -1108,6 +1113,7 @@ func TestHostnameFromID(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
 			output := hostnameFromID(test.id)
 			if test.expect != output {

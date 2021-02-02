@@ -161,7 +161,7 @@ func createSim(folders int) (*simulator.Model, *simulator.Server, error) {
 
 	model.Folder = folders
 	model.Datacenter = 2
-	//model.App = 1
+	// model.App = 1
 
 	err := model.Create()
 	if err != nil {
@@ -505,7 +505,8 @@ func testCollection(t *testing.T, excludeClusters bool) {
 	for _, m := range acc.Metrics {
 		delete(mustHaveMetrics, m.Measurement)
 
-		if strings.HasPrefix(m.Measurement, "vsphere.vm.") {
+		switch {
+		case strings.HasPrefix(m.Measurement, "vsphere.vm."):
 			mustContainAll(t, m.Tags, []string{"esxhostname", "moid", "vmname", "guest", "dcname", "uuid", "vmname"})
 			hostName := m.Tags["esxhostname"]
 			hostMoid, ok := hostCache[hostName]
@@ -518,25 +519,25 @@ func testCollection(t *testing.T, excludeClusters bool) {
 				hostMoid = hosts[0].Reference().Value
 				hostCache[hostName] = hostMoid
 			}
-			if isInCluster(t, v, client, cache, "HostSystem", hostMoid) { // If the VM lives in a cluster
+			if isInCluster(v, client, cache, "HostSystem", hostMoid) { // If the VM lives in a cluster
 				mustContainAll(t, m.Tags, []string{"clustername"})
 			}
-		} else if strings.HasPrefix(m.Measurement, "vsphere.host.") {
-			if isInCluster(t, v, client, cache, "HostSystem", m.Tags["moid"]) { // If the host lives in a cluster
+		case strings.HasPrefix(m.Measurement, "vsphere.host."):
+			if isInCluster(v, client, cache, "HostSystem", m.Tags["moid"]) { // If the host lives in a cluster
 				mustContainAll(t, m.Tags, []string{"esxhostname", "clustername", "moid", "dcname"})
 			} else {
 				mustContainAll(t, m.Tags, []string{"esxhostname", "moid", "dcname"})
 			}
-		} else if strings.HasPrefix(m.Measurement, "vsphere.cluster.") {
+		case strings.HasPrefix(m.Measurement, "vsphere.cluster."):
 			mustContainAll(t, m.Tags, []string{"clustername", "moid", "dcname"})
-		} else {
+		default:
 			mustContainAll(t, m.Tags, []string{"moid", "dcname"})
 		}
 	}
 	require.Empty(t, mustHaveMetrics, "Some metrics were not found")
 }
 
-func isInCluster(t *testing.T, v *VSphere, client *Client, cache map[string]string, resourceKind, moid string) bool {
+func isInCluster(v *VSphere, client *Client, cache map[string]string, resourceKind, moid string) bool {
 	ctx := context.Background()
 	ref := types.ManagedObjectReference{
 		Type:  resourceKind,

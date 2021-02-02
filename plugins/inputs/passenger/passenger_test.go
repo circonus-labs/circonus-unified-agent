@@ -20,14 +20,14 @@ func fakePassengerStatus(stat string) string {
 		fileExtension = ".bat"
 		content = "@echo off\n"
 		for _, line := range strings.Split(strings.TrimSuffix(stat, "\n"), "\n") {
-			content += "for /f \"delims=\" %%A in (\"" + line + "\") do echo %%~A\n" //my eyes are bleeding
+			content += `for /f "delims=" %%A in ("` + line + `") do echo %%~A\n`
 		}
 	} else {
 		content = fmt.Sprintf("#!/bin/sh\ncat << EOF\n%s\nEOF", stat)
 	}
 
 	tempFilePath := filepath.Join(os.TempDir(), "passenger-status"+fileExtension)
-	_ = ioutil.WriteFile(tempFilePath, []byte(content), 0700)
+	_ = ioutil.WriteFile(tempFilePath, []byte(content), 0700) //nolint:gosec // G306 perms (it's a test shell script)
 
 	return tempFilePath
 }
@@ -62,7 +62,7 @@ func Test_Invalid_Xml(t *testing.T) {
 
 	err := r.Gather(&acc)
 	require.Error(t, err)
-	assert.Equal(t, "Cannot parse input with error: EOF\n", err.Error())
+	assert.Equal(t, "Cannot parse input with error: EOF", err.Error())
 }
 
 // We test this by ensure that the error message match the path of default cli
@@ -76,14 +76,14 @@ func Test_Default_Config_Load_Default_Command(t *testing.T) {
 
 	err := r.Gather(&acc)
 	require.Error(t, err)
-	assert.Equal(t, err.Error(), "exec: \"passenger-status\": executable file not found in ")
+	assert.Equal(t, err.Error(), "exec: \"passenger-status\": executable file not found in $PATH")
 }
 
 func TestPassengerGenerateMetric(t *testing.T) {
 	tempFilePath := fakePassengerStatus(sampleStat)
 	defer teardown(tempFilePath)
 
-	//Now we tested again above server, with our authentication data
+	// Now we tested again above server, with our authentication data
 	r := &passenger{
 		Command: tempFilePath,
 	}

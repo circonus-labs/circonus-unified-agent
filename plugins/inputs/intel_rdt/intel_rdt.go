@@ -251,7 +251,7 @@ func (r *IntelRDT) readData(ctx context.Context, args []string, processesPIDsAss
 	r.wg.Add(1)
 	defer r.wg.Done()
 
-	cmd := exec.Command(r.PqosPath, args...)
+	cmd := exec.Command(r.PqosPath, args...) //nolint:gosec // G204
 
 	cmdReader, err := cmd.StdoutPipe()
 	if err != nil {
@@ -286,7 +286,7 @@ func (r *IntelRDT) readData(ctx context.Context, args []string, processesPIDsAss
 	}
 }
 
-func (r *IntelRDT) processOutput(cmdReader io.ReadCloser, processesPIDsAssociation map[string]string) {
+func (r *IntelRDT) processOutput(cmdReader io.Reader, processesPIDsAssociation map[string]string) {
 	reader := bufio.NewScanner(cmdReader)
 	/*
 		Omit constant, first 4 lines :
@@ -299,10 +299,10 @@ func (r *IntelRDT) processOutput(cmdReader io.ReadCloser, processesPIDsAssociati
 
 	// omit first measurements which are zeroes
 	if len(r.parsedCores) != 0 {
-		toOmit = toOmit + len(r.parsedCores)
+		toOmit += len(r.parsedCores)
 		// specify how many lines should pass before stopping
 	} else if len(processesPIDsAssociation) != 0 {
-		toOmit = toOmit + len(processesPIDsAssociation)
+		toOmit += len(processesPIDsAssociation)
 	}
 	for omitCounter := 0; omitCounter < toOmit; omitCounter++ {
 		reader.Scan()
@@ -351,7 +351,7 @@ func createArgCores(cores []string) string {
 	allGroupsArg := "--mon-core="
 	for _, coreGroup := range cores {
 		argGroup := createArgsForGroups(strings.Split(coreGroup, ","))
-		allGroupsArg = allGroupsArg + argGroup
+		allGroupsArg += argGroup
 	}
 	return allGroupsArg
 }
@@ -360,7 +360,7 @@ func createArgProcess(processPIDs map[string]string) string {
 	allPIDsArg := "--mon-pid="
 	for _, PIDs := range processPIDs {
 		argPIDs := createArgsForGroups(strings.Split(PIDs, ","))
-		allPIDsArg = allPIDsArg + argPIDs
+		allPIDsArg += argPIDs
 	}
 	return allPIDsArg
 }
@@ -394,7 +394,8 @@ func validatePqosPath(pqosPath string) error {
 }
 
 func parseCoresConfig(cores []string) ([]string, error) {
-	var parsedCores []string
+	parsedCores := make([]string, 0, len(cores))
+	// var parsedCores []string
 	var allCores []int
 	configError := fmt.Errorf("wrong cores input config data format")
 

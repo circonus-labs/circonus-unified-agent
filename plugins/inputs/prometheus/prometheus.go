@@ -296,15 +296,16 @@ func (p *Prometheus) gatherURL(u URLAndAddress, acc cua.Accumulator) error {
 
 	req.Header.Add("Accept", acceptHeader)
 
-	if p.BearerToken != "" {
+	switch {
+	case p.BearerToken != "":
 		token, err := ioutil.ReadFile(p.BearerToken)
 		if err != nil {
 			return err
 		}
 		req.Header.Set("Authorization", "Bearer "+string(token))
-	} else if p.BearerTokenString != "" {
+	case p.BearerTokenString != "":
 		req.Header.Set("Authorization", "Bearer "+p.BearerTokenString)
-	} else if p.Username != "" || p.Password != "" {
+	case p.Username != "" || p.Password != "":
 		req.SetBasicAuth(p.Username, p.Password)
 	}
 

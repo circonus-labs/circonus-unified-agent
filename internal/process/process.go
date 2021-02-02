@@ -84,7 +84,7 @@ func (p *Process) Stop() {
 }
 
 func (p *Process) cmdStart() error {
-	p.Cmd = exec.Command(p.name, p.args...)
+	p.Cmd = exec.Command(p.name, p.args...) //nolint:gosec // G204
 
 	var err error
 	p.Stdin, err = p.Cmd.StdinPipe()

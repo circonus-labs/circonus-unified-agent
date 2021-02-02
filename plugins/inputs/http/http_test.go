@@ -235,6 +235,7 @@ func TestBodyAndContentEncoding(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			ts.Config.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				tt.queryHandlerFunc(t, w, r)

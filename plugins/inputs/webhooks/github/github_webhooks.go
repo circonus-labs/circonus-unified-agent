@@ -2,7 +2,7 @@ package github
 
 import (
 	"crypto/hmac"
-	"crypto/sha1"
+	"crypto/sha1" //nolint:gosec // G505
 	"encoding/hex"
 	"encoding/json"
 	"io/ioutil"

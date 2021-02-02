@@ -3,6 +3,7 @@ package netresponse
 import (
 	"bufio"
 	"errors"
+	"fmt"
 	"net"
 	"net/textproto"
 	"regexp"
@@ -220,14 +221,15 @@ func (n *NetResponse) Gather(acc cua.Accumulator) error {
 	var fields map[string]interface{}
 	var returnTags map[string]string
 	// Gather data
-	if n.Protocol == "tcp" {
+	switch n.Protocol {
+	case "tcp":
 		returnTags, fields = n.TCPGather()
-		tags["protocol"] = "tcp"
-	} else if n.Protocol == "udp" {
+		tags["protocol"] = n.Protocol
+	case "udp":
 		returnTags, fields = n.UDPGather()
-		tags["protocol"] = "udp"
-	} else {
-		return errors.New("Bad protocol")
+		tags["protocol"] = n.Protocol
+	default:
+		return fmt.Errorf("unrecognized protocol (%s)", n.Protocol)
 	}
 	// Merge the tags
 	for k, v := range returnTags {

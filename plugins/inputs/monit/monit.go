@@ -270,7 +270,8 @@ func (m *Monit) Gather(acc cua.Accumulator) error {
 			tags["monitoring_mode"] = monitoringMode(service)
 			fields["monitoring_mode_code"] = service.MonitorMode
 			tags["service"] = service.Name
-			if service.Type == fileSystem {
+			switch service.Type {
+			case fileSystem:
 				fields["mode"] = service.Mode
 				fields["block_percent"] = service.Block.Percent
 				fields["block_usage"] = service.Block.Usage
@@ -279,14 +280,14 @@ func (m *Monit) Gather(acc cua.Accumulator) error {
 				fields["inode_usage"] = service.Inode.Usage
 				fields["inode_total"] = service.Inode.Total
 				acc.AddFields("monit_filesystem", fields, tags)
-			} else if service.Type == directory {
+			case directory:
 				fields["mode"] = service.Mode
 				acc.AddFields("monit_directory", fields, tags)
-			} else if service.Type == file {
+			case file:
 				fields["size"] = service.Size
 				fields["mode"] = service.Mode
 				acc.AddFields("monit_file", fields, tags)
-			} else if service.Type == process {
+			case process:
 				fields["cpu_percent"] = service.CPU.Percent
 				fields["cpu_percent_total"] = service.CPU.PercentTotal
 				fields["mem_kb"] = service.Memory.Kilobyte
@@ -298,7 +299,7 @@ func (m *Monit) Gather(acc cua.Accumulator) error {
 				fields["threads"] = service.Threads
 				fields["children"] = service.Children
 				acc.AddFields("monit_process", fields, tags)
-			} else if service.Type == remoteHost {
+			case remoteHost:
 				fields["remote_hostname"] = service.Port.Hostname
 				fields["port_number"] = service.Port.PortNumber
 				fields["request"] = service.Port.Request
@@ -306,7 +307,7 @@ func (m *Monit) Gather(acc cua.Accumulator) error {
 				fields["protocol"] = service.Port.Protocol
 				fields["type"] = service.Port.Type
 				acc.AddFields("monit_remote_host", fields, tags)
-			} else if service.Type == system {
+			case system:
 				fields["cpu_system"] = service.System.CPU.System
 				fields["cpu_user"] = service.System.CPU.User
 				fields["cpu_wait"] = service.System.CPU.Wait
@@ -318,14 +319,14 @@ func (m *Monit) Gather(acc cua.Accumulator) error {
 				fields["swap_kb"] = service.System.Swap.Kilobyte
 				fields["swap_percent"] = service.System.Swap.Percent
 				acc.AddFields("monit_system", fields, tags)
-			} else if service.Type == fifo {
+			case fifo:
 				fields["mode"] = service.Mode
 				acc.AddFields("monit_fifo", fields, tags)
-			} else if service.Type == program {
+			case program:
 				fields["program_started"] = service.Program.Started * 10000000
 				fields["program_status"] = service.Program.Status
 				acc.AddFields("monit_program", fields, tags)
-			} else if service.Type == network {
+			case network:
 				fields["link_state"] = service.Link.State
 				fields["link_speed"] = service.Link.Speed
 				fields["link_mode"] = linkMode(service)

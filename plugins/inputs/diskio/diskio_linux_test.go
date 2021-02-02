@@ -31,7 +31,7 @@ func setupNullDisk(t *testing.T) func() error {
 	}
 
 	udevPath = td
-	err = ioutil.WriteFile(td+"/b1:3", nullDiskInfo, 0644) // 1:3 is the 'null' device
+	err = ioutil.WriteFile(td+"/b1:3", nullDiskInfo, 0600) // 1:3 is the 'null' device
 	if err != nil {
 		_ = cleanFunc()
 		t.Fatal(err)

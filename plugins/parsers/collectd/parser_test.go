@@ -292,6 +292,7 @@ func writeValueList(valueLists []api.ValueList) (*network.Buffer, error) {
 
 	ctx := context.Background()
 	for _, vl := range valueLists {
+		vl := vl
 		err := buffer.Write(ctx, &vl)
 		if err != nil {
 			return nil, err

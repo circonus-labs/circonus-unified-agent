@@ -101,7 +101,7 @@ func (n *NeptuneApex) gatherServer(
 }
 
 // parseXML is strict on the input and does not do best-effort parsing.
-//This is because of the life-support nature of the Neptune Apex.
+// This is because of the life-support nature of the Neptune Apex.
 func (n *NeptuneApex) parseXML(acc cua.Accumulator, data []byte) error {
 	r := xmlReply{}
 	err := xml.Unmarshal(data, &r)
@@ -179,7 +179,7 @@ func (n *NeptuneApex) parseXML(acc cua.Accumulator, data []byte) error {
 			fields["xstatus"] = *o.Xstatus
 		}
 		// Try to determine outlet type. Focus on accuracy, leaving the
-		//outlet_type "unknown" when ambiguous. 24v and vortech cannot be
+		// outlet_type "unknown" when ambiguous. 24v and vortech cannot be
 		// determined.
 		switch {
 		case strings.HasPrefix(o.DeviceID, "base_Var"):

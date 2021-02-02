@@ -306,17 +306,17 @@ func (h *ConsumerGroupHandler) Setup(sarama.ConsumerGroupSession) error {
 	h.wg.Add(1)
 	go func() {
 		defer h.wg.Done()
-		_ = h.run(ctx)
+		h.run(ctx)
 	}()
 	return nil
 }
 
 // Run processes any delivered metrics during the lifetime of the session.
-func (h *ConsumerGroupHandler) run(ctx context.Context) error {
+func (h *ConsumerGroupHandler) run(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
-			return nil
+			return
 		case track := <-h.acc.Delivered():
 			h.onDelivery(track)
 		}

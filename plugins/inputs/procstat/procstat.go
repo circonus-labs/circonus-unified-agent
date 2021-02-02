@@ -109,7 +109,7 @@ func (p *Procstat) Gather(acc cua.Accumulator) error {
 		p.createProcess = defaultProcess
 	}
 
-	pids, tags, err := p.findPids(acc)
+	pids, tags, err := p.findPids()
 	if err != nil {
 		fields := map[string]interface{}{
 			"pid_count":   0,
@@ -124,11 +124,12 @@ func (p *Procstat) Gather(acc cua.Accumulator) error {
 		return err
 	}
 
-	procs, err := p.updateProcesses(pids, tags, p.procs)
-	if err != nil {
-		acc.AddError(fmt.Errorf("E! Error: procstat getting process, exe: [%s] pidfile: [%s] pattern: [%s] user: [%s] %w",
-			p.Exe, p.PidFile, p.Pattern, p.User, err))
-	}
+	procs := p.updateProcesses(pids, tags, p.procs)
+	// updateProcesses always returns nil
+	// if err != nil {
+	// 	acc.AddError(fmt.Errorf("E! Error: procstat getting process, exe: [%s] pidfile: [%s] pattern: [%s] user: [%s] %w",
+	// 		p.Exe, p.PidFile, p.Pattern, p.User, err))
+	// }
 	p.procs = procs
 
 	for _, proc := range p.procs {
@@ -156,7 +157,7 @@ func (p *Procstat) addMetric(proc Process, acc cua.Accumulator) {
 
 	fields := map[string]interface{}{}
 
-	//If process_name tag is not already set, set to actual name
+	// If process_name tag is not already set, set to actual name
 	if _, nameInTags := proc.Tags()["process_name"]; !nameInTags {
 		name, err := proc.Name()
 		if err == nil {
@@ -164,7 +165,7 @@ func (p *Procstat) addMetric(proc Process, acc cua.Accumulator) {
 		}
 	}
 
-	//If user tag is not already set, set to actual name
+	// If user tag is not already set, set to actual name
 	if _, ok := proc.Tags()["user"]; !ok {
 		user, err := proc.Username()
 		if err == nil {
@@ -172,12 +173,12 @@ func (p *Procstat) addMetric(proc Process, acc cua.Accumulator) {
 		}
 	}
 
-	//If pid is not present as a tag, include it as a field.
+	// If pid is not present as a tag, include it as a field.
 	if _, pidInTags := proc.Tags()["pid"]; !pidInTags {
 		fields["pid"] = int32(proc.PID())
 	}
 
-	//If cmd_line tag is true and it is not already set add cmdline as a tag
+	// If cmd_line tag is true and it is not already set add cmdline as a tag
 	if p.CmdLineTag {
 		if _, ok := proc.Tags()["cmdline"]; !ok {
 			Cmdline, err := proc.Cmdline()
@@ -219,9 +220,9 @@ func (p *Procstat) addMetric(proc Process, acc cua.Accumulator) {
 		fields[prefix+"write_bytes"] = io.WriteBytes
 	}
 
-	createdAt, err := proc.CreateTime() //Returns epoch in ms
+	createdAt, err := proc.CreateTime() // Returns epoch in ms
 	if err == nil {
-		fields[prefix+"created_at"] = createdAt * 1000000 //Convert ms to ns
+		fields[prefix+"created_at"] = createdAt * 1000000 // Convert ms to ns
 	}
 
 	cpuTime, err := proc.Times()
@@ -301,7 +302,7 @@ func (p *Procstat) addMetric(proc Process, acc cua.Accumulator) {
 }
 
 // Update monitored Processes
-func (p *Procstat) updateProcesses(pids []PID, tags map[string]string, prevInfo map[PID]Process) (map[PID]Process, error) {
+func (p *Procstat) updateProcesses(pids []PID, tags map[string]string, prevInfo map[PID]Process) map[PID]Process {
 	procs := make(map[PID]Process, len(prevInfo))
 
 	for _, pid := range pids {
@@ -338,7 +339,7 @@ func (p *Procstat) updateProcesses(pids []PID, tags map[string]string, prevInfo 
 			}
 		}
 	}
-	return procs, nil
+	return procs
 }
 
 // Create and return PIDGatherer lazily
@@ -354,7 +355,7 @@ func (p *Procstat) getPIDFinder() (PIDFinder, error) {
 }
 
 // Get matching PIDs and their initial tags
-func (p *Procstat) findPids(acc cua.Accumulator) ([]PID, map[string]string, error) {
+func (p *Procstat) findPids() ([]PID, map[string]string, error) {
 	var pids []PID
 	tags := make(map[string]string)
 	var err error
@@ -364,28 +365,29 @@ func (p *Procstat) findPids(acc cua.Accumulator) ([]PID, map[string]string, erro
 		return nil, nil, err
 	}
 
-	if p.PidFile != "" {
+	switch {
+	case p.PidFile != "":
 		pids, err = f.PidFile(p.PidFile)
 		tags = map[string]string{"pidfile": p.PidFile}
-	} else if p.Exe != "" {
+	case p.Exe != "":
 		pids, err = f.Pattern(p.Exe)
 		tags = map[string]string{"exe": p.Exe}
-	} else if p.Pattern != "" {
+	case p.Pattern != "":
 		pids, err = f.FullPattern(p.Pattern)
 		tags = map[string]string{"pattern": p.Pattern}
-	} else if p.User != "" {
+	case p.User != "":
 		pids, err = f.UID(p.User)
 		tags = map[string]string{"user": p.User}
-	} else if p.SystemdUnit != "" {
+	case p.SystemdUnit != "":
 		pids, err = p.systemdUnitPIDs()
 		tags = map[string]string{"systemd_unit": p.SystemdUnit}
-	} else if p.CGroup != "" {
+	case p.CGroup != "":
 		pids, err = p.cgroupPIDs()
 		tags = map[string]string{"cgroup": p.CGroup}
-	} else if p.WinService != "" {
+	case p.WinService != "":
 		pids, err = p.winServicePIDs()
 		tags = map[string]string{"win_service": p.WinService}
-	} else {
+	default:
 		err = fmt.Errorf("Either exe, pid_file, user, pattern, systemd_unit, cgroup, or win_service must be specified")
 	}
 
@@ -396,7 +398,7 @@ func (p *Procstat) findPids(acc cua.Accumulator) ([]PID, map[string]string, erro
 var execCommand = exec.Command
 
 func (p *Procstat) systemdUnitPIDs() ([]PID, error) {
-	var pids []PID
+	var pids []PID //nolint:prealloc
 	cmd := execCommand("systemctl", "show", p.SystemdUnit)
 	out, err := cmd.Output()
 	if err != nil {
@@ -423,7 +425,7 @@ func (p *Procstat) systemdUnitPIDs() ([]PID, error) {
 }
 
 func (p *Procstat) cgroupPIDs() ([]PID, error) {
-	var pids []PID
+	var pids []PID //nolint:prealloc
 
 	procsPath := p.CGroup
 	if procsPath[0] != '/' {

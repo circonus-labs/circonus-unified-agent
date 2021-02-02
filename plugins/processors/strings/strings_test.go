@@ -35,7 +35,7 @@ func newM2() cua.Metric {
 		map[string]interface{}{
 			"Request":      "/mixed/CASE/paTH/?from=-1D&to=now",
 			"req/sec":      5,
-			" whitespace ": "  whitespace\t",
+			" whitespace ": "  whitespace\t", //nolint:gocritic
 		},
 		time.Now(),
 	)
@@ -277,6 +277,7 @@ func TestFieldConversions(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			metrics := tt.plugin.Apply(newM1())
 			require.Len(t, metrics, 1)
@@ -530,6 +531,7 @@ func TestFieldKeyConversions(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			metrics := tt.plugin.Apply(newM2())
 			require.Len(t, metrics, 1)
@@ -638,6 +640,7 @@ func TestTagConversions(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			metrics := tt.plugin.Apply(newM1())
 			require.Len(t, metrics, 1)
@@ -719,6 +722,7 @@ func TestTagKeyConversions(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			metrics := tt.plugin.Apply(newM2())
 			require.Len(t, metrics, 1)
@@ -749,6 +753,7 @@ func TestMeasurementConversions(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			metrics := tt.plugin.Apply(newM1())
 			require.Len(t, metrics, 1)
@@ -1041,6 +1046,7 @@ func TestBase64Decode(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			actual := tt.plugin.Apply(tt.metric...)
 			testutil.RequireMetricsEqual(t, tt.expected, actual)

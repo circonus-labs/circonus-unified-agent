@@ -89,8 +89,8 @@ func (jp *JolokiaProxy) Gather(acc cua.Accumulator) error {
 }
 
 func (jp *JolokiaProxy) createMetrics() []Metric {
-	var metrics []Metric
 
+	metrics := make([]Metric, 0, len(jp.Metrics))
 	for _, config := range jp.Metrics {
 		metrics = append(metrics, NewMetric(config,
 			jp.DefaultFieldPrefix, jp.DefaultFieldSeparator, jp.DefaultTagPrefix))

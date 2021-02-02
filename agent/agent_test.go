@@ -159,6 +159,7 @@ func TestWindow(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			since, until := updateWindow(tt.start, tt.roundInterval, tt.period)
 			require.Equal(t, tt.since, since, "since")

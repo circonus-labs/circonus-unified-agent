@@ -196,6 +196,8 @@ func (ch *ClickHouse) Gather(acc cua.Accumulator) (err error) {
 
 	for _, conn := range connects {
 
+		conn := conn // G601 - remediate implicit memory aliasing
+
 		metricsFuncs := []func(acc cua.Accumulator, conn *connect) error{
 			ch.tables,
 			ch.zookeeper,

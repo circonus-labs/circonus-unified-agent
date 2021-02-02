@@ -27,7 +27,7 @@ func LogModule(logger cua.Logger) *starlarkstruct.Module {
 }
 
 // Logs the provided message according to the level chosen
-func log(t *starlark.Thread, b *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple, logger cua.Logger) (starlark.Value, error) {
+func log(t *starlark.Thread, b *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple, logger cua.Logger) (starlark.Value, error) { //nolint:unparam
 	var msg starlark.String
 	if err := starlark.UnpackPositionalArgs(b.Name(), args, kwargs, 1, &msg); err != nil {
 		return starlark.None, fmt.Errorf("%s: %w", b.Name(), err)

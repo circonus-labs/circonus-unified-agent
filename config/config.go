@@ -106,7 +106,7 @@ func NewConfig() *Config {
 	return c
 }
 
-// AgentConfig defines configuraiton that will be used by the agent
+// AgentConfig defines configuration that will be used by the agent
 type AgentConfig struct {
 	// Interval at which to gather information
 	Interval internal.Duration
@@ -192,7 +192,7 @@ type AgentConfig struct {
 
 // InputNames returns a list of strings of the configured inputs.
 func (c *Config) InputNames() []string {
-	var name []string
+	name := make([]string, 0, len(c.Inputs))
 	for _, input := range c.Inputs {
 		name = append(name, input.Config.Name)
 	}
@@ -201,7 +201,7 @@ func (c *Config) InputNames() []string {
 
 // AggregatorNames returns a list of strings of the configured aggregators.
 func (c *Config) AggregatorNames() []string {
-	var name []string
+	name := make([]string, 0, len(c.Aggregators))
 	for _, aggregator := range c.Aggregators {
 		name = append(name, aggregator.Config.Name)
 	}
@@ -210,7 +210,7 @@ func (c *Config) AggregatorNames() []string {
 
 // ProcessorNames returns a list of strings of the configured processors.
 func (c *Config) ProcessorNames() []string {
-	var name []string
+	name := make([]string, 0, len(c.Processors))
 	for _, processor := range c.Processors {
 		name = append(name, processor.Config.Name)
 	}
@@ -219,7 +219,7 @@ func (c *Config) ProcessorNames() []string {
 
 // OutputNames returns a list of strings of the configured outputs.
 func (c *Config) OutputNames() []string {
-	var name []string
+	name := make([]string, 0, len(c.Outputs))
 	for _, output := range c.Outputs {
 		name = append(name, output.Config.Name)
 	}
@@ -249,7 +249,7 @@ func PluginNameCounts(plugins []string) []string {
 // ListTags returns a string of tags specified in the config,
 // line-protocol style
 func (c *Config) ListTags() string {
-	var tags []string
+	tags := make([]string, 0, len(c.Tags))
 
 	for k, v := range c.Tags {
 		tags = append(tags, fmt.Sprintf("%s=%s", k, v))
@@ -557,6 +557,7 @@ func printFilteredInputs(inputFilters []string, commented bool) {
 			servInputs[pname] = p
 			servInputNames = append(servInputNames, pname)
 			continue
+		default:
 		}
 
 		printConfig(pname, input, "inputs", commented)
@@ -913,7 +914,7 @@ func loadConfig(config string) ([]byte, error) {
 
 }
 
-func fetchConfig(u *url.URL) ([]byte, error) {
+func fetchConfig(u fmt.Stringer) ([]byte, error) {
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
 		return nil, err
@@ -950,11 +951,12 @@ func parseConfig(contents []byte) (*ast.Table, error) {
 		}
 
 		var envVar []byte
-		if parameter[1] != nil {
+		switch {
+		case parameter[1] != nil:
 			envVar = parameter[1]
-		} else if parameter[2] != nil {
+		case parameter[2] != nil:
 			envVar = parameter[2]
-		} else {
+		default:
 			continue
 		}
 
@@ -1018,7 +1020,7 @@ func (c *Config) addProcessor(name string, table *ast.Table) error {
 func (c *Config) newRunningProcessor(
 	creator processors.StreamingCreator,
 	processorConfig *models.ProcessorConfig,
-	name string,
+	name string, //nolint:unparam
 	table *ast.Table,
 ) (*models.RunningProcessor, error) {
 	processor := creator()
@@ -1056,6 +1058,7 @@ func (c *Config) addOutput(name string, table *ast.Table) error {
 			return err
 		}
 		t.SetSerializer(serializer)
+	default:
 	}
 
 	outputConfig, err := c.buildOutput(name, table)
@@ -1309,7 +1312,7 @@ func (c *Config) getParserConfig(name string, tbl *ast.Table) (*parsers.Config, 
 	c.getFieldString(tbl, "dropwizard_tags_path", &pc.DropwizardTagsPath)
 	c.getFieldStringMap(tbl, "dropwizard_tag_paths", &pc.DropwizardTagPathsMap)
 
-	//for grok data_format
+	// for grok data_format
 	c.getFieldStringSlice(tbl, "grok_named_patterns", &pc.GrokNamedPatterns)
 	c.getFieldStringSlice(tbl, "grok_patterns", &pc.GrokPatterns)
 	c.getFieldString(tbl, "grok_custom_patterns", &pc.GrokCustomPatterns)
@@ -1317,7 +1320,7 @@ func (c *Config) getParserConfig(name string, tbl *ast.Table) (*parsers.Config, 
 	c.getFieldString(tbl, "grok_timezone", &pc.GrokTimezone)
 	c.getFieldString(tbl, "grok_unique_timestamp", &pc.GrokUniqueTimestamp)
 
-	//for csv parser
+	// for csv parser
 	c.getFieldStringSlice(tbl, "csv_column_names", &pc.CSVColumnNames)
 	c.getFieldStringSlice(tbl, "csv_column_types", &pc.CSVColumnTypes)
 	c.getFieldStringSlice(tbl, "csv_tag_columns", &pc.CSVTagColumns)
@@ -1346,7 +1349,7 @@ func (c *Config) getParserConfig(name string, tbl *ast.Table) (*parsers.Config, 
 // buildSerializer grabs the necessary entries from the ast.Table for creating
 // a serializers.Serializer object, and creates it, which can then be added onto
 // an Output object.
-func (c *Config) buildSerializer(name string, tbl *ast.Table) (serializers.Serializer, error) {
+func (c *Config) buildSerializer(name string, tbl *ast.Table) (serializers.Serializer, error) { //nolint:unparam
 	sc := &serializers.Config{TimestampUnits: time.Duration(1 * time.Second)}
 
 	c.getFieldString(tbl, "data_format", &sc.DataFormat)

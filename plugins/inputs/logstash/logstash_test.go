@@ -121,7 +121,7 @@ func Test_Logstash6GatherProcessStats(test *testing.T) {
 }
 
 func Test_Logstash5GatherPipelineStats(test *testing.T) {
-	//logstash5accPipelineStats.SetDebug(true)
+	// logstash5accPipelineStats.SetDebug(true)
 	fakeServer := httptest.NewUnstartedServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		writer.Header().Set("Content-Type", "application/json")
 		fmt.Fprintf(writer, "%s", string(logstash5PipelineJSON))
@@ -223,7 +223,7 @@ func Test_Logstash5GatherPipelineStats(test *testing.T) {
 }
 
 func Test_Logstash6GatherPipelinesStats(test *testing.T) {
-	//logstash6accPipelinesStats.SetDebug(true)
+	// logstash6accPipelinesStats.SetDebug(true)
 	fakeServer := httptest.NewUnstartedServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		writer.Header().Set("Content-Type", "application/json")
 		fmt.Fprintf(writer, "%s", string(logstash6PipelinesJSON))

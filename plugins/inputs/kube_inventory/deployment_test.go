@@ -113,10 +113,10 @@ func TestDeployment(t *testing.T) {
 		_ = ks.createSelectorFilters()
 		acc := new(testutil.Accumulator)
 		for _, deployment := range ((v.handler.responseMap["/deployments/"]).(*v1.DeploymentList)).Items {
-			err := ks.gatherDeployment(*deployment, acc)
-			if err != nil {
-				t.Errorf("Failed to gather deployment - %s", err.Error())
-			}
+			ks.gatherDeployment(*deployment, acc)
+			// if err != nil {
+			// 	t.Errorf("Failed to gather deployment - %s", err.Error())
+			// }
 		}
 
 		err := acc.FirstError()
@@ -298,10 +298,10 @@ func TestDeploymentSelectorFilter(t *testing.T) {
 		_ = ks.createSelectorFilters()
 		acc := new(testutil.Accumulator)
 		for _, deployment := range ((v.handler.responseMap["/deployments/"]).(*v1.DeploymentList)).Items {
-			err := ks.gatherDeployment(*deployment, acc)
-			if err != nil {
-				t.Errorf("Failed to gather deployment - %s", err.Error())
-			}
+			ks.gatherDeployment(*deployment, acc)
+			// if err != nil {
+			// 	t.Errorf("Failed to gather deployment - %s", err.Error())
+			// }
 		}
 
 		// Grab selector tags

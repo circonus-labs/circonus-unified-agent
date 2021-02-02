@@ -82,6 +82,7 @@ def apply():
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			err := tt.plugin.Init()
 			require.Error(t, err)
@@ -215,6 +216,7 @@ def apply(metric):
 	}
 
 	for _, tt := range applyTests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			plugin := &Starlark{
 				Source: tt.source,
@@ -2419,6 +2421,7 @@ def process(metric):
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			plugin := &Starlark{
 				Source: tt.source,
@@ -2708,6 +2711,7 @@ func TestScript(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			err := tt.plugin.Init()
 			require.NoError(t, err)
@@ -2977,6 +2981,7 @@ def apply(metric):
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		b.Run(tt.name, func(b *testing.B) {
 			plugin := &Starlark{
 				Source: tt.source,

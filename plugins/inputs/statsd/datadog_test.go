@@ -78,6 +78,7 @@ func TestEventGather(t *testing.T) {
 	defer s.Stop()
 
 	for i := range tests {
+		i := i
 		t.Run(tests[i].name, func(t *testing.T) {
 			err := s.parseEventMessage(tests[i].now, tests[i].message, tests[i].hostname)
 			if tests[i].err {
@@ -385,6 +386,7 @@ func TestEvents(t *testing.T) {
 	require.NoError(t, s.Start(acc))
 	defer s.Stop()
 	for i := range tests {
+		i := i
 		t.Run(tests[i].name, func(t *testing.T) {
 			acc.ClearMetrics()
 			err := s.parseEventMessage(tests[i].args.now, tests[i].args.message, tests[i].args.hostname)

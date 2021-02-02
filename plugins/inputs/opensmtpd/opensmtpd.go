@@ -51,19 +51,19 @@ func (s *Opensmtpd) SampleConfig() string {
 }
 
 // Shell out to opensmtpd_stat and return the output
-func opensmtpdRunner(cmdName string, Timeout internal.Duration, UseSudo bool) (*bytes.Buffer, error) {
+func opensmtpdRunner(cmdName string, timeout internal.Duration, useSudo bool) (*bytes.Buffer, error) {
 	cmdArgs := []string{"show", "stats"}
 
 	cmd := exec.Command(cmdName, cmdArgs...)
 
-	if UseSudo {
+	if useSudo {
 		cmdArgs = append([]string{cmdName}, cmdArgs...)
 		cmd = exec.Command("sudo", cmdArgs...)
 	}
 
 	var out bytes.Buffer
 	cmd.Stdout = &out
-	err := internal.RunTimeout(cmd, Timeout.Duration)
+	err := internal.RunTimeout(cmd, timeout.Duration)
 	if err != nil {
 		return &out, fmt.Errorf("error running smtpctl: %w", err)
 	}
@@ -108,7 +108,7 @@ func (s *Opensmtpd) Gather(acc cua.Accumulator) error {
 			continue
 		}
 
-		field := strings.Replace(stat, ".", "_", -1)
+		field := strings.ReplaceAll(stat, ".", "_")
 
 		fields[field], err = strconv.ParseFloat(value, 64)
 		if err != nil {

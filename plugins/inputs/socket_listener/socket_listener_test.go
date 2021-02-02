@@ -226,7 +226,7 @@ func TestSocketListenerDecode_udp(t *testing.T) {
 	testSocketListener(t, sl, client)
 }
 
-func testSocketListener(t *testing.T, sl *SocketListener, client net.Conn) {
+func testSocketListener(t *testing.T, sl *SocketListener, client io.Writer) {
 	mstr12 := []byte("test,foo=bar v=1i 123456789\ntest,foo=baz v=2i 123456790\n")
 	mstr3 := []byte("test,foo=zab v=3i 123456791\n")
 

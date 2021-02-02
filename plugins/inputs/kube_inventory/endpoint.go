@@ -16,16 +16,17 @@ func collectEndpoints(ctx context.Context, acc cua.Accumulator, ki *KubernetesIn
 		return
 	}
 	for _, i := range list.Items {
-		if err = ki.gatherEndpoint(*i, acc); err != nil {
-			acc.AddError(err)
-			return
-		}
+		ki.gatherEndpoint(*i, acc)
+		// if err = ki.gatherEndpoint(*i, acc); err != nil {
+		// 	acc.AddError(err)
+		// 	return
+		// }
 	}
 }
 
-func (ki *KubernetesInventory) gatherEndpoint(e v1.Endpoints, acc cua.Accumulator) error {
+func (ki *KubernetesInventory) gatherEndpoint(e v1.Endpoints, acc cua.Accumulator) {
 	if e.Metadata.CreationTimestamp.GetSeconds() == 0 && e.Metadata.CreationTimestamp.GetNanos() == 0 {
-		return nil
+		return
 	}
 
 	fields := map[string]interface{}{
@@ -76,6 +77,4 @@ func (ki *KubernetesInventory) gatherEndpoint(e v1.Endpoints, acc cua.Accumulato
 			}
 		}
 	}
-
-	return nil
 }

@@ -412,6 +412,7 @@ func TestCollectionExpire(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			c := NewCollection(FormatConfig{})
 			for _, item := range tt.input {

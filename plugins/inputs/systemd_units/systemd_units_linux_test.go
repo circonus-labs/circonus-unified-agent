@@ -72,6 +72,7 @@ func TestSystemdUnits(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			systemdUnits := &SystemdUnits{
 				systemctl: func(Timeout internal.Duration, UnitType string) (*bytes.Buffer, error) {

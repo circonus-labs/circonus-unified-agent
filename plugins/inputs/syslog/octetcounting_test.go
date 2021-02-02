@@ -338,6 +338,7 @@ func getTestCasesForOctetCounting() []testCaseStream {
 
 func testStrictOctetCounting(t *testing.T, protocol string, address string, wantTLS bool, keepAlive *internal.Duration) {
 	for _, tc := range getTestCasesForOctetCounting() {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			// Creation of a strict mode receiver
 			receiver := newTCPSyslogReceiver(protocol+"://"+address, keepAlive, 0, false, framing.OctetCounting)
@@ -392,8 +393,9 @@ func testStrictOctetCounting(t *testing.T, protocol string, address string, want
 	}
 }
 
-func testBestEffortOctetCounting(t *testing.T, protocol string, address string, wantTLS bool, keepAlive *internal.Duration) {
+func testBestEffortOctetCounting(t *testing.T, protocol string, address string, wantTLS bool, keepAlive *internal.Duration) { //nolint:unparam
 	for _, tc := range getTestCasesForOctetCounting() {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			// Creation of a best effort mode receiver
 			receiver := newTCPSyslogReceiver(protocol+"://"+address, keepAlive, 0, true, framing.OctetCounting)

@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createMetric(name string, value int64, when time.Time) cua.Metric {
+func createMetric(name string, value int64, when time.Time) cua.Metric { //nolint:unparam
 	m, _ := metric.New(name,
 		map[string]string{"tag": "tag_value"},
 		map[string]interface{}{"value": value},
@@ -79,7 +79,7 @@ func assertMetricPassed(t *testing.T, target []cua.Metric, source cua.Metric) {
 	require.Equal(t, target[0].Time(), source.Time())
 }
 
-func assertMetricSuppressed(t *testing.T, target []cua.Metric, source cua.Metric) {
+func assertMetricSuppressed(t *testing.T, target []cua.Metric, source cua.Metric) { //nolint:unparam
 	// target is empty
 	require.Equal(t, 0, len(target))
 }

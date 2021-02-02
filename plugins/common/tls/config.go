@@ -15,7 +15,7 @@ type ClientConfig struct {
 	TLSKey             string `toml:"tls_key"`
 	InsecureSkipVerify bool   `toml:"insecure_skip_verify"`
 
-	// Deprecated in 1.7; use TLS variables above
+	// Deprecated: in 1.7; use TLS variables above
 	SSLCA   string `toml:"ssl_ca"`
 	SSLCert string `toml:"ssl_cert"`
 	SSLKey  string `toml:"ssl_key"`
@@ -54,7 +54,7 @@ func (c *ClientConfig) TLSConfig() (*tls.Config, error) {
 	}
 
 	tlsConfig := &tls.Config{
-		InsecureSkipVerify: c.InsecureSkipVerify,
+		InsecureSkipVerify: c.InsecureSkipVerify, //nolint:gosec // G402
 		Renegotiation:      tls.RenegotiateNever,
 	}
 
@@ -83,7 +83,7 @@ func (c *ServerConfig) TLSConfig() (*tls.Config, error) {
 		return nil, nil
 	}
 
-	tlsConfig := &tls.Config{}
+	tlsConfig := &tls.Config{MinVersion: tls.VersionTLS12}
 
 	if len(c.TLSAllowedCACerts) != 0 {
 		pool, err := makeCertPool(c.TLSAllowedCACerts)

@@ -269,7 +269,7 @@ var (
 
 // Smart plugin reads metrics from storage devices supporting S.M.A.R.T.
 type Smart struct {
-	Path             string            `toml:"path"` //deprecated - to keep backward compatibility
+	Path             string            `toml:"path"` // deprecated - to keep backward compatibility
 	PathSmartctl     string            `toml:"path_smartctl"`
 	PathNVMe         string            `toml:"path_nvme"`
 	Nocheck          string            `toml:"nocheck"`
@@ -349,17 +349,17 @@ func (m *Smart) Description() string {
 
 // Init performs one time setup of the plugin and returns an error if the configuration is invalid.
 func (m *Smart) Init() error {
-	//if deprecated `path` (to smartctl binary) is provided in config and `path_smartctl` override does not exist
+	// if deprecated `path` (to smartctl binary) is provided in config and `path_smartctl` override does not exist
 	if len(m.Path) > 0 && len(m.PathSmartctl) == 0 {
 		m.PathSmartctl = m.Path
 	}
 
-	//if `path_smartctl` is not provided in config, try to find smartctl binary in PATH
+	// if `path_smartctl` is not provided in config, try to find smartctl binary in PATH
 	if len(m.PathSmartctl) == 0 {
 		m.PathSmartctl, _ = exec.LookPath("smartctl")
 	}
 
-	//if `path_nvme` is not provided in config, try to find nvme binary in PATH
+	// if `path_nvme` is not provided in config, try to find nvme binary in PATH
 	if len(m.PathNVMe) == 0 {
 		m.PathNVMe, _ = exec.LookPath("nvme")
 	}
@@ -367,14 +367,14 @@ func (m *Smart) Init() error {
 	err := validatePath(m.PathSmartctl)
 	if err != nil {
 		m.PathSmartctl = ""
-		//without smartctl, plugin will not be able to gather basic metrics
+		// without smartctl, plugin will not be able to gather basic metrics
 		return fmt.Errorf("smartctl not found: verify that smartctl is installed and it is in your PATH (or specified in config): %w", err)
 	}
 
 	err = validatePath(m.PathNVMe)
 	if err != nil {
 		m.PathNVMe = ""
-		//without nvme, plugin will not be able to gather vendor specific attributes (but it can work without it)
+		// without nvme, plugin will not be able to gather vendor specific attributes (but it can work without it)
 		m.Log.Warnf("nvme not found: verify that nvme is installed and it is in your PATH (or specified in config) to gather vendor specific attributes: %s", err.Error())
 	}
 
@@ -481,7 +481,7 @@ func (m *Smart) scanDevices(ignoreExcludes bool, scanArgs ...string) ([]string, 
 var runCmd = func(timeout internal.Duration, sudo bool, command string, args ...string) ([]byte, error) {
 	cmd := exec.Command(command, args...)
 	if sudo {
-		cmd = exec.Command("sudo", append([]string{"-n", command}, args...)...)
+		cmd = exec.Command("sudo", append([]string{"-n", command}, args...)...) //nolint:gosec // G204
 	}
 	return internal.CombinedOutputTimeout(cmd, timeout.Duration)
 }
@@ -517,8 +517,7 @@ func (m *Smart) getVendorNVMeAttributes(acc cua.Accumulator, devices []string) {
 
 	for _, device := range NVMeDevices {
 		if contains(m.EnableExtensions, "auto-on") {
-			switch device.vendorID {
-			case intelVID:
+			if device.vendorID == intelVID {
 				wg.Add(1)
 				go gatherIntelNVMeDisk(acc, m.Timeout, m.UseSudo, m.PathNVMe, device, &wg)
 			}
@@ -531,8 +530,7 @@ func (m *Smart) getVendorNVMeAttributes(acc cua.Accumulator, devices []string) {
 }
 
 func getDeviceInfoForNVMeDisks(acc cua.Accumulator, devices []string, nvme string, timeout internal.Duration, useSudo bool) []nvmeDevice {
-	var NVMeDevices []nvmeDevice
-
+	NVMeDevices := make([]nvmeDevice, 0, len(devices))
 	for _, device := range devices {
 		vid, sn, mn, err := gatherNVMeDeviceInfo(nvme, device, timeout, useSudo)
 		if err != nil {
@@ -675,12 +673,12 @@ func gatherDisk(acc cua.Accumulator, timeout internal.Duration, usesudo, collect
 
 		wwn := wwnInfo.FindStringSubmatch(line)
 		if len(wwn) > 1 {
-			deviceTags["wwn"] = strings.Replace(wwn[1], " ", "", -1)
+			deviceTags["wwn"] = strings.ReplaceAll(wwn[1], " ", "")
 		}
 
 		capacity := userCapacityInfo.FindStringSubmatch(line)
 		if len(capacity) > 1 {
-			deviceTags["capacity"] = strings.Replace(capacity[1], ",", "", -1)
+			deviceTags["capacity"] = strings.ReplaceAll(capacity[1], ",", "")
 		}
 
 		enabled := smartEnabledInfo.FindStringSubmatch(line)
@@ -739,28 +737,26 @@ func gatherDisk(acc cua.Accumulator, timeout internal.Duration, usesudo, collect
 					deviceFields[field] = val
 				}
 			}
-		} else {
+		} else if matches := sasNvmeAttr.FindStringSubmatch(line); len(matches) > 2 {
 			// what was found is not a vendor attribute
-			if matches := sasNvmeAttr.FindStringSubmatch(line); len(matches) > 2 {
-				if attr, ok := sasNvmeAttributes[matches[1]]; ok {
-					tags["name"] = attr.Name
-					if attr.ID != "" {
-						tags["id"] = attr.ID
-					}
+			if attr, ok := sasNvmeAttributes[matches[1]]; ok {
+				tags["name"] = attr.Name
+				if attr.ID != "" {
+					tags["id"] = attr.ID
+				}
 
-					parse := parseCommaSeparatedInt
-					if attr.Parse != nil {
-						parse = attr.Parse
-					}
+				parse := parseCommaSeparatedInt
+				if attr.Parse != nil {
+					parse = attr.Parse
+				}
 
-					if err := parse(fields, deviceFields, matches[2]); err != nil {
-						continue
-					}
-					// if the field is classified as an attribute, only add it
-					// if collectAttributes is true
-					if collectAttributes {
-						acc.AddFields("smart_attribute", fields, tags)
-					}
+				if err := parse(fields, deviceFields, matches[2]); err != nil {
+					continue
+				}
+				// if the field is classified as an attribute, only add it
+				// if collectAttributes is true
+				if collectAttributes {
+					acc.AddFields("smart_attribute", fields, tags)
 				}
 			}
 		}
@@ -903,7 +899,7 @@ func parseInt(str string) int64 {
 
 func parseCommaSeparatedInt(fields, _ map[string]interface{}, str string) error {
 	str = strings.Join(strings.Fields(str), "")
-	i, err := strconv.ParseInt(strings.Replace(str, ",", "", -1), 10, 64)
+	i, err := strconv.ParseInt(strings.ReplaceAll(str, ",", ""), 10, 64)
 	if err != nil {
 		return err
 	}
@@ -923,7 +919,7 @@ func parseDataUnits(fields, deviceFields map[string]interface{}, str string) err
 }
 
 func parseCommaSeparatedIntWithAccumulator(acc cua.Accumulator, fields map[string]interface{}, tags map[string]string, str string) error {
-	i, err := strconv.ParseInt(strings.Replace(str, ",", "", -1), 10, 64)
+	i, err := strconv.ParseInt(strings.ReplaceAll(str, ",", ""), 10, 64)
 	if err != nil {
 		return err
 	}

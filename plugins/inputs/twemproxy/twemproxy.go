@@ -124,11 +124,8 @@ func (t *Twemproxy) processServer(
 ) {
 	fields := make(map[string]interface{})
 	for key, value := range data {
-		switch key {
-		default:
-			if val, ok := value.(float64); ok {
-				fields[key] = val
-			}
+		if val, ok := value.(float64); ok {
+			fields[key] = val
 		}
 	}
 	acc.AddFields("twemproxy_pool_server", fields, tags)

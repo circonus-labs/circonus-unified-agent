@@ -65,6 +65,7 @@ func TestEngineWithWildcardTemplate(t *testing.T) {
 			},
 		},
 	} {
+		testCase := testCase
 		t.Run(testCase.line, func(t *testing.T) {
 			measurement, tags, field, err := engine.Apply(testCase.line)
 			require.NoError(t, err)

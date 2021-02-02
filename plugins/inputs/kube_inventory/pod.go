@@ -14,27 +14,26 @@ func collectPods(ctx context.Context, acc cua.Accumulator, ki *KubernetesInvento
 		return
 	}
 	for _, p := range list.Items {
-		if err = ki.gatherPod(*p, acc); err != nil {
-			acc.AddError(err)
-			return
-		}
+		ki.gatherPod(*p, acc)
+		// if err = ki.gatherPod(*p, acc); err != nil {
+		// 	acc.AddError(err)
+		// 	return
+		// }
 	}
 }
 
-func (ki *KubernetesInventory) gatherPod(p v1.Pod, acc cua.Accumulator) error {
+func (ki *KubernetesInventory) gatherPod(p v1.Pod, acc cua.Accumulator) {
 	if p.Metadata.CreationTimestamp.GetSeconds() == 0 && p.Metadata.CreationTimestamp.GetNanos() == 0 {
-		return nil
+		return
 	}
 
 	for i, cs := range p.Status.ContainerStatuses {
 		c := p.Spec.Containers[i]
-		gatherPodContainer(*p.Spec.NodeName, ki, p, *cs, *c, acc)
+		gatherPodContainer(ki, p, *cs, *c, acc)
 	}
-
-	return nil
 }
 
-func gatherPodContainer(nodeName string, ki *KubernetesInventory, p v1.Pod, cs v1.ContainerStatus, c v1.Container, acc cua.Accumulator) {
+func gatherPodContainer(ki *KubernetesInventory, p v1.Pod, cs v1.ContainerStatus, c v1.Container, acc cua.Accumulator) {
 	stateCode := 3
 	stateReason := ""
 	state := "unknown"

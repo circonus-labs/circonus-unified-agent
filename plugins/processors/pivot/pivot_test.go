@@ -103,6 +103,7 @@ func TestPivot(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			actual := tt.pivot.Apply(tt.metrics...)
 			testutil.RequireMetricsEqual(t, tt.expected, actual)

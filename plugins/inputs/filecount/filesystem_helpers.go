@@ -40,10 +40,12 @@ func (osFS) Stat(name string) (os.FileInfo, error) { return os.Stat(name) }
 	walk functions, that we cannot mock from here.
 */
 
+//nolint:unused
 type fakeFileSystem struct {
 	files map[string]fakeFileInfo
 }
 
+//nolint:unused
 type fakeFileInfo struct {
 	name     string
 	size     int64

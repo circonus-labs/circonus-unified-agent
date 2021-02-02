@@ -10,16 +10,16 @@ import (
 	"github.com/shirou/gopsutil/process"
 )
 
-//NativeFinder uses gopsutil to find processes
+// NativeFinder uses gopsutil to find processes
 type NativeFinder struct {
 }
 
-//NewNativeFinder ...
+// NewNativeFinder ...
 func NewNativeFinder() (PIDFinder, error) {
 	return &NativeFinder{}, nil
 }
 
-//UID will return all pids for the given user
+// UID will return all pids for the given user
 func (pg *NativeFinder) UID(user string) ([]PID, error) {
 	var dst []PID
 	procs, err := process.Processes()
@@ -29,8 +29,8 @@ func (pg *NativeFinder) UID(user string) ([]PID, error) {
 	for _, p := range procs {
 		username, err := p.Username()
 		if err != nil {
-			//skip, this can happen if we don't have permissions or
-			//the pid no longer exists
+			// skip, this can happen if we don't have permissions or
+			// the pid no longer exists
 			continue
 		}
 		if username == user {
@@ -40,7 +40,7 @@ func (pg *NativeFinder) UID(user string) ([]PID, error) {
 	return dst, nil
 }
 
-//PidFile returns the pid from the pid file given.
+// PidFile returns the pid from the pid file given.
 func (pg *NativeFinder) PidFile(path string) ([]PID, error) {
 	var pids []PID
 	pidString, err := ioutil.ReadFile(path)
@@ -56,7 +56,7 @@ func (pg *NativeFinder) PidFile(path string) ([]PID, error) {
 
 }
 
-//FullPattern matches on the command line when the process was executed
+// FullPattern matches on the command line when the process was executed
 func (pg *NativeFinder) FullPattern(pattern string) ([]PID, error) {
 	var pids []PID
 	regxPattern, err := regexp.Compile(pattern)
@@ -70,8 +70,8 @@ func (pg *NativeFinder) FullPattern(pattern string) ([]PID, error) {
 	for _, p := range procs {
 		cmd, err := p.Cmdline()
 		if err != nil {
-			//skip, this can be caused by the pid no longer existing
-			//or you having no permissions to access it
+			// skip, this can be caused by the pid no longer existing
+			// or you having no permissions to access it
 			continue
 		}
 		if regxPattern.MatchString(cmd) {

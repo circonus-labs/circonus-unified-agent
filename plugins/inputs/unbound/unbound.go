@@ -71,49 +71,50 @@ func (s *Unbound) SampleConfig() string {
 }
 
 // Shell out to unbound_stat and return the output
-func unboundRunner(cmdName string, Timeout internal.Duration, UseSudo bool, Server string, ThreadAsTag bool, ConfigFile string) (*bytes.Buffer, error) {
+func unboundRunner(cmdName string, timeout internal.Duration, useSudo bool, server string, threadAsTag bool, configFile string) (*bytes.Buffer, error) {
 	cmdArgs := []string{"stats_noreset"}
 
-	if Server != "" {
-		host, port, err := net.SplitHostPort(Server)
+	if server != "" {
+		host, port, err := net.SplitHostPort(server)
 		if err != nil { // No port was specified
-			host = Server
+			host = server
 			port = ""
 		}
 
 		// Unbound control requires an IP address, and we want to be nice to the user
 		resolver := net.Resolver{}
-		ctx, lookUpCancel := context.WithTimeout(context.Background(), Timeout.Duration)
+		ctx, lookUpCancel := context.WithTimeout(context.Background(), timeout.Duration)
 		defer lookUpCancel()
 		serverIps, err := resolver.LookupIPAddr(ctx, host)
 		if err != nil {
-			return nil, fmt.Errorf("error looking up ip for server: %s: %w", Server, err)
+			return nil, fmt.Errorf("error looking up ip for server: %s: %w", server, err)
 		}
 		if len(serverIps) == 0 {
-			return nil, fmt.Errorf("error no ip for server: %s: %w", Server, err)
-		}
-		server := serverIps[0].IP.String()
-		if port != "" {
-			server = server + "@" + port
+			return nil, fmt.Errorf("error no ip for server: %s: %w", server, err)
 		}
 
-		cmdArgs = append([]string{"-s", server}, cmdArgs...)
+		serverAddr := serverIps[0].IP.String()
+		if port != "" {
+			serverAddr = serverAddr + "@" + port
+		}
+
+		cmdArgs = append([]string{"-s", serverAddr}, cmdArgs...)
 	}
 
-	if ConfigFile != "" {
-		cmdArgs = append([]string{"-c", ConfigFile}, cmdArgs...)
+	if configFile != "" {
+		cmdArgs = append([]string{"-c", configFile}, cmdArgs...)
 	}
 
 	cmd := exec.Command(cmdName, cmdArgs...)
 
-	if UseSudo {
+	if useSudo {
 		cmdArgs = append([]string{cmdName}, cmdArgs...)
 		cmd = exec.Command("sudo", cmdArgs...)
 	}
 
 	var out bytes.Buffer
 	cmd.Stdout = &out
-	err := internal.RunTimeout(cmd, Timeout.Duration)
+	err := internal.RunTimeout(cmd, timeout.Duration)
 	if err != nil {
 		return &out, fmt.Errorf("error running unbound-control: %w (%s %v)", err, cmdName, cmdArgs)
 	}
@@ -180,7 +181,7 @@ func (s *Unbound) Gather(acc cua.Accumulator) error {
 					// create new slice without the thread identifier (skip first token)
 					threadTokens := statTokens[1:]
 					// re-define stat
-					field := strings.Join(threadTokens[:], "_")
+					field := strings.Join(threadTokens, "_")
 					if fieldsThreads[threadID] == nil {
 						fieldsThreads[threadID] = make(map[string]interface{})
 					}
@@ -188,7 +189,7 @@ func (s *Unbound) Gather(acc cua.Accumulator) error {
 				}
 			}
 		} else {
-			field := strings.Replace(stat, ".", "_", -1)
+			field := strings.ReplaceAll(stat, ".", "_")
 			fields[field] = fieldValue
 		}
 

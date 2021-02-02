@@ -80,7 +80,7 @@ func TestReadsMetricsFromKafka(t *testing.T) {
 
 // Waits for the metric that was sent to the kafka broker to arrive at the kafka
 // consumer
-func waitForPoint(acc *testutil.Accumulator, t *testing.T) {
+func waitForPoint(acc *testutil.Accumulator, t *testing.T) { //nolint:unused // it's used above...wtf
 	// Give the kafka container up to 2 seconds to get the point to the consumer
 	ticker := time.NewTicker(5 * time.Millisecond)
 	counter := 0

@@ -87,10 +87,10 @@ func (r *Disque) Gather(acc cua.Accumulator) error {
 			u.Path = ""
 		}
 		wg.Add(1)
-		go func(serv string) {
+		go func(servURL *url.URL) {
 			defer wg.Done()
-			acc.AddError(r.gatherServer(u, acc))
-		}(serv)
+			acc.AddError(r.gatherServer(servURL, acc))
+		}(u)
 	}
 
 	wg.Wait()

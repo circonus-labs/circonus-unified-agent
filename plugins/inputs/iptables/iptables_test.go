@@ -172,6 +172,8 @@ func TestIptables_Gather(t *testing.T) {
 	}
 
 	for i, tt := range tests {
+		i := i
+		tt := tt
 		t.Run(tt.table, func(t *testing.T) {
 			i++
 			ipt := &Iptables{

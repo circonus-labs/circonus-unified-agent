@@ -419,7 +419,7 @@ func (t *TopK) getAggregationFunction(aggOperation string) (func([]cua.Metric, [
 					mean[k] = 0
 					continue
 				}
-				mean[k] = mean[k] / meanCounters[k]
+				mean[k] /= meanCounters[k]
 				noMeasurementsFound = noMeasurementsFound && false
 			}
 

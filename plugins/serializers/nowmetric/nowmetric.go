@@ -61,7 +61,7 @@ func (s *Serializer) SerializeBatch(metrics []cua.Metric) (out []byte, err error
 			objects = append(objects, m...)
 		}
 	}
-	replaced := bytes.Replace(objects, []byte("]["), []byte(","), -1)
+	replaced := bytes.ReplaceAll(objects, []byte("]["), []byte(","))
 	return replaced, nil
 }
 
@@ -76,7 +76,6 @@ func (s *Serializer) createObject(metric cua.Metric) ([]byte, error) {
 		 ** ci2metric_id:	List of key-value pairs to identify the CI.
 		 ** source:			Data source monitoring the metric type
 	*/
-	var allmetrics OIMetrics
 	var oimetric OIMetric
 
 	oimetric.Source = "Circonus"
@@ -99,6 +98,7 @@ func (s *Serializer) createObject(metric cua.Metric) ([]byte, error) {
 	// Format timestamp to UNIX epoch
 	oimetric.Timestamp = (metric.Time().UnixNano() / int64(time.Millisecond))
 
+	allmetrics := make(OIMetrics, 0, len(metric.FieldList()))
 	// Loop of fields value pair and build datapoint for each of them
 	for _, field := range metric.FieldList() {
 		if !verifyValue(field.Value) {
@@ -132,6 +132,7 @@ func verifyValue(v interface{}) bool {
 	switch v.(type) {
 	case string:
 		return false
+	default:
+		return true
 	}
-	return true
 }

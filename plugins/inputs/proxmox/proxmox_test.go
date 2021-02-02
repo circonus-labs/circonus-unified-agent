@@ -21,19 +21,20 @@ var qemuCurrentStatusTestData = `{"data":{"name":"qemu1","status":"running","max
 func performTestRequest(px *Proxmox, apiURL string, method string, data url.Values) ([]byte, error) {
 	var bytedata = []byte("")
 
-	if strings.HasSuffix(apiURL, "dns") {
+	switch {
+	case strings.HasSuffix(apiURL, "dns"):
 		bytedata = []byte(nodeSearchDomainTestData)
-	} else if strings.HasSuffix(apiURL, "qemu") {
+	case strings.HasSuffix(apiURL, "qemu"):
 		bytedata = []byte(qemuTestData)
-	} else if strings.HasSuffix(apiURL, "113/config") {
+	case strings.HasSuffix(apiURL, "113/config"):
 		bytedata = []byte(qemuConfigTestData)
-	} else if strings.HasSuffix(apiURL, "lxc") {
+	case strings.HasSuffix(apiURL, "lxc"):
 		bytedata = []byte(lxcTestData)
-	} else if strings.HasSuffix(apiURL, "111/config") {
+	case strings.HasSuffix(apiURL, "111/config"):
 		bytedata = []byte(lxcConfigTestData)
-	} else if strings.HasSuffix(apiURL, "111/status/current") {
+	case strings.HasSuffix(apiURL, "111/status/current"):
 		bytedata = []byte(lxcCurrentStatusTestData)
-	} else if strings.HasSuffix(apiURL, "113/status/current") {
+	case strings.HasSuffix(apiURL, "113/status/current"):
 		bytedata = []byte(qemuCurrentStatusTestData)
 	}
 

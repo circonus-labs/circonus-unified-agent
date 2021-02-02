@@ -273,15 +273,16 @@ func (d *Docker) gatherSwarmInfo(acc cua.Accumulator) error {
 			now := time.Now()
 			tags["service_id"] = service.ID
 			tags["service_name"] = service.Spec.Name
-			if service.Spec.Mode.Replicated != nil && service.Spec.Mode.Replicated.Replicas != nil {
+			switch {
+			case service.Spec.Mode.Replicated != nil && service.Spec.Mode.Replicated.Replicas != nil:
 				tags["service_mode"] = "replicated"
 				fields["tasks_running"] = running[service.ID]
 				fields["tasks_desired"] = *service.Spec.Mode.Replicated.Replicas
-			} else if service.Spec.Mode.Global != nil {
+			case service.Spec.Mode.Global != nil:
 				tags["service_mode"] = "global"
 				fields["tasks_running"] = running[service.ID]
 				fields["tasks_desired"] = tasksNoShutdown[service.ID]
-			} else {
+			default:
 				d.Log.Error("Unknown replica mode")
 			}
 			// Add metrics
@@ -350,7 +351,7 @@ func (d *Docker) gatherInfo(acc cua.Accumulator) error {
 	)
 
 	for _, rawData := range info.DriverStatus {
-		name := strings.ToLower(strings.Replace(rawData[0], " ", "_", -1))
+		name := strings.ToLower(strings.ReplaceAll(rawData[0], " ", "_"))
 		if name == "pool_name" {
 			poolName = rawData[1]
 			continue
@@ -376,17 +377,18 @@ func (d *Docker) gatherInfo(acc cua.Accumulator) error {
 		}
 
 		// Legacy devicemapper measurements
-		if name == "pool_blocksize" {
+		switch {
+		case name == "pool_blocksize":
 			// pool blocksize
 			acc.AddFields("docker",
 				map[string]interface{}{"pool_blocksize": value},
 				tags,
 				now)
-		} else if strings.HasPrefix(name, "data_space_") {
+		case strings.HasPrefix(name, "data_space_"):
 			// data space
 			fieldName := strings.TrimPrefix(name, "data_space_")
 			dataFields[fieldName] = value
-		} else if strings.HasPrefix(name, "metadata_space_") {
+		case strings.HasPrefix(name, "metadata_space_"):
 			// metadata space
 			fieldName := strings.TrimPrefix(name, "metadata_space_")
 			metadataFields[fieldName] = value
@@ -518,7 +520,7 @@ func (d *Docker) gatherContainerInspect(
 		for _, envvar := range info.Config.Env {
 			for _, configvar := range d.TagEnvironment {
 				dockEnv := strings.SplitN(envvar, "=", 2)
-				//check for presence of tag in whitelist
+				// check for presence of tag in whitelist
 				if len(dockEnv) == 2 && len(strings.TrimSpace(dockEnv[1])) != 0 && configvar == dockEnv[0] {
 					tags[dockEnv[0]] = dockEnv[1]
 				}

@@ -256,7 +256,7 @@ func (c *X509Cert) Init() error {
 		return err
 	}
 	if tlsCfg == nil {
-		tlsCfg = &tls.Config{}
+		tlsCfg = &tls.Config{MinVersion: tls.VersionTLS12}
 	}
 
 	c.tlsCfg = tlsCfg

@@ -278,12 +278,12 @@ var slaveMetricNames []string = []string{
 func generateMetrics() {
 	masterMetrics = make(map[string]interface{})
 	for _, k := range masterMetricNames {
-		masterMetrics[k] = rand.Float64()
+		masterMetrics[k] = rand.Float64() //nolint:gosec // G404 - it's for a test
 	}
 
 	slaveMetrics = make(map[string]interface{})
 	for _, k := range slaveMetricNames {
-		slaveMetrics[k] = rand.Float64()
+		slaveMetrics[k] = rand.Float64() //nolint:gosec // G404 - it's for a test
 	}
 
 	// slaveTaskMetrics = map[string]interface{}{

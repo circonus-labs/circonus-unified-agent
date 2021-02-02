@@ -69,7 +69,7 @@ func prettyToBytes(v string) uint64 {
 		factor = factors[prefix]
 	}
 	result, _ := strconv.ParseFloat(v, 32)
-	result = result * float64(factor)
+	result *= float64(factor)
 
 	return uint64(result)
 }

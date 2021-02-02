@@ -21,13 +21,14 @@ func TestGatherAttributes(t *testing.T) {
 
 	runCmd = func(timeout internal.Duration, sudo bool, command string, args ...string) ([]byte, error) {
 		if len(args) > 0 {
-			if args[0] == "--info" && args[7] == "/dev/ada0" {
+			switch {
+			case args[0] == "--info" && args[7] == "/dev/ada0":
 				return []byte(mockInfoAttributeData), nil
-			} else if args[0] == "--info" && args[7] == "/dev/nvme0" {
+			case args[0] == "--info" && args[7] == "/dev/nvme0":
 				return []byte(smartctlNvmeInfoData), nil
-			} else if args[0] == "--scan" && len(args) == 1 {
+			case args[0] == "--scan" && len(args) == 1:
 				return []byte(mockScanData), nil
-			} else if args[0] == "--scan" && len(args) >= 2 && args[1] == "--device=nvme" {
+			case args[0] == "--scan" && len(args) >= 2 && args[1] == "--device=nvme":
 				return []byte(mockScanNvmeData), nil
 			}
 		}
@@ -85,13 +86,14 @@ func TestGatherNoAttributes(t *testing.T) {
 
 	runCmd = func(timeout internal.Duration, sudo bool, command string, args ...string) ([]byte, error) {
 		if len(args) > 0 {
-			if args[0] == "--scan" && len(args) == 1 {
+			switch {
+			case args[0] == "--scan" && len(args) == 1:
 				return []byte(mockScanData), nil
-			} else if args[0] == "--info" && args[7] == "/dev/ada0" {
+			case args[0] == "--info" && args[7] == "/dev/ada0":
 				return []byte(mockInfoAttributeData), nil
-			} else if args[0] == "--info" && args[7] == "/dev/nvme0" {
+			case args[0] == "--info" && args[7] == "/dev/nvme0":
 				return []byte(smartctlNvmeInfoData), nil
-			} else if args[0] == "--scan" && args[1] == "--device=nvme" {
+			case args[0] == "--scan" && args[1] == "--device=nvme":
 				return []byte(mockScanNvmeData), nil
 			}
 		}

@@ -133,7 +133,7 @@ func (n *mockNSQD) listen() {
 	close(n.exitChan)
 }
 
-func (n *mockNSQD) handle(conn net.Conn) {
+func (n *mockNSQD) handle(conn io.ReadWriteCloser) {
 	var idx int
 	buf := make([]byte, 4)
 	_, err := io.ReadFull(conn, buf)

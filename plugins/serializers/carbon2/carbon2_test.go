@@ -44,6 +44,7 @@ func TestSerializeMetricFloat(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(string(tc.format), func(t *testing.T) {
 			s, err := NewSerializer(string(tc.format))
 			require.NoError(t, err)
@@ -82,6 +83,7 @@ func TestSerializeMetricWithEmptyStringTag(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(string(tc.format), func(t *testing.T) {
 			s, err := NewSerializer(string(tc.format))
 			require.NoError(t, err)
@@ -120,6 +122,7 @@ func TestSerializeWithSpaces(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(string(tc.format), func(t *testing.T) {
 			s, err := NewSerializer(string(tc.format))
 			require.NoError(t, err)
@@ -158,6 +161,7 @@ func TestSerializeMetricInt(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(string(tc.format), func(t *testing.T) {
 			s, err := NewSerializer(string(tc.format))
 			require.NoError(t, err)
@@ -196,6 +200,7 @@ func TestSerializeMetricString(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(string(tc.format), func(t *testing.T) {
 			s, err := NewSerializer(string(tc.format))
 			require.NoError(t, err)
@@ -253,6 +258,7 @@ func TestSerializeMetricBool(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.format, func(t *testing.T) {
 			s, err := NewSerializer(tc.format)
 			require.NoError(t, err)
@@ -298,6 +304,7 @@ metric=cpu_value  42 0
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(string(tc.format), func(t *testing.T) {
 			s, err := NewSerializer(string(tc.format))
 			require.NoError(t, err)

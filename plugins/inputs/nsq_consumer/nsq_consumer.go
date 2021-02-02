@@ -26,7 +26,7 @@ func (l *logger) Output(calldepth int, s string) error {
 	return nil
 }
 
-//NSQConsumer represents the configuration of the plugin
+// NSQConsumer represents the configuration of the plugin
 type NSQConsumer struct {
 	Server      string   `toml:"server"`
 	Nsqd        []string `toml:"nsqd"`

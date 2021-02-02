@@ -50,9 +50,6 @@ type natsConsumer struct {
 
 	MaxUndeliveredMessages int `toml:"max_undelivered_messages"`
 
-	// Legacy metric buffer support; deprecated in v0.10.3
-	MetricBuffer int
-
 	conn *nats.Conn
 	subs []*nats.Subscription
 

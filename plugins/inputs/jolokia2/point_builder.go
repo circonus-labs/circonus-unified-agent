@@ -95,18 +95,19 @@ func (pb *pointBuilder) extractFields(mbean string, value interface{}) map[strin
 
 	if ok {
 		// complex value
-		if len(pb.objectAttributes) == 0 {
+		switch {
+		case len(pb.objectAttributes) == 0:
 			// if there were no attributes requested,
 			// then the keys are attributes
 			pb.fillFields("", valueMap, fieldMap)
 
-		} else if len(pb.objectAttributes) == 1 {
+		case len(pb.objectAttributes) == 1:
 			// if there was a single attribute requested,
 			// then the keys are the attribute's properties
 			fieldName := pb.formatFieldName(pb.objectAttributes[0], pb.objectPath)
 			pb.fillFields(fieldName, valueMap, fieldMap)
 
-		} else {
+		default:
 			// if there were multiple attributes requested,
 			// then the keys are the attribute names
 			for _, attribute := range pb.objectAttributes {
@@ -146,7 +147,7 @@ func (pb *pointBuilder) formatFieldName(attribute, path string) string {
 	}
 
 	if path != "" {
-		fieldName = fieldName + fieldSeparator + strings.Replace(path, "/", fieldSeparator, -1)
+		fieldName = fieldName + fieldSeparator + strings.ReplaceAll(path, "/", fieldSeparator)
 	}
 
 	return fieldName
@@ -204,7 +205,7 @@ func (pb *pointBuilder) applySubstitutions(mbean string, fieldMap map[string]int
 		substitution := properties[subKey]
 
 		for fieldName, fieldValue := range fieldMap {
-			newFieldName := strings.Replace(fieldName, symbol, substitution, -1)
+			newFieldName := strings.ReplaceAll(fieldName, symbol, substitution)
 			if fieldName != newFieldName {
 				fieldMap[newFieldName] = fieldValue
 				delete(fieldMap, fieldName)

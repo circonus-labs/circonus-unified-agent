@@ -182,7 +182,7 @@ func NewInfluxSerializerConfig(config *Config) (Serializer, error) {
 
 	var typeSupport influx.FieldTypeSupport
 	if config.InfluxUintSupport {
-		typeSupport = typeSupport + influx.UintSupport
+		typeSupport += influx.UintSupport
 	}
 
 	s := influx.NewSerializer()

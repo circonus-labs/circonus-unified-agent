@@ -66,16 +66,16 @@ func (s *Varnish) SampleConfig() string {
 }
 
 // Shell out to varnish_stat and return the output
-func varnishRunner(cmdName string, UseSudo bool, InstanceName string, Timeout internal.Duration) (*bytes.Buffer, error) {
+func varnishRunner(cmdName string, useSudo bool, instanceName string, timeout internal.Duration) (*bytes.Buffer, error) {
 	cmdArgs := []string{"-1"}
 
-	if InstanceName != "" {
-		cmdArgs = append(cmdArgs, []string{"-n", InstanceName}...)
+	if instanceName != "" {
+		cmdArgs = append(cmdArgs, []string{"-n", instanceName}...)
 	}
 
 	cmd := exec.Command(cmdName, cmdArgs...)
 
-	if UseSudo {
+	if useSudo {
 		cmdArgs = append([]string{cmdName}, cmdArgs...)
 		cmdArgs = append([]string{"-n"}, cmdArgs...)
 		cmd = exec.Command("sudo", cmdArgs...)
@@ -84,7 +84,7 @@ func varnishRunner(cmdName string, UseSudo bool, InstanceName string, Timeout in
 	var out bytes.Buffer
 	cmd.Stdout = &out
 
-	err := internal.RunTimeout(cmd, Timeout.Duration)
+	err := internal.RunTimeout(cmd, timeout.Duration)
 	if err != nil {
 		return &out, fmt.Errorf("error running varnishstat: %w", err)
 	}

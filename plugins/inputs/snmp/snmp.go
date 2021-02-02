@@ -263,7 +263,7 @@ func (f *Field) init() error {
 		f.Conversion = conversion
 	}
 
-	//TODO use textual convention conversion from the MIB
+	// TODO use textual convention conversion from the MIB
 
 	f.initialized = true
 	return nil
@@ -403,6 +403,8 @@ func (t Table) Build(gs snmpConnection, walk bool) (*RTable, error) {
 
 	tagCount := 0
 	for _, f := range t.Fields {
+		f := f
+
 		if f.IsTag {
 			tagCount++
 		}
@@ -527,7 +529,7 @@ func (t Table) Build(gs snmpConnection, walk bool) (*RTable, error) {
 
 	rt := RTable{
 		Name: t.Name,
-		Time: time.Now(), //TODO record time at start
+		Time: time.Now(), // TODO record time at start
 		Rows: make([]RTableRow, 0, len(rows)),
 	}
 	for _, r := range rows {
@@ -540,7 +542,7 @@ func (t Table) Build(gs snmpConnection, walk bool) (*RTable, error) {
 // We interact through an interface so we can mock it out in tests.
 type snmpConnection interface {
 	Host() string
-	//BulkWalkAll(string) ([]gosnmp.SnmpPDU, error)
+	// BulkWalkAll(string) ([]gosnmp.SnmpPDU, error)
 	Walk(string, gosnmp.WalkFunc) error
 	Get(oids []string) (*gosnmp.SnmpPacket, error)
 }

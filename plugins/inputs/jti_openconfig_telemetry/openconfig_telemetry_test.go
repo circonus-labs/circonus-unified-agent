@@ -50,14 +50,14 @@ type openConfigTelemetryServer struct {
 }
 
 func (s *openConfigTelemetryServer) TelemetrySubscribe(req *telemetry.SubscriptionRequest, stream telemetry.OpenConfigTelemetry_TelemetrySubscribeServer) error {
-	path := req.PathList[0].Path
-	if path == "/sensor" {
+	switch req.PathList[0].Path {
+	case "/sensor":
 		_ = stream.Send(data)
-	} else if path == "/sensor_with_prefix" {
+	case "/sensor_with_prefix":
 		_ = stream.Send(dataWithPrefix)
-	} else if path == "/sensor_with_multiple_tags" {
+	case "/sensor_with_multiple_tags":
 		_ = stream.Send(dataWithMultipleTags)
-	} else if path == "/sensor_with_string_values" {
+	case "/sensor_with_string_values":
 		_ = stream.Send(dataWithStringValues)
 	}
 	return nil
@@ -221,6 +221,8 @@ func TestMain(m *testing.M) {
 	go func() {
 		_ = grpcServer.Serve(lis)
 	}()
-	defer grpcServer.Stop()
+
+	// defer grpcServer.Stop() // it's no going to run anyway because of os.Exit...
+
 	os.Exit(m.Run())
 }

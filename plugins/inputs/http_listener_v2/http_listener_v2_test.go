@@ -116,7 +116,8 @@ func TestWriteHTTPSNoClientAuth(t *testing.T) {
 	noClientAuthClient := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
-				RootCAs: cas,
+				RootCAs:    cas,
+				MinVersion: tls.VersionTLS12,
 			},
 		},
 	}

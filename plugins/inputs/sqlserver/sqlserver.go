@@ -128,7 +128,8 @@ func initQueries(s *SQLServer) error {
 	// Constant defintiions for type "AzureSQLDB" start with sqlAzureDB
 	// Constant defintiions for type "AzureSQLManagedInstance" start with sqlAzureMI
 	// Constant defintiions for type "SQLServer" start with sqlServer
-	if s.DatabaseType == "AzureSQLDB" {
+	switch s.DatabaseType {
+	case "AzureSQLDB":
 		queries["AzureSQLDBResourceStats"] = Query{ScriptName: "AzureSQLDBResourceStats", Script: sqlAzureDBResourceStats, ResultByRow: false}
 		queries["AzureSQLDBResourceGovernance"] = Query{ScriptName: "AzureSQLDBResourceGovernance", Script: sqlAzureDBResourceGovernance, ResultByRow: false}
 		queries["AzureSQLDBWaitStats"] = Query{ScriptName: "AzureSQLDBWaitStats", Script: sqlAzureDBWaitStats, ResultByRow: false}
@@ -139,7 +140,7 @@ func initQueries(s *SQLServer) error {
 		queries["AzureSQLDBPerformanceCounters"] = Query{ScriptName: "AzureSQLDBPerformanceCounters", Script: sqlAzureDBPerformanceCounters, ResultByRow: false}
 		queries["AzureSQLDBRequests"] = Query{ScriptName: "AzureSQLDBRequests", Script: sqlAzureDBRequests, ResultByRow: false}
 		queries["AzureSQLDBSchedulers"] = Query{ScriptName: "AzureSQLDBSchedulers", Script: sqlAzureDBSchedulers, ResultByRow: false}
-	} else if s.DatabaseType == "AzureSQLManagedInstance" {
+	case "AzureSQLManagedInstance":
 		queries["AzureSQLMIResourceStats"] = Query{ScriptName: "AzureSQLMIResourceStats", Script: sqlAzureMIResourceStats, ResultByRow: false}
 		queries["AzureSQLMIResourceGovernance"] = Query{ScriptName: "AzureSQLMIResourceGovernance", Script: sqlAzureMIResourceGovernance, ResultByRow: false}
 		queries["AzureSQLMIDatabaseIO"] = Query{ScriptName: "AzureSQLMIDatabaseIO", Script: sqlAzureMIDatabaseIO, ResultByRow: false}
@@ -149,7 +150,7 @@ func initQueries(s *SQLServer) error {
 		queries["AzureSQLMIPerformanceCounters"] = Query{ScriptName: "AzureSQLMIPerformanceCounters", Script: sqlAzureMIPerformanceCounters, ResultByRow: false}
 		queries["AzureSQLMIRequests"] = Query{ScriptName: "AzureSQLMIRequests", Script: sqlAzureMIRequests, ResultByRow: false}
 		queries["AzureSQLMISchedulers"] = Query{ScriptName: "AzureSQLMISchedulers", Script: sqlAzureMISchedulers, ResultByRow: false}
-	} else if s.DatabaseType == "SQLServer" { //These are still V2 queries and have not been refactored yet.
+	case "SQLServer": // These are still V2 queries and have not been refactored yet.
 		queries["SQLServerPerformanceCounters"] = Query{ScriptName: "SQLServerPerformanceCounters", Script: sqlServerPerformanceCounters, ResultByRow: false}
 		queries["SQLServerWaitStatsCategorized"] = Query{ScriptName: "SQLServerWaitStatsCategorized", Script: sqlServerWaitStatsCategorized, ResultByRow: false}
 		queries["SQLServerDatabaseIO"] = Query{ScriptName: "SQLServerDatabaseIO", Script: sqlServerDatabaseIO, ResultByRow: false}
@@ -159,7 +160,7 @@ func initQueries(s *SQLServer) error {
 		queries["SQLServerRequests"] = Query{ScriptName: "SQLServerRequests", Script: sqlServerRequests, ResultByRow: false}
 		queries["SQLServerVolumeSpace"] = Query{ScriptName: "SQLServerVolumeSpace", Script: sqlServerVolumeSpace, ResultByRow: false}
 		queries["SQLServerCpu"] = Query{ScriptName: "SQLServerCpu", Script: sqlServerRingBufferCPU, ResultByRow: false}
-	} else {
+	default:
 		// If this is an AzureDB instance, grab some extra metrics
 		if s.AzureDB {
 			queries["AzureDBResourceStats"] = Query{ScriptName: "AzureDBPerformanceCounters", Script: sqlAzureDBResourceStats, ResultByRow: false}
@@ -205,7 +206,7 @@ func initQueries(s *SQLServer) error {
 
 	// Set a flag so we know that queries have already been initialized
 	s.isInitialized = true
-	var querylist []string
+	querylist := make([]string, 0, len(queries))
 	for query := range queries {
 		querylist = append(querylist, query)
 	}
@@ -255,7 +256,6 @@ func (s *SQLServer) gatherServer(server string, query Query, acc cua.Accumulator
 	rows, err := conn.Query(query.Script)
 	if err != nil {
 		return fmt.Errorf("Script %s failed: %w", query.ScriptName, err)
-		//return   err
 	}
 	defer rows.Close()
 

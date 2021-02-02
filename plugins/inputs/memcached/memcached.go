@@ -114,7 +114,7 @@ func (m *Memcached) gatherServer(
 	} else {
 		_, _, err = net.SplitHostPort(address)
 		if err != nil {
-			address = address + ":11211"
+			address += ":11211"
 		}
 
 		conn, err = net.DialTimeout("tcp", address, defaultTimeout)

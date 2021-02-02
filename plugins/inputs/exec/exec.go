@@ -74,7 +74,7 @@ func (c CommandRunner) Run(
 		return nil, nil, fmt.Errorf("exec: unable to parse command, %w", err)
 	}
 
-	cmd := exec.Command(splitCmd[0], splitCmd[1:]...)
+	cmd := exec.Command(splitCmd[0], splitCmd[1:]...) //nolint:gosec // G204
 
 	var (
 		out    bytes.Buffer

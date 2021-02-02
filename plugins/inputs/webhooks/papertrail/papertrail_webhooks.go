@@ -40,9 +40,8 @@ func (pt *Webhook) eventHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if payload.Events != nil {
-
-		// Handle event-based payload
+	switch {
+	case payload.Events != nil: // Handle event-based payload
 		for _, e := range payload.Events {
 			// Warning: Duplicate event timestamps will overwrite each other
 			tags := map[string]string{
@@ -54,10 +53,7 @@ func (pt *Webhook) eventHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			pt.acc.AddFields("papertrail", fields, tags, e.ReceivedAt)
 		}
-
-	} else if payload.Counts != nil {
-
-		// Handle count-based payload
+	case payload.Counts != nil: // Handle count-based payload
 		for _, c := range payload.Counts {
 			for ts, count := range *c.TimeSeries {
 				tags := map[string]string{
@@ -70,7 +66,7 @@ func (pt *Webhook) eventHandler(w http.ResponseWriter, r *http.Request) {
 				pt.acc.AddFields("papertrail", fields, tags, time.Unix(ts, 0))
 			}
 		}
-	} else {
+	default:
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}

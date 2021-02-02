@@ -7,7 +7,7 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/metric"
 )
 
-///// Test set 1 /////
+// Test set 1
 var metric11, _ = metric.New(
 	"m1",
 	map[string]string{"tag_name": "tag_value1"},
@@ -60,7 +60,7 @@ var metric15, _ = metric.New(
 
 var MetricsSet1 = []cua.Metric{metric11, metric12, metric13, metric14, metric15}
 
-///// Test set 2 /////
+// Test set 2
 var metric21, _ = metric.New(
 	"metric1",
 	map[string]string{

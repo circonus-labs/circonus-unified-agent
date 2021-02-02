@@ -66,7 +66,6 @@ func (p *Publisher) publishProcess(measurement processMeasurement) {
 }
 
 func parseCoresMeasurement(measurements string) (string, []float64, time.Time, error) {
-	var values []float64
 	timeValue, metricsValues, cores, err := splitCSVLineIntoValues(measurements)
 	if err != nil {
 		return "", nil, time.Time{}, err
@@ -79,6 +78,7 @@ func parseCoresMeasurement(measurements string) (string, []float64, time.Time, e
 	coresString := strings.Join(cores, ",")
 	// trim unwanted quotes
 	coresString = strings.Trim(coresString, "\"")
+	values := make([]float64, 0, len(metricsValues))
 
 	for _, metric := range metricsValues {
 		parsedValue, err := parseFloat(metric)
@@ -111,7 +111,6 @@ func (p *Publisher) addToAccumulatorCores(cores string, metricsValues []float64,
 }
 
 func parseProcessesMeasurement(measurement processMeasurement) (string, string, []float64, time.Time, error) {
-	var values []float64
 	timeValue, metricsValues, coreOrPidsValues, pids, err := parseProcessMeasurement(measurement.measurement)
 	if err != nil {
 		return "", "", nil, time.Time{}, err
@@ -125,6 +124,7 @@ func parseProcessesMeasurement(measurement processMeasurement) (string, string, 
 	cores := coreOrPidsValues[lenOfPids:]
 	coresString := strings.Trim(strings.Join(cores, ","), `"`)
 
+	values := make([]float64, 0, len(metricsValues))
 	for _, metric := range metricsValues {
 		parsedValue, err := parseFloat(metric)
 		if err != nil {

@@ -73,7 +73,7 @@ func (p *PowerdnsRecursor) Gather(acc cua.Accumulator) error {
 }
 
 func (p *PowerdnsRecursor) gatherServer(address string, acc cua.Accumulator) error {
-	randomNumber := rand.Int63()
+	randomNumber := rand.Int63() //nolint:gosec // G404
 	recvSocket := filepath.Join("/", "var", "run", fmt.Sprintf("pdns_recursor_cua%d", randomNumber))
 	if p.SocketDir != "" {
 		recvSocket = filepath.Join(p.SocketDir, fmt.Sprintf("pdns_recursor_cua%d", randomNumber))

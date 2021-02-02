@@ -39,6 +39,7 @@ func TestGetExitCode(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			e := tt.errF()
 			code, err := getExitCode(e)
@@ -65,13 +66,14 @@ func (b *metricBuilder) n(v string) *metricBuilder {
 	return b
 }
 
-func (b *metricBuilder) t(k, v string) *metricBuilder {
-	if b.tags == nil {
-		b.tags = make(map[string]string)
-	}
-	b.tags[k] = v
-	return b
-}
+// unused
+// func (b *metricBuilder) t(k, v string) *metricBuilder {
+// 	if b.tags == nil {
+// 		b.tags = make(map[string]string)
+// 	}
+// 	b.tags[k] = v
+// 	return b
+// }
 
 func (b *metricBuilder) f(k string, v interface{}) *metricBuilder {
 	if b.fields == nil {
@@ -81,10 +83,11 @@ func (b *metricBuilder) f(k string, v interface{}) *metricBuilder {
 	return b
 }
 
-func (b *metricBuilder) ts(v time.Time) *metricBuilder {
-	b.timestamp = v
-	return b
-}
+// unused
+// func (b *metricBuilder) ts(v time.Time) *metricBuilder {
+// 	b.timestamp = v
+// 	return b
+// }
 
 func (b *metricBuilder) b() cua.Metric {
 	m, err := metric.New(b.name, b.tags, b.fields, b.timestamp)
@@ -203,6 +206,7 @@ func TestTryAddState(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			metrics, err := TryAddState(tt.runErrF(), tt.metrics)
 			tt.assertF(t, metrics, err)
@@ -466,6 +470,7 @@ with three lines
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			metrics, err := parser.Parse([]byte(tt.input))
 			tt.assertF(t, metrics, err)

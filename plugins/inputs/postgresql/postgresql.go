@@ -73,12 +73,13 @@ func (p *Postgresql) Gather(acc cua.Accumulator) error {
 		columns []string
 	)
 
-	if len(p.Databases) == 0 && len(p.IgnoredDatabases) == 0 {
+	switch {
+	case len(p.Databases) == 0 && len(p.IgnoredDatabases) == 0:
 		query = `SELECT * FROM pg_stat_database`
-	} else if len(p.IgnoredDatabases) != 0 {
+	case len(p.IgnoredDatabases) != 0:
 		query = fmt.Sprintf(`SELECT * FROM pg_stat_database WHERE datname NOT IN ('%s')`,
 			strings.Join(p.IgnoredDatabases, "','"))
-	} else {
+	default:
 		query = fmt.Sprintf(`SELECT * FROM pg_stat_database WHERE datname IN ('%s')`,
 			strings.Join(p.Databases, "','"))
 	}

@@ -54,14 +54,15 @@ func parseTemplateSpecs(templates []string) templateSpecs {
 			// ignore
 			continue
 		}
-		if partsLength == 1 {
+		switch partsLength {
+		case 1:
 			tmplt.template = pattern
-		} else if partsLength == 4 {
+		case 4:
 			tmplt.separator = parts[0]
 			tmplt.filter = parts[1]
 			tmplt.template = parts[2]
 			tmplt.tagstring = parts[3]
-		} else {
+		default:
 			hasTagstring := strings.Contains(parts[partsLength-1], "=")
 			if hasTagstring {
 				tmplt.tagstring = parts[partsLength-1]

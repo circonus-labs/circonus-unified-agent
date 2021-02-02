@@ -120,11 +120,11 @@ func TestCPUStats(t *testing.T) {
 func assertContainsTaggedFloat(
 	t *testing.T,
 	acc *testutil.Accumulator,
-	measurement string,
+	measurement string, //nolint:unparam
 	field string,
 	expectedValue float64,
 	delta float64,
-	tags map[string]string,
+	tags map[string]string, //nolint:unparam
 ) {
 	var actualValue float64
 	for _, pt := range acc.Metrics {

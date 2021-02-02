@@ -69,8 +69,6 @@ func (wg *Wireguard) Gather(acc cua.Accumulator) error {
 }
 
 func (wg *Wireguard) enumerateDevices() ([]*wgtypes.Device, error) {
-	var devices []*wgtypes.Device
-
 	// If no device names are specified, defer to the library to enumerate
 	// all of them
 	if len(wg.Devices) == 0 {
@@ -78,6 +76,7 @@ func (wg *Wireguard) enumerateDevices() ([]*wgtypes.Device, error) {
 	}
 
 	// Otherwise, explicitly populate only device names specified in config
+	devices := make([]*wgtypes.Device, 0, len(wg.Devices))
 	for _, name := range wg.Devices {
 		dev, err := wg.client.Device(name)
 		if err != nil {

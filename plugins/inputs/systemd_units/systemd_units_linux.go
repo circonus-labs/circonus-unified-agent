@@ -191,20 +191,20 @@ func (s *SystemdUnits) Gather(acc cua.Accumulator) error {
 	return nil
 }
 
-func setSystemctl(Timeout internal.Duration, UnitType string) (*bytes.Buffer, error) {
+func setSystemctl(timeout internal.Duration, unitType string) (*bytes.Buffer, error) {
 	// is systemctl available ?
 	systemctlPath, err := exec.LookPath("systemctl")
 	if err != nil {
 		return nil, err
 	}
 
-	cmd := exec.Command(systemctlPath, "list-units", "--all", "--plain", fmt.Sprintf("--type=%s", UnitType), "--no-legend")
+	cmd := exec.Command(systemctlPath, "list-units", "--all", "--plain", fmt.Sprintf("--type=%s", unitType), "--no-legend")
 
 	var out bytes.Buffer
 	cmd.Stdout = &out
-	err = internal.RunTimeout(cmd, Timeout.Duration)
+	err = internal.RunTimeout(cmd, timeout.Duration)
 	if err != nil {
-		return &out, fmt.Errorf("error running systemctl list-units --all --plain --type=%s --no-legend: %w", UnitType, err)
+		return &out, fmt.Errorf("error running systemctl list-units --all --plain --type=%s --no-legend: %w", unitType, err)
 	}
 
 	return &out, nil

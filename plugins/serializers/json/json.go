@@ -62,11 +62,12 @@ func (s *Serializer) createObject(metric cua.Metric) map[string]interface{} {
 		switch fv := field.Value.(type) {
 		case float64:
 			// JSON does not support these special values
-			if math.IsNaN(fv) || math.IsInf(fv, 0) {
+			if math.IsNaN(fv) || math.IsInf(fv, 0) { //nolint:staticcheck
 				continue
 			}
+		default:
+			fields[field.Key] = field.Value
 		}
-		fields[field.Key] = field.Value
 	}
 	m["fields"] = fields
 
@@ -87,6 +88,6 @@ func truncateDuration(units time.Duration) time.Duration {
 		if d*10 > units {
 			return d
 		}
-		d = d * 10
+		d *= 10
 	}
 }

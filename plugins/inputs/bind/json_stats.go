@@ -61,7 +61,7 @@ func addJSONCounter(acc cua.Accumulator, commonTags map[string]string, stats map
 		_ = grouper.Add("bind_counter", tags, ts, name, value)
 	}
 
-	//Add grouped metrics
+	// Add grouped metrics
 	for _, metric := range grouper.Metrics() {
 		acc.AddMetric(metric)
 	}
@@ -139,7 +139,7 @@ func (b *Bind) addStatsJSON(stats jsonStats, acc cua.Accumulator, urlTag string)
 		}
 	}
 
-	//Add grouped metrics
+	// Add grouped metrics
 	for _, metric := range grouper.Metrics() {
 		acc.AddMetric(metric)
 	}

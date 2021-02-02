@@ -130,7 +130,7 @@ func spitTagsNPath(xmlpath string) (string, map[string]string) {
 			// we must emit multiple tags
 			for _, kv := range strings.Split(sub[2], " and ") {
 				key := tagKey + strings.TrimSpace(strings.Split(kv, "=")[0])
-				tagValue := strings.Replace(strings.Split(kv, "=")[1], "'", "", -1)
+				tagValue := strings.ReplaceAll(strings.Split(kv, "=")[1], "'", "")
 				tags[key] = tagValue
 			}
 
@@ -274,7 +274,7 @@ func (m *OpenConfigTelemetry) splitSensorConfig() int {
 // Subscribes and collects OpenConfig telemetry data from given server
 func (m *OpenConfigTelemetry) collectData(ctx context.Context,
 	grpcServer string, grpcClientConn *grpc.ClientConn,
-	acc cua.Accumulator) error {
+	acc cua.Accumulator) {
 	c := telemetry.NewOpenConfigTelemetryClient(grpcClientConn)
 	for _, sensor := range m.sensorsConfig {
 		m.wg.Add(1)
@@ -336,8 +336,6 @@ func (m *OpenConfigTelemetry) collectData(ctx context.Context,
 			}
 		}(ctx, sensor)
 	}
-
-	return nil
 }
 
 func (m *OpenConfigTelemetry) Start(acc cua.Accumulator) error {
@@ -399,7 +397,7 @@ func (m *OpenConfigTelemetry) Start(acc cua.Accumulator) error {
 		}
 
 		// Subscribe and gather telemetry data
-		_ = m.collectData(ctx, grpcServer, grpcClientConn, acc)
+		m.collectData(ctx, grpcServer, grpcClientConn, acc)
 	}
 
 	return nil

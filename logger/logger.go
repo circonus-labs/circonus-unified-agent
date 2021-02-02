@@ -24,9 +24,9 @@ const (
 type LogConfig struct {
 	// will set the log level to DEBUG
 	Debug bool
-	//will set the log level to ERROR
+	// will set the log level to ERROR
 	Quiet bool
-	//stderr, stdout, file or eventlog (Windows only)
+	// stderr, stdout, file or eventlog (Windows only)
 	LogTarget string
 	// will direct the logging output to a file. Empty string is
 	// interpreted as stderr. If there is an error opening the file the

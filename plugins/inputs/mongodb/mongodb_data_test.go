@@ -310,7 +310,7 @@ func TestAddShardHostStats(t *testing.T) {
 	d.AddShardHostStats()
 	d.flush(&acc)
 
-	var hostsFound []string
+	hostsFound := make([]string, 0, len(hostStatLines))
 	for host := range hostStatLines {
 		for key := range ShardHostStats {
 			assert.True(t, acc.HasInt64Field("mongodb_shard_stats", key))

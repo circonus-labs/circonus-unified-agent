@@ -83,7 +83,7 @@ func TestPhpFpmGeneratesMetrics_From_Fcgi(t *testing.T) {
 	s := statServer{}
 	go fcgi.Serve(tcp, s) //nolint:errcheck
 
-	//Now we tested again above server
+	// Now we tested again above server
 	r := &phpfpm{
 		Urls: []string{"fcgi://" + tcp.Addr().String() + "/status"},
 	}
@@ -283,8 +283,8 @@ func TestPhpFpmGeneratesMetrics_From_Socket_Custom_Status_Path(t *testing.T) {
 	acc.AssertContainsTaggedFields(t, "phpfpm", fields, tags)
 }
 
-//When not passing server config, we default to localhost
-//We just want to make sure we did request stat from localhost
+// When not passing server config, we default to localhost
+// We just want to make sure we did request stat from localhost
 func TestPhpFpmDefaultGetFromLocalhost(t *testing.T) {
 	r := &phpfpm{}
 

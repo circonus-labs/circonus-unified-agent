@@ -218,9 +218,10 @@ func (e *endpoint) Name() string {
 func TraceIDFromString(s string) (string, error) {
 	var hi, lo uint64
 	var err error
-	if len(s) > 32 {
+	switch {
+	case len(s) > 32:
 		return "", fmt.Errorf("TraceID cannot be longer than 32 hex characters: %s", s)
-	} else if len(s) > 16 {
+	case len(s) > 16:
 		hiLen := len(s) - 16
 		if hi, err = strconv.ParseUint(s[0:hiLen], 16, 64); err != nil {
 			return "", err
@@ -228,7 +229,7 @@ func TraceIDFromString(s string) (string, error) {
 		if lo, err = strconv.ParseUint(s[hiLen:], 16, 64); err != nil {
 			return "", err
 		}
-	} else {
+	default:
 		if lo, err = strconv.ParseUint(s, 16, 64); err != nil {
 			return "", err
 		}

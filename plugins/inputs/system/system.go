@@ -49,11 +49,12 @@ func (s *Stats) Gather(acc cua.Accumulator) error {
 	}
 
 	users, err := host.Users()
-	if err == nil {
+	switch {
+	case err == nil:
 		fields["n_users"] = len(users)
-	} else if os.IsNotExist(err) {
+	case os.IsNotExist(err):
 		s.Log.Debugf("Reading users: %s", err.Error())
-	} else if os.IsPermission(err) {
+	case os.IsPermission(err):
 		s.Log.Debug(err.Error())
 	}
 

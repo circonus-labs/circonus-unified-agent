@@ -515,6 +515,7 @@ func BenchmarkFilter(b *testing.B) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		b.Run(tt.name, func(b *testing.B) {
 			require.NoError(b, tt.filter.Compile())
 			for n := 0; n < b.N; n++ {

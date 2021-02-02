@@ -232,7 +232,7 @@ func TestValueConversion(t *testing.T) {
 	require.NoError(t, err1)
 	require.NoError(t, err2)
 
-	//deep equal fields
+	// deep equal fields
 	require.Equal(t, expectedMetric.Fields(), returnedMetric.Fields())
 
 	// Test explicit type conversion.
@@ -244,7 +244,7 @@ func TestValueConversion(t *testing.T) {
 	returnedMetric, err2 = metric.New(metrics[0].Name(), metrics[0].Tags(), metrics[0].Fields(), time.Unix(0, 0))
 	require.NoError(t, err2)
 
-	//deep equal fields
+	// deep equal fields
 	require.Equal(t, expectedMetric.Fields(), returnedMetric.Fields())
 }
 

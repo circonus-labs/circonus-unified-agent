@@ -124,7 +124,7 @@ func (b *Bind) addStatsXMLv3(stats v3Stats, acc cua.Accumulator, hostPort string
 		}
 	}
 
-	//Add grouped metrics
+	// Add grouped metrics
 	for _, metric := range grouper.Metrics() {
 		acc.AddMetric(metric)
 	}

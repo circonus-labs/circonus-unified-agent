@@ -374,7 +374,7 @@ func (l *Lustre2) GetLustreProcStats(fileglob string, wantedFields []*mapping, a
 		path := strings.Split(file, "/")
 		name := path[len(path)-2]
 
-		//lines, err := internal.ReadLines(file)
+		// lines, err := internal.ReadLines(file)
 		wholeFile, err := ioutil.ReadFile(file)
 		if err != nil {
 			return err
@@ -442,7 +442,7 @@ func (l *Lustre2) Description() string {
 
 // Gather reads stats from all lustre targets
 func (l *Lustre2) Gather(acc cua.Accumulator) error {
-	//l.allFields = make(map[string]map[string]interface{})
+	// l.allFields = make(map[string]map[string]interface{})
 	l.allFields = make(map[tags]map[string]interface{})
 
 	if len(l.OstProcfiles) == 0 {

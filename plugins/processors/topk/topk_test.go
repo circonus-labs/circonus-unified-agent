@@ -117,7 +117,7 @@ func equalSets(l1 []cua.Metric, l2 []cua.Metric) bool {
 	return subSet(l1, l2) && subSet(l2, l1)
 }
 
-func createDuration(t int) internal.Duration {
+func createDuration(t int) internal.Duration { //nolint:unparam
 	return internal.Duration{Duration: time.Second * time.Duration(t)}
 }
 
@@ -148,7 +148,7 @@ func TestTopkAggregatorsSmokeTests(t *testing.T) {
 
 	aggregators := []string{"mean", "sum", "max", "min"}
 
-	//The answer is equal to the original set for these particular scenarios
+	// The answer is equal to the original set for these particular scenarios
 	input := MetricsSet1
 	answer := MetricsSet1
 

@@ -353,8 +353,7 @@ func (c *Collection) GetEntries(order MetricSortOrder) []Entry {
 		entries = append(entries, entry)
 	}
 
-	switch order {
-	case SortMetrics:
+	if order == SortMetrics {
 		sort.Slice(entries, func(i, j int) bool {
 			lhs := entries[i].Family
 			rhs := entries[j].Family
@@ -374,8 +373,7 @@ func (c *Collection) GetMetrics(entry Entry, order MetricSortOrder) []*Metric {
 		metrics = append(metrics, metric)
 	}
 
-	switch order {
-	case SortMetrics:
+	if order == SortMetrics {
 		sort.Slice(metrics, func(i, j int) bool {
 			lhs := metrics[i].Labels
 			rhs := metrics[j].Labels

@@ -97,10 +97,10 @@ func TestPersistentVolumeClaim(t *testing.T) {
 		_ = ks.createSelectorFilters()
 		acc := new(testutil.Accumulator)
 		for _, pvc := range ((v.handler.responseMap["/persistentvolumeclaims/"]).(*v1.PersistentVolumeClaimList)).Items {
-			err := ks.gatherPersistentVolumeClaim(*pvc, acc)
-			if err != nil {
-				t.Errorf("Failed to gather pvc - %s", err.Error())
-			}
+			ks.gatherPersistentVolumeClaim(*pvc, acc)
+			// if err != nil {
+			// 	t.Errorf("Failed to gather pvc - %s", err.Error())
+			// }
 		}
 
 		err := acc.FirstError()
@@ -268,10 +268,10 @@ func TestPersistentVolumeClaimSelectorFilter(t *testing.T) {
 		_ = ks.createSelectorFilters()
 		acc := new(testutil.Accumulator)
 		for _, pvc := range ((v.handler.responseMap["/persistentvolumeclaims/"]).(*v1.PersistentVolumeClaimList)).Items {
-			err := ks.gatherPersistentVolumeClaim(*pvc, acc)
-			if err != nil {
-				t.Errorf("Failed to gather pvc - %s", err.Error())
-			}
+			ks.gatherPersistentVolumeClaim(*pvc, acc)
+			// if err != nil {
+			// 	t.Errorf("Failed to gather pvc - %s", err.Error())
+			// }
 		}
 
 		// Grab selector tags

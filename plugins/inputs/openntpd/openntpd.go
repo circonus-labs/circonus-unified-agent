@@ -72,19 +72,19 @@ func (n *Openntpd) SampleConfig() string {
 }
 
 // Shell out to ntpctl and return the output
-func openntpdRunner(cmdName string, Timeout internal.Duration, UseSudo bool) (*bytes.Buffer, error) {
+func openntpdRunner(cmdName string, timeout internal.Duration, useSudo bool) (*bytes.Buffer, error) {
 	cmdArgs := []string{"-s", "peers"}
 
 	cmd := exec.Command(cmdName, cmdArgs...)
 
-	if UseSudo {
+	if useSudo {
 		cmdArgs = append([]string{cmdName}, cmdArgs...)
 		cmd = exec.Command("sudo", cmdArgs...)
 	}
 
 	var out bytes.Buffer
 	cmd.Stdout = &out
-	err := internal.RunTimeout(cmd, Timeout.Duration)
+	err := internal.RunTimeout(cmd, timeout.Duration)
 	if err != nil {
 		return &out, fmt.Errorf("error running ntpctl: %w", err)
 	}

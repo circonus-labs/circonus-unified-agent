@@ -249,7 +249,7 @@ func (h *InfluxDBV2Listener) handleWrite() http.HandlerFunc {
 
 		var readErr error
 		var bytes []byte
-		//body = http.MaxBytesReader(res, req.Body, 1000000) //p.MaxBodySize.Size)
+		// body = http.MaxBytesReader(res, req.Body, 1000000) //p.MaxBodySize.Size)
 		bytes, readErr = ioutil.ReadAll(body)
 		if readErr != nil {
 			h.Log.Debugf("Error parsing the request body: %v", readErr.Error())

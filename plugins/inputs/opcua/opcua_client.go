@@ -71,11 +71,11 @@ type OPCData struct {
 type ConnectionState int
 
 const (
-	//Disconnected constant state 0
+	// Disconnected constant state 0
 	Disconnected ConnectionState = iota
-	//Connecting constant state 1
+	// Connecting constant state 1
 	Connecting
-	//Connected constant state 2
+	// Connected constant state 2
 	Connected
 )
 
@@ -159,7 +159,7 @@ func (o *OpcUA) Init() error {
 	}
 	o.NumberOfTags = len(o.NodeList)
 
-	_ = o.setupOptions()
+	o.setupOptions()
 
 	return nil
 
@@ -179,14 +179,14 @@ func (o *OpcUA) validateEndpoint() error {
 		return fmt.Errorf("endpoint url is invalid")
 	}
 
-	//search security policy type
+	// search security policy type
 	switch o.SecurityPolicy {
 	case "None", "Basic128Rsa15", "Basic256", "Basic256Sha256", "auto":
 		break
 	default:
 		return fmt.Errorf("invalid security type '%s' in '%s'", o.SecurityPolicy, o.Name)
 	}
-	//search security mode type
+	// search security mode type
 	switch o.SecurityMode {
 	case "None", "Sign", "SignAndEncrypt", "auto":
 		break
@@ -196,7 +196,7 @@ func (o *OpcUA) validateEndpoint() error {
 	return nil
 }
 
-//InitNodes Method on OpcUA
+// InitNodes Method on OpcUA
 func (o *OpcUA) InitNodes() error {
 	if len(o.NodeList) == 0 {
 		return nil
@@ -213,17 +213,17 @@ func (o *OpcUA) InitNodes() error {
 func (o *OpcUA) validateOPCTags() error {
 	nameEncountered := map[string]bool{}
 	for i, item := range o.NodeList {
-		//check empty name
+		// check empty name
 		if item.Name == "" {
 			return fmt.Errorf("empty name in '%s'", item.Name)
 		}
-		//search name duplicate
+		// search name duplicate
 		if nameEncountered[item.Name] {
 			return fmt.Errorf("name '%s' is duplicated in '%s'", item.Name, item.Name)
 		}
 		nameEncountered[item.Name] = true
 
-		//search identifier type
+		// search identifier type
 		switch item.IdentifierType {
 		case "s", "i", "g", "b":
 			break
@@ -241,7 +241,7 @@ func (o *OpcUA) validateOPCTags() error {
 		// build nodeid
 		o.Nodes = append(o.Nodes, BuildNodeID(item))
 
-		//parse NodeIds and NodeIds errors
+		// parse NodeIds and NodeIds errors
 		nid, niderr := ua.ParseNodeID(o.Nodes[i])
 		// build NodeIds and Errors
 		o.NodeIDs = append(o.NodeIDs, nid)
@@ -303,7 +303,7 @@ func Connect(o *OpcUA) error {
 	return nil
 }
 
-func (o *OpcUA) setupOptions() error {
+func (o *OpcUA) setupOptions() {
 
 	// Get a list of the endpoints for our target server
 	endpoints, err := opcua.GetEndpoints(o.Endpoint)
@@ -318,8 +318,6 @@ func (o *OpcUA) setupOptions() error {
 	}
 
 	o.opts = generateClientOpts(endpoints, o.Certificate, o.PrivateKey, o.SecurityPolicy, o.SecurityMode, o.AuthMethod, o.Username, o.Password, time.Duration(o.RequestTimeout))
-
-	return nil
 }
 
 func (o *OpcUA) getData() error {

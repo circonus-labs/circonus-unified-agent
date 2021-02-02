@@ -16,9 +16,9 @@ import (
 	"golang.org/x/sys/windows/svc/mgr"
 )
 
-//testData is DD wrapper for unit testing of WinServices
+// testData is DD wrapper for unit testing of WinServices
 type testData struct {
-	//collection that will be returned in ListServices if service array passed into WinServices constructor is empty
+	// collection that will be returned in ListServices if service array passed into WinServices constructor is empty
 	queryServiceList     []string
 	mgrConnectError      error
 	mgrListServicesError error
@@ -131,21 +131,21 @@ func TestBasicInfo(t *testing.T) {
 }
 
 func TestMgrErrors(t *testing.T) {
-	//mgr.connect error
+	// mgr.connect error
 	winServices := &WinServices{testutil.Logger{}, nil, &FakeMgProvider{testErrors[0]}}
 	var acc1 testutil.Accumulator
 	err := winServices.Gather(&acc1)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), testErrors[0].mgrConnectError.Error())
 
-	////mgr.listServices error
+	// mgr.listServices error
 	winServices = &WinServices{testutil.Logger{}, nil, &FakeMgProvider{testErrors[1]}}
 	var acc2 testutil.Accumulator
 	err = winServices.Gather(&acc2)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), testErrors[1].mgrListServicesError.Error())
 
-	////mgr.listServices error 2
+	// mgr.listServices error 2
 	winServices = &WinServices{testutil.Logger{}, []string{"Fake service 1"}, &FakeMgProvider{testErrors[3]}}
 	var acc3 testutil.Accumulator
 
@@ -164,11 +164,11 @@ func TestServiceErrors(t *testing.T) {
 	log.SetOutput(buf)
 	require.NoError(t, winServices.Gather(&acc1))
 
-	//open service error
+	// open service error
 	require.Contains(t, buf.String(), testErrors[2].services[0].serviceOpenError.Error())
-	//query service error
+	// query service error
 	require.Contains(t, buf.String(), testErrors[2].services[1].serviceQueryError.Error())
-	//config service error
+	// config service error
 	require.Contains(t, buf.String(), testErrors[2].services[2].serviceConfigError.Error())
 }
 

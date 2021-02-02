@@ -15,14 +15,15 @@ func collectDeployments(ctx context.Context, acc cua.Accumulator, ki *Kubernetes
 		return
 	}
 	for _, d := range list.Items {
-		if err = ki.gatherDeployment(*d, acc); err != nil {
-			acc.AddError(err)
-			return
-		}
+		ki.gatherDeployment(*d, acc)
+		// if err = ki.gatherDeployment(*d, acc); err != nil {
+		// 	acc.AddError(err)
+		// 	return
+		// }
 	}
 }
 
-func (ki *KubernetesInventory) gatherDeployment(d v1.Deployment, acc cua.Accumulator) error {
+func (ki *KubernetesInventory) gatherDeployment(d v1.Deployment, acc cua.Accumulator) {
 	fields := map[string]interface{}{
 		"replicas_available":   d.Status.GetAvailableReplicas(),
 		"replicas_unavailable": d.Status.GetUnavailableReplicas(),
@@ -39,6 +40,4 @@ func (ki *KubernetesInventory) gatherDeployment(d v1.Deployment, acc cua.Accumul
 	}
 
 	acc.AddFields(deploymentMeasurement, fields, tags)
-
-	return nil
 }

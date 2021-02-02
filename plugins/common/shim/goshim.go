@@ -74,22 +74,23 @@ func (s *Shim) watchForShutdown(cancel context.CancelFunc) {
 
 // Run the input plugins..
 func (s *Shim) Run(pollInterval time.Duration) error {
-	if s.Input != nil {
+	switch {
+	case s.Input != nil:
 		err := s.RunInput(pollInterval)
 		if err != nil {
 			return fmt.Errorf("RunInput error: %w", err)
 		}
-	} else if s.Processor != nil {
+	case s.Processor != nil:
 		err := s.RunProcessor()
 		if err != nil {
 			return fmt.Errorf("RunProcessor error: %w", err)
 		}
-	} else if s.Output != nil {
+	case s.Output != nil:
 		err := s.RunOutput()
 		if err != nil {
 			return fmt.Errorf("RunOutput error: %w", err)
 		}
-	} else {
+	default:
 		return fmt.Errorf("Nothing to run")
 	}
 

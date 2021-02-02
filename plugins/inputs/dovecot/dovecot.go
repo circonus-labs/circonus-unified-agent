@@ -60,7 +60,7 @@ func (d *Dovecot) Gather(acc cua.Accumulator) error {
 		d.Servers = append(d.Servers, "127.0.0.1:24242")
 	}
 
-	if len(d.Filters) <= 0 {
+	if len(d.Filters) == 0 {
 		d.Filters = append(d.Filters, "")
 	}
 
@@ -109,7 +109,7 @@ func (d *Dovecot) gatherServer(addr string, acc cua.Accumulator, qtype string, f
 	return gatherStats(&buf, acc, host, qtype)
 }
 
-func gatherStats(buf *bytes.Buffer, acc cua.Accumulator, host string, qtype string) error {
+func gatherStats(buf fmt.Stringer, acc cua.Accumulator, host string, qtype string) error {
 
 	lines := strings.Split(buf.String(), "\n")
 	head := strings.Split(lines[0], "\t")

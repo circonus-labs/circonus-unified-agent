@@ -19,13 +19,13 @@ var (
 	testdataDir = getTestdataDir()
 )
 
-func TestGatherNoMd5(t *testing.T) {
+func TestGatherNoSHA256(t *testing.T) {
 	fs := NewFileStat()
 	fs.Log = testutil.Logger{}
 	fs.Files = []string{
 		filepath.Join(testdataDir, "log1.log"),
 		filepath.Join(testdataDir, "log2.log"),
-		filepath.Join(testdataDir, "non_existant_file"),
+		filepath.Join(testdataDir, "non_existent_file"),
 	}
 
 	acc := testutil.Accumulator{}
@@ -40,11 +40,11 @@ func TestGatherNoMd5(t *testing.T) {
 	tags2 := map[string]string{
 		"file": filepath.Join(testdataDir, "log2.log"),
 	}
-	require.True(t, acc.HasPoint("filestat", tags2, "size_bytes", int64(0)))
+	require.True(t, acc.HasPoint("filestat", tags2, "size_bytes", int64(5)))
 	require.True(t, acc.HasPoint("filestat", tags2, "exists", int64(1)))
 
 	tags3 := map[string]string{
-		"file": filepath.Join(testdataDir, "non_existant_file"),
+		"file": filepath.Join(testdataDir, "non_existent_file"),
 	}
 	require.True(t, acc.HasPoint("filestat", tags3, "exists", int64(0)))
 }
@@ -52,11 +52,11 @@ func TestGatherNoMd5(t *testing.T) {
 func TestGatherExplicitFiles(t *testing.T) {
 	fs := NewFileStat()
 	fs.Log = testutil.Logger{}
-	fs.Md5 = true
+	fs.SHA256 = true
 	fs.Files = []string{
 		filepath.Join(testdataDir, "log1.log"),
 		filepath.Join(testdataDir, "log2.log"),
-		filepath.Join(testdataDir, "non_existant_file"),
+		filepath.Join(testdataDir, "non_existent_file"),
 	}
 
 	acc := testutil.Accumulator{}
@@ -67,17 +67,17 @@ func TestGatherExplicitFiles(t *testing.T) {
 	}
 	require.True(t, acc.HasPoint("filestat", tags1, "size_bytes", int64(0)))
 	require.True(t, acc.HasPoint("filestat", tags1, "exists", int64(1)))
-	require.True(t, acc.HasPoint("filestat", tags1, "md5_sum", "d41d8cd98f00b204e9800998ecf8427e"))
+	require.True(t, acc.HasPoint("filestat", tags1, "sha256_sum", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"))
 
 	tags2 := map[string]string{
 		"file": filepath.Join(testdataDir, "log2.log"),
 	}
-	require.True(t, acc.HasPoint("filestat", tags2, "size_bytes", int64(0)))
+	require.True(t, acc.HasPoint("filestat", tags2, "size_bytes", int64(5)))
 	require.True(t, acc.HasPoint("filestat", tags2, "exists", int64(1)))
-	require.True(t, acc.HasPoint("filestat", tags2, "md5_sum", "d41d8cd98f00b204e9800998ecf8427e"))
+	require.True(t, acc.HasPoint("filestat", tags2, "sha256_sum", "7c4604d03f399eac32a48edbb7be1710838b70c83ad0e94b60137920945d6c40"))
 
 	tags3 := map[string]string{
-		"file": filepath.Join(testdataDir, "non_existant_file"),
+		"file": filepath.Join(testdataDir, "non_existent_file"),
 	}
 	require.True(t, acc.HasPoint("filestat", tags3, "exists", int64(0)))
 }
@@ -85,7 +85,7 @@ func TestGatherExplicitFiles(t *testing.T) {
 func TestGatherGlob(t *testing.T) {
 	fs := NewFileStat()
 	fs.Log = testutil.Logger{}
-	fs.Md5 = true
+	fs.SHA256 = true
 	fs.Files = []string{
 		filepath.Join(testdataDir, "*.log"),
 	}
@@ -98,20 +98,20 @@ func TestGatherGlob(t *testing.T) {
 	}
 	require.True(t, acc.HasPoint("filestat", tags1, "size_bytes", int64(0)))
 	require.True(t, acc.HasPoint("filestat", tags1, "exists", int64(1)))
-	require.True(t, acc.HasPoint("filestat", tags1, "md5_sum", "d41d8cd98f00b204e9800998ecf8427e"))
+	require.True(t, acc.HasPoint("filestat", tags1, "sha256_sum", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"))
 
 	tags2 := map[string]string{
 		"file": filepath.Join(testdataDir, "log2.log"),
 	}
-	require.True(t, acc.HasPoint("filestat", tags2, "size_bytes", int64(0)))
+	require.True(t, acc.HasPoint("filestat", tags2, "size_bytes", int64(5)))
 	require.True(t, acc.HasPoint("filestat", tags2, "exists", int64(1)))
-	require.True(t, acc.HasPoint("filestat", tags2, "md5_sum", "d41d8cd98f00b204e9800998ecf8427e"))
+	require.True(t, acc.HasPoint("filestat", tags2, "sha256_sum", "7c4604d03f399eac32a48edbb7be1710838b70c83ad0e94b60137920945d6c40"))
 }
 
 func TestGatherSuperAsterisk(t *testing.T) {
 	fs := NewFileStat()
 	fs.Log = testutil.Logger{}
-	fs.Md5 = true
+	fs.SHA256 = true
 	fs.Files = []string{
 		filepath.Join(testdataDir, "**"),
 	}
@@ -124,21 +124,21 @@ func TestGatherSuperAsterisk(t *testing.T) {
 	}
 	require.True(t, acc.HasPoint("filestat", tags1, "size_bytes", int64(0)))
 	require.True(t, acc.HasPoint("filestat", tags1, "exists", int64(1)))
-	require.True(t, acc.HasPoint("filestat", tags1, "md5_sum", "d41d8cd98f00b204e9800998ecf8427e"))
+	require.True(t, acc.HasPoint("filestat", tags1, "sha256_sum", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"))
 
 	tags2 := map[string]string{
 		"file": filepath.Join(testdataDir, "log2.log"),
 	}
-	require.True(t, acc.HasPoint("filestat", tags2, "size_bytes", int64(0)))
+	require.True(t, acc.HasPoint("filestat", tags2, "size_bytes", int64(5)))
 	require.True(t, acc.HasPoint("filestat", tags2, "exists", int64(1)))
-	require.True(t, acc.HasPoint("filestat", tags2, "md5_sum", "d41d8cd98f00b204e9800998ecf8427e"))
+	require.True(t, acc.HasPoint("filestat", tags2, "sha256_sum", "7c4604d03f399eac32a48edbb7be1710838b70c83ad0e94b60137920945d6c40"))
 
 	tags3 := map[string]string{
 		"file": filepath.Join(testdataDir, "test.conf"),
 	}
 	require.True(t, acc.HasPoint("filestat", tags3, "size_bytes", int64(104)))
 	require.True(t, acc.HasPoint("filestat", tags3, "exists", int64(1)))
-	require.True(t, acc.HasPoint("filestat", tags3, "md5_sum", "5a7e9b77fa25e7bb411dbd17cf403c1f"))
+	require.True(t, acc.HasPoint("filestat", tags3, "sha256_sum", "9b17fa34411e1ee1f1795b0e326f187ba7acde5ab6fc8e011ff3b0a550f9dbe2"))
 }
 
 func TestModificationTime(t *testing.T) {
@@ -163,25 +163,25 @@ func TestNoModificationTime(t *testing.T) {
 	fs := NewFileStat()
 	fs.Log = testutil.Logger{}
 	fs.Files = []string{
-		filepath.Join(testdataDir, "non_existant_file"),
+		filepath.Join(testdataDir, "non_existent_file"),
 	}
 
 	acc := testutil.Accumulator{}
 	_ = acc.GatherError(fs.Gather)
 
 	tags1 := map[string]string{
-		"file": filepath.Join(testdataDir, "non_existant_file"),
+		"file": filepath.Join(testdataDir, "non_existent_file"),
 	}
 	require.True(t, acc.HasPoint("filestat", tags1, "exists", int64(0)))
 	require.False(t, acc.HasInt64Field("filestat", "modification_time"))
 }
 
-func TestGetMd5(t *testing.T) {
-	md5, err := getMd5(filepath.Join(testdataDir, "test.conf"))
+func TestGetSHA256(t *testing.T) {
+	sig, err := getSHA256(filepath.Join(testdataDir, "test.conf"))
 	assert.NoError(t, err)
-	assert.Equal(t, "5a7e9b77fa25e7bb411dbd17cf403c1f", md5)
+	assert.Equal(t, "9b17fa34411e1ee1f1795b0e326f187ba7acde5ab6fc8e011ff3b0a550f9dbe2", sig)
 
-	_, err = getMd5("/tmp/foo/bar/fooooo")
+	_, err = getSHA256("/tmp/foo/bar/fooooo")
 	assert.Error(t, err)
 }
 

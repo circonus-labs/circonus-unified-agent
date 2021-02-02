@@ -252,10 +252,10 @@ func TestZfsPoolMetrics(t *testing.T) {
 	err = os.MkdirAll(testKstatPath+"/HOME", 0755)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(testKstatPath+"/HOME/io", []byte(poolIOContents), 0644)
+	err = ioutil.WriteFile(testKstatPath+"/HOME/io", []byte(poolIOContents), 0600)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(testKstatPath+"/arcstats", []byte(arcstatsContents), 0644)
+	err = ioutil.WriteFile(testKstatPath+"/arcstats", []byte(arcstatsContents), 0600)
 	require.NoError(t, err)
 
 	poolMetrics := getPoolMetrics()
@@ -273,7 +273,7 @@ func TestZfsPoolMetrics(t *testing.T) {
 	err = z.Gather(&acc)
 	require.NoError(t, err)
 
-	//one pool, all metrics
+	// one pool, all metrics
 	tags := map[string]string{
 		"pool": "HOME",
 	}
@@ -291,32 +291,32 @@ func TestZfsGeneratesMetrics(t *testing.T) {
 	err = os.MkdirAll(testKstatPath+"/HOME", 0755)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(testKstatPath+"/HOME/io", []byte(""), 0644)
+	err = ioutil.WriteFile(testKstatPath+"/HOME/io", []byte(""), 0600)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(testKstatPath+"/arcstats", []byte(arcstatsContents), 0644)
+	err = ioutil.WriteFile(testKstatPath+"/arcstats", []byte(arcstatsContents), 0600)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(testKstatPath+"/zfetchstats", []byte(zfetchstatsContents), 0644)
+	err = ioutil.WriteFile(testKstatPath+"/zfetchstats", []byte(zfetchstatsContents), 0600)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(testKstatPath+"/zil", []byte(zilContents), 0644)
+	err = ioutil.WriteFile(testKstatPath+"/zil", []byte(zilContents), 0600)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(testKstatPath+"/fm", []byte(fmContents), 0644)
+	err = ioutil.WriteFile(testKstatPath+"/fm", []byte(fmContents), 0600)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(testKstatPath+"/dmu_tx", []byte(dmuTxContents), 0644)
+	err = ioutil.WriteFile(testKstatPath+"/dmu_tx", []byte(dmuTxContents), 0600)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(testKstatPath+"/abdstats", []byte(abdstatsContents), 0644)
+	err = ioutil.WriteFile(testKstatPath+"/abdstats", []byte(abdstatsContents), 0600)
 	require.NoError(t, err)
 
 	intMetrics := getKstatMetricsAll()
 
 	var acc testutil.Accumulator
 
-	//one pool, all metrics
+	// one pool, all metrics
 	tags := map[string]string{
 		"pools": "HOME",
 	}
@@ -328,11 +328,11 @@ func TestZfsGeneratesMetrics(t *testing.T) {
 	acc.AssertContainsTaggedFields(t, "zfs", intMetrics, tags)
 	acc.Metrics = nil
 
-	//two pools, all metrics
+	// two pools, all metrics
 	err = os.MkdirAll(testKstatPath+"/STORAGE", 0755)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(testKstatPath+"/STORAGE/io", []byte(""), 0644)
+	err = ioutil.WriteFile(testKstatPath+"/STORAGE/io", []byte(""), 0600)
 	require.NoError(t, err)
 
 	tags = map[string]string{
@@ -349,7 +349,7 @@ func TestZfsGeneratesMetrics(t *testing.T) {
 
 	intMetrics = getKstatMetricsArcOnly()
 
-	//two pools, one metric
+	// two pools, one metric
 	z = &Zfs{KstatPath: testKstatPath, KstatMetrics: []string{"arcstats"}}
 	acc3 := testutil.Accumulator{}
 	err = z.Gather(&acc3)

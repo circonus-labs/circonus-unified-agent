@@ -110,7 +110,7 @@ func (z *Zookeeper) gatherServer(ctx context.Context, address string, acc cua.Ac
 	var zookeeperState string
 	_, _, err := net.SplitHostPort(address)
 	if err != nil {
-		address = address + ":2181"
+		address += ":2181"
 	}
 
 	c, err := z.dial(ctx, address)

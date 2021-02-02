@@ -128,7 +128,7 @@ func TestParseValidPrometheus(t *testing.T) {
 	assert.Equal(t, map[string]string{}, metrics[0].Tags())
 
 	// Summary data
-	//SetDefaultTags(map[string]string{})
+	// SetDefaultTags(map[string]string{})
 	metrics, err = Parse([]byte(validUniqueSummary), http.Header{})
 	assert.NoError(t, err)
 	assert.Len(t, metrics, 1)

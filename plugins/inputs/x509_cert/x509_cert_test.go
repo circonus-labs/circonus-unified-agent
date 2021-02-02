@@ -65,11 +65,12 @@ func TestGatherRemote(t *testing.T) {
 	}
 
 	config := &tls.Config{
-		InsecureSkipVerify: true,
+		InsecureSkipVerify: true, //nolint:gosec // G402
 		Certificates:       []tls.Certificate{pair},
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
 			if test.unset {
 				config.Certificates = nil
@@ -78,7 +79,7 @@ func TestGatherRemote(t *testing.T) {
 				}
 			}
 
-			ln, err := tls.Listen("tcp", ":0", config)
+			ln, err := tls.Listen("tcp", ":0", config) //nolint:gosec // G102
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -156,6 +157,7 @@ func TestGatherLocal(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
 			f, err := ioutil.TempFile("", "x509_cert")
 			if err != nil {
@@ -268,6 +270,7 @@ func TestGatherChain(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
 			f, err := ioutil.TempFile("", "x509_cert")
 			if err != nil {
@@ -322,6 +325,7 @@ func TestStrings(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
 			if test.returned != test.expected {
 				t.Errorf("Expected method %s to return '%s', found '%s'.", test.method, test.expected, test.returned)

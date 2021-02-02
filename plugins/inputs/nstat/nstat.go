@@ -97,38 +97,35 @@ func (ns *Nstat) Gather(acc cua.Accumulator) error {
 }
 
 func (ns *Nstat) gatherNetstat(data []byte, acc cua.Accumulator) error {
-	metrics, err := loadUglyTable(data, ns.DumpZeros)
-	if err != nil {
-		return err
-	}
+	metrics := loadUglyTable(data, ns.DumpZeros)
 	tags := map[string]string{
 		"name": "netstat",
 	}
-	acc.AddFields("nstat", metrics, tags)
+	if len(metrics) > 0 {
+		acc.AddFields("nstat", metrics, tags)
+	}
 	return nil
 }
 
 func (ns *Nstat) gatherSNMP(data []byte, acc cua.Accumulator) error {
-	metrics, err := loadUglyTable(data, ns.DumpZeros)
-	if err != nil {
-		return err
-	}
+	metrics := loadUglyTable(data, ns.DumpZeros)
 	tags := map[string]string{
 		"name": "snmp",
 	}
-	acc.AddFields("nstat", metrics, tags)
+	if len(metrics) > 0 {
+		acc.AddFields("nstat", metrics, tags)
+	}
 	return nil
 }
 
 func (ns *Nstat) gatherSNMP6(data []byte, acc cua.Accumulator) error {
-	metrics, err := loadGoodTable(data, ns.DumpZeros)
-	if err != nil {
-		return err
-	}
+	metrics := loadGoodTable(data, ns.DumpZeros)
 	tags := map[string]string{
 		"name": "snmp6",
 	}
-	acc.AddFields("nstat", metrics, tags)
+	if len(metrics) > 0 {
+		acc.AddFields("nstat", metrics, tags)
+	}
 	return nil
 }
 
@@ -148,14 +145,14 @@ func (ns *Nstat) loadPaths() {
 
 // loadGoodTable can be used to parse string heap that
 // headers and values are arranged in right order
-func loadGoodTable(table []byte, dumpZeros bool) (map[string]interface{}, error) {
+func loadGoodTable(table []byte, dumpZeros bool) map[string]interface{} {
 	entries := map[string]interface{}{}
 	fields := bytes.Fields(table)
 	var value int64
 	var err error
 	// iterate over two values each time
 	// first value is header, second is value
-	for i := 0; i < len(fields); i = i + 2 {
+	for i := 0; i < len(fields); i += 2 {
 		// counter is zero
 		if bytes.Equal(fields[i+1], zeroByte) {
 			if !dumpZeros {
@@ -171,12 +168,12 @@ func loadGoodTable(table []byte, dumpZeros bool) (map[string]interface{}, error)
 			entries[string(fields[i])] = value
 		}
 	}
-	return entries, nil
+	return entries
 }
 
 // loadUglyTable can be used to parse string heap that
 // the headers and values are splitted with a newline
-func loadUglyTable(table []byte, dumpZeros bool) (map[string]interface{}, error) {
+func loadUglyTable(table []byte, dumpZeros bool) map[string]interface{} {
 	entries := map[string]interface{}{}
 	// split the lines by newline
 	lines := bytes.Split(table, newLineByte)
@@ -185,7 +182,7 @@ func loadUglyTable(table []byte, dumpZeros bool) (map[string]interface{}, error)
 	// iterate over lines, take 2 lines each time
 	// first line contains header names
 	// second line contains values
-	for i := 0; i < len(lines); i = i + 2 {
+	for i := 0; i < len(lines); i += 2 {
 		if len(lines[i]) == 0 {
 			continue
 		}
@@ -210,7 +207,7 @@ func loadUglyTable(table []byte, dumpZeros bool) (map[string]interface{}, error)
 			}
 		}
 	}
-	return entries, nil
+	return entries
 }
 
 // proc can be used to read file paths from env

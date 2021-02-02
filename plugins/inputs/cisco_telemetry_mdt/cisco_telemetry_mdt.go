@@ -77,7 +77,7 @@ func (c *CiscoTelemetryMDT) Start(acc cua.Accumulator) error {
 	// Fill extra tags
 	c.extraTags = make(map[string]map[string]struct{})
 	for _, tag := range c.EmbeddedTags {
-		dir := strings.Replace(path.Dir(tag), "-", "_", -1)
+		dir := strings.ReplaceAll(path.Dir(tag), "-", "_")
 		if _, hasKey := c.extraTags[dir]; !hasKey {
 			c.extraTags[dir] = make(map[string]struct{})
 		}
@@ -172,7 +172,7 @@ func (c *CiscoTelemetryMDT) acceptTCPClients() {
 }
 
 // Handle a TCP telemetry client
-func (c *CiscoTelemetryMDT) handleTCPClient(conn net.Conn) error {
+func (c *CiscoTelemetryMDT) handleTCPClient(conn io.Reader) error {
 	// TCP Dialout telemetry framing header
 	var hdr struct {
 		MsgType       uint16
@@ -238,15 +238,16 @@ func (c *CiscoTelemetryMDT) MdtDialout(stream dialout.GRPCMdtDialout_MdtDialoutS
 		}
 
 		// Reassemble chunked telemetry data received from NX-OS
-		if packet.TotalSize == 0 {
+		switch {
+		case packet.TotalSize == 0:
 			c.handleTelemetry(packet.Data)
-		} else if int(packet.TotalSize) <= c.MaxMsgSize {
+		case int(packet.TotalSize) <= c.MaxMsgSize:
 			chunkBuffer.Write(packet.Data)
 			if chunkBuffer.Len() >= int(packet.TotalSize) {
 				c.handleTelemetry(chunkBuffer.Bytes())
 				chunkBuffer.Reset()
 			}
-		} else {
+		default:
 			c.acc.AddError(fmt.Errorf("dropped too large packet: %dB > %dB", packet.TotalSize, c.MaxMsgSize))
 		}
 	}
@@ -372,7 +373,7 @@ func decodeTag(field *telemetry.TelemetryField) string {
 
 // Recursively parse tag fields
 func (c *CiscoTelemetryMDT) parseKeyField(tags map[string]string, field *telemetry.TelemetryField, prefix string) {
-	localname := strings.Replace(field.Name, "-", "_", -1)
+	localname := strings.ReplaceAll(field.Name, "-", "_")
 	name := localname
 	if len(localname) == 0 {
 		name = prefix
@@ -395,14 +396,14 @@ func (c *CiscoTelemetryMDT) parseKeyField(tags map[string]string, field *telemet
 
 func (c *CiscoTelemetryMDT) parseContentField(grouper *metric.SeriesGrouper, field *telemetry.TelemetryField, prefix string,
 	path string, tags map[string]string, timestamp time.Time) {
-	name := strings.Replace(field.Name, "-", "_", -1)
+	name := strings.ReplaceAll(field.Name, "-", "_")
 	if len(name) == 0 {
 		name = prefix
 	} else if len(prefix) > 0 {
 		name = prefix + "/" + name
 	}
 
-	extraTags := c.extraTags[strings.Replace(path, "-", "_", -1)+"/"+name]
+	extraTags := c.extraTags[strings.ReplaceAll(path, "-", "_")+"/"+name]
 
 	if value := decodeValue(field); value != nil {
 		// Do alias lookup, to shorten measurement names
@@ -425,7 +426,7 @@ func (c *CiscoTelemetryMDT) parseContentField(grouper *metric.SeriesGrouper, fie
 	if len(extraTags) > 0 {
 		for _, subfield := range field.Fields {
 			if _, isExtraTag := extraTags[subfield.Name]; isExtraTag {
-				tags[name+"/"+strings.Replace(subfield.Name, "-", "_", -1)] = decodeTag(subfield)
+				tags[name+"/"+strings.ReplaceAll(subfield.Name, "-", "_")] = decodeTag(subfield)
 			}
 		}
 	}

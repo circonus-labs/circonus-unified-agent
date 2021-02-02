@@ -98,7 +98,7 @@ type objectRef struct {
 	name         string
 	altID        string
 	ref          types.ManagedObjectReference
-	parentRef    *types.ManagedObjectReference //Pointer because it must be nillable
+	parentRef    *types.ManagedObjectReference // Pointer because it must be nillable
 	guest        string
 	dcname       string
 	customValues map[string]string
@@ -540,10 +540,11 @@ func (e *Endpoint) complexMetadataSelect(ctx context.Context, res *resourceKind,
 	if n > maxMetadataSamples {
 		// Shuffle samples into the maxMetadataSamples positions
 		for i := 0; i < maxMetadataSamples; i++ {
-			j := int(rand.Int31n(int32(i + 1)))
-			t := sampledObjects[i]
-			sampledObjects[i] = sampledObjects[j]
-			sampledObjects[j] = t
+			j := int(rand.Int31n(int32(i + 1))) //nolint:gosec // G404
+			sampledObjects[i], sampledObjects[j] = sampledObjects[j], sampledObjects[i]
+			// t := sampledObjects[i]
+			// sampledObjects[i] = sampledObjects[j]
+			// sampledObjects[j] = t
 		}
 		sampledObjects = sampledObjects[0:maxMetadataSamples]
 	}
@@ -657,7 +658,7 @@ func getClusters(ctx context.Context, e *Endpoint, filter *ResourceFilter) (obje
 	return m, nil
 }
 
-//noinspection GoUnusedParameter
+// noinspection GoUnusedParameter
 func getHosts(ctx context.Context, e *Endpoint, filter *ResourceFilter) (objectMap, error) {
 	var resources []mo.HostSystem
 	err := filter.FindAll(ctx, &resources)
@@ -873,7 +874,7 @@ func submitChunkJob(ctx context.Context, te *ThrottledExecutor, job queryJob, pq
 	})
 }
 
-func (e *Endpoint) chunkify(ctx context.Context, res *resourceKind, now time.Time, latest time.Time, acc cua.Accumulator, job queryJob) {
+func (e *Endpoint) chunkify(ctx context.Context, res *resourceKind, now time.Time, latest time.Time, job queryJob) {
 	te := NewThrottledExecutor(e.Parent.CollectConcurrency)
 	maxMetrics := e.Parent.MaxQueryMetrics
 	if maxMetrics < 1 {
@@ -1015,9 +1016,9 @@ func (e *Endpoint) collectResource(ctx context.Context, resourceType string, acc
 	latestSample := time.Time{}
 
 	// Divide workload into chunks and process them concurrently
-	e.chunkify(ctx, res, now, latest, acc,
+	e.chunkify(ctx, res, now, latest,
 		func(chunk queryChunk) {
-			n, localLatest, err := e.collectChunk(ctx, chunk, res, acc, now, estInterval)
+			n, localLatest, err := e.collectChunk(ctx, chunk, res, acc, estInterval)
 			e.log.Debugf("CollectChunk for %s returned %d metrics", resourceType, n)
 			if err != nil {
 				acc.AddError(errors.New("while collecting " + res.name + ": " + err.Error()))
@@ -1079,7 +1080,7 @@ func (e *Endpoint) alignSamples(info []types.PerfSampleInfo, values []int64, int
 	return rInfo, rValues
 }
 
-func (e *Endpoint) collectChunk(ctx context.Context, pqs queryChunk, res *resourceKind, acc cua.Accumulator, now time.Time, interval time.Duration) (int, time.Time, error) {
+func (e *Endpoint) collectChunk(ctx context.Context, pqs queryChunk, res *resourceKind, acc cua.Accumulator, interval time.Duration) (int, time.Time, error) {
 	e.log.Debugf("Query for %s has %d QuerySpecs", res.name, len(pqs))
 	latestSample := time.Time{}
 	count := 0
@@ -1113,6 +1114,7 @@ func (e *Endpoint) collectChunk(ctx context.Context, pqs queryChunk, res *resour
 		}
 		buckets := make(map[string]metricEntry)
 		for _, v := range em.Value {
+			v := v
 			name := v.Name
 			t := map[string]string{
 				"vcenter": e.URL.Host,
@@ -1225,18 +1227,19 @@ func (e *Endpoint) populateTags(objectRef *objectRef, resourceType string, resou
 	if v.Instance != "" {
 		instance = v.Instance
 	}
-	if strings.HasPrefix(name, "cpu.") {
+	switch {
+	case strings.HasPrefix(name, "cpu."):
 		t["cpu"] = instance
-	} else if strings.HasPrefix(name, "datastore.") {
+	case strings.HasPrefix(name, "datastore."):
 		t["lun"] = instance
 		if ds, ok := e.lun2ds[instance]; ok {
 			t["dsname"] = ds
 		} else {
 			t["dsname"] = instance
 		}
-	} else if strings.HasPrefix(name, "disk.") {
+	case strings.HasPrefix(name, "disk."):
 		t["disk"] = cleanDiskTag(instance)
-	} else if strings.HasPrefix(name, "net.") {
+	case strings.HasPrefix(name, "net."):
 		t["interface"] = instance
 
 		// Add IP addresses to NIC data.
@@ -1249,17 +1252,17 @@ func (e *Endpoint) populateTags(objectRef *objectRef, resourceType string, resou
 				t["ipv4"] = ip
 			}
 		}
-	} else if strings.HasPrefix(name, "storageAdapter.") {
+	case strings.HasPrefix(name, "storageAdapter."):
 		t["adapter"] = instance
-	} else if strings.HasPrefix(name, "storagePath.") {
+	case strings.HasPrefix(name, "storagePath."):
 		t["path"] = instance
-	} else if strings.HasPrefix(name, "sys.resource") {
+	case strings.HasPrefix(name, "sys.resource"):
 		t["resource"] = instance
-	} else if strings.HasPrefix(name, "vflashModule.") {
+	case strings.HasPrefix(name, "vflashModule."):
 		t["module"] = instance
-	} else if strings.HasPrefix(name, "virtualDisk.") {
+	case strings.HasPrefix(name, "virtualDisk."):
 		t["disk"] = instance
-	} else if v.Instance != "" {
+	case v.Instance != "":
 		// default
 		t["instance"] = v.Instance
 	}

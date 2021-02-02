@@ -347,7 +347,7 @@ BEGIN
 
 `
 
-//Recommend disabling this by default, but is useful to detect single CPU spikes/bottlenecks
+// Recommend disabling this by default, but is useful to detect single CPU spikes/bottlenecks
 const sqlServerSchedulersV2 string = `
 SET DEADLOCK_PRIORITY - 10;
 

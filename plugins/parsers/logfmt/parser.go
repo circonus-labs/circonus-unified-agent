@@ -51,7 +51,7 @@ func (p *Parser) Parse(b []byte) ([]cua.Metric, error) {
 				continue
 			}
 
-			//type conversions
+			// type conversions
 			value := string(decoder.Value())
 			if iValue, err := strconv.ParseInt(value, 10, 64); err == nil {
 				fields[string(decoder.Key())] = iValue

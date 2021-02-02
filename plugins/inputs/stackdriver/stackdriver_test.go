@@ -645,6 +645,7 @@ func TestGather(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			var acc testutil.Accumulator
 			s := &Stackdriver{
@@ -761,6 +762,8 @@ func TestGatherAlign(t *testing.T) {
 		},
 	}
 	for listCall, tt := range tests {
+		listCall := listCall
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			var acc testutil.Accumulator
 			client := &MockStackdriverClient{
@@ -1068,6 +1071,7 @@ func TestListMetricDescriptorFilter(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			var acc testutil.Accumulator
 			client := &MockStackdriverClient{

@@ -37,6 +37,8 @@ func TestPfctlInvocation(t *testing.T) {
 	}
 
 	for i, tt := range testCases {
+		i := i
+		tt := tt
 		execLookPath = func(cmd string) (string, error) { return "fake" + cmd, nil }
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			log.Printf("running #%d\n", i)
@@ -238,6 +240,8 @@ Counters
 	}
 
 	for i, tt := range testCases {
+		i := i
+		tt := tt
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			log.Printf("running #%d\n", i)
 			pf := &PF{

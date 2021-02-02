@@ -888,6 +888,7 @@ func TestClean(t *testing.T) {
 
 	s := Serializer{}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			m, err := metric.New(tt.metricName, tt.tags, tt.fields, now)
 			assert.NoError(t, err)
@@ -983,6 +984,7 @@ func TestCleanWithTagsSupport(t *testing.T) {
 		Separator:  ".",
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			m, err := metric.New(tt.metricName, tt.tags, tt.fields, now)
 			assert.NoError(t, err)
@@ -1012,6 +1014,7 @@ func TestSerializeBatch(t *testing.T) {
 
 	s := Serializer{}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			m, err := metric.New(tt.metricName, tt.tags, tt.fields, now)
 			assert.NoError(t, err)
@@ -1044,6 +1047,7 @@ func TestSerializeBatchWithTagsSupport(t *testing.T) {
 		Separator:  ".",
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			m, err := metric.New(tt.metricName, tt.tags, tt.fields, now)
 			assert.NoError(t, err)

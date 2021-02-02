@@ -95,8 +95,8 @@ func (ja *JolokiaAgent) Gather(acc cua.Accumulator) error {
 }
 
 func (ja *JolokiaAgent) createMetrics() []Metric {
-	var metrics []Metric
 
+	metrics := make([]Metric, 0, len(ja.Metrics))
 	for _, config := range ja.Metrics {
 		metrics = append(metrics, NewMetric(config,
 			ja.DefaultFieldPrefix, ja.DefaultFieldSeparator, ja.DefaultTagPrefix))

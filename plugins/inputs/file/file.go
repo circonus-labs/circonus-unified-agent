@@ -90,14 +90,14 @@ func (f *File) SetParser(p parsers.Parser) {
 }
 
 func (f *File) refreshFilePaths() error {
-	var allFiles []string
+	var allFiles []string //nolint:prealloc
 	for _, file := range f.Files {
 		g, err := globpath.Compile(file)
 		if err != nil {
 			return fmt.Errorf("could not compile glob %v: %w", file, err)
 		}
 		files := g.Match()
-		if len(files) <= 0 {
+		if len(files) == 0 {
 			return fmt.Errorf("could not find file: %v", file)
 		}
 		allFiles = append(allFiles, files...)

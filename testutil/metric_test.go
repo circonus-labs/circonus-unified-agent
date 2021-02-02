@@ -52,6 +52,7 @@ func TestRequireMetricEqual(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			RequireMetricEqual(t, tt.want, tt.got)
 		})
@@ -99,6 +100,7 @@ func TestRequireMetricsEqual(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			RequireMetricsEqual(t, tt.want, tt.got, tt.opts...)
 		})

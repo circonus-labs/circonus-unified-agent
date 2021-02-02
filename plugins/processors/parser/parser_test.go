@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-//compares metrics without comparing time
+// compares metrics without comparing time
 func compareMetrics(t *testing.T, expected, actual []cua.Metric) {
 	assert.Equal(t, len(expected), len(actual))
 	for i, metric := range actual {
@@ -517,6 +517,7 @@ func TestApply(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			parser := Parser{
 				Config:       tt.config,
@@ -591,6 +592,7 @@ func TestBadApply(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			parser := Parser{
 				Config:      tt.config,

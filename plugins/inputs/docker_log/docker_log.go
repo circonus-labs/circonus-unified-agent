@@ -161,18 +161,16 @@ func (d *DockerLogs) Init() error {
 	return nil
 }
 
-func (d *DockerLogs) addToContainerList(containerID string, cancel context.CancelFunc) error {
+func (d *DockerLogs) addToContainerList(containerID string, cancel context.CancelFunc) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	d.containerList[containerID] = cancel
-	return nil
 }
 
-func (d *DockerLogs) removeFromContainerList(containerID string) error {
+func (d *DockerLogs) removeFromContainerList(containerID string) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	delete(d.containerList, containerID)
-	return nil
 }
 
 func (d *DockerLogs) containerInContainerList(containerID string) bool {
@@ -182,13 +180,12 @@ func (d *DockerLogs) containerInContainerList(containerID string) bool {
 	return ok
 }
 
-func (d *DockerLogs) cancelTails() error {
+func (d *DockerLogs) cancelTails() {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	for _, cancel := range d.containerList {
 		cancel()
 	}
-	return nil
 }
 
 func (d *DockerLogs) matchedContainerName(names []string) string {
@@ -226,14 +223,14 @@ func (d *DockerLogs) Gather(acc cua.Accumulator) error {
 		}
 
 		ctx, cancel := context.WithCancel(context.Background())
-		_ = d.addToContainerList(container.ID, cancel)
+		d.addToContainerList(container.ID, cancel)
 
 		// Start a new goroutine for every new container that has logs to collect
 		d.wg.Add(1)
 		go func(container types.Container) {
 			defer d.wg.Done()
 			defer func() {
-				_ = d.removeFromContainerList(container.ID)
+				d.removeFromContainerList(container.ID)
 			}()
 
 			err = d.tailContainerLogs(ctx, acc, container, containerName)
@@ -317,9 +314,7 @@ func (d *DockerLogs) tailContainerLogs(
 
 func parseLine(line []byte) (time.Time, string, error) {
 	parts := bytes.SplitN(line, []byte(" "), 2)
-
-	switch len(parts) {
-	case 1:
+	if len(parts) == 1 {
 		parts = append(parts, []byte(""))
 	}
 
@@ -423,7 +418,7 @@ func (d *DockerLogs) Start(cua.Accumulator) error {
 }
 
 func (d *DockerLogs) Stop() {
-	_ = d.cancelTails()
+	d.cancelTails()
 	d.wg.Wait()
 }
 

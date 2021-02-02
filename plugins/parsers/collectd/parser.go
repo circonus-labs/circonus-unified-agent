@@ -20,8 +20,8 @@ type Parser struct {
 	// DefaultTags will be added to every parsed metric
 	DefaultTags map[string]string
 
-	//whether or not to split multi value metric into multiple metrics
-	//default value is split
+	// whether or not to split multi value metric into multiple metrics
+	// default value is split
 	ParseMultiValue string
 	popts           network.ParseOpts
 }
@@ -120,7 +120,7 @@ func UnmarshalValueList(vl *api.ValueList, multiValue string) []cua.Metric {
 
 	var metrics []cua.Metric
 
-	//set multiValue to default "split" if nothing is specified
+	// set multiValue to default "split" if nothing is specified
 	if multiValue == "" {
 		multiValue = "split"
 	}

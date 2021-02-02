@@ -110,11 +110,11 @@ func init() {
 	})
 }
 
-func realExecCmd(Timeout internal.Duration, arg0 string, args ...string) ([]byte, error) {
+func realExecCmd(timeout internal.Duration, arg0 string, args ...string) ([]byte, error) {
 	cmd := exec.Command(arg0, args...)
 	var out bytes.Buffer
 	cmd.Stdout = &out
-	err := internal.RunTimeout(cmd, Timeout.Duration)
+	err := internal.RunTimeout(cmd, timeout.Duration)
 	if err != nil {
 		return nil, err
 	}
@@ -164,14 +164,14 @@ func (s *SnmpTrap) Start(acc cua.Accumulator) error {
 			authenticationProtocol = gosnmp.MD5
 		case "sha":
 			authenticationProtocol = gosnmp.SHA
-		//case "sha224":
-		//	authenticationProtocol = gosnmp.SHA224
-		//case "sha256":
-		//	authenticationProtocol = gosnmp.SHA256
-		//case "sha384":
-		//	authenticationProtocol = gosnmp.SHA384
-		//case "sha512":
-		//	authenticationProtocol = gosnmp.SHA512
+		// case "sha224":
+		// 	authenticationProtocol = gosnmp.SHA224
+		// case "sha256":
+		// 	authenticationProtocol = gosnmp.SHA256
+		// case "sha384":
+		// 	authenticationProtocol = gosnmp.SHA384
+		// case "sha512":
+		// 	authenticationProtocol = gosnmp.SHA512
 		case "":
 			authenticationProtocol = gosnmp.NoAuth
 		default:
@@ -356,10 +356,8 @@ func makeTrapHandler(s *SnmpTrap) handler {
 				// SNMP RFCs like 3411 and 5343 show engine ID as a hex string
 				tags["engine_id"] = fmt.Sprintf("%x", packet.ContextEngineID)
 			}
-		} else {
-			if packet.Community != "" {
-				tags["community"] = packet.Community
-			}
+		} else if packet.Community != "" {
+			tags["community"] = packet.Community
 		}
 
 		s.acc.AddFields("snmp_trap", fields, tags, tm)

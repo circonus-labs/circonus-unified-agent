@@ -199,11 +199,7 @@ func (c *CloudWatch) Gather(acc cua.Accumulator) error {
 	c.updateWindow(time.Now())
 
 	// Get all of the possible queries so we can send groups of 100.
-	queries, err := c.getDataQueries(filteredMetrics)
-	if err != nil {
-		return err
-	}
-
+	queries := c.getDataQueries(filteredMetrics)
 	if len(queries) == 0 {
 		return nil
 	}
@@ -430,9 +426,9 @@ func (c *CloudWatch) updateWindow(relativeTo time.Time) {
 }
 
 // getDataQueries gets all of the possible queries so we can maximize the request payload.
-func (c *CloudWatch) getDataQueries(filteredMetrics []filteredMetric) ([]*cloudwatch.MetricDataQuery, error) {
+func (c *CloudWatch) getDataQueries(filteredMetrics []filteredMetric) []*cloudwatch.MetricDataQuery {
 	if c.metricCache != nil && c.metricCache.queries != nil && c.metricCache.isValid() {
-		return c.metricCache.queries, nil
+		return c.metricCache.queries
 	}
 
 	c.queryDimensions = map[string]*map[string]string{}
@@ -507,7 +503,7 @@ func (c *CloudWatch) getDataQueries(filteredMetrics []filteredMetric) ([]*cloudw
 
 	if len(dataQueries) == 0 {
 		c.Log.Debug("no metrics found to collect")
-		return nil, nil
+		return nil
 	}
 
 	if c.metricCache == nil {
@@ -520,7 +516,7 @@ func (c *CloudWatch) getDataQueries(filteredMetrics []filteredMetric) ([]*cloudw
 		c.metricCache.queries = dataQueries
 	}
 
-	return dataQueries, nil
+	return dataQueries
 }
 
 // gatherMetrics gets metric data from Cloudwatch.
@@ -590,15 +586,15 @@ func New() *CloudWatch {
 }
 
 func sanitizeMeasurement(namespace string) string {
-	namespace = strings.Replace(namespace, "/", "_", -1)
+	namespace = strings.ReplaceAll(namespace, "/", "_")
 	namespace = snakeCase(namespace)
 	return "cloudwatch_" + namespace
 }
 
 func snakeCase(s string) string {
 	s = internal.SnakeCase(s)
-	s = strings.Replace(s, " ", "_", -1)
-	s = strings.Replace(s, "__", "_", -1)
+	s = strings.ReplaceAll(s, " ", "_")
+	s = strings.ReplaceAll(s, "__", "_")
 	return s
 }
 

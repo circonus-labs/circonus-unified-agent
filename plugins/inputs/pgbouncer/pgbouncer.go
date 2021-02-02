@@ -61,7 +61,7 @@ func (p *PgBouncer) Gather(acc cua.Accumulator) error {
 	}
 
 	for rows.Next() {
-		tags, columnMap, err := p.accRow(rows, acc, columns)
+		tags, columnMap, err := p.parseRow(rows, columns)
 
 		if err != nil {
 			return err
@@ -111,7 +111,7 @@ func (p *PgBouncer) Gather(acc cua.Accumulator) error {
 	}
 
 	for poolRows.Next() {
-		tags, columnMap, err := p.accRow(poolRows, acc, columns)
+		tags, columnMap, err := p.parseRow(poolRows, columns)
 		if err != nil {
 			return err
 		}
@@ -145,8 +145,7 @@ type scanner interface {
 	Scan(dest ...interface{}) error
 }
 
-func (p *PgBouncer) accRow(row scanner, acc cua.Accumulator, columns []string) (map[string]string,
-	map[string]*interface{}, error) {
+func (p *PgBouncer) parseRow(row scanner, columns []string) (map[string]string, map[string]*interface{}, error) {
 	var columnVars []interface{}
 	var dbname bytes.Buffer
 

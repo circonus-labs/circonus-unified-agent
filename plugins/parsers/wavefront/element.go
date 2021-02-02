@@ -31,11 +31,11 @@ type LoopedParser struct {
 	wsParser      *WhiteSpaceParser
 }
 type LiteralParser struct {
-	literal string
+	// literal string
 }
 
 func (ep *NameParser) parse(p *PointParser, pt *Point) error {
-	//Valid characters are: a-z, A-Z, 0-9, hyphen ("-"), underscore ("_"), dot (".").
+	// Valid characters are: a-z, A-Z, 0-9, hyphen ("-"), underscore ("_"), dot (".").
 	// Forward slash ("/") and comma (",") are allowed if metricName is enclosed in double quotes.
 	// Delta (U+2206) is allowed as the first character of the
 	// metricName
@@ -109,16 +109,17 @@ func (ep *TimestampParser) parse(p *PointParser, pt *Point) error {
 
 func setTimestamp(pt *Point, ts int64, numDigits int) error {
 
-	if numDigits == 19 {
+	switch {
+	case numDigits == 19:
 		// nanoseconds
-		ts = ts / 1e9
-	} else if numDigits == 16 {
+		ts /= 1e9
+	case numDigits == 16:
 		// microseconds
-		ts = ts / 1e6
-	} else if numDigits == 13 {
+		ts /= 1e6
+	case numDigits == 13:
 		// milliseconds
-		ts = ts / 1e3
-	} else if numDigits != 10 {
+		ts /= 1e3
+	case numDigits != 10:
 		// must be in seconds, return error if not 0
 		if ts == 0 {
 			ts = getCurrentTime()
@@ -185,17 +186,18 @@ func (ep *WhiteSpaceParser) parse(p *PointParser, pt *Point) error {
 	return nil
 }
 
-func (ep *LiteralParser) parse(p *PointParser, pt *Point) error {
-	l, err := parseLiteral(p)
-	if err != nil {
-		return err
-	}
+// unused
+// func (ep *LiteralParser) parse(p *PointParser) error {
+// 	l, err := parseLiteral(p)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	if l != ep.literal {
-		return fmt.Errorf("found %s, expected %s", l, ep.literal)
-	}
-	return nil
-}
+// 	if l != ep.literal {
+// 		return fmt.Errorf("found %s, expected %s", l, ep.literal)
+// 	}
+// 	return nil
+// }
 
 func parseQuotedLiteral(p *PointParser) (string, error) {
 	p.writeBuf.Reset()

@@ -231,6 +231,7 @@ func getTestCasesForRFC5426() []testCasePacket {
 
 func testRFC5426(t *testing.T, protocol string, address string, bestEffort bool) {
 	for _, tc := range getTestCasesForRFC5426() {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			// Create receiver
 			receiver := newUDPSyslogReceiver(protocol+"://"+address, bestEffort)

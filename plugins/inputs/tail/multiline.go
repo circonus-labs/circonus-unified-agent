@@ -69,13 +69,11 @@ func (m *Multiline) ProcessLine(text string, buffer *bytes.Buffer) string {
 		buffer.Reset()
 		buffer.WriteString(text)
 		text = previousText
-	} else {
+	} else if buffer.Len() > 0 {
 		// Next
-		if buffer.Len() > 0 {
-			buffer.WriteString(text)
-			text = buffer.String()
-			buffer.Reset()
-		}
+		buffer.WriteString(text)
+		text = buffer.String()
+		buffer.Reset()
 	}
 
 	return text

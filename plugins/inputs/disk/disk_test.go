@@ -229,6 +229,7 @@ func TestDiskUsageHostMountPrefix(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			mck := &mock.Mock{}
 			mps := system.MockPSDisk{SysPS: &system.SysPS{PSDiskDeps: &system.MockDiskUsage{Mock: mck}}, Mock: mck}

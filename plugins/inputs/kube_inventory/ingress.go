@@ -15,16 +15,17 @@ func collectIngress(ctx context.Context, acc cua.Accumulator, ki *KubernetesInve
 		return
 	}
 	for _, i := range list.Items {
-		if err = ki.gatherIngress(*i, acc); err != nil {
-			acc.AddError(err)
-			return
-		}
+		ki.gatherIngress(*i, acc)
+		// if err = ki.gatherIngress(*i, acc); err != nil {
+		// 	acc.AddError(err)
+		// 	return
+		// }
 	}
 }
 
-func (ki *KubernetesInventory) gatherIngress(i v1beta1EXT.Ingress, acc cua.Accumulator) error {
+func (ki *KubernetesInventory) gatherIngress(i v1beta1EXT.Ingress, acc cua.Accumulator) {
 	if i.Metadata.CreationTimestamp.GetSeconds() == 0 && i.Metadata.CreationTimestamp.GetNanos() == 0 {
-		return nil
+		return
 	}
 
 	fields := map[string]interface{}{
@@ -54,6 +55,4 @@ func (ki *KubernetesInventory) gatherIngress(i v1beta1EXT.Ingress, acc cua.Accum
 			}
 		}
 	}
-
-	return nil
 }

@@ -62,8 +62,9 @@ func maybeTrimmedString(v interface{}) (string, bool) {
 	switch value := v.(type) {
 	case string:
 		return strings.TrimSpace(value), true
+	default:
+		return "", false
 	}
-	return "", false
 }
 
 func init() {

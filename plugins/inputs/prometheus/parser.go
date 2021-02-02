@@ -64,15 +64,16 @@ func ParseV2(buf []byte, header http.Header) ([]cua.Metric, error) {
 			// reading tags
 			tags := makeLabels(m)
 
-			if mf.GetType() == dto.MetricType_SUMMARY {
+			switch mf.GetType() {
+			case dto.MetricType_SUMMARY:
 				// summary metric
 				agentMetrics := makeQuantilesV2(m, tags, metricName, mf.GetType(), now)
 				metrics = append(metrics, agentMetrics...)
-			} else if mf.GetType() == dto.MetricType_HISTOGRAM {
+			case dto.MetricType_HISTOGRAM:
 				// histogram metric
 				agentMetrics := makeBucketsV2(m, tags, metricName, mf.GetType(), now)
 				metrics = append(metrics, agentMetrics...)
-			} else {
+			default:
 				// standard metric
 				// reading fields
 				fields := getNameAndValueV2(m, metricName)
@@ -204,18 +205,18 @@ func Parse(buf []byte, header http.Header) ([]cua.Metric, error) {
 			tags := makeLabels(m)
 			// reading fields
 			var fields map[string]interface{}
-			if mf.GetType() == dto.MetricType_SUMMARY {
+			switch mf.GetType() {
+			case dto.MetricType_SUMMARY:
 				// summary metric
 				fields = makeQuantiles(m)
 				fields["count"] = float64(m.GetSummary().GetSampleCount())
 				fields["sum"] = float64(m.GetSummary().GetSampleSum())
-			} else if mf.GetType() == dto.MetricType_HISTOGRAM {
+			case dto.MetricType_HISTOGRAM:
 				// histogram metric
 				fields = makeBuckets(m)
 				fields["count"] = float64(m.GetHistogram().GetSampleCount())
 				fields["sum"] = float64(m.GetHistogram().GetSampleSum())
-
-			} else {
+			default:
 				// standard metric
 				fields = getNameAndValue(m)
 			}
@@ -285,15 +286,16 @@ func makeLabels(m *dto.Metric) map[string]string {
 // Get name and value from metric
 func getNameAndValue(m *dto.Metric) map[string]interface{} {
 	fields := make(map[string]interface{})
-	if m.Gauge != nil {
+	switch {
+	case m.Gauge != nil:
 		if !math.IsNaN(m.GetGauge().GetValue()) {
 			fields["gauge"] = float64(m.GetGauge().GetValue())
 		}
-	} else if m.Counter != nil {
+	case m.Counter != nil:
 		if !math.IsNaN(m.GetCounter().GetValue()) {
 			fields["counter"] = float64(m.GetCounter().GetValue())
 		}
-	} else if m.Untyped != nil {
+	case m.Untyped != nil:
 		if !math.IsNaN(m.GetUntyped().GetValue()) {
 			fields["value"] = float64(m.GetUntyped().GetValue())
 		}
@@ -304,15 +306,16 @@ func getNameAndValue(m *dto.Metric) map[string]interface{} {
 // Get name and value from metric
 func getNameAndValueV2(m *dto.Metric, metricName string) map[string]interface{} {
 	fields := make(map[string]interface{})
-	if m.Gauge != nil {
+	switch {
+	case m.Gauge != nil:
 		if !math.IsNaN(m.GetGauge().GetValue()) {
 			fields[metricName] = float64(m.GetGauge().GetValue())
 		}
-	} else if m.Counter != nil {
+	case m.Counter != nil:
 		if !math.IsNaN(m.GetCounter().GetValue()) {
 			fields[metricName] = float64(m.GetCounter().GetValue())
 		}
-	} else if m.Untyped != nil {
+	case m.Untyped != nil:
 		if !math.IsNaN(m.GetUntyped().GetValue()) {
 			fields[metricName] = float64(m.GetUntyped().GetValue())
 		}

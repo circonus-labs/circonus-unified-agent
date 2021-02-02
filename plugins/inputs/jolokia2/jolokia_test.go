@@ -761,13 +761,13 @@ func TestFillFields(t *testing.T) {
 	assert.Equal(t, map[string]interface{}{}, results)
 }
 
-func setupServer(status int, resp string) *httptest.Server {
+func setupServer(status int, resp string) *httptest.Server { //nolint:unparam
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		//body, err := ioutil.ReadAll(r.Body)
-		//if err == nil {
-		//	fmt.Println(string(body))
-		//}
+		// body, err := ioutil.ReadAll(r.Body)
+		// if err == nil {
+		// 	fmt.Println(string(body))
+		// }
 
 		fmt.Fprintln(w, resp)
 	}))

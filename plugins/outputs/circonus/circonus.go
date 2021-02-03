@@ -26,18 +26,19 @@ const (
 
 // Circonus values are used to output data to the Circonus platform.
 type Circonus struct {
-	Broker          string `toml:"broker"`
-	APIURL          string `toml:"api_url"`
-	APIToken        string `toml:"api_token"`
-	APIApp          string `toml:"api_app"`
-	APITLSCA        string `toml:"api_tls_ca"`
-	OneCheck        bool   `toml:"one_check"`
-	CheckNamePrefix string `toml:"check_name_prefix"`
-	DebugCGM        bool   `toml:"debug_cgm"`
-	DebugMetrics    bool   `toml:"debug_metrics"`
-	apicfg          apiclient.Config
-	checks          map[string]*cgm.CirconusMetrics
-	Log             cua.Logger
+	Broker           string `toml:"broker"`
+	APIURL           string `toml:"api_url"`
+	APIToken         string `toml:"api_token"`
+	APIApp           string `toml:"api_app"`
+	APITLSCA         string `toml:"api_tls_ca"`
+	OneCheck         bool   `toml:"one_check"`
+	CGMFlushInterval string `toml:"cgm_flush_interval"`
+	CheckNamePrefix  string `toml:"check_name_prefix"`
+	DebugCGM         bool   `toml:"debug_cgm"`
+	DebugMetrics     bool   `toml:"debug_metrics"`
+	apicfg           apiclient.Config
+	checks           map[string]*cgm.CirconusMetrics
+	Log              cua.Logger
 }
 
 // Init performs initialization of a Circonus client.
@@ -82,6 +83,16 @@ func (c *Circonus) Init() error {
 			hn = "unknown"
 		}
 		c.CheckNamePrefix = hn
+	}
+
+	if c.CGMFlushInterval != "" {
+		interval, err := time.ParseDuration(c.CGMFlushInterval)
+		if err != nil {
+			return fmt.Errorf("invalid cgm flush interval (%s): %w", c.CGMFlushInterval, err)
+		}
+		if interval == time.Duration(0) {
+			return fmt.Errorf("invalid cgm flush interval (%s), must be >0", c.CGMFlushInterval)
+		}
 	}
 
 	return nil
@@ -270,6 +281,9 @@ func (c *Circonus) initCheck(id string) error {
 	cfg.Debug = c.DebugCGM
 	if c.DebugCGM {
 		cfg.Log = logshim{logh: c.Log}
+	}
+	if c.CGMFlushInterval != "" {
+		cfg.Interval = c.CGMFlushInterval
 	}
 	cfg.CheckManager.API = c.apicfg
 	if c.Broker != "" {

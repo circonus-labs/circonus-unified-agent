@@ -1,3 +1,22 @@
+# v0.0.12
+
+* add: cgm interval as setting
+* fix: check for err != nil for abnormal exit msg
+* upd: switch md5->sha256 (filestat)
+* fix: lint errors
+* add: additional linters
+* upd: check type `httptrap:cua:plugin:os`
+* upd: check display name: `host plugin (os)`
+* add: emit cua version every 5m
+* upd: lint fixes (gofmt/golint)
+* upd: dep (sarama)
+* upd: enable percpu in default cpu plugin
+* fix: lint (GOOS=windows)
+* fix: lint (GOOS=linux)
+* fix: lint (errorlint)
+* add: additional linters
+* upd: tool version
+
 # v0.0.11
 
 * fix: cumulative histogram submission and honor metricKind settings (stackdriver)

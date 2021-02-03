@@ -35,15 +35,20 @@ var pprofAddr = flag.String("pprof-addr", "",
 	"pprof address to listen on, not activate pprof if empty")
 var fQuiet = flag.Bool("quiet", false,
 	"run in quiet mode")
-var fTest = flag.Bool("test", false, "enable test mode: gather metrics, print them out, and exit. Note: Test mode only runs inputs, not processors, aggregators, or outputs")
-var fTestWait = flag.Int("test-wait", 0, "wait up to this many seconds for service inputs to complete in test mode")
-var fConfig = flag.String("config", "", "configuration file to load")
+var fTest = flag.Bool("test", false,
+	"enable test mode: gather metrics, print them out, and exit. Note: Test mode only runs inputs, not processors, aggregators, or outputs")
+var fTestWait = flag.Int("test-wait", 0,
+	"wait up to this many seconds for service inputs to complete in test mode")
+var fConfig = flag.String("config", "",
+	"configuration file to load")
 var fConfigDirectory = flag.String("config-directory", "",
 	"directory containing additional *.conf files")
-var fVersion = flag.Bool("version", false, "display the version and exit")
+var fVersion = flag.Bool("version", false,
+	"display the version and exit")
 var fSampleConfig = flag.Bool("sample-config", false,
 	"print out full sample configuration")
-var fPidfile = flag.String("pidfile", "", "file to write our pid to")
+var fPidfile = flag.String("pidfile", "",
+	"file to write our pid to")
 var fSectionFilters = flag.String("section-filter", "",
 	"filter the sections to print, separator is ':'. Valid values are 'agent', 'global_tags', 'outputs', 'processors', 'aggregators' and 'inputs'")
 var fInputFilters = flag.String("input-filter", "",
@@ -62,7 +67,8 @@ var fUsage = flag.String("usage", "",
 	"print usage for a plugin, ie, 'circonus-unified-agent --usage mysql'")
 var fPlugins = flag.String("plugin-directory", "",
 	"path to directory containing external plugins")
-var fRunOnce = flag.Bool("once", false, "run one gather and exit")
+var fRunOnce = flag.Bool("once", false,
+	"run one gather and exit")
 
 var (
 	version   string
@@ -88,8 +94,7 @@ func reloadLoop(
 		ctx, cancel := context.WithCancel(context.Background())
 
 		signals := make(chan os.Signal, 1)
-		signal.Notify(signals, os.Interrupt, syscall.SIGHUP,
-			syscall.SIGTERM, syscall.SIGINT)
+		signal.Notify(signals, os.Interrupt, syscall.SIGHUP, syscall.SIGTERM, syscall.SIGINT)
 		go func() {
 			select {
 			case sig := <-signals:
@@ -105,7 +110,7 @@ func reloadLoop(
 		}()
 
 		err := runAgent(ctx, inputFilters, outputFilters)
-		if !errors.Is(err, context.Canceled) {
+		if err != nil && !errors.Is(err, context.Canceled) {
 			log.Fatalf("E! [circonus-unified-agent] Error running agent: %v", err)
 		}
 	}
@@ -133,20 +138,18 @@ func runAgent(ctx context.Context,
 		}
 	}
 	if !*fTest && len(c.Outputs) == 0 {
-		return errors.New("Error: no outputs found, did you provide a valid config file?")
+		return fmt.Errorf("Error: no outputs found, did you provide a valid config file?")
 	}
 	if *fPlugins == "" && len(c.Inputs) == 0 {
-		return errors.New("Error: no inputs found, did you provide a valid config file?")
+		return fmt.Errorf("Error: no inputs found, did you provide a valid config file?")
 	}
 
 	if int64(c.Agent.Interval.Duration) <= 0 {
-		return fmt.Errorf("Agent interval must be positive, found %s",
-			c.Agent.Interval.Duration)
+		return fmt.Errorf("Agent interval must be positive, found %s", c.Agent.Interval.Duration)
 	}
 
 	if int64(c.Agent.FlushInterval.Duration) <= 0 {
-		return fmt.Errorf("Agent flush_interval must be positive; found %s",
-			c.Agent.Interval.Duration)
+		return fmt.Errorf("Agent flush_interval must be positive; found %s", c.Agent.Interval.Duration)
 	}
 
 	ag, err := agent.NewAgent(c)

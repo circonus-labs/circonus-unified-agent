@@ -1610,16 +1610,20 @@ type unwrappable interface {
 	Unwrap() cua.Processor
 }
 
+//
+// Default plugins - which we always want enabled
+//
 type defaultPlugin struct {
 	Enabled bool
 	Data    []byte
 }
 
+var defaultInstanceID = "host"
 var defaultPluginList = map[string]defaultPlugin{
 	"cpu": {
 		Enabled: true,
 		Data: []byte(`
-instance_id="host"
+instance_id="` + defaultInstanceID + `"
 percpu = true
 totalcpu = true
 collect_cpu_time = false
@@ -1628,43 +1632,47 @@ report_active = false`),
 	"disk": {
 		Enabled: true,
 		Data: []byte(`
-instance_id="host"
+instance_id="` + defaultInstanceID + `"
 ignore_fs = ["tmpfs", "devtmpfs", "devfs", "iso9660", "overlay", "aufs", "squashfs"]`),
 	},
 	"mem": {
 		Enabled: true,
-		Data:    []byte(`instance_id="host"`),
+		Data:    []byte(`instance_id="` + defaultInstanceID + `"`),
 	},
 	"swap": {
 		Enabled: true,
-		Data:    []byte(`instance_id="host"`),
+		Data:    []byte(`instance_id="` + defaultInstanceID + `"`),
 	},
 	"system": {
 		Enabled: true,
-		Data:    []byte(`instance_id="host"`),
+		Data:    []byte(`instance_id="` + defaultInstanceID + `"`),
 	},
 	"kernel": {
 		Enabled: true,
-		Data:    []byte(`instance_id="host"`),
+		Data:    []byte(`instance_id="` + defaultInstanceID + `"`),
 	},
 	"processes": {
 		Enabled: true,
-		Data:    []byte(`instance_id="host"`),
+		Data:    []byte(`instance_id="` + defaultInstanceID + `"`),
 	},
 	"diskio": {
 		Enabled: true,
-		Data:    []byte(`instance_id="host"`),
+		Data:    []byte(`instance_id="` + defaultInstanceID + `"`),
 	},
 	"internal": {
 		Enabled: true,
 		Data: []byte(`
-instance_id="host"
+instance_id="` + defaultInstanceID + `"
 collect_memstats = true`),
 	},
 	"net": {
 		Enabled: true,
-		Data:    []byte(`instance_id="host"`),
+		Data:    []byte(`instance_id="` + defaultInstanceID + `"`),
 	},
+}
+
+func IsDefaultInstanceID(id string) bool {
+	return id == defaultInstanceID
 }
 
 func IsDefaultPlugin(name string) bool {
@@ -1686,8 +1694,6 @@ func IsDefaultPlugin(name string) bool {
 
 func getDefaultPluginList() *map[string]defaultPlugin {
 	switch runtime.GOOS {
-	case "darwin":
-		fallthrough
 	case "linux":
 		return &defaultPluginList
 	default:

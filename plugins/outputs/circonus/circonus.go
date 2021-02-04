@@ -234,7 +234,7 @@ func (c *Circonus) getMetricDest(defaultDest *cgm.CirconusMetrics, plugin, insta
 	if c.OneCheck || plugin == "" {
 		return defaultDest
 	}
-	if config.IsDefaultPlugin(plugin) {
+	if config.IsDefaultPlugin(plugin) && config.IsDefaultInstanceID(instanceID) {
 		return defaultDest
 	}
 

@@ -145,7 +145,7 @@ func (c *Circonus) Connect() error {
 		c.checks = make(map[string]*cgm.CirconusMetrics)
 	}
 
-	if err := c.initCheck("*"); err != nil {
+	if err := c.initCheck("*", ""); err != nil {
 		c.Log.Errorf("unable to initialize circonus check (%s)", err)
 		return err
 	}
@@ -247,7 +247,7 @@ func (c *Circonus) getMetricDest(defaultDest *cgm.CirconusMetrics, plugin, insta
 		return d
 	}
 
-	if err := c.initCheck(id); err == nil {
+	if err := c.initCheck(id, plugin+" "+instanceID); err == nil {
 		if d, ok := c.checks[id]; ok {
 			return d
 		}
@@ -269,10 +269,11 @@ func (l logshim) Printf(fmt string, args ...interface{}) {
 }
 
 // initCheck initializes cgm instance for the plugin identified by id
-func (c *Circonus) initCheck(id string) error {
+func (c *Circonus) initCheck(id, name string) error {
 	plugID := id
 	if id == "*" {
 		plugID = "default"
+		name = "default"
 	}
 
 	checkType := "httptrap:cua:" + plugID + ":" + runtime.GOOS
@@ -291,7 +292,7 @@ func (c *Circonus) initCheck(id string) error {
 	}
 	cfg.CheckManager.Check.InstanceID = strings.Replace(checkType, "httptrap", c.CheckNamePrefix, 1)
 	cfg.CheckManager.Check.TargetHost = c.CheckNamePrefix
-	cfg.CheckManager.Check.DisplayName = c.CheckNamePrefix + " " + plugID + " (" + runtime.GOOS + ")"
+	cfg.CheckManager.Check.DisplayName = c.CheckNamePrefix + " " + name + " (" + runtime.GOOS + ")"
 	cfg.CheckManager.Check.Type = checkType
 
 	m, err := cgm.New(cfg)
@@ -305,7 +306,7 @@ func (c *Circonus) initCheck(id string) error {
 
 // buildNumerics constructs numeric metrics from a cua metric.
 func (c *Circonus) buildNumerics(defaultDest *cgm.CirconusMetrics, m cua.Metric) int64 {
-	dest := c.getMetricDest(defaultDest, m.Origin(), m.OriginInstance())
+	dest := c.getMetricDest(defaultDest, m.Name(), m.OriginInstance())
 	if dest == nil {
 		// no default and no plugin specific
 		return 0
@@ -326,7 +327,7 @@ func (c *Circonus) buildNumerics(defaultDest *cgm.CirconusMetrics, m cua.Metric)
 
 // buildTexts constructs text metrics from a cua metric.
 func (c *Circonus) buildTexts(defaultDest *cgm.CirconusMetrics, m cua.Metric) int64 {
-	dest := c.getMetricDest(defaultDest, m.Origin(), m.OriginInstance())
+	dest := c.getMetricDest(defaultDest, m.Name(), m.OriginInstance())
 	if dest == nil {
 		// no default and no plugin specific
 		return 0
@@ -352,7 +353,7 @@ func (c *Circonus) buildTexts(defaultDest *cgm.CirconusMetrics, m cua.Metric) in
 
 // buildHistogram constructs histogram metrics from a cua metric.
 func (c *Circonus) buildHistogram(defaultDest *cgm.CirconusMetrics, m cua.Metric) int64 {
-	dest := c.getMetricDest(defaultDest, m.Origin(), m.OriginInstance())
+	dest := c.getMetricDest(defaultDest, m.Name(), m.OriginInstance())
 	if dest == nil {
 		// no default and no plugin specific
 		return 0
@@ -381,7 +382,7 @@ func (c *Circonus) buildHistogram(defaultDest *cgm.CirconusMetrics, m cua.Metric
 
 // buildCumulativeHistogram constructs cumulative histogram metrics from a cua metric.
 func (c *Circonus) buildCumulativeHistogram(defaultDest *cgm.CirconusMetrics, m cua.Metric) int64 {
-	dest := c.getMetricDest(defaultDest, m.Origin(), m.OriginInstance())
+	dest := c.getMetricDest(defaultDest, m.Name(), m.OriginInstance())
 	if dest == nil {
 		// no default and no plugin specific
 		return 0

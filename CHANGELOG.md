@@ -1,3 +1,15 @@
+# v0.0.13
+
+* upd: replace deprecated ioutil methods
+* upd: go1.16
+* fix: lint issues
+* upd: build/lint configs
+* upd: dependencies (cgm, golangci-lint)
+* upd: use metric.Name() for check type
+* upd: remove ':' between plugin and instance id in check display name
+* upd: only use default check if plugin AND instance are "defaults"
+* add: defaultInstanceID support
+
 # v0.0.12
 
 * add: cgm interval as setting

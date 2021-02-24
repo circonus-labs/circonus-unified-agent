@@ -155,11 +155,14 @@ func (s *SysPS) NetConnections() ([]net.ConnectionStat, error) {
 
 func (s *SysPS) DiskIO(names []string) (map[string]disk.IOCountersStat, error) {
 	m, err := disk.IOCounters(names...)
-	if errors.Is(err, internal.ErrNotImplemented) {
-		return nil, nil
+	if err != nil {
+		if errors.Is(err, internal.ErrNotImplemented) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("disk iocounters: %w", err)
 	}
 
-	return m, fmt.Errorf("disk iocounters: %w", err)
+	return m, nil
 }
 
 func (s *SysPS) VMStat() (*mem.VirtualMemoryStat, error) {

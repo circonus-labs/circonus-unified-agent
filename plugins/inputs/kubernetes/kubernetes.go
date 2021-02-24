@@ -3,8 +3,8 @@ package kubernetes
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -95,16 +95,16 @@ func (k *Kubernetes) Init() error {
 	}
 
 	if k.BearerToken != "" {
-		token, err := ioutil.ReadFile(k.BearerToken)
+		token, err := os.ReadFile(k.BearerToken)
 		if err != nil {
-			return err
+			return fmt.Errorf("readfile: %w", err)
 		}
 		k.BearerTokenString = strings.TrimSpace(string(token))
 	}
 
 	labelFilter, err := filter.NewIncludeExcludeFilter(k.LabelInclude, k.LabelExclude)
 	if err != nil {
-		return err
+		return fmt.Errorf("label filters: %w", err)
 	}
 	k.labelFilter = labelFilter
 
@@ -207,12 +207,12 @@ func (k *Kubernetes) gatherPodInfo(baseURL string) ([]Metadata, error) {
 func (k *Kubernetes) LoadJSON(url string, v interface{}) error {
 	var req, err = http.NewRequest("GET", url, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("http new req (%s): %w", url, err)
 	}
 	var resp *http.Response
 	tlsCfg, err := k.ClientConfig.TLSConfig()
 	if err != nil {
-		return err
+		return fmt.Errorf("TLSConfig: %w", err)
 	}
 	if k.RoundTripper == nil {
 		if k.ResponseTimeout.Duration < time.Second {

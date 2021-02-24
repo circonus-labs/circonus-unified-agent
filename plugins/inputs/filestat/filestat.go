@@ -132,7 +132,7 @@ func (f *FileStat) Gather(acc cua.Accumulator) error {
 func getSHA256(file string) (string, error) {
 	of, err := os.Open(file)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("open: %w", err)
 	}
 	defer of.Close()
 
@@ -140,7 +140,7 @@ func getSHA256(file string) (string, error) {
 	_, err = io.Copy(hash, of)
 	if err != nil {
 		// fatal error
-		return "", err
+		return "", fmt.Errorf("copy: %w", err)
 	}
 	return fmt.Sprintf("%x", hash.Sum(nil)), nil
 }

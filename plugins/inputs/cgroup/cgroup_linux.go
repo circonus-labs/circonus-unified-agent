@@ -4,7 +4,6 @@ package cgroup
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -44,9 +43,9 @@ func (g *CGroup) gatherDir(dir string, acc cua.Accumulator) error {
 			return file.err
 		}
 
-		raw, err := ioutil.ReadFile(file.path)
+		raw, err := os.ReadFile(file.path)
 		if err != nil {
-			return err
+			return fmt.Errorf("cgroup readfile (%s): %w", file.path, err)
 		}
 		if len(raw) == 0 {
 			continue
@@ -75,7 +74,7 @@ type pathInfo struct {
 func isDir(path string) (bool, error) {
 	result, err := os.Stat(path)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("cgroup stat (%s): %w", path, err)
 	}
 	return result.IsDir(), nil
 }
@@ -236,7 +235,7 @@ func numberOrString(s string) interface{} {
 func (f fileFormat) match(b []byte) (bool, error) {
 	ok, err := regexp.Match(f.pattern, b)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("cgroup rx match: %w", err)
 	}
 	if ok {
 		return true, nil

@@ -183,7 +183,7 @@ func (c *CloudWatch) Gather(acc cua.Accumulator) error {
 		// Set config level filter (won't change throughout life of plugin).
 		c.statFilter, err = filter.NewIncludeExcludeFilter(c.StatisticInclude, c.StatisticExclude)
 		if err != nil {
-			return err
+			return fmt.Errorf("stat filters: %w", err)
 		}
 	}
 
@@ -258,7 +258,7 @@ func (c *CloudWatch) initializeCloudWatch() error {
 	}
 	configProvider, err := credentialConfig.Credentials()
 	if err != nil {
-		return err
+		return fmt.Errorf("credentias: %w", err)
 	}
 
 	cfg := &aws.Config{
@@ -344,7 +344,7 @@ func getFilteredMetrics(c *CloudWatch) ([]filteredMetric, error) {
 			}
 			statFilter, err := filter.NewIncludeExcludeFilter(*m.StatisticInclude, *m.StatisticExclude)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("statistic filters: %w", err)
 			}
 
 			fMetrics = append(fMetrics, filteredMetric{
@@ -397,7 +397,7 @@ func (c *CloudWatch) fetchNamespaceMetrics() ([]*cloudwatch.Metric, error) {
 	for {
 		resp, err := c.client.ListMetrics(params)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("list metrics: %w", err)
 		}
 
 		metrics = append(metrics, resp.Metrics...)
@@ -526,10 +526,17 @@ func (c *CloudWatch) gatherMetrics(
 	results := []*cloudwatch.MetricDataResult{}
 
 	for {
+
+		// mgm: emit request parameters
+		c.Log.Debugf("GMD input: %#v", params)
+
 		resp, err := c.client.GetMetricData(params)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get metric data: %w", err)
 		}
+
+		// mgm: emit request results
+		c.Log.Debugf("GMD result: %#v", resp)
 
 		results = append(results, resp.MetricDataResults...)
 		if resp.NextToken == nil {
@@ -558,6 +565,10 @@ func (c *CloudWatch) aggregateMetrics(
 		}
 		tags["region"] = c.Region
 
+		if len(result.Values) == 0 {
+			c.Log.Warnf("no values from AWS (sending null sample) for %s %s %v", namespace, *result.Label, tags)
+			_ = grouper.Add(namespace, tags, time.Now().UTC(), *result.Label, nil)
+		}
 		for i := range result.Values {
 			_ = grouper.Add(namespace, tags, *result.Timestamps[i], *result.Label, *result.Values[i])
 		}
@@ -566,6 +577,9 @@ func (c *CloudWatch) aggregateMetrics(
 	for _, metric := range grouper.Metrics() {
 		acc.AddMetric(metric)
 	}
+
+	// add configured period for dashboard calculations
+	acc.AddFields(namespace, map[string]interface{}{"period": time.Duration(c.Period).Seconds()}, nil, time.Now())
 
 	return nil
 }

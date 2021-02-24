@@ -11,6 +11,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const (
+	processName = "process_name"
+	cores       = "1,2,3"
+)
+
 var metricsValues = map[string]float64{
 	"IPC":        0.5,
 	"LLC_Misses": 61650,
@@ -103,7 +108,6 @@ func TestParseProcessesMeasurement(t *testing.T) {
 	timestamp := "2020-08-12 13:34:36"
 	cores := "\"37,44\""
 	pids := "\"12345,9999\""
-	processName := "process_name"
 
 	t.Run("valid measurement string", func(t *testing.T) {
 		measurement := fmt.Sprintf("%s,%s,%s,%f,%f,%f,%f,%f,%f",
@@ -138,7 +142,6 @@ func TestParseProcessesMeasurement(t *testing.T) {
 		assert.Equal(t, resultValues[5], metricsValues["MBT"])
 	})
 	t.Run("not valid measurement string", func(t *testing.T) {
-		processName := "process_name"
 		measurement := "invalid,measurement,format"
 
 		newMeasurement := processMeasurement{
@@ -205,11 +208,11 @@ func TestParseProcessesMeasurement(t *testing.T) {
 }
 
 func TestAddToAccumulatorCores(t *testing.T) {
+
 	t.Run("shortened false", func(t *testing.T) {
 		var acc testutil.Accumulator
 		publisher := Publisher{acc: &acc}
 
-		cores := "1,2,3"
 		metricsValues := []float64{1, 2, 3, 4, 5, 6}
 		timestamp := time.Date(2020, 8, 12, 13, 34, 36, 0, time.UTC)
 
@@ -223,7 +226,6 @@ func TestAddToAccumulatorCores(t *testing.T) {
 		var acc testutil.Accumulator
 		publisher := Publisher{acc: &acc, shortenedMetrics: true}
 
-		cores := "1,2,3"
 		metricsValues := []float64{1, 2, 3, 4, 5, 6}
 		timestamp := time.Date(2020, 8, 12, 13, 34, 36, 0, time.UTC)
 
@@ -240,12 +242,10 @@ func TestAddToAccumulatorProcesses(t *testing.T) {
 		var acc testutil.Accumulator
 		publisher := Publisher{acc: &acc}
 
-		process := "process_name"
-		cores := "1,2,3"
 		metricsValues := []float64{1, 2, 3, 4, 5, 6}
 		timestamp := time.Date(2020, 8, 12, 13, 34, 36, 0, time.UTC)
 
-		publisher.addToAccumulatorProcesses(process, cores, metricsValues, timestamp)
+		publisher.addToAccumulatorProcesses(processName, cores, metricsValues, timestamp)
 
 		for _, test := range testCoreProcesses {
 			acc.AssertContainsTaggedFields(t, "rdt_metric", test.fields, test.tags)
@@ -255,12 +255,10 @@ func TestAddToAccumulatorProcesses(t *testing.T) {
 		var acc testutil.Accumulator
 		publisher := Publisher{acc: &acc, shortenedMetrics: true}
 
-		process := "process_name"
-		cores := "1,2,3"
 		metricsValues := []float64{1, 2, 3, 4, 5, 6}
 		timestamp := time.Date(2020, 8, 12, 13, 34, 36, 0, time.UTC)
 
-		publisher.addToAccumulatorProcesses(process, cores, metricsValues, timestamp)
+		publisher.addToAccumulatorProcesses(processName, cores, metricsValues, timestamp)
 
 		for _, test := range testCoreProcessesShortened {
 			acc.AssertDoesNotContainsTaggedFields(t, "rdt_metric", test.fields, test.tags)
@@ -278,7 +276,7 @@ var (
 				"value": float64(1),
 			},
 			map[string]string{
-				"cores": "1,2,3",
+				"cores": cores,
 				"name":  "IPC",
 			},
 		},
@@ -287,7 +285,7 @@ var (
 				"value": float64(2),
 			},
 			map[string]string{
-				"cores": "1,2,3",
+				"cores": cores,
 				"name":  "LLC_Misses",
 			},
 		},
@@ -296,7 +294,7 @@ var (
 				"value": float64(3),
 			},
 			map[string]string{
-				"cores": "1,2,3",
+				"cores": cores,
 				"name":  "LLC",
 			},
 		},
@@ -305,7 +303,7 @@ var (
 				"value": float64(4),
 			},
 			map[string]string{
-				"cores": "1,2,3",
+				"cores": cores,
 				"name":  "MBL",
 			},
 		},
@@ -314,7 +312,7 @@ var (
 				"value": float64(5),
 			},
 			map[string]string{
-				"cores": "1,2,3",
+				"cores": cores,
 				"name":  "MBR",
 			},
 		},
@@ -323,7 +321,7 @@ var (
 				"value": float64(6),
 			},
 			map[string]string{
-				"cores": "1,2,3",
+				"cores": cores,
 				"name":  "MBT",
 			},
 		},
@@ -337,7 +335,7 @@ var (
 				"value": float64(1),
 			},
 			map[string]string{
-				"cores": "1,2,3",
+				"cores": cores,
 				"name":  "IPC",
 			},
 		},
@@ -346,7 +344,7 @@ var (
 				"value": float64(2),
 			},
 			map[string]string{
-				"cores": "1,2,3",
+				"cores": cores,
 				"name":  "LLC_Misses",
 			},
 		},
@@ -360,9 +358,9 @@ var (
 				"value": float64(1),
 			},
 			map[string]string{
-				"cores":   "1,2,3",
+				"cores":   cores,
 				"name":    "IPC",
-				"process": "process_name",
+				"process": processName,
 			},
 		},
 		{
@@ -370,9 +368,9 @@ var (
 				"value": float64(2),
 			},
 			map[string]string{
-				"cores":   "1,2,3",
+				"cores":   cores,
 				"name":    "LLC_Misses",
-				"process": "process_name",
+				"process": processName,
 			},
 		},
 		{
@@ -380,9 +378,9 @@ var (
 				"value": float64(3),
 			},
 			map[string]string{
-				"cores":   "1,2,3",
+				"cores":   cores,
 				"name":    "LLC",
-				"process": "process_name",
+				"process": processName,
 			},
 		},
 		{
@@ -390,9 +388,9 @@ var (
 				"value": float64(4),
 			},
 			map[string]string{
-				"cores":   "1,2,3",
+				"cores":   cores,
 				"name":    "MBL",
-				"process": "process_name",
+				"process": processName,
 			},
 		},
 		{
@@ -400,9 +398,9 @@ var (
 				"value": float64(5),
 			},
 			map[string]string{
-				"cores":   "1,2,3",
+				"cores":   cores,
 				"name":    "MBR",
-				"process": "process_name",
+				"process": processName,
 			},
 		},
 		{
@@ -410,9 +408,9 @@ var (
 				"value": float64(6),
 			},
 			map[string]string{
-				"cores":   "1,2,3",
+				"cores":   cores,
 				"name":    "MBT",
-				"process": "process_name",
+				"process": processName,
 			},
 		},
 	}
@@ -425,9 +423,9 @@ var (
 				"value": float64(1),
 			},
 			map[string]string{
-				"cores":   "1,2,3",
+				"cores":   cores,
 				"name":    "IPC",
-				"process": "process_name",
+				"process": processName,
 			},
 		},
 		{
@@ -435,9 +433,9 @@ var (
 				"value": float64(2),
 			},
 			map[string]string{
-				"cores":   "1,2,3",
+				"cores":   cores,
 				"name":    "LLC_Misses",
-				"process": "process_name",
+				"process": processName,
 			},
 		},
 	}

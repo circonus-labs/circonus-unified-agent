@@ -2,6 +2,7 @@ package twemproxy
 
 import (
 	"encoding/json"
+	"fmt"
 	"net"
 	"testing"
 
@@ -62,7 +63,7 @@ const sampleStats = `{
 func mockTwemproxyServer() (net.Listener, error) {
 	listener, err := net.Listen("tcp", sampleAddr)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listen (%s): %w", sampleAddr, err)
 	}
 	go func(l net.Listener) {
 		for {

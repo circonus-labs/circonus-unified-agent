@@ -54,7 +54,7 @@ func (s *Server) gatherServerStatus() (*ServerStatus, error) {
 		},
 	}, serverStatus)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("session db (srvr status): %w", err)
 	}
 	return serverStatus, nil
 }
@@ -68,7 +68,7 @@ func (s *Server) gatherReplSetStatus() (*ReplSetStatus, error) {
 		},
 	}, replSetStatus)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("session db (repl status): %w", err)
 	}
 	return replSetStatus, nil
 }
@@ -76,7 +76,7 @@ func (s *Server) gatherReplSetStatus() (*ReplSetStatus, error) {
 func (s *Server) gatherClusterStatus() (*ClusterStatus, error) {
 	chunkCount, err := s.Session.DB("config").C("chunks").Find(bson.M{"jumbo": true}).Count()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("session db (clust status): %w", err)
 	}
 
 	return &ClusterStatus{
@@ -93,7 +93,7 @@ func (s *Server) gatherShardConnPoolStats() (*ShardStats, error) {
 		},
 	}, &shardStats)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("session db (shard conn pool stats): %w", err)
 	}
 	return shardStats, nil
 }
@@ -107,7 +107,7 @@ func (s *Server) gatherDBStats(name string) (*Db, error) {
 		},
 	}, stats)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("session db (db stats): %w", err)
 	}
 
 	return &Db{
@@ -122,13 +122,13 @@ func (s *Server) getOplogReplLag(collection string) (*OplogStats, error) {
 	var first oplogEntry
 	err := s.Session.DB("local").C(collection).Find(query).Sort("$natural").Limit(1).One(&first)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("session db (op log repl lag): %w", err)
 	}
 
 	var last oplogEntry
 	err = s.Session.DB("local").C(collection).Find(query).Sort("-$natural").Limit(1).One(&last)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("session db (op log repl lag): %w", err)
 	}
 
 	firstTime := time.Unix(int64(first.Timestamp>>32), 0)
@@ -156,7 +156,7 @@ func (s *Server) gatherOplogStats() (*OplogStats, error) {
 func (s *Server) gatherCollectionStats(colStatsDbs []string) (*ColStats, error) {
 	names, err := s.Session.DatabaseNames()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("sess db name: %w", err)
 	}
 
 	results := &ColStats{}
@@ -245,7 +245,7 @@ func (s *Server) gatherData(acc cua.Accumulator, gatherClusterStatus bool, gathe
 	if gatherDbStats {
 		names, err := s.Session.DatabaseNames()
 		if err != nil {
-			return err
+			return fmt.Errorf("sess db name: %w", err)
 		}
 
 		for _, name := range names {

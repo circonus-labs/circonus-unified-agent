@@ -162,7 +162,7 @@ func (h *InfluxDBListener) Start(acc cua.Accumulator) error {
 
 	tlsConf, err := h.ServerConfig.TLSConfig()
 	if err != nil {
-		return err
+		return fmt.Errorf("TLSConfig: %w", err)
 	}
 
 	h.server = http.Server{
@@ -177,12 +177,12 @@ func (h *InfluxDBListener) Start(acc cua.Accumulator) error {
 	if tlsConf != nil {
 		listener, err = tls.Listen("tcp", h.ServiceAddress, tlsConf)
 		if err != nil {
-			return err
+			return fmt.Errorf("tls listen (%s): %w", h.ServiceAddress, err)
 		}
 	} else {
 		listener, err = net.Listen("tcp", h.ServiceAddress)
 		if err != nil {
-			return err
+			return fmt.Errorf("net listen (%s): %w", h.ServiceAddress, err)
 		}
 	}
 	h.listener = listener

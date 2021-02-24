@@ -89,9 +89,8 @@ func (h *haproxy) Gather(acc cua.Accumulator) error {
 		socketPath := getSocketAddr(endpoint)
 
 		matches, err := filepath.Glob(socketPath)
-
 		if err != nil {
-			return err
+			return fmt.Errorf("file glob: %w", err)
 		}
 
 		if len(matches) == 0 {
@@ -142,15 +141,15 @@ func (h *haproxy) gatherServer(addr string, acc cua.Accumulator) error {
 	if h.client == nil {
 		tlsCfg, err := h.ClientConfig.TLSConfig()
 		if err != nil {
-			return err
+			return fmt.Errorf("TLSConfig: %w", err)
 		}
 		tr := &http.Transport{
-			ResponseHeaderTimeout: time.Duration(3 * time.Second),
+			ResponseHeaderTimeout: 3 * time.Second,
 			TLSClientConfig:       tlsCfg,
 		}
 		client := &http.Client{
 			Transport: tr,
-			Timeout:   time.Duration(4 * time.Second),
+			Timeout:   4 * time.Second,
 		}
 		h.client = client
 	}
@@ -227,7 +226,7 @@ func (h *haproxy) importCsvResult(r io.Reader, acc cua.Accumulator, host string)
 
 	headers, err := csvr.Read()
 	if err != nil {
-		return err
+		return fmt.Errorf("csv read: %w", err)
 	}
 	if len(headers[0]) <= 2 || headers[0][:2] != "# " {
 		return fmt.Errorf("did not receive standard haproxy headers")
@@ -236,11 +235,11 @@ func (h *haproxy) importCsvResult(r io.Reader, acc cua.Accumulator, host string)
 
 	for {
 		row, err := csvr.Read()
-		if errors.Is(err, io.EOF) {
-			break
-		}
 		if err != nil {
-			return err
+			if errors.Is(err, io.EOF) {
+				return nil
+			}
+			return fmt.Errorf("csv read: %w", err)
 		}
 
 		fields := make(map[string]interface{})
@@ -299,7 +298,6 @@ func (h *haproxy) importCsvResult(r io.Reader, acc cua.Accumulator, host string)
 		}
 		acc.AddFields("haproxy", fields, tags, now)
 	}
-	return err
 }
 
 func init() {

@@ -27,7 +27,7 @@ func (v *Parser) Parse(buf []byte) ([]cua.Metric, error) {
 		if len(values) < 1 {
 			return []cua.Metric{}, nil
 		}
-		vStr = string(values[len(values)-1])
+		vStr = values[len(values)-1]
 	}
 
 	var value interface{}
@@ -43,14 +43,13 @@ func (v *Parser) Parse(buf []byte) ([]cua.Metric, error) {
 		value, err = strconv.ParseBool(vStr)
 	}
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("strconv (%s): %w", vStr, err)
 	}
 
 	fields := map[string]interface{}{"value": value}
-	metric, err := metric.New(v.MetricName, v.DefaultTags,
-		fields, time.Now().UTC())
+	metric, err := metric.New(v.MetricName, v.DefaultTags, fields, time.Now().UTC())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("metric new: %w", err)
 	}
 
 	return []cua.Metric{metric}, nil

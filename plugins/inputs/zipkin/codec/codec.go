@@ -1,6 +1,7 @@
 package codec
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs/zipkin/trace"
@@ -70,17 +71,17 @@ func NewTrace(spans []Span) (trace.Trace, error) {
 	for i, span := range spans {
 		bin, err := span.BinaryAnnotations()
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("binary annotations: %w", err)
 		}
 		endpoint := serviceEndpoint(span.Annotations(), bin)
 		id, err := span.SpanID()
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("span id: %w", err)
 		}
 
 		tid, err := span.Trace()
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("span trace: %w", err)
 		}
 
 		pid, err := parentID(span)
@@ -176,7 +177,7 @@ func parentID(span Span) (string, error) {
 	// itself.
 	id, err := span.Parent()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("span parent: %w", err)
 	}
 
 	if id != "" {

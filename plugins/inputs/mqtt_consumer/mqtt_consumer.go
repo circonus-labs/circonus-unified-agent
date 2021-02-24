@@ -211,7 +211,7 @@ func (m *MQTTConsumer) connect() error {
 	if token.Wait() && token.Error() != nil {
 		err := token.Error()
 		m.state = Disconnected
-		return err
+		return fmt.Errorf("token err: %w", err)
 	}
 
 	m.Log.Infof("Connected %v", m.Servers)
@@ -275,7 +275,7 @@ func (m *MQTTConsumer) recvMessage(c mqtt.Client, msg mqtt.Message) {
 func (m *MQTTConsumer) onMessage(acc cua.TrackingAccumulator, msg mqtt.Message) error {
 	metrics, err := m.parser.Parse(msg.Payload())
 	if err != nil {
-		return err
+		return fmt.Errorf("parser parse: %w", err)
 	}
 
 	if m.topicTag != "" {
@@ -323,7 +323,7 @@ func (m *MQTTConsumer) createOpts() (*mqtt.ClientOptions, error) {
 
 	tlsCfg, err := m.ClientConfig.TLSConfig()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("TLSConfig: %w", err)
 	}
 
 	if tlsCfg != nil {

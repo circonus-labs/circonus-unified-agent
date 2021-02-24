@@ -4,10 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -162,7 +162,7 @@ func getProxyFunc(httpProxy string) func(*http.Request) (*url.URL, error) {
 func (h *HTTPResponse) createHTTPClient() (*http.Client, error) {
 	tlsCfg, err := h.ClientConfig.TLSConfig()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("TLSConfig: %w", err)
 	}
 
 	dialer := &net.Dialer{}
@@ -195,12 +195,12 @@ func (h *HTTPResponse) createHTTPClient() (*http.Client, error) {
 func localAddress(interfaceName string) (net.Addr, error) {
 	i, err := net.InterfaceByName(interfaceName)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("interface by name: %w", err)
 	}
 
 	addrs, err := i.Addrs()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("interface addresses: %w", err)
 	}
 
 	for _, addr := range addrs {
@@ -272,13 +272,13 @@ func (h *HTTPResponse) httpGather(u string) (map[string]interface{}, map[string]
 	}
 	request, err := http.NewRequest(h.Method, u, body)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("new request (%s): %w", u, err)
 	}
 
 	if h.BearerToken != "" {
-		token, err := ioutil.ReadFile(h.BearerToken)
+		token, err := os.ReadFile(h.BearerToken)
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, fmt.Errorf("readall: %w", err)
 		}
 		bearer := "Bearer " + strings.Trim(string(token), "\n")
 		request.Header.Add("Authorization", bearer)
@@ -342,7 +342,7 @@ func (h *HTTPResponse) httpGather(u string) (map[string]interface{}, map[string]
 	if h.ResponseBodyMaxSize.Size == 0 {
 		h.ResponseBodyMaxSize.Size = defaultResponseBodyMaxSize
 	}
-	bodyBytes, err := ioutil.ReadAll(io.LimitReader(resp.Body, h.ResponseBodyMaxSize.Size+1))
+	bodyBytes, err := io.ReadAll(io.LimitReader(resp.Body, h.ResponseBodyMaxSize.Size+1))
 	// Check first if the response body size exceeds the limit.
 	if err == nil && int64(len(bodyBytes)) > h.ResponseBodyMaxSize.Size {
 		h.setBodyReadError("The body of the HTTP Response is too large", bodyBytes, fields, tags)

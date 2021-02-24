@@ -1,6 +1,7 @@
 package procstat
 
 import (
+	"fmt"
 	"regexp"
 )
 
@@ -9,7 +10,7 @@ func (pg *NativeFinder) Pattern(pattern string) ([]PID, error) {
 	var pids []PID
 	regxPattern, err := regexp.Compile(pattern)
 	if err != nil {
-		return pids, err
+		return pids, fmt.Errorf("native_finder rx compile: %w", err)
 	}
 	procs, err := pg.FastProcessList()
 	if err != nil {

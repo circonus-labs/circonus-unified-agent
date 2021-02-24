@@ -3,7 +3,7 @@ package jolokia2
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -19,7 +19,7 @@ func TestJolokia2_ClientAuthRequest(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		username, password, _ = r.BasicAuth()
 
-		body, _ := ioutil.ReadAll(r.Body)
+		body, _ := io.ReadAll(r.Body)
 		err := json.Unmarshal(body, &requests)
 		if err != nil {
 			t.Error(err)
@@ -66,7 +66,7 @@ func TestJolokia2_ClientProxyAuthRequest(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		username, password, _ = r.BasicAuth()
 
-		body, _ := ioutil.ReadAll(r.Body)
+		body, _ := io.ReadAll(r.Body)
 		err := json.Unmarshal(body, &requests)
 		if err != nil {
 			t.Error(err)

@@ -7,9 +7,9 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"net/url"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -83,7 +83,7 @@ func (c *X509Cert) getCert(u *url.URL, timeout time.Duration) ([]*x509.Certifica
 	case "tcp", "tcp4", "tcp6":
 		ipConn, err := net.DialTimeout(u.Scheme, u.Host, timeout)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("dial (%s %s): %w", u.Scheme, u.Host, err)
 		}
 		defer ipConn.Close()
 
@@ -99,16 +99,16 @@ func (c *X509Cert) getCert(u *url.URL, timeout time.Duration) ([]*x509.Certifica
 
 		hsErr := conn.Handshake()
 		if hsErr != nil {
-			return nil, hsErr
+			return nil, fmt.Errorf("conn handshake: %w", hsErr)
 		}
 
 		certs := conn.ConnectionState().PeerCertificates
 
 		return certs, nil
 	case "file":
-		content, err := ioutil.ReadFile(u.Path)
+		content, err := os.ReadFile(u.Path)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("readfile (%s): %w", u.Path, err)
 		}
 		var certs []*x509.Certificate
 		for {
@@ -120,7 +120,7 @@ func (c *X509Cert) getCert(u *url.URL, timeout time.Duration) ([]*x509.Certifica
 			if block.Type == "CERTIFICATE" {
 				cert, err := x509.ParseCertificate(block.Bytes)
 				if err != nil {
-					return nil, err
+					return nil, fmt.Errorf("parse cert: %w", err)
 				}
 				certs = append(certs, cert)
 			}
@@ -253,7 +253,7 @@ func (c *X509Cert) Gather(acc cua.Accumulator) error {
 func (c *X509Cert) Init() error {
 	tlsCfg, err := c.ClientConfig.TLSConfig()
 	if err != nil {
-		return err
+		return fmt.Errorf("TLSConfig: %w", err)
 	}
 	if tlsCfg == nil {
 		tlsCfg = &tls.Config{MinVersion: tls.VersionTLS12}

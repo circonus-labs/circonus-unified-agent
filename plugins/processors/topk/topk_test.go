@@ -146,7 +146,7 @@ func TestTopkAggregatorsSmokeTests(t *testing.T) {
 	topk.Fields = []string{"a"}
 	topk.GroupBy = []string{"tag_name"}
 
-	aggregators := []string{"mean", "sum", "max", "min"}
+	aggregators := []string{aggMean, aggSum, aggMax, aggMin}
 
 	// The answer is equal to the original set for these particular scenarios
 	input := MetricsSet1
@@ -165,7 +165,7 @@ func TestTopkMeanAddAggregateFields(t *testing.T) {
 	// Build the processor
 	topk := *New()
 	topk.Period = createDuration(1)
-	topk.Aggregation = "mean"
+	topk.Aggregation = aggMean
 	topk.AddAggregateFields = []string{"a"}
 	topk.Fields = []string{"a"}
 	topk.GroupBy = []string{"tag_name"}
@@ -194,7 +194,7 @@ func TestTopkSumAddAggregateFields(t *testing.T) {
 	// Build the processor
 	topk := *New()
 	topk.Period = createDuration(1)
-	topk.Aggregation = "sum"
+	topk.Aggregation = aggSum
 	topk.AddAggregateFields = []string{"a"}
 	topk.Fields = []string{"a"}
 	topk.GroupBy = []string{"tag_name"}
@@ -223,7 +223,7 @@ func TestTopkMaxAddAggregateFields(t *testing.T) {
 	// Build the processor
 	topk := *New()
 	topk.Period = createDuration(1)
-	topk.Aggregation = "max"
+	topk.Aggregation = aggMax
 	topk.AddAggregateFields = []string{"a"}
 	topk.Fields = []string{"a"}
 	topk.GroupBy = []string{"tag_name"}
@@ -252,7 +252,7 @@ func TestTopkMinAddAggregateFields(t *testing.T) {
 	// Build the processor
 	topk := *New()
 	topk.Period = createDuration(1)
-	topk.Aggregation = "min"
+	topk.Aggregation = aggMin
 	topk.AddAggregateFields = []string{"a"}
 	topk.Fields = []string{"a"}
 	topk.GroupBy = []string{"tag_name"}
@@ -282,7 +282,7 @@ func TestTopkGroupby1(t *testing.T) {
 	topk := *New()
 	topk.Period = createDuration(1)
 	topk.K = 3
-	topk.Aggregation = "sum"
+	topk.Aggregation = aggSum
 	topk.AddAggregateFields = []string{"value"}
 	topk.GroupBy = []string{"tag[13]"}
 
@@ -307,7 +307,7 @@ func TestTopkGroupby2(t *testing.T) {
 	topk := *New()
 	topk.Period = createDuration(1)
 	topk.K = 3
-	topk.Aggregation = "mean"
+	topk.Aggregation = aggMean
 	topk.AddAggregateFields = []string{"value"}
 	topk.GroupBy = []string{"tag1"}
 
@@ -336,7 +336,7 @@ func TestTopkGroupby3(t *testing.T) {
 	topk := *New()
 	topk.Period = createDuration(1)
 	topk.K = 1
-	topk.Aggregation = "min"
+	topk.Aggregation = aggMin
 	topk.AddAggregateFields = []string{"value"}
 	topk.GroupBy = []string{"tag4"}
 
@@ -362,7 +362,7 @@ func TestTopkGroupbyFields1(t *testing.T) {
 	topk := *New()
 	topk.Period = createDuration(1)
 	topk.K = 4 // This settings generate less than 3 groups
-	topk.Aggregation = "mean"
+	topk.Aggregation = aggMean
 	topk.AddAggregateFields = []string{"A"}
 	topk.GroupBy = []string{"tag1", "tag2"}
 	topk.Fields = []string{"A"}
@@ -389,7 +389,7 @@ func TestTopkGroupbyFields2(t *testing.T) {
 	topk := *New()
 	topk.Period = createDuration(1)
 	topk.K = 2
-	topk.Aggregation = "sum"
+	topk.Aggregation = aggSum
 	topk.AddAggregateFields = []string{"B", "C"}
 	topk.GroupBy = []string{"tag1", "tag3"}
 	topk.Fields = []string{"B", "C"}
@@ -417,7 +417,7 @@ func TestTopkGroupbyMetricName1(t *testing.T) {
 	topk := *New()
 	topk.Period = createDuration(1)
 	topk.K = 1
-	topk.Aggregation = "sum"
+	topk.Aggregation = aggSum
 	topk.AddAggregateFields = []string{"value"}
 	topk.GroupBy = []string{}
 
@@ -443,7 +443,7 @@ func TestTopkGroupbyMetricName2(t *testing.T) {
 	topk := *New()
 	topk.Period = createDuration(1)
 	topk.K = 2
-	topk.Aggregation = "sum"
+	topk.Aggregation = aggSum
 	topk.AddAggregateFields = []string{"A", "value"}
 	topk.GroupBy = []string{"tag[12]"}
 	topk.Fields = []string{"A", "value"}
@@ -471,7 +471,7 @@ func TestTopkBottomk(t *testing.T) {
 	topk := *New()
 	topk.Period = createDuration(1)
 	topk.K = 3
-	topk.Aggregation = "sum"
+	topk.Aggregation = aggSum
 	topk.GroupBy = []string{"tag1", "tag3"}
 	topk.Bottomk = true
 
@@ -497,7 +497,7 @@ func TestTopkGroupByKeyTag(t *testing.T) {
 	topk := *New()
 	topk.Period = createDuration(1)
 	topk.K = 3
-	topk.Aggregation = "sum"
+	topk.Aggregation = aggSum
 	topk.GroupBy = []string{"tag1", "tag3"}
 	topk.AddGroupByTag = "gbt"
 

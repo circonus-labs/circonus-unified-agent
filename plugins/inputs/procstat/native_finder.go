@@ -2,7 +2,7 @@ package procstat
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -24,7 +24,7 @@ func (pg *NativeFinder) UID(user string) ([]PID, error) {
 	var dst []PID
 	procs, err := process.Processes()
 	if err != nil {
-		return dst, err
+		return dst, fmt.Errorf("processes: %w", err)
 	}
 	for _, p := range procs {
 		username, err := p.Username()
@@ -43,13 +43,13 @@ func (pg *NativeFinder) UID(user string) ([]PID, error) {
 // PidFile returns the pid from the pid file given.
 func (pg *NativeFinder) PidFile(path string) ([]PID, error) {
 	var pids []PID
-	pidString, err := ioutil.ReadFile(path)
+	pidString, err := os.ReadFile(path)
 	if err != nil {
 		return pids, fmt.Errorf("failed to read pidfile (%s): %w", path, err)
 	}
 	pid, err := strconv.ParseInt(strings.TrimSpace(string(pidString)), 10, 32)
 	if err != nil {
-		return pids, err
+		return pids, fmt.Errorf("parseint (%s): %w", strings.TrimSpace(string(pidString)), err)
 	}
 	pids = append(pids, PID(pid))
 	return pids, nil
@@ -61,7 +61,7 @@ func (pg *NativeFinder) FullPattern(pattern string) ([]PID, error) {
 	var pids []PID
 	regxPattern, err := regexp.Compile(pattern)
 	if err != nil {
-		return pids, err
+		return pids, fmt.Errorf("rx compile (%s): %w", pattern, err)
 	}
 	procs, err := pg.FastProcessList()
 	if err != nil {
@@ -84,7 +84,7 @@ func (pg *NativeFinder) FullPattern(pattern string) ([]PID, error) {
 func (pg *NativeFinder) FastProcessList() ([]*process.Process, error) {
 	pids, err := process.Pids()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("pids: %w", err)
 	}
 
 	result := make([]*process.Process, len(pids))

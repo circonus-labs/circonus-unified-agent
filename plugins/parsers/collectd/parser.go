@@ -206,7 +206,7 @@ func UnmarshalValueList(vl *api.ValueList, multiValue string) []cua.Metric {
 func LoadTypesDB(path string) (*api.TypesDB, error) {
 	reader, err := os.Open(path)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("os open: %w", err)
 	}
 	return api.NewTypesDB(reader)
 }

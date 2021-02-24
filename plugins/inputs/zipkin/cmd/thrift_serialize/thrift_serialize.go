@@ -28,8 +28,8 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 
 	"github.com/apache/thrift/lib/go/thrift"
 	"github.com/openzipkin/zipkin-go-opentracing/thrift/gen-go/zipkincore"
@@ -51,7 +51,7 @@ func init() {
 
 func main() {
 	flag.Parse()
-	contents, err := ioutil.ReadFile(filename)
+	contents, err := os.ReadFile(filename)
 	if err != nil {
 		log.Fatalf("Error reading file: %v\n", err)
 	}
@@ -62,7 +62,7 @@ func main() {
 		if err != nil {
 			log.Fatalf("%v\n", err)
 		}
-		if err := ioutil.WriteFile(outFileName, raw, 0600); err != nil {
+		if err := os.WriteFile(outFileName, raw, 0600); err != nil {
 			log.Fatalf("%v", err)
 		}
 	case "thrift":
@@ -70,7 +70,7 @@ func main() {
 		if err != nil {
 			log.Fatalf("%v\n", err)
 		}
-		if err := ioutil.WriteFile(outFileName, raw, 0600); err != nil {
+		if err := os.WriteFile(outFileName, raw, 0600); err != nil {
 			log.Fatalf("%v", err)
 		}
 	default:
@@ -94,9 +94,6 @@ func jsonToZipkinThrift(jsonRaw []byte) ([]byte, error) {
 	}
 
 	var zspans []*zipkincore.Span
-	if err != nil {
-		return nil, err
-	}
 	zspans = append(zspans, spans...)
 
 	fmt.Println(spans)

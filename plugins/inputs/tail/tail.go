@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"strings"
 	"sync"
@@ -156,7 +157,7 @@ func (t *Tail) Init() error {
 
 	var err error
 	t.decoder, err = encoding.NewDecoder(t.CharacterEncoding)
-	return err
+	return fmt.Errorf("new decoder: %w", err)
 }
 
 func (t *Tail) Gather(acc cua.Accumulator) error {
@@ -297,7 +298,7 @@ func parseLine(parser parsers.Parser, line string, firstLine bool) ([]cua.Metric
 
 		m, err := parser.ParseLine(line)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("parse line (%s): %w", line, err)
 		}
 
 		if m != nil {

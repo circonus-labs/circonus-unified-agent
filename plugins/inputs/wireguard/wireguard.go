@@ -47,8 +47,11 @@ func (wg *Wireguard) Init() error {
 	var err error
 
 	wg.client, err = wgctrl.New()
+	if err != nil {
+		return fmt.Errorf("wgctl new: %w", err)
+	}
 
-	return err
+	return nil
 }
 
 func (wg *Wireguard) Gather(acc cua.Accumulator) error {

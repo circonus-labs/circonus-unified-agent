@@ -3,6 +3,7 @@ package apcupsd
 import (
 	"context"
 	"encoding/binary"
+	"fmt"
 	"net"
 	"testing"
 	"time"
@@ -31,7 +32,7 @@ func listen(ctx context.Context, t *testing.T, out [][]byte) (string, error) {
 	lc := net.ListenConfig{}
 	ln, err := lc.Listen(ctx, "tcp4", "127.0.0.1:0")
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("net listen: %w", err)
 	}
 
 	go func() {

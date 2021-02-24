@@ -5,7 +5,6 @@ package kernelvmstat
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strconv"
 
@@ -43,10 +42,10 @@ func (k *KernelVmstat) Gather(acc cua.Accumulator) error {
 			// Convert the stat value into an integer.
 			m, err := strconv.ParseInt(string(dataFields[i+1]), 10, 64)
 			if err != nil {
-				return err
+				return fmt.Errorf("parseint (%s): %w", string(dataFields[i+1]), err)
 			}
 
-			fields[string(field)] = int64(m)
+			fields[string(field)] = m
 		}
 	}
 
@@ -58,12 +57,12 @@ func (k *KernelVmstat) getProcVmstat() ([]byte, error) {
 	if _, err := os.Stat(k.statFile); os.IsNotExist(err) {
 		return nil, fmt.Errorf("kernel_vmstat: %s does not exist", k.statFile)
 	} else if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("kernal_vmstat (%s): %w", k.statFile, err)
 	}
 
-	data, err := ioutil.ReadFile(k.statFile)
+	data, err := os.ReadFile(k.statFile)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("kernel_vmstat (read %s): %w", k.statFile, err)
 	}
 
 	return data, nil

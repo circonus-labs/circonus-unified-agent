@@ -66,7 +66,7 @@ func (s *Suricata) Start(acc cua.Accumulator) error {
 		Net:  "unix",
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("net listen (%s): %w", s.Source, err)
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	s.cancel = cancel
@@ -98,7 +98,7 @@ func (s *Suricata) readInput(ctx context.Context, acc cua.Accumulator, conn io.R
 		default:
 			line, rerr := reader.ReadBytes('\n')
 			if rerr != nil {
-				return rerr
+				return fmt.Errorf("read bytes: %w", rerr)
 			} else if len(line) > 0 {
 				s.parse(acc, line)
 			}
@@ -158,7 +158,7 @@ func flexFlatten(outmap map[string]interface{}, field string, v interface{}, del
 func (s *Suricata) parse(acc cua.Accumulator, sjson []byte) {
 	// initial parsing
 	var result map[string]interface{}
-	err := json.Unmarshal([]byte(sjson), &result)
+	err := json.Unmarshal(sjson, &result)
 	if err != nil {
 		acc.AddError(err)
 		return

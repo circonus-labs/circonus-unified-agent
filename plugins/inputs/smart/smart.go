@@ -108,7 +108,7 @@ var (
 			Parse: func(fields, _ map[string]interface{}, str string) error {
 				var value int64
 				if _, err := fmt.Sscanf(str, "0x%x", &value); err != nil {
-					return err
+					return fmt.Errorf("sscanf (crit warn): %w", err)
 				}
 
 				fields["raw_value"] = value
@@ -574,7 +574,7 @@ func findNVMeDeviceInfo(output string) (string, string, string, error) {
 			matches[2] = strings.TrimSpace(matches[2])
 			if matches[1] == "vid" {
 				if _, err := fmt.Sscanf(matches[2], "%s", &vid); err != nil {
-					return "", "", "", err
+					return "", "", "", fmt.Errorf("sscanf (nvme dev info): %w", err)
 				}
 			}
 			if matches[1] == "sn" {
@@ -837,7 +837,7 @@ func parseBytesWritten(acc cua.Accumulator, fields map[string]interface{}, tags 
 	var value int64
 
 	if _, err := fmt.Sscanf(str, "sectors: %d", &value); err != nil {
-		return err
+		return fmt.Errorf("sscanf (sectors): %w", err)
 	}
 	fields["raw_value"] = value
 	acc.AddFields("smart_attribute", fields, tags)
@@ -849,7 +849,7 @@ func parseThermalThrottle(acc cua.Accumulator, fields map[string]interface{}, ta
 	var count int64
 
 	if _, err := fmt.Sscanf(str, "%f%%, cnt: %d", &percentage, &count); err != nil {
-		return err
+		return fmt.Errorf("sscanf (thermal throttle): %w", err)
 	}
 
 	fields["raw_value"] = percentage
@@ -867,7 +867,7 @@ func parseWearLeveling(acc cua.Accumulator, fields map[string]interface{}, tags 
 	var min, max, avg int64
 
 	if _, err := fmt.Sscanf(str, "min: %d, max: %d, avg: %d", &min, &max, &avg); err != nil {
-		return err
+		return fmt.Errorf("sscanf (wear leveling): %w", err)
 	}
 	values := []int64{min, max, avg}
 	for i, submetricName := range []string{"Min", "Max", "Avg"} {
@@ -883,7 +883,7 @@ func parseTimedWorkload(acc cua.Accumulator, fields map[string]interface{}, tags
 	var value float64
 
 	if _, err := fmt.Sscanf(str, "%f", &value); err != nil {
-		return err
+		return fmt.Errorf("sscanf (timed workload): %w", err)
 	}
 	fields["raw_value"] = value
 	acc.AddFields("smart_attribute", fields, tags)
@@ -901,7 +901,7 @@ func parseCommaSeparatedInt(fields, _ map[string]interface{}, str string) error 
 	str = strings.Join(strings.Fields(str), "")
 	i, err := strconv.ParseInt(strings.ReplaceAll(str, ",", ""), 10, 64)
 	if err != nil {
-		return err
+		return fmt.Errorf("parseint (%s): %w", str, err)
 	}
 
 	fields["raw_value"] = i
@@ -921,7 +921,7 @@ func parseDataUnits(fields, deviceFields map[string]interface{}, str string) err
 func parseCommaSeparatedIntWithAccumulator(acc cua.Accumulator, fields map[string]interface{}, tags map[string]string, str string) error {
 	i, err := strconv.ParseInt(strings.ReplaceAll(str, ",", ""), 10, 64)
 	if err != nil {
-		return err
+		return fmt.Errorf("parseint (%s): %w", str, err)
 	}
 
 	fields["raw_value"] = i
@@ -932,7 +932,7 @@ func parseCommaSeparatedIntWithAccumulator(acc cua.Accumulator, fields map[strin
 func parseTemperature(fields, deviceFields map[string]interface{}, str string) error {
 	var temp int64
 	if _, err := fmt.Sscanf(str, "%d C", &temp); err != nil {
-		return err
+		return fmt.Errorf("sscanf (temp): %w", err)
 	}
 
 	fields["raw_value"] = temp
@@ -944,7 +944,7 @@ func parseTemperature(fields, deviceFields map[string]interface{}, str string) e
 func parseTemperatureSensor(fields, _ map[string]interface{}, str string) error {
 	var temp int64
 	if _, err := fmt.Sscanf(str, "%d C", &temp); err != nil {
-		return err
+		return fmt.Errorf("sscanf (temp sensor): %w", err)
 	}
 
 	fields["raw_value"] = temp

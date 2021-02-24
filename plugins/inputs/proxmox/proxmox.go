@@ -3,7 +3,7 @@ package proxmox
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -59,7 +59,7 @@ func (px *Proxmox) Init() error {
 
 	tlsCfg, err := px.ClientConfig.TLSConfig()
 	if err != nil {
-		return err
+		return fmt.Errorf("TLSConfig: %w", err)
 	}
 	px.httpClient = &http.Client{
 		Transport: &http.Transport{
@@ -89,7 +89,7 @@ func getNodeSearchDomain(px *Proxmox) error {
 	var nodeDNS NodeDNS
 	err = json.Unmarshal(jsonData, &nodeDNS)
 	if err != nil {
-		return err
+		return fmt.Errorf("json unmarshal: %w", err)
 	}
 	if nodeDNS.Data.Searchdomain == "" {
 		return fmt.Errorf("search domain is not set")
@@ -102,19 +102,19 @@ func getNodeSearchDomain(px *Proxmox) error {
 func performRequest(px *Proxmox, apiURL string, method string, data url.Values) ([]byte, error) {
 	request, err := http.NewRequest(method, px.BaseURL+apiURL, strings.NewReader(data.Encode()))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("http new req (%s): %w", px.BaseURL+apiURL, err)
 	}
 	request.Header.Add("Authorization", "PVEAPIToken="+px.APIToken)
 
 	resp, err := px.httpClient.Do(request)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("http do: %w", err)
 	}
 	defer resp.Body.Close()
 
-	responseBody, err := ioutil.ReadAll(resp.Body)
+	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("readall: %w", err)
 	}
 
 	return responseBody, nil
@@ -170,7 +170,7 @@ func getCurrentVMStatus(px *Proxmox, rt ResourceType, id string) (VMStat, error)
 
 	var currentVMStatus VMCurrentStats
 	if err := json.Unmarshal(jsonData, &currentVMStatus); err != nil {
-		return VMStat{}, err
+		return VMStat{}, fmt.Errorf("json unmarshal: %w", err)
 	}
 
 	return currentVMStatus.Data, nil
@@ -186,7 +186,7 @@ func getVMStats(px *Proxmox, rt ResourceType) (VMStats, error) {
 	var vmStats VMStats
 	err = json.Unmarshal(jsonData, &vmStats)
 	if err != nil {
-		return VMStats{}, err
+		return VMStats{}, fmt.Errorf("json unmarshal: %w", err)
 	}
 
 	return vmStats, nil
@@ -202,7 +202,7 @@ func getVMConfig(px *Proxmox, vmID string, rt ResourceType) (VMConfig, error) {
 	var vmConfig VMConfig
 	err = json.Unmarshal(jsonData, &vmConfig)
 	if err != nil {
-		return VMConfig{}, err
+		return VMConfig{}, fmt.Errorf("json unmarshal: %w", err)
 	}
 
 	return vmConfig, nil

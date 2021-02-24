@@ -97,7 +97,7 @@ func (ssl *streamSocketListener) setKeepAlive(c net.Conn) error {
 		return tcpc.SetKeepAlive(false)
 	}
 	if err := tcpc.SetKeepAlive(true); err != nil {
-		return err
+		return fmt.Errorf("set keepalive: %w", err)
 	}
 	return tcpc.SetKeepAlivePeriod(ssl.KeepAlivePeriod.Duration)
 }
@@ -297,7 +297,7 @@ func (sl *SocketListener) Start(acc cua.Accumulator) error {
 	case "tcp", "tcp4", "tcp6", "unix", "unixpacket":
 		tlsCfg, err := sl.ServerConfig.TLSConfig()
 		if err != nil {
-			return err
+			return fmt.Errorf("TLSConfig: %w", err)
 		}
 
 		var l net.Listener
@@ -307,7 +307,7 @@ func (sl *SocketListener) Start(acc cua.Accumulator) error {
 			l, err = tls.Listen(protocol, addr, tlsCfg)
 		}
 		if err != nil {
-			return err
+			return fmt.Errorf("listen (%s): %w", addr, err)
 		}
 
 		sl.Log.Infof("Listening on %s://%s", protocol, l.Addr())
@@ -317,7 +317,7 @@ func (sl *SocketListener) Start(acc cua.Accumulator) error {
 			// Convert from octal in string to int
 			i, err := strconv.ParseUint(sl.SocketMode, 8, 32)
 			if err != nil {
-				return err
+				return fmt.Errorf("parseuint (%s): %w", sl.SocketMode, err)
 			}
 
 			_ = os.Chmod(spl[1], os.FileMode(uint32(i)))
@@ -339,7 +339,7 @@ func (sl *SocketListener) Start(acc cua.Accumulator) error {
 	case "udp", "udp4", "udp6", "ip", "ip4", "ip6", "unixgram":
 		decoder, err := internal.NewContentDecoder(sl.ContentEncoding)
 		if err != nil {
-			return err
+			return fmt.Errorf("new content decoder: %w", err)
 		}
 
 		pc, err := udpListen(protocol, addr)
@@ -352,7 +352,7 @@ func (sl *SocketListener) Start(acc cua.Accumulator) error {
 			// Convert from octal in string to int
 			i, err := strconv.ParseUint(sl.SocketMode, 8, 32)
 			if err != nil {
-				return err
+				return fmt.Errorf("parseuint (%s): %w", sl.SocketMode, err)
 			}
 
 			_ = os.Chmod(spl[1], os.FileMode(uint32(i)))
@@ -402,12 +402,12 @@ func udpListen(network string, address string) (net.PacketConn, error) {
 			address = spl[0]
 			ifi, err = net.InterfaceByName(spl[1])
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("net interface by name (%s): %w", spl[1], err)
 			}
 		}
 		addr, err = net.ResolveUDPAddr(network, address)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("resolve udp addr (%s): %w", address, err)
 		}
 		if addr.IP.IsMulticast() {
 			return net.ListenMulticastUDP(network, ifi, addr)
@@ -440,8 +440,8 @@ type unixCloser struct {
 
 func (uc unixCloser) Close() error {
 	err := uc.closer.Close()
-	os.Remove(uc.path) // ignore error
-	return err
+	_ = os.Remove(uc.path)
+	return fmt.Errorf("close: %w", err)
 }
 
 func init() {

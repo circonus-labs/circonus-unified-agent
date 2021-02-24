@@ -69,8 +69,7 @@ func groupID(measurement string, tags map[string]string, tm time.Time) uint64 {
 
 	taglist := make([]*cua.Tag, 0, len(tags))
 	for k, v := range tags {
-		taglist = append(taglist,
-			&cua.Tag{Key: k, Value: v})
+		taglist = append(taglist, &cua.Tag{Key: k, Value: v})
 	}
 	sort.Slice(taglist, func(i, j int) bool { return taglist[i].Key < taglist[j].Key })
 	for _, tag := range taglist {

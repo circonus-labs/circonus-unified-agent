@@ -64,7 +64,7 @@ func (s *Server) validateVersion() error {
 func (s *Server) getServerStatus() error {
 	cursor, err := gorethink.DB("rethinkdb").Table("server_status").Run(s.session)
 	if err != nil {
-		return err
+		return fmt.Errorf("server status: %w", err)
 	}
 
 	if cursor.IsNil() {

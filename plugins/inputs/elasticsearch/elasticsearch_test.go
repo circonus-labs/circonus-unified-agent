@@ -1,7 +1,7 @@
 package elasticsearch
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"testing"
@@ -44,7 +44,7 @@ func (t *transportMock) RoundTrip(r *http.Request) (*http.Response, error) {
 		StatusCode: t.statusCode,
 	}
 	res.Header.Set("Content-Type", "application/json")
-	res.Body = ioutil.NopCloser(strings.NewReader(t.body))
+	res.Body = io.NopCloser(strings.NewReader(t.body))
 	return res, nil
 }
 
@@ -309,7 +309,7 @@ func TestGatherClusterIndicesStats(t *testing.T) {
 
 func TestGatherClusterIndiceShardsStats(t *testing.T) {
 	es := newElasticsearchWithClient()
-	es.IndicesLevel = "shards"
+	es.IndicesLevel = cshards
 	es.Servers = []string{"http://example.com:9200"}
 	es.client.Transport = newTransportMock(http.StatusOK, clusterIndicesShardsResponse)
 	es.serverInfo = make(map[string]serverInfo)

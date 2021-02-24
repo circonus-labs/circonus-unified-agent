@@ -1,7 +1,6 @@
 package syslog
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -46,12 +45,12 @@ func TestAddress(t *testing.T) {
 	require.EqualError(t, err, "unknown protocol 'unsupported' in 'example.com:6514'")
 	require.Error(t, err)
 
-	tmpdir, err := ioutil.TempDir("", "cua")
+	tmpdir, err := os.MkdirTemp("", "cua")
 	defer os.RemoveAll(tmpdir)
 	require.NoError(t, err)
 	sock := filepath.Join(tmpdir, "syslog.TestAddress.sock")
 
-	if runtime.GOOS != "windows" {
+	if runtime.GOOS != goosWindows {
 		// Skipping on Windows, as unixgram sockets are not supported
 		rec = &Syslog{
 			Address: "unixgram://" + sock,

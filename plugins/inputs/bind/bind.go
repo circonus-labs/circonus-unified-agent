@@ -11,6 +11,11 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
 )
 
+const (
+	opcode = "opcode"
+	qtype  = "qtype"
+)
+
 type Bind struct {
 	Urls                 []string
 	GatherMemoryContexts bool
@@ -26,7 +31,7 @@ var sampleConfig = `
 `
 
 var client = &http.Client{
-	Timeout: time.Duration(4 * time.Second),
+	Timeout: 4 * time.Second,
 }
 
 func (b *Bind) Description() string {

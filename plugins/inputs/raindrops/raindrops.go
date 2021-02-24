@@ -69,29 +69,29 @@ func (r *Raindrops) gatherURL(addr *url.URL, acc cua.Accumulator) error {
 	// Calling
 	_, err = buf.ReadString(':')
 	if err != nil {
-		return err
+		return fmt.Errorf("readstring: %w", err)
 	}
 	line, err := buf.ReadString('\n')
 	if err != nil {
-		return err
+		return fmt.Errorf("readstring: %w", err)
 	}
 	calling, err := strconv.ParseUint(strings.TrimSpace(line), 10, 64)
 	if err != nil {
-		return err
+		return fmt.Errorf("parseuint (%s): %w", strings.TrimSpace(line), err)
 	}
 
 	// Writing
 	_, err = buf.ReadString(':')
 	if err != nil {
-		return err
+		return fmt.Errorf("readstring: %w", err)
 	}
 	line, err = buf.ReadString('\n')
 	if err != nil {
-		return err
+		return fmt.Errorf("readstring: %w", err)
 	}
 	writing, err := strconv.ParseUint(strings.TrimSpace(line), 10, 64)
 	if err != nil {
-		return err
+		return fmt.Errorf("parseuint (%s): %w", strings.TrimSpace(line), err)
 	}
 	tags := r.getTags(addr)
 	fields := map[string]interface{}{
@@ -180,9 +180,9 @@ func init() {
 	inputs.Add("raindrops", func() cua.Input {
 		return &Raindrops{httpClient: &http.Client{
 			Transport: &http.Transport{
-				ResponseHeaderTimeout: time.Duration(3 * time.Second),
+				ResponseHeaderTimeout: 3 * time.Second,
 			},
-			Timeout: time.Duration(4 * time.Second),
+			Timeout: 4 * time.Second,
 		}}
 	})
 }

@@ -3,6 +3,7 @@ package ping
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"math"
 	"net"
@@ -186,12 +187,16 @@ func getAddr(iface string) string {
 func hostPinger(binary string, timeout float64, args ...string) (string, error) {
 	bin, err := exec.LookPath(binary)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("look path (%s): %w", binary, err)
 	}
+
 	c := exec.Command(bin, args...)
-	out, err := internal.CombinedOutputTimeout(c,
-		time.Second*time.Duration(timeout+5))
-	return string(out), err
+	out, err := internal.CombinedOutputTimeout(c, time.Second*time.Duration(timeout+5))
+	if err != nil {
+		return string(out), fmt.Errorf("combind output timeout: %w", err)
+	}
+
+	return string(out), nil
 }
 
 func filterIPs(addrs []net.IPAddr, filterFunc IsCorrectNetwork) []net.IPAddr {
@@ -207,10 +212,10 @@ func filterIPs(addrs []net.IPAddr, filterFunc IsCorrectNetwork) []net.IPAddr {
 
 func hostResolver(ctx context.Context, ipv6 bool, destination string) (*net.IPAddr, error) {
 	resolver := &net.Resolver{}
-	ips, err := resolver.LookupIPAddr(ctx, destination)
 
+	ips, err := resolver.LookupIPAddr(ctx, destination)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("lookupipaddr (%s): %w", destination, err)
 	}
 
 	if ipv6 {
@@ -220,9 +225,10 @@ func hostResolver(ctx context.Context, ipv6 bool, destination string) (*net.IPAd
 	}
 
 	if len(ips) == 0 {
-		return nil, errors.New("Cannot resolve ip address")
+		return nil, fmt.Errorf("cannot resolve ip address (%s)", destination)
 	}
-	return &ips[0], err
+
+	return &ips[0], nil
 }
 
 func isV4(ip net.IPAddr) bool {

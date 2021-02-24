@@ -1,7 +1,6 @@
 package leofs
 
 import (
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -128,7 +127,7 @@ func main() {
 
 func makeFakeSNMPSrc(code string) string {
 	path := os.TempDir() + "/test.go"
-	err := ioutil.WriteFile(path, []byte(code), 0600)
+	err := os.WriteFile(path, []byte(code), 0600)
 	if err != nil {
 		log.Fatalln(err)
 	}

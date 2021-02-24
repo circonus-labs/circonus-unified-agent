@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"time"
@@ -148,7 +148,7 @@ func (h *InfluxDBV2Listener) Start(acc cua.Accumulator) error {
 
 	tlsConf, err := h.ServerConfig.TLSConfig()
 	if err != nil {
-		return err
+		return fmt.Errorf("TLSConfig: %w", err)
 	}
 
 	h.server = http.Server{
@@ -161,12 +161,12 @@ func (h *InfluxDBV2Listener) Start(acc cua.Accumulator) error {
 	if tlsConf != nil {
 		listener, err = tls.Listen("tcp", h.ServiceAddress, tlsConf)
 		if err != nil {
-			return err
+			return fmt.Errorf("tls listen (%s): %w", h.ServiceAddress, err)
 		}
 	} else {
 		listener, err = net.Listen("tcp", h.ServiceAddress)
 		if err != nil {
-			return err
+			return fmt.Errorf("net listen (%s): %w", h.ServiceAddress, err)
 		}
 	}
 	h.listener = listener
@@ -250,7 +250,7 @@ func (h *InfluxDBV2Listener) handleWrite() http.HandlerFunc {
 		var readErr error
 		var bytes []byte
 		// body = http.MaxBytesReader(res, req.Body, 1000000) //p.MaxBodySize.Size)
-		bytes, readErr = ioutil.ReadAll(body)
+		bytes, readErr = io.ReadAll(body)
 		if readErr != nil {
 			h.Log.Debugf("Error parsing the request body: %v", readErr.Error())
 			badRequest(res, InternalError, readErr.Error())

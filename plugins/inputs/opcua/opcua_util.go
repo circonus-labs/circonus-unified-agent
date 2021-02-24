@@ -9,7 +9,6 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math/big"
 	"net"
@@ -27,8 +26,8 @@ import (
 // SELF SIGNED CERT FUNCTIONS
 
 func newTempDir() (string, error) {
-	dir, err := ioutil.TempDir("", "ssc")
-	return dir, err
+	dir, err := os.MkdirTemp("", "ssc")
+	return dir, fmt.Errorf("temp dir: %w", err)
 }
 
 func generateCert(host string, rsaBits int, certFile, keyFile string, dur time.Duration) (string, string) {
@@ -159,7 +158,7 @@ func generateClientOpts(endpoints []*ua.EndpointDescription, certFile, keyFile, 
 	opts = append(opts, opcua.RequestTimeout(requestTimeout))
 
 	if certFile == "" && keyFile == "" {
-		if policy != "None" || mode != "None" {
+		if policy != none || mode != none {
 			certFile, keyFile = generateCert(appuri, 2048, certFile, keyFile, (365 * 24 * time.Hour))
 		}
 	}
@@ -182,12 +181,12 @@ func generateClientOpts(endpoints []*ua.EndpointDescription, certFile, keyFile, 
 
 	var secPolicy string
 	switch {
-	case policy == "auto":
+	case policy == auto:
 		// set it later
 	case strings.HasPrefix(policy, ua.SecurityPolicyURIPrefix):
 		secPolicy = policy
 		policy = ""
-	case policy == "None" || policy == "Basic128Rsa15" || policy == "Basic256" || policy == "Basic256Sha256" || policy == "Aes128_Sha256_RsaOaep" || policy == "Aes256_Sha256_RsaPss":
+	case policy == none || policy == "Basic128Rsa15" || policy == "Basic256" || policy == "Basic256Sha256" || policy == "Aes128_Sha256_RsaOaep" || policy == "Aes256_Sha256_RsaPss":
 		secPolicy = ua.SecurityPolicyURIPrefix + policy
 		policy = ""
 	default:
@@ -200,8 +199,8 @@ func generateClientOpts(endpoints []*ua.EndpointDescription, certFile, keyFile, 
 
 	var secMode ua.MessageSecurityMode
 	switch strings.ToLower(mode) {
-	case "auto":
-	case "none":
+	case auto:
+	case strings.ToLower(none):
 		secMode = ua.MessageSecurityModeNone
 		mode = ""
 	case "sign":
@@ -223,21 +222,21 @@ func generateClientOpts(endpoints []*ua.EndpointDescription, certFile, keyFile, 
 	// Find the best endpoint based on our input and server recommendation (highest SecurityMode+SecurityLevel)
 	var serverEndpoint *ua.EndpointDescription
 	switch {
-	case mode == "auto" && policy == "auto": // No user selection, choose best
+	case mode == auto && policy == auto: // No user selection, choose best
 		for _, e := range endpoints {
 			if serverEndpoint == nil || (e.SecurityMode >= serverEndpoint.SecurityMode && e.SecurityLevel >= serverEndpoint.SecurityLevel) {
 				serverEndpoint = e
 			}
 		}
 
-	case mode != "auto" && policy == "auto": // User only cares about mode, select highest securitylevel with that mode
+	case mode != auto && policy == auto: // User only cares about mode, select highest securitylevel with that mode
 		for _, e := range endpoints {
 			if e.SecurityMode == secMode && (serverEndpoint == nil || e.SecurityLevel >= serverEndpoint.SecurityLevel) {
 				serverEndpoint = e
 			}
 		}
 
-	case mode == "auto" && policy != "auto": // User only cares about policy, select highest securitylevel with that policy
+	case mode == auto && policy != auto: // User only cares about policy, select highest securitylevel with that policy
 		for _, e := range endpoints {
 			if e.SecurityPolicyURI == secPolicy && (serverEndpoint == nil || e.SecurityLevel >= serverEndpoint.SecurityLevel) {
 				serverEndpoint = e
@@ -255,10 +254,10 @@ func generateClientOpts(endpoints []*ua.EndpointDescription, certFile, keyFile, 
 	if serverEndpoint == nil { // Didn't find an endpoint with matching policy and mode.
 		log.Printf("unable to find suitable server endpoint with selected sec-policy and sec-mode")
 		log.Fatalf("quitting")
+	} else {
+		secPolicy = serverEndpoint.SecurityPolicyURI
+		secMode = serverEndpoint.SecurityMode
 	}
-
-	secPolicy = serverEndpoint.SecurityPolicyURI
-	secMode = serverEndpoint.SecurityMode
 
 	// Check that the selected endpoint is a valid combo
 	err := validateEndpointConfig(endpoints, secPolicy, secMode, authMode)
@@ -327,6 +326,5 @@ func validateEndpointConfig(endpoints []*ua.EndpointDescription, secPolicy strin
 		}
 	}
 
-	err := errors.Errorf("server does not support an endpoint with security : %s , %s", secPolicy, secMode)
-	return err
+	return errors.Errorf("server does not support an endpoint with security : %s , %s", secPolicy, secMode)
 }

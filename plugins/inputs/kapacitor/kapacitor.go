@@ -76,7 +76,7 @@ func (k *Kapacitor) Gather(acc cua.Accumulator) error {
 func (k *Kapacitor) createHTTPClient() (*http.Client, error) {
 	tlsCfg, err := k.ClientConfig.TLSConfig()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("TLSConfig: %w", err)
 	}
 
 	client := &http.Client{
@@ -147,22 +147,19 @@ type stats struct {
 //     error: Any error that may have occurred
 func (k *Kapacitor) gatherURL(
 	acc cua.Accumulator,
-	url string,
+	rurl string,
 ) error {
 	now := time.Now()
 
-	resp, err := k.client.Get(url)
+	resp, err := k.client.Get(rurl)
 	if err != nil {
-		return err
+		return fmt.Errorf("cli get (%s): %w", rurl, err)
 	}
 	defer resp.Body.Close()
 
-	dec := json.NewDecoder(resp.Body)
-
 	var s stats
-	err = dec.Decode(&s)
-	if err != nil {
-		return err
+	if err := json.NewDecoder(resp.Body).Decode(&s); err != nil {
+		return fmt.Errorf("json decode: %w", err)
 	}
 
 	if s.MemStats != nil {
@@ -197,7 +194,7 @@ func (k *Kapacitor) gatherURL(
 			},
 			map[string]string{
 				"kap_version": s.Version,
-				"url":         url,
+				"url":         rurl,
 			},
 			now)
 	}
@@ -210,7 +207,7 @@ func (k *Kapacitor) gatherURL(
 		},
 		map[string]string{
 			"kap_version": s.Version,
-			"url":         url,
+			"url":         rurl,
 		},
 		now)
 

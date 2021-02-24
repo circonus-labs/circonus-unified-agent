@@ -91,7 +91,11 @@ func (c CommandRunner) Run(
 		stderr = truncate(stderr)
 	}
 
-	return out.Bytes(), stderr.Bytes(), runErr
+	if runErr != nil {
+		return out.Bytes(), stderr.Bytes(), fmt.Errorf("run error: %w", runErr)
+	}
+
+	return out.Bytes(), stderr.Bytes(), nil
 }
 
 func truncate(buf bytes.Buffer) bytes.Buffer {

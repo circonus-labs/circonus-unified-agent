@@ -125,15 +125,15 @@ func (c *CouchDB) fetchAndInsertData(accumulator cua.Accumulator, host string) e
 	if c.client == nil {
 		c.client = &http.Client{
 			Transport: &http.Transport{
-				ResponseHeaderTimeout: time.Duration(3 * time.Second),
+				ResponseHeaderTimeout: 3 * time.Second,
 			},
-			Timeout: time.Duration(4 * time.Second),
+			Timeout: 4 * time.Second,
 		}
 	}
 
 	req, err := http.NewRequest("GET", host, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("http new req (%s): %w", host, err)
 	}
 
 	if c.BasicUsername != "" || c.BasicPassword != "" {
@@ -142,7 +142,7 @@ func (c *CouchDB) fetchAndInsertData(accumulator cua.Accumulator, host string) e
 
 	response, error := c.client.Do(req)
 	if error != nil {
-		return error
+		return fmt.Errorf("http req do: %w", error)
 	}
 	defer response.Body.Close()
 
@@ -287,9 +287,9 @@ func init() {
 		return &CouchDB{
 			client: &http.Client{
 				Transport: &http.Transport{
-					ResponseHeaderTimeout: time.Duration(3 * time.Second),
+					ResponseHeaderTimeout: 3 * time.Second,
 				},
-				Timeout: time.Duration(4 * time.Second),
+				Timeout: 4 * time.Second,
 			},
 		}
 	})

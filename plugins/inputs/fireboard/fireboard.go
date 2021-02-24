@@ -23,10 +23,10 @@ type Fireboard struct {
 
 // NewFireboard return a new instance of Fireboard with a default http client
 func NewFireboard() *Fireboard {
-	tr := &http.Transport{ResponseHeaderTimeout: time.Duration(3 * time.Second)}
+	tr := &http.Transport{ResponseHeaderTimeout: 3 * time.Second}
 	client := &http.Client{
 		Transport: tr,
-		Timeout:   time.Duration(4 * time.Second),
+		Timeout:   4 * time.Second,
 	}
 	return &Fireboard{client: client}
 }
@@ -92,12 +92,12 @@ func (r *Fireboard) Gather(acc cua.Accumulator) error {
 	// Perform the GET request to the fireboard servers
 	req, err := http.NewRequest("GET", r.URL, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("http new request (%s): %w", r.URL, err)
 	}
 	req.Header.Set("Authorization", "Token "+r.AuthToken)
 	resp, err := r.client.Do(req)
 	if err != nil {
-		return err
+		return fmt.Errorf("http do: %w", err)
 	}
 	defer resp.Body.Close()
 

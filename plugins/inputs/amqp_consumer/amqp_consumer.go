@@ -185,7 +185,7 @@ func (a *AMQPConsumer) createConfig() (*amqp.Config, error) {
 	// make new tls config
 	tls, err := a.ClientConfig.TLSConfig()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("TLSConfig: %w", err)
 	}
 
 	var auth []amqp.Authentication
@@ -216,7 +216,7 @@ func (a *AMQPConsumer) Start(acc cua.Accumulator) error {
 
 	a.decoder, err = internal.NewContentDecoder(a.ContentEncoding)
 	if err != nil {
-		return err
+		return fmt.Errorf("content decoder: %w", err)
 	}
 
 	msgs, err := a.connect(amqpConf)
@@ -361,7 +361,7 @@ func (a *AMQPConsumer) connect(amqpConf *amqp.Config) (<-chan amqp.Delivery, err
 		return nil, fmt.Errorf("Failed establishing connection to queue: %w", err)
 	}
 
-	return msgs, err
+	return msgs, fmt.Errorf("amqp chan consume: %w", err)
 }
 
 func declareExchange(
@@ -494,13 +494,13 @@ func (a *AMQPConsumer) onMessage(acc cua.TrackingAccumulator, d amqp.Delivery) e
 	body, err := a.decoder.Decode(d.Body)
 	if err != nil {
 		onError()
-		return err
+		return fmt.Errorf("decoder.Decode: %w", err)
 	}
 
 	metrics, err := a.parser.Parse(body)
 	if err != nil {
 		onError()
-		return err
+		return fmt.Errorf("parser: %w", err)
 	}
 
 	id := acc.AddTrackingMetricGroup(metrics)

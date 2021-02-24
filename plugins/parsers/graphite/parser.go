@@ -106,7 +106,7 @@ func (p *Parser) ParseLine(line string) (cua.Metric, error) {
 	// decode the name and tags
 	measurement, tags, field, err := p.templateEngine.Apply(fields[0])
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("apply template: %w", err)
 	}
 
 	// Could not extract measurement, use the raw value
@@ -165,6 +165,7 @@ func (p *Parser) ApplyTemplate(line string) (string, map[string]string, string, 
 	if len(fields) == 0 {
 		return "", make(map[string]string), "", nil
 	}
+
 	// decode the name and tags
 	name, tags, field, err := p.templateEngine.Apply(fields[0])
 
@@ -175,5 +176,5 @@ func (p *Parser) ApplyTemplate(line string) (string, map[string]string, string, 
 		}
 	}
 
-	return name, tags, field, err
+	return name, tags, field, err //nolint:wrapcheck
 }

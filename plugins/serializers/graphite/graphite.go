@@ -106,7 +106,7 @@ func (s *Serializer) SerializeBatch(metrics []cua.Metric) ([]byte, error) {
 		}
 		_, err = batch.Write(buf)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("batch write: %w", err)
 		}
 	}
 	return batch.Bytes(), nil
@@ -224,9 +224,8 @@ func InitGraphiteTemplates(templates []string) ([]*Template, string, error) {
 		}
 
 		tFilter, err := filter.Compile([]string{parts[0]})
-
 		if err != nil {
-			return nil, "", err
+			return nil, "", fmt.Errorf("filter compile: %w", err)
 		}
 
 		graphiteTemplates = append(graphiteTemplates, &Template{

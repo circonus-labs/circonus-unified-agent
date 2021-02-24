@@ -195,7 +195,7 @@ func initQueries(s *SQLServer) error {
 
 	filterQueries, err := filter.NewIncludeExcludeFilter(s.IncludeQuery, s.ExcludeQuery)
 	if err != nil {
-		return err
+		return fmt.Errorf("filters: %w", err)
 	}
 
 	for query := range queries {
@@ -248,7 +248,7 @@ func (s *SQLServer) gatherServer(server string, query Query, acc cua.Accumulator
 	// deferred opening
 	conn, err := sql.Open("mssql", server)
 	if err != nil {
-		return err
+		return fmt.Errorf("sql open (%s): %w", server, err)
 	}
 	defer conn.Close()
 
@@ -262,7 +262,7 @@ func (s *SQLServer) gatherServer(server string, query Query, acc cua.Accumulator
 	// grab the column information from the result
 	query.OrderedColumns, err = rows.Columns()
 	if err != nil {
-		return err
+		return fmt.Errorf("row cols: %w", err)
 	}
 
 	for rows.Next() {
@@ -290,7 +290,7 @@ func (s *SQLServer) accRow(query Query, acc cua.Accumulator, row scanner) error 
 	// deconstruct array of variables and send to Scan
 	err := row.Scan(columnVars...)
 	if err != nil {
-		return err
+		return fmt.Errorf("row scan: %w", err)
 	}
 
 	// measurement: identified by the header

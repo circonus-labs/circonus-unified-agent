@@ -2,6 +2,7 @@ package internal
 
 import (
 	"bytes"
+	"fmt"
 	"os/exec"
 	"time"
 )
@@ -14,7 +15,7 @@ func CombinedOutputTimeout(c *exec.Cmd, timeout time.Duration) ([]byte, error) {
 	c.Stdout = &b
 	c.Stderr = &b
 	if err := c.Start(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("start: %w", err)
 	}
 	err := WaitTimeout(c, timeout)
 	return b.Bytes(), err
@@ -28,7 +29,7 @@ func StdOutputTimeout(c *exec.Cmd, timeout time.Duration) ([]byte, error) {
 	c.Stdout = &b
 	c.Stderr = nil
 	if err := c.Start(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("stdoutputtimeout start: %w", err)
 	}
 	err := WaitTimeout(c, timeout)
 	return b.Bytes(), err
@@ -38,7 +39,7 @@ func StdOutputTimeout(c *exec.Cmd, timeout time.Duration) ([]byte, error) {
 // If the command times out, it attempts to kill the process.
 func RunTimeout(c *exec.Cmd, timeout time.Duration) error {
 	if err := c.Start(); err != nil {
-		return err
+		return fmt.Errorf("runtimeout start: %w", err)
 	}
 	return WaitTimeout(c, timeout)
 }

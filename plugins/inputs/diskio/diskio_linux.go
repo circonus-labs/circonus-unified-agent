@@ -25,7 +25,7 @@ func (s *DiskIO) diskInfo(devName string) (map[string]string, error) {
 	path := "/dev/" + devName
 	err = unix.Stat(path, &stat)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("diskio stat (%s): %w", path, err)
 	}
 
 	if s.infoCache == nil {
@@ -37,8 +37,8 @@ func (s *DiskIO) diskInfo(devName string) (map[string]string, error) {
 		return ic.values, nil
 	}
 
-	major := unix.Major(uint64(stat.Rdev))
-	minor := unix.Minor(uint64(stat.Rdev))
+	major := unix.Major(stat.Rdev)
+	minor := unix.Minor(stat.Rdev)
 	udevDataPath := fmt.Sprintf("%s/b%d:%d", udevPath, major, minor)
 
 	di := map[string]string{}
@@ -51,7 +51,7 @@ func (s *DiskIO) diskInfo(devName string) (map[string]string, error) {
 
 	f, err := os.Open(udevDataPath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("diskio open (%s): %w", udevDataPath, err)
 	}
 	defer f.Close()
 

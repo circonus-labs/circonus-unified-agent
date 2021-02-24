@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"sync"
 	"time"
 
@@ -188,7 +189,7 @@ func (p *Prometheus) GetAllURLs() (map[string]URLAndAddress, error) {
 	for _, service := range p.KubernetesServices {
 		URL, err := url.Parse(service)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("url parse (%s): %w", service, err)
 		}
 
 		resolvedAddresses, err := net.LookupHost(URL.Hostname())
@@ -241,7 +242,7 @@ func (p *Prometheus) Gather(acc cua.Accumulator) error {
 func (p *Prometheus) createHTTPClient() (*http.Client, error) {
 	tlsCfg, err := p.ClientConfig.TLSConfig()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("TLSConfig: %w", err)
 	}
 
 	client := &http.Client{
@@ -279,7 +280,7 @@ func (p *Prometheus) gatherURL(u URLAndAddress, acc cua.Accumulator) error {
 				DisableKeepAlives: true,
 				Dial: func(network, addr string) (net.Conn, error) {
 					c, err := net.Dial("unix", u.URL.Path)
-					return c, err
+					return c, fmt.Errorf("dial unix (%s): %w", u.URL.Path, err)
 				},
 			},
 			Timeout: p.ResponseTimeout.Duration,
@@ -298,9 +299,9 @@ func (p *Prometheus) gatherURL(u URLAndAddress, acc cua.Accumulator) error {
 
 	switch {
 	case p.BearerToken != "":
-		token, err := ioutil.ReadFile(p.BearerToken)
+		token, err := os.ReadFile(p.BearerToken)
 		if err != nil {
-			return err
+			return fmt.Errorf("readfile: %w", err)
 		}
 		req.Header.Set("Authorization", "Bearer "+string(token))
 	case p.BearerTokenString != "":
@@ -324,7 +325,7 @@ func (p *Prometheus) gatherURL(u URLAndAddress, acc cua.Accumulator) error {
 		return fmt.Errorf("%s returned HTTP status %s", u.URL, resp.Status)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("error reading body: %w", err)
 	}

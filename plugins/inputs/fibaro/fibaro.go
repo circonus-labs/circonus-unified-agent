@@ -90,30 +90,27 @@ func (f *Fibaro) getJSON(path string, dataStruct interface{}) error {
 
 	req, err := http.NewRequest("GET", requestURL, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("http new req (%s): %w", requestURL, err)
 	}
 
 	req.SetBasicAuth(f.Username, f.Password)
 	resp, err := f.client.Do(req)
 	if err != nil {
-		return err
+		return fmt.Errorf("http do: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		err = fmt.Errorf("Response from url \"%s\" has status code %d (%s), expected %d (%s)",
+		return fmt.Errorf("Response from url \"%s\" has status code %d (%s), expected %d (%s)",
 			requestURL,
 			resp.StatusCode,
 			http.StatusText(resp.StatusCode),
 			http.StatusOK,
 			http.StatusText(http.StatusOK))
-		return err
 	}
 
-	dec := json.NewDecoder(resp.Body)
-	err = dec.Decode(&dataStruct)
-	if err != nil {
-		return err
+	if err := json.NewDecoder(resp.Body).Decode(&dataStruct); err != nil {
+		return fmt.Errorf("json decode: %w", err)
 	}
 
 	return nil

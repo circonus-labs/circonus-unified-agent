@@ -119,7 +119,7 @@ func (n *NetResponse) TCPGather() (tags map[string]string, fields map[string]int
 		} else {
 			// Looking for string in answer
 			RegEx := regexp.MustCompile(`.*` + n.Expect + `.*`)
-			find := RegEx.FindString(string(data))
+			find := RegEx.FindString(data)
 			if find != "" {
 				setResult(Success, fields, tags, n.Expect)
 			} else {
@@ -191,6 +191,11 @@ func (n *NetResponse) UDPGather() (tags map[string]string, fields map[string]int
 // It will call either UDPGather or TCPGather based on the configuration and
 // also fill an Accumulator that is supplied.
 func (n *NetResponse) Gather(acc cua.Accumulator) error {
+	const (
+		udp = "udp"
+		tcp = "tcp"
+	)
+
 	// Set default values
 	if n.Timeout.Duration == 0 {
 		n.Timeout.Duration = time.Second
@@ -199,16 +204,16 @@ func (n *NetResponse) Gather(acc cua.Accumulator) error {
 		n.ReadTimeout.Duration = time.Second
 	}
 	// Check send and expected string
-	if n.Protocol == "udp" && n.Send == "" {
+	if n.Protocol == udp && n.Send == "" {
 		return errors.New("Send string cannot be empty")
 	}
-	if n.Protocol == "udp" && n.Expect == "" {
+	if n.Protocol == udp && n.Expect == "" {
 		return errors.New("Expected string cannot be empty")
 	}
 	// Prepare host and port
 	host, port, err := net.SplitHostPort(n.Address)
 	if err != nil {
-		return err
+		return fmt.Errorf("net split host (%s): %w", n.Address, err)
 	}
 	if host == "" {
 		n.Address = "localhost:" + port
@@ -222,10 +227,10 @@ func (n *NetResponse) Gather(acc cua.Accumulator) error {
 	var returnTags map[string]string
 	// Gather data
 	switch n.Protocol {
-	case "tcp":
+	case tcp:
 		returnTags, fields = n.TCPGather()
 		tags["protocol"] = n.Protocol
-	case "udp":
+	case udp:
 		returnTags, fields = n.UDPGather()
 		tags["protocol"] = n.Protocol
 	default:

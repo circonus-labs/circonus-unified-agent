@@ -2,6 +2,7 @@ package apcupsd
 
 import (
 	"context"
+	"fmt"
 	"net/url"
 	"strconv"
 	"strings"
@@ -15,7 +16,7 @@ import (
 
 const defaultAddress = "tcp://127.0.0.1:3551"
 
-var defaultTimeout = internal.Duration{Duration: time.Duration(time.Second * 5)}
+var defaultTimeout = internal.Duration{Duration: time.Second * 5}
 
 type ApcUpsd struct {
 	Servers []string
@@ -45,7 +46,7 @@ func (h *ApcUpsd) Gather(acc cua.Accumulator) error {
 	for _, addr := range h.Servers {
 		addrBits, err := url.Parse(addr)
 		if err != nil {
-			return err
+			return fmt.Errorf("url parse (%s): %w", addr, err)
 		}
 		if addrBits.Scheme == "" {
 			addrBits.Scheme = "tcp"
@@ -68,7 +69,7 @@ func (h *ApcUpsd) Gather(acc cua.Accumulator) error {
 
 		flags, err := strconv.ParseUint(strings.Fields(status.StatusFlags)[0], 0, 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse uint (%s): %w", strings.Fields(status.StatusFlags)[0], err)
 		}
 
 		fields := map[string]interface{}{
@@ -97,7 +98,7 @@ func (h *ApcUpsd) Gather(acc cua.Accumulator) error {
 func fetchStatus(ctx context.Context, addr *url.URL) (*apcupsd.Status, error) {
 	client, err := apcupsd.DialContext(ctx, addr.Scheme, addr.Host)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("dial (%s %s): %w", addr.Scheme, addr.Host, err)
 	}
 	defer client.Close()
 

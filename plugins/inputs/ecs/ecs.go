@@ -1,6 +1,7 @@
 package ecs
 
 import (
+	"fmt"
 	"os"
 	"strings"
 	"time"
@@ -223,7 +224,7 @@ func mergeTags(a map[string]string, b map[string]string) map[string]string {
 func (ecs *Ecs) createContainerNameFilters() error {
 	filter, err := filter.NewIncludeExcludeFilter(ecs.ContainerNameInclude, ecs.ContainerNameExclude)
 	if err != nil {
-		return err
+		return fmt.Errorf("container name filters: %w", err)
 	}
 	ecs.containerNameFilter = filter
 	return nil
@@ -232,7 +233,7 @@ func (ecs *Ecs) createContainerNameFilters() error {
 func (ecs *Ecs) createLabelFilters() error {
 	filter, err := filter.NewIncludeExcludeFilter(ecs.LabelInclude, ecs.LabelExclude)
 	if err != nil {
-		return err
+		return fmt.Errorf("label filters: %w", err)
 	}
 	ecs.labelFilter = filter
 	return nil
@@ -253,7 +254,7 @@ func (ecs *Ecs) createContainerStatusFilters() error {
 
 	filter, err := filter.NewIncludeExcludeFilter(ecs.ContainerStatusInclude, ecs.ContainerStatusExclude)
 	if err != nil {
-		return err
+		return fmt.Errorf("container status filters: %w", err)
 	}
 	ecs.statusFilter = filter
 	return nil

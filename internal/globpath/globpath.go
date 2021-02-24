@@ -1,6 +1,7 @@
 package globpath
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -36,7 +37,7 @@ func Compile(path string) (*GlobPath, error) {
 	out.rootGlob = path[:strings.Index(path, "**")+1]
 	var err error
 	if out.g, err = glob.Compile(path, os.PathSeparator); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("glob compile: %w", err)
 	}
 	return &out, nil
 }

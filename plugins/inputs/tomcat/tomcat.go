@@ -109,11 +109,11 @@ func (s *Tomcat) Gather(acc cua.Accumulator) error {
 	if s.request == nil {
 		_, err := url.Parse(s.URL)
 		if err != nil {
-			return err
+			return fmt.Errorf("url parse (%s): %w", s.URL, err)
 		}
 		request, err := http.NewRequest("GET", s.URL, nil)
 		if err != nil {
-			return err
+			return fmt.Errorf("http new req (%s): %w", s.URL, err)
 		}
 		request.SetBasicAuth(s.Username, s.Password)
 		s.request = request
@@ -121,7 +121,7 @@ func (s *Tomcat) Gather(acc cua.Accumulator) error {
 
 	resp, err := s.client.Do(s.request)
 	if err != nil {
-		return err
+		return fmt.Errorf("http do: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -190,7 +190,7 @@ func (s *Tomcat) Gather(acc cua.Accumulator) error {
 func (s *Tomcat) createHTTPClient() (*http.Client, error) {
 	tlsConfig, err := s.ClientConfig.TLSConfig()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("TLSConfig: %w", err)
 	}
 
 	client := &http.Client{

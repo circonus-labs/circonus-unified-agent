@@ -356,7 +356,7 @@ func makeTableNoMock(tableName string) (*si.Table, error) {
 	err = tab.Init()
 	if err != nil {
 		// Init already wraps
-		return nil, err
+		return nil, fmt.Errorf("tab init: %w", err)
 	}
 
 	return &tab, nil
@@ -368,7 +368,7 @@ func buildMap(gs snmp.GosnmpWrapper, tab *si.Table, column string) (NameMap, err
 	rtab, err := tab.Build(gs, true)
 	if err != nil {
 		// Build already wraps
-		return nil, err
+		return nil, fmt.Errorf("tab build: %w", err)
 	}
 
 	if len(rtab.Rows) == 0 {

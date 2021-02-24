@@ -2,6 +2,7 @@ package encoding
 
 import (
 	"errors"
+	"fmt"
 	"io"
 
 	"golang.org/x/text/transform"
@@ -33,7 +34,7 @@ type Decoder struct {
 func (d *Decoder) Bytes(b []byte) ([]byte, error) {
 	b, _, err := transform.Bytes(d, b)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("transform bytes: %w", err)
 	}
 	return b, nil
 }
@@ -43,7 +44,7 @@ func (d *Decoder) Bytes(b []byte) ([]byte, error) {
 func (d *Decoder) String(s string) (string, error) {
 	s, _, err := transform.String(d, s)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("transform string: %w", err)
 	}
 	return s, nil
 }

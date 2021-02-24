@@ -2,6 +2,7 @@ package prometheus
 
 import (
 	"bytes"
+	"fmt"
 	"time"
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
@@ -62,7 +63,7 @@ func (s *Serializer) SerializeBatch(metrics []cua.Metric) ([]byte, error) {
 		enc := expfmt.NewEncoder(&buf, expfmt.FmtText)
 		err := enc.Encode(mf)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("expfmt.Encode: %w", err)
 		}
 	}
 

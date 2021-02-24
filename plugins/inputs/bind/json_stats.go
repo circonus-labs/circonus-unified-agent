@@ -47,7 +47,7 @@ func addJSONCounter(acc cua.Accumulator, commonTags map[string]string, stats map
 	grouper := metric.NewSeriesGrouper()
 	ts := time.Now()
 	for name, value := range stats {
-		if commonTags["type"] == "opcode" && strings.HasPrefix(name, "RESERVED") {
+		if commonTags["type"] == opcode && strings.HasPrefix(name, "RESERVED") {
 			continue
 		}
 
@@ -77,7 +77,7 @@ func (b *Bind) addStatsJSON(stats jsonStats, acc cua.Accumulator, urlTag string)
 	tags["port"] = port
 
 	// Opcodes
-	tags["type"] = "opcode"
+	tags["type"] = opcode
 	addJSONCounter(acc, tags, stats.OpCodes)
 
 	// RCodes stats
@@ -85,7 +85,7 @@ func (b *Bind) addStatsJSON(stats jsonStats, acc cua.Accumulator, urlTag string)
 	addJSONCounter(acc, tags, stats.RCodes)
 
 	// Query RDATA types
-	tags["type"] = "qtype"
+	tags["type"] = qtype
 	addJSONCounter(acc, tags, stats.QTypes)
 
 	// Nameserver stats
@@ -157,7 +157,7 @@ func (b *Bind) readStatsJSON(addr *url.URL, acc cua.Accumulator) error {
 
 		resp, err := client.Get(scrapeURL)
 		if err != nil {
-			return err
+			return fmt.Errorf("http get (%s): %w", scrapeURL, err)
 		}
 
 		defer resp.Body.Close()

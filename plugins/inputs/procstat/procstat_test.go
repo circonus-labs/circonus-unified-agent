@@ -2,7 +2,6 @@ package procstat
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -30,14 +29,14 @@ func mockExecCommand(arg0 string, args ...string) *exec.Cmd {
 func TestMockExecCommand(t *testing.T) {
 	cmd := make([]string, 0, len(os.Args))
 	for _, arg := range os.Args {
-		if string(arg) == "--" {
+		if arg == "--" {
 			cmd = []string{}
 			continue
 		}
 		if cmd == nil {
 			continue
 		}
-		cmd = append(cmd, string(arg))
+		cmd = append(cmd, arg)
 	}
 	if cmd == nil {
 		return
@@ -374,10 +373,10 @@ func TestGather_cgroupPIDs(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("no cgroups in windows")
 	}
-	td, err := ioutil.TempDir("", "")
+	td, err := os.MkdirTemp("", "")
 	require.NoError(t, err)
 	defer os.RemoveAll(td)
-	err = ioutil.WriteFile(filepath.Join(td, "cgroup.procs"), []byte("1234\n5678\n"), 0600)
+	err = os.WriteFile(filepath.Join(td, "cgroup.procs"), []byte("1234\n5678\n"), 0600)
 	require.NoError(t, err)
 
 	p := Procstat{

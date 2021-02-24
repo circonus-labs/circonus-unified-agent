@@ -3,7 +3,7 @@ package postgresqlextensible
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"strings"
 
@@ -129,15 +129,15 @@ func (p *Postgresql) IgnoredColumns() map[string]bool {
 func ReadQueryFromFile(filePath string) (string, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("open (%s): %w", filePath, err)
 	}
 	defer file.Close()
 
-	query, err := ioutil.ReadAll(file)
+	query, err := io.ReadAll(file)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("readall (%s): %w", filePath, err)
 	}
-	return string(query), err
+	return string(query), nil
 }
 
 func (p *Postgresql) Gather(acc cua.Accumulator) error {
@@ -243,7 +243,7 @@ func (p *Postgresql) accRow(measName string, row scanner, acc cua.Accumulator, c
 
 	// deconstruct array of variables and send to Scan
 	if err = row.Scan(columnVars...); err != nil {
-		return err
+		return fmt.Errorf("row scan: %w", err)
 	}
 
 	if c, ok := columnMap["datname"]; ok && *c != nil {
@@ -259,7 +259,7 @@ func (p *Postgresql) accRow(measName string, row scanner, acc cua.Accumulator, c
 	}
 
 	if tagAddress, err = p.SanitizedAddress(); err != nil {
-		return err
+		return fmt.Errorf("sanitize addr: %w", err)
 	}
 
 	// Process the additional tags

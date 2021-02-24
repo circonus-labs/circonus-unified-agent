@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os/exec"
 	"sync"
 	"sync/atomic"
@@ -126,12 +125,12 @@ func (p *Process) cmdLoop(ctx context.Context) error {
 		}
 
 		p.Log.Errorf("Process %s exited: %v", p.Cmd.Path, err)
-		p.Log.Infof("Restarting in %s...", time.Duration(p.RestartDelay))
+		p.Log.Infof("Restarting in %s...", p.RestartDelay)
 
 		select {
 		case <-ctx.Done():
 			return nil
-		case <-time.After(time.Duration(p.RestartDelay)):
+		case <-time.After(p.RestartDelay):
 			// Continue the loop and restart the process
 			if err := p.cmdStart(); err != nil {
 				return err
@@ -179,7 +178,10 @@ func (p *Process) cmdWait(ctx context.Context) error {
 	err := p.Cmd.Wait()
 	processCancel()
 	wg.Wait()
-	return err
+	if err != nil {
+		return fmt.Errorf("cmd wait: %w", err)
+	}
+	return nil
 }
 
 func isQuitting(ctx context.Context) bool {
@@ -187,5 +189,5 @@ func isQuitting(ctx context.Context) bool {
 }
 
 func defaultReadPipe(r io.Reader) {
-	_, _ = io.Copy(ioutil.Discard, r)
+	_, _ = io.Copy(io.Discard, r)
 }

@@ -41,7 +41,7 @@ import (
 func parseURL(uri string) (string, error) {
 	u, err := url.Parse(uri)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("url parse (%s): %w", uri, err)
 	}
 
 	if u.Scheme != "postgres" && u.Scheme != "postgresql" {
@@ -139,7 +139,7 @@ func (p *Service) Start(cua.Accumulator) (err error) {
 	}
 
 	if p.DB, err = sql.Open("pgx", connectionString); err != nil {
-		return err
+		return fmt.Errorf("sql open: %w", err)
 	}
 
 	p.DB.SetMaxOpenConns(p.MaxOpen)

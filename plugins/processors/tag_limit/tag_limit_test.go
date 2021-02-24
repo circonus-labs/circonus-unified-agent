@@ -22,29 +22,32 @@ func MustMetric(name string, tags map[string]string, fields map[string]interface
 
 func TestUnderLimit(t *testing.T) {
 	currentTime := time.Now()
-
+	const (
+		bar = "bar"
+		foo = "foo"
+	)
 	oneTags := make(map[string]string)
-	oneTags["foo"] = "bar"
+	oneTags[foo] = bar
 
 	tenTags := make(map[string]string)
-	tenTags["a"] = "bar"
-	tenTags["b"] = "bar"
-	tenTags["c"] = "bar"
-	tenTags["d"] = "bar"
-	tenTags["e"] = "bar"
-	tenTags["f"] = "bar"
-	tenTags["g"] = "bar"
-	tenTags["h"] = "bar"
-	tenTags["i"] = "bar"
-	tenTags["j"] = "bar"
+	tenTags["a"] = bar
+	tenTags["b"] = bar
+	tenTags["c"] = bar
+	tenTags["d"] = bar
+	tenTags["e"] = bar
+	tenTags["f"] = bar
+	tenTags["g"] = bar
+	tenTags["h"] = bar
+	tenTags["i"] = bar
+	tenTags["j"] = bar
 
 	tagLimitConfig := TagLimit{
 		Limit: 10,
-		Keep:  []string{"foo", "bar"},
+		Keep:  []string{foo, bar},
 	}
 
-	m1 := MustMetric("foo", oneTags, nil, currentTime)
-	m2 := MustMetric("bar", tenTags, nil, currentTime)
+	m1 := MustMetric(foo, oneTags, nil, currentTime)
+	m2 := MustMetric(bar, tenTags, nil, currentTime)
 	limitApply := tagLimitConfig.Apply(m1, m2)
 	assert.Equal(t, oneTags, limitApply[0].Tags(), "one tag")
 	assert.Equal(t, tenTags, limitApply[1].Tags(), "ten tags")

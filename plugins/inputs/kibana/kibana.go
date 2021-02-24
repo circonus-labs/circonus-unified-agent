@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
@@ -169,7 +168,7 @@ func (k *Kibana) Gather(acc cua.Accumulator) error {
 func (k *Kibana) createHTTPClient() (*http.Client, error) {
 	tlsCfg, err := k.ClientConfig.TLSConfig()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("TLSConfig: %w", err)
 	}
 
 	client := &http.Client{
@@ -214,7 +213,7 @@ func (k *Kibana) gatherKibanaStatus(baseURL string, acc cua.Accumulator) error {
 	}
 	versionNumber, err := strconv.ParseFloat(strings.Join(versionArray[:arrayElement], "."), 64)
 	if err != nil {
-		return err
+		return fmt.Errorf("parsefloat (%s): %w", strings.Join(versionArray[:arrayElement], "."), err)
 	}
 
 	// Same value will be assigned to both the metrics [heap_max_bytes and heap_total_bytes ]
@@ -249,19 +248,19 @@ func (k *Kibana) gatherJSONData(url string, v interface{}) (host string, err err
 
 	response, err := k.client.Do(request)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("http do: %w", err)
 	}
 
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
 		// ignore the err here; LimitReader returns io.EOF and we're not interested in read errors.
-		body, _ := ioutil.ReadAll(io.LimitReader(response.Body, 200))
+		body, _ := io.ReadAll(io.LimitReader(response.Body, 200))
 		return request.Host, fmt.Errorf("%s returned HTTP status %s: %q", url, response.Status, body)
 	}
 
 	if err = json.NewDecoder(response.Body).Decode(v); err != nil {
-		return request.Host, err
+		return request.Host, fmt.Errorf("json decode: %w", err)
 	}
 
 	return request.Host, nil

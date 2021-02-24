@@ -27,7 +27,7 @@ const description = "Measure postfix queue statistics"
 func getQueueDirectory() (string, error) {
 	qd, err := exec.Command("postconf", "-h", "queue_directory").Output()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("exec: %w", err)
 	}
 	return strings.TrimSpace(string(qd)), nil
 }
@@ -57,7 +57,7 @@ func qScan(path string, acc cua.Accumulator) (int64, int64, int64, error) {
 		return nil
 	})
 	if err != nil {
-		return 0, 0, 0, err
+		return 0, 0, 0, fmt.Errorf("filepath walk: %w", err)
 	}
 	var age int64
 	if !oldest.IsZero() {

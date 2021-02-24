@@ -21,10 +21,10 @@ type Riak struct {
 
 // NewRiak return a new instance of Riak with a default http client
 func NewRiak() *Riak {
-	tr := &http.Transport{ResponseHeaderTimeout: time.Duration(3 * time.Second)}
+	tr := &http.Transport{ResponseHeaderTimeout: 3 * time.Second}
 	client := &http.Client{
 		Transport: tr,
-		Timeout:   time.Duration(4 * time.Second),
+		Timeout:   4 * time.Second,
 	}
 	return &Riak{client: client}
 }
@@ -121,7 +121,7 @@ func (r *Riak) gatherServer(s string, acc cua.Accumulator) error {
 	// Perform the GET request to the riak /stats endpoint
 	resp, err := r.client.Get(s + "/stats")
 	if err != nil {
-		return err
+		return fmt.Errorf("client get (%s/stats): %w", s, err)
 	}
 	defer resp.Body.Close()
 

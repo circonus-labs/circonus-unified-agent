@@ -33,7 +33,7 @@ func (p Parser) Parse(buf []byte) ([]cua.Metric, error) {
 
 	values, err := url.ParseQuery(string(buf))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("url parse query (%s): %w", string(buf), err)
 	}
 
 	if len(p.AllowedKeys) > 0 {
@@ -49,7 +49,7 @@ func (p Parser) Parse(buf []byte) ([]cua.Metric, error) {
 
 	metric, err := metric.New(p.MetricName, tags, fields, time.Now().UTC())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("metric new: %w", err)
 	}
 
 	return []cua.Metric{metric}, nil

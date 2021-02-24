@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -96,7 +95,7 @@ func (a *ChimpAPI) GetReports(params ReportsParams) (ReportsResponse, error) {
 
 	err = json.Unmarshal(rawjson, &response)
 	if err != nil {
-		return response, err
+		return response, fmt.Errorf("json unmarshal: %w", err)
 	}
 
 	return response, nil
@@ -115,7 +114,7 @@ func (a *ChimpAPI) GetReport(campaignID string) (Report, error) {
 
 	err = json.Unmarshal(rawjson, &response)
 	if err != nil {
-		return response, err
+		return response, fmt.Errorf("json unmarshal: %w", err)
 	}
 
 	return response, nil
@@ -124,13 +123,13 @@ func (a *ChimpAPI) GetReport(campaignID string) (Report, error) {
 func runChimp(api *ChimpAPI, params ReportsParams) ([]byte, error) {
 	client := &http.Client{
 		Transport: api.Transport,
-		Timeout:   time.Duration(4 * time.Second),
+		Timeout:   4 * time.Second,
 	}
 
 	var b bytes.Buffer
 	req, err := http.NewRequest("GET", api.url.String(), &b)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("http new req (%s): %w", api.url.String(), err)
 	}
 	req.URL.RawQuery = params.String()
 	req.Header.Set("User-Agent", "Circonus-MailChimp-Plugin")
@@ -140,19 +139,19 @@ func runChimp(api *ChimpAPI, params ReportsParams) ([]byte, error) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("http req do: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		// ignore the err here; LimitReader returns io.EOF and we're not interested in read errors.
-		body, _ := ioutil.ReadAll(io.LimitReader(resp.Body, 200))
+		body, _ := io.ReadAll(io.LimitReader(resp.Body, 200))
 		return nil, fmt.Errorf("%s returned HTTP status %s: %q", api.url.String(), resp.Status, body)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("readall: %w", err)
 	}
 	if api.Debug {
 		log.Printf("D! [inputs.mailchimp] response Body: %q", string(body))

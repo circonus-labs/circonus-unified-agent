@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"errors"
+	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -21,6 +22,12 @@ const (
 	defaultServiceAddress = "tcp://:8080"
 	defaultReadTimeout    = 5 * time.Second
 	defaultWriteTimeout   = 5 * time.Second
+	schemeHTTP            = "http"
+	schemeHTTPS           = "https"
+	schemeTCP             = "tcp"
+	schemeTCP4            = "tcp4"
+	schemeTCP6            = "tcp6"
+	schemeUnix            = "unix"
 )
 
 var sampleConfig = `
@@ -101,17 +108,17 @@ func (h *Health) Description() string {
 func (h *Health) Init() error {
 	u, err := url.Parse(h.ServiceAddress)
 	if err != nil {
-		return err
+		return fmt.Errorf("url parse (%s): %w", h.ServiceAddress, err)
 	}
 
 	switch u.Scheme {
-	case "http", "https":
-		h.network = "tcp"
+	case schemeHTTP, schemeHTTPS:
+		h.network = schemeTCP
 		h.address = u.Host
-	case "unix":
+	case schemeUnix:
 		h.network = u.Scheme
 		h.address = u.Path
-	case "tcp4", "tcp6", "tcp":
+	case schemeTCP4, schemeTCP6, schemeTCP:
 		h.network = u.Scheme
 		h.address = u.Host
 	default:
@@ -120,7 +127,7 @@ func (h *Health) Init() error {
 
 	h.tlsConf, err = h.ServerConfig.TLSConfig()
 	if err != nil {
-		return err
+		return fmt.Errorf("TLSConfig: %w", err)
 	}
 
 	h.checkers = make([]Checker, 0)
@@ -218,16 +225,16 @@ func (h *Health) Origin() string {
 }
 
 func (h *Health) getOrigin(listener net.Listener) string {
-	scheme := "http"
+	scheme := schemeHTTP
 	if h.tlsConf != nil {
-		scheme = "https"
+		scheme = schemeHTTPS
 	}
-	if h.network == "unix" {
-		scheme = "unix"
+	if h.network == schemeUnix {
+		scheme = schemeUnix
 	}
 
 	switch h.network {
-	case "unix":
+	case schemeUnix:
 		origin := &url.URL{
 			Scheme: scheme,
 			Path:   listener.Addr().String(),

@@ -1,6 +1,7 @@
 package lanz
 
 import (
+	"fmt"
 	"net/url"
 	"strconv"
 	"sync"
@@ -56,7 +57,7 @@ func (l *Lanz) Start(acc cua.Accumulator) error {
 	for _, server := range l.Servers {
 		deviceURL, err := url.Parse(server)
 		if err != nil {
-			return err
+			return fmt.Errorf("url parse (%s): %w", server, err)
 		}
 		client := lanz.New(
 			lanz.WithAddr(deviceURL.Host),

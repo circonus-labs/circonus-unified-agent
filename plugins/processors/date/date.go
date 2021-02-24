@@ -2,6 +2,7 @@ package date
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
@@ -65,7 +66,7 @@ func (d *Date) Init() error {
 	var err error
 	// LoadLocation returns UTC if timezone is the empty string.
 	d.location, err = time.LoadLocation(d.Timezone)
-	return err
+	return fmt.Errorf("load location: %w", err)
 }
 
 func (d *Date) Apply(in ...cua.Metric) []cua.Metric {

@@ -81,9 +81,12 @@ func TestSystemdUnits(t *testing.T) {
 			}
 			acc := new(testutil.Accumulator)
 			err := acc.GatherError(systemdUnits.Gather)
-			if !reflect.DeepEqual(tt.err, err) {
+			if err.Error() != tt.err.Error() {
 				t.Errorf("%s: expected error '%#v' got '%#v'", tt.name, tt.err, err)
 			}
+			// if !reflect.DeepEqual(tt.err, err) { //nolint
+			// 	t.Errorf("%s: expected error '%#v' got '%#v'", tt.name, tt.err, err)
+			// }
 			if len(acc.Metrics) > 0 {
 				m := acc.Metrics[0]
 				if !reflect.DeepEqual(m.Measurement, measurement) {

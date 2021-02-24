@@ -4,7 +4,8 @@ import (
 	"compress/gzip"
 	"crypto/subtle"
 	"crypto/tls"
-	"io/ioutil"
+	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -139,7 +140,7 @@ func (h *HTTPListenerV2) Start(acc cua.Accumulator) error {
 
 	tlsConf, err := h.ServerConfig.TLSConfig()
 	if err != nil {
-		return err
+		return fmt.Errorf("TLSConfig: %w", err)
 	}
 
 	server := &http.Server{
@@ -157,7 +158,7 @@ func (h *HTTPListenerV2) Start(acc cua.Accumulator) error {
 		listener, err = net.Listen("tcp", h.ServiceAddress)
 	}
 	if err != nil {
-		return err
+		return fmt.Errorf("listen (%s): %w", h.ServiceAddress, err)
 	}
 	h.listener = listener
 	h.Port = listener.Addr().(*net.TCPAddr).Port
@@ -263,7 +264,7 @@ func (h *HTTPListenerV2) collectBody(res http.ResponseWriter, req *http.Request)
 	}
 
 	body = http.MaxBytesReader(res, body, h.MaxBodySize.Size)
-	bytes, err := ioutil.ReadAll(body)
+	bytes, err := io.ReadAll(body)
 	if err != nil {
 		tooLarge(res)
 		return nil, false

@@ -34,7 +34,7 @@ func (m *MockPS) LoadAvg() (*load.AvgStat, error) {
 	r0 := ret.Get(0).(*load.AvgStat)
 	r1 := ret.Error(1)
 
-	return r0, r1
+	return r0, r1 //nolint:wrapcheck
 }
 
 func (m *MockPS) CPUTimes(perCPU, totalCPU bool) ([]cpu.TimesStat, error) {
@@ -43,7 +43,7 @@ func (m *MockPS) CPUTimes(perCPU, totalCPU bool) ([]cpu.TimesStat, error) {
 	r0 := ret.Get(0).([]cpu.TimesStat)
 	r1 := ret.Error(1)
 
-	return r0, r1
+	return r0, r1 //nolint:wrapcheck
 }
 
 func (m *MockPS) DiskUsage(mountPointFilter []string, fstypeExclude []string) ([]*disk.UsageStat, []*disk.PartitionStat, error) {
@@ -53,7 +53,7 @@ func (m *MockPS) DiskUsage(mountPointFilter []string, fstypeExclude []string) ([
 	r1 := ret.Get(1).([]*disk.PartitionStat)
 	r2 := ret.Error(2)
 
-	return r0, r1, r2
+	return r0, r1, r2 //nolint:wrapcheck
 }
 
 func (m *MockPS) NetIO() ([]net.IOCountersStat, error) {
@@ -62,7 +62,7 @@ func (m *MockPS) NetIO() ([]net.IOCountersStat, error) {
 	r0 := ret.Get(0).([]net.IOCountersStat)
 	r1 := ret.Error(1)
 
-	return r0, r1
+	return r0, r1 //nolint:wrapcheck
 }
 
 func (m *MockPS) NetProto() ([]net.ProtoCountersStat, error) {
@@ -71,7 +71,7 @@ func (m *MockPS) NetProto() ([]net.ProtoCountersStat, error) {
 	r0 := ret.Get(0).([]net.ProtoCountersStat)
 	r1 := ret.Error(1)
 
-	return r0, r1
+	return r0, r1 //nolint:wrapcheck
 }
 
 func (m *MockPS) DiskIO(names []string) (map[string]disk.IOCountersStat, error) {
@@ -80,7 +80,7 @@ func (m *MockPS) DiskIO(names []string) (map[string]disk.IOCountersStat, error) 
 	r0 := ret.Get(0).(map[string]disk.IOCountersStat)
 	r1 := ret.Error(1)
 
-	return r0, r1
+	return r0, r1 //nolint:wrapcheck
 }
 
 func (m *MockPS) VMStat() (*mem.VirtualMemoryStat, error) {
@@ -89,7 +89,7 @@ func (m *MockPS) VMStat() (*mem.VirtualMemoryStat, error) {
 	r0 := ret.Get(0).(*mem.VirtualMemoryStat)
 	r1 := ret.Error(1)
 
-	return r0, r1
+	return r0, r1 //nolint:wrapcheck
 }
 
 func (m *MockPS) SwapStat() (*mem.SwapMemoryStat, error) {
@@ -98,7 +98,7 @@ func (m *MockPS) SwapStat() (*mem.SwapMemoryStat, error) {
 	r0 := ret.Get(0).(*mem.SwapMemoryStat)
 	r1 := ret.Error(1)
 
-	return r0, r1
+	return r0, r1 //nolint:wrapcheck
 }
 
 func (m *MockPS) Temperature() ([]host.TemperatureStat, error) {
@@ -107,7 +107,7 @@ func (m *MockPS) Temperature() ([]host.TemperatureStat, error) {
 	r0 := ret.Get(0).([]host.TemperatureStat)
 	r1 := ret.Error(1)
 
-	return r0, r1
+	return r0, r1 //nolint:wrapcheck
 }
 
 func (m *MockPS) NetConnections() ([]net.ConnectionStat, error) {
@@ -116,7 +116,7 @@ func (m *MockPS) NetConnections() ([]net.ConnectionStat, error) {
 	r0 := ret.Get(0).([]net.ConnectionStat)
 	r1 := ret.Error(1)
 
-	return r0, r1
+	return r0, r1 //nolint:wrapcheck
 }
 
 func (m *MockDiskUsage) Partitions(all bool) ([]disk.PartitionStat, error) {
@@ -125,7 +125,7 @@ func (m *MockDiskUsage) Partitions(all bool) ([]disk.PartitionStat, error) {
 	r0 := ret.Get(0).([]disk.PartitionStat)
 	r1 := ret.Error(1)
 
-	return r0, r1
+	return r0, r1 //nolint:wrapcheck
 }
 
 func (m *MockDiskUsage) OSGetenv(key string) string {
@@ -139,7 +139,7 @@ func (m *MockDiskUsage) OSStat(name string) (os.FileInfo, error) {
 	r0 := ret.Get(0).(os.FileInfo)
 	r1 := ret.Error(1)
 
-	return r0, r1
+	return r0, r1 //nolint:wrapcheck
 }
 
 func (m *MockDiskUsage) PSDiskUsage(path string) (*disk.UsageStat, error) {
@@ -148,5 +148,5 @@ func (m *MockDiskUsage) PSDiskUsage(path string) (*disk.UsageStat, error) {
 	r0 := ret.Get(0).(*disk.UsageStat)
 	r1 := ret.Error(1)
 
-	return r0, r1
+	return r0, r1 //nolint:wrapcheck
 }

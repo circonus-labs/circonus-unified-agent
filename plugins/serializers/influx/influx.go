@@ -134,13 +134,13 @@ func (s *Serializer) Write(w io.Writer, m cua.Metric) (int, error) {
 func (s *Serializer) writeString(w io.Writer, str string) error {
 	n, err := io.WriteString(w, str)
 	s.bytesWritten += n
-	return err
+	return fmt.Errorf("io write string: %w", err)
 }
 
 func (s *Serializer) write(w io.Writer, b []byte) error {
 	n, err := w.Write(b)
 	s.bytesWritten += n
-	return err
+	return fmt.Errorf("write: %w", err)
 }
 
 func (s *Serializer) buildHeader(m cua.Metric) error {
@@ -308,7 +308,7 @@ func (s *Serializer) appendFieldValue(buf []byte, value interface{}) ([]byte, er
 		if v <= uint64(MaxInt64) {
 			return appendIntField(buf, int64(v)), nil
 		}
-		return appendIntField(buf, int64(MaxInt64)), nil
+		return appendIntField(buf, MaxInt64), nil
 	case int64:
 		return appendIntField(buf, v), nil
 	case float64:

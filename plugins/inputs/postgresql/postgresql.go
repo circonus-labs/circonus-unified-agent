@@ -86,14 +86,14 @@ func (p *Postgresql) Gather(acc cua.Accumulator) error {
 
 	rows, err := p.DB.Query(query)
 	if err != nil {
-		return err
+		return fmt.Errorf("db query (%s): %w", query, err)
 	}
 
 	defer rows.Close()
 
 	// grab the column information from the result
 	if columns, err = rows.Columns(); err != nil {
-		return err
+		return fmt.Errorf("row cols: %w", err)
 	}
 
 	for rows.Next() {
@@ -107,14 +107,14 @@ func (p *Postgresql) Gather(acc cua.Accumulator) error {
 
 	bgWriterRow, err := p.DB.Query(query)
 	if err != nil {
-		return err
+		return fmt.Errorf("db query (%s): %w", query, err)
 	}
 
 	defer bgWriterRow.Close()
 
 	// grab the column information from the result
 	if columns, err = bgWriterRow.Columns(); err != nil {
-		return err
+		return fmt.Errorf("row cols: %w", err)
 	}
 
 	for bgWriterRow.Next() {
@@ -149,10 +149,10 @@ func (p *Postgresql) accRow(row scanner, acc cua.Accumulator, columns []string) 
 
 	// deconstruct array of variables and send to Scan
 	err := row.Scan(columnVars...)
-
 	if err != nil {
-		return err
+		return fmt.Errorf("row scan: %w", err)
 	}
+
 	if columnMap["datname"] != nil {
 		// extract the database name from the column map
 		if dbNameStr, ok := (*columnMap["datname"]).(string); ok {

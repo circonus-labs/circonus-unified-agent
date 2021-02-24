@@ -2,6 +2,7 @@ package config
 
 import (
 	"bytes"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -66,7 +67,7 @@ func (s *Size) UnmarshalTOML(b []byte) error {
 	if b[0] == '"' || b[0] == '\'' {
 		str, err = strconv.Unquote(str)
 		if err != nil {
-			return err
+			return fmt.Errorf("unquote (%s): %w", str, err)
 		}
 	}
 
@@ -77,7 +78,7 @@ func (s *Size) UnmarshalTOML(b []byte) error {
 	}
 	val, err = units.ParseStrictBytes(str)
 	if err != nil {
-		return err
+		return fmt.Errorf("parsestrictbytes (%s): %w", str, err)
 	}
 	*s = Size(val)
 	return nil

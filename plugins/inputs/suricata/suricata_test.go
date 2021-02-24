@@ -2,7 +2,6 @@ package suricata
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math/rand"
 	"net"
@@ -21,7 +20,7 @@ var ex2 = `{"timestamp":"2017-03-06T07:43:39.000397+0000","event_type":"stats","
 var ex3 = `{"timestamp":"2017-03-06T07:43:39.000397+0000","event_type":"stats","stats":{"threads": { "W#05-wlp4s0": { "capture":{"kernel_packets":905344474,"kernel_drops":78355440}}}}}`
 
 func TestSuricataLarge(t *testing.T) {
-	dir, err := ioutil.TempDir("", "test")
+	dir, err := os.MkdirTemp("", "test")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
 	tmpfn := filepath.Join(dir, fmt.Sprintf("t%d", rand.Int63())) //nolint:gosec // G404
@@ -37,12 +36,12 @@ func TestSuricataLarge(t *testing.T) {
 	require.NoError(t, s.Start(&acc))
 	defer s.Stop()
 
-	data, err := ioutil.ReadFile("testdata/test1.json")
+	data, err := os.ReadFile("testdata/test1.json")
 	require.NoError(t, err)
 
 	c, err := net.Dial("unix", tmpfn)
 	require.NoError(t, err)
-	_, _ = c.Write([]byte(data))
+	_, _ = c.Write(data)
 	_, _ = c.Write([]byte("\n"))
 	c.Close()
 
@@ -50,7 +49,7 @@ func TestSuricataLarge(t *testing.T) {
 }
 
 func TestSuricata(t *testing.T) {
-	dir, err := ioutil.TempDir("", "test")
+	dir, err := os.MkdirTemp("", "test")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
 	tmpfn := filepath.Join(dir, fmt.Sprintf("t%d", rand.Int63())) //nolint:gosec // G404
@@ -94,7 +93,7 @@ func TestSuricata(t *testing.T) {
 }
 
 func TestThreadStats(t *testing.T) {
-	dir, err := ioutil.TempDir("", "test")
+	dir, err := os.MkdirTemp("", "test")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
 	tmpfn := filepath.Join(dir, fmt.Sprintf("t%d", rand.Int63())) //nolint:gosec // G404
@@ -139,7 +138,7 @@ func TestThreadStats(t *testing.T) {
 }
 
 func TestSuricataInvalid(t *testing.T) {
-	dir, err := ioutil.TempDir("", "test")
+	dir, err := os.MkdirTemp("", "test")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
 	tmpfn := filepath.Join(dir, fmt.Sprintf("t%d", rand.Int63())) //nolint:gosec // G404
@@ -179,7 +178,7 @@ func TestSuricataInvalidPath(t *testing.T) {
 }
 
 func TestSuricataTooLongLine(t *testing.T) {
-	dir, err := ioutil.TempDir("", "test")
+	dir, err := os.MkdirTemp("", "test")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
 	tmpfn := filepath.Join(dir, fmt.Sprintf("t%d", rand.Int63())) //nolint:gosec // G404
@@ -206,7 +205,7 @@ func TestSuricataTooLongLine(t *testing.T) {
 }
 
 func TestSuricataEmptyJSON(t *testing.T) {
-	dir, err := ioutil.TempDir("", "test")
+	dir, err := os.MkdirTemp("", "test")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
 	tmpfn := filepath.Join(dir, fmt.Sprintf("t%d", rand.Int63())) //nolint:gosec // G404
@@ -233,7 +232,7 @@ func TestSuricataEmptyJSON(t *testing.T) {
 }
 
 func TestSuricataDisconnectSocket(t *testing.T) {
-	dir, err := ioutil.TempDir("", "test")
+	dir, err := os.MkdirTemp("", "test")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
 	tmpfn := filepath.Join(dir, fmt.Sprintf("t%d", rand.Int63())) //nolint:gosec // G404
@@ -265,7 +264,7 @@ func TestSuricataDisconnectSocket(t *testing.T) {
 }
 
 func TestSuricataStartStop(t *testing.T) {
-	dir, err := ioutil.TempDir("", "test")
+	dir, err := os.MkdirTemp("", "test")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
 	tmpfn := filepath.Join(dir, fmt.Sprintf("t%d", rand.Int63())) //nolint:gosec // G404

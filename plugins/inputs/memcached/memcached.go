@@ -108,7 +108,7 @@ func (m *Memcached) gatherServer(
 	if unix {
 		conn, err = net.DialTimeout("unix", address, defaultTimeout)
 		if err != nil {
-			return err
+			return fmt.Errorf("dial timeout unix (%s): %w", address, err)
 		}
 		defer conn.Close()
 	} else {
@@ -119,7 +119,7 @@ func (m *Memcached) gatherServer(
 
 		conn, err = net.DialTimeout("tcp", address, defaultTimeout)
 		if err != nil {
-			return err
+			return fmt.Errorf("dial timeout tcp (%s): %w", address, err)
 		}
 		defer conn.Close()
 	}
@@ -136,10 +136,10 @@ func (m *Memcached) gatherServer(
 
 	// Send command
 	if _, err := fmt.Fprint(rw, "stats\r\n"); err != nil {
-		return err
+		return fmt.Errorf("send cmd: %w", err)
 	}
 	if err := rw.Flush(); err != nil {
-		return err
+		return fmt.Errorf("bufio flush: %w", err)
 	}
 
 	values, err := parseResponse(rw.Reader)
@@ -173,7 +173,7 @@ func parseResponse(r *bufio.Reader) (map[string]string, error) {
 		// Read line
 		line, _, errRead := r.ReadLine()
 		if errRead != nil {
-			return values, errRead
+			return values, fmt.Errorf("bufio read: %w", errRead)
 		}
 		// Done
 		if bytes.Equal(line, []byte("END")) {

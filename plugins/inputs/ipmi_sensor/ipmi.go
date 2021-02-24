@@ -269,7 +269,7 @@ func extractFieldsFromRegex(re *regexp.Regexp, input string) map[string]string {
 func aToFloat(val string) (float64, error) {
 	f, err := strconv.ParseFloat(val, 64)
 	if err != nil {
-		return 0.0, err
+		return 0.0, fmt.Errorf("parsefloat (%s): %w", val, err)
 	}
 	return f, nil
 }

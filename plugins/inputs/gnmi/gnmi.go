@@ -94,7 +94,7 @@ func (c *GNMI) Start(acc cua.Accumulator) error {
 	// Parse TLS config
 	if c.EnableTLS {
 		if tlscfg, err = c.ClientConfig.TLSConfig(); err != nil {
-			return err
+			return fmt.Errorf("TLSConfig: %w", err)
 		}
 	}
 

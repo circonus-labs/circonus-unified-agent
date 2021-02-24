@@ -331,18 +331,18 @@ func (w *WinEventLog) evtSubscribe(logName, xquery string) (EvtHandle, error) {
 
 	sigEvent, err := windows.CreateEvent(nil, 0, 0, nil)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("win_eventlog evtSubscribe create: %w", err)
 	}
 	defer func() { _ = windows.CloseHandle(sigEvent) }()
 
 	logNamePtr, err = syscall.UTF16PtrFromString(logName)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("win_eventlog evtSubscribe ptrfromstr: %w", err)
 	}
 
 	xqueryPtr, err = syscall.UTF16PtrFromString(xquery)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("win_eventlog evtSubscribe ptrfromstr: %w", err)
 	}
 
 	subsHandle, err := _EvtSubscribe(0, uintptr(sigEvent), logNamePtr, xqueryPtr,
@@ -413,7 +413,7 @@ func (w *WinEventLog) renderEvent(eventHandle EvtHandle) (Event, error) {
 	if err != nil {
 		return event, err
 	}
-	err = xml.Unmarshal([]byte(eventXML), &event)
+	err = xml.Unmarshal(eventXML, &event)
 	if err != nil {
 		// We can return event without most text values,
 		// that way we will not loose information
@@ -507,7 +507,7 @@ func openPublisherMetadata(
 ) (EvtHandle, error) {
 	p, err := syscall.UTF16PtrFromString(publisherName)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("win_eventlog openPubMeta ptrfromstr: %w", err)
 	}
 
 	h, err := _EvtOpenPublisherMetadata(session, p, nil, lang, 0)

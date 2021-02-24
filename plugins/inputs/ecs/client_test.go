@@ -3,7 +3,7 @@ package ecs
 import (
 	"bytes"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -110,7 +110,7 @@ func TestEcsClient_Task(t *testing.T) {
 				do: func(req *http.Request) (*http.Response, error) {
 					return &http.Response{
 						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(rc),
+						Body:       io.NopCloser(rc),
 					}, nil
 				},
 			},
@@ -131,7 +131,7 @@ func TestEcsClient_Task(t *testing.T) {
 				do: func(req *http.Request) (*http.Response, error) {
 					return &http.Response{
 						StatusCode: http.StatusInternalServerError,
-						Body:       ioutil.NopCloser(bytes.NewReader([]byte("foo"))),
+						Body:       io.NopCloser(bytes.NewReader([]byte("foo"))),
 					}, nil
 				},
 			},
@@ -143,7 +143,7 @@ func TestEcsClient_Task(t *testing.T) {
 				do: func(req *http.Request) (*http.Response, error) {
 					return &http.Response{
 						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(bytes.NewReader([]byte("foo"))),
+						Body:       io.NopCloser(bytes.NewReader([]byte("foo"))),
 					}, nil
 				},
 			},
@@ -182,7 +182,7 @@ func TestEcsClient_ContainerStats(t *testing.T) {
 				do: func(req *http.Request) (*http.Response, error) {
 					return &http.Response{
 						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(rc),
+						Body:       io.NopCloser(rc),
 					}, nil
 				},
 			},
@@ -204,7 +204,7 @@ func TestEcsClient_ContainerStats(t *testing.T) {
 				do: func(req *http.Request) (*http.Response, error) {
 					return &http.Response{
 						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(bytes.NewReader([]byte("foo"))),
+						Body:       io.NopCloser(bytes.NewReader([]byte("foo"))),
 					}, nil
 				},
 			},
@@ -217,7 +217,7 @@ func TestEcsClient_ContainerStats(t *testing.T) {
 				do: func(req *http.Request) (*http.Response, error) {
 					return &http.Response{
 						StatusCode: http.StatusInternalServerError,
-						Body:       ioutil.NopCloser(bytes.NewReader([]byte("foo"))),
+						Body:       io.NopCloser(bytes.NewReader([]byte("foo"))),
 					}, nil
 				},
 			},

@@ -3,6 +3,7 @@
 package internal
 
 import (
+	"fmt"
 	"log"
 	"os/exec"
 	"time"
@@ -37,5 +38,5 @@ func WaitTimeout(c *exec.Cmd, timeout time.Duration) error {
 	}
 
 	// Otherwise there was an error unrelated to termination.
-	return err
+	return fmt.Errorf("cmd exec: %w", err)
 }

@@ -4,7 +4,8 @@ package nats
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"path"
@@ -40,30 +41,30 @@ func (n *Nats) Description() string {
 }
 
 func (n *Nats) Gather(acc cua.Accumulator) error {
-	url, err := url.Parse(n.Server)
+	rurl, err := url.Parse(n.Server)
 	if err != nil {
-		return err
+		return fmt.Errorf("url parse (%s): %w", n.Server, err)
 	}
-	url.Path = path.Join(url.Path, "varz")
+	rurl.Path = path.Join(rurl.Path, "varz")
 
 	if n.client == nil {
 		n.client = n.createHTTPClient()
 	}
-	resp, err := n.client.Get(url.String())
+	resp, err := n.client.Get(rurl.String())
 	if err != nil {
-		return err
+		return fmt.Errorf("http get (%s): %w", rurl.String(), err)
 	}
 	defer resp.Body.Close()
 
-	bytes, err := ioutil.ReadAll(resp.Body)
+	bytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return fmt.Errorf("readall: %w", err)
 	}
 
 	stats := new(gnatsd.Varz)
-	err = json.Unmarshal([]byte(bytes), &stats)
+	err = json.Unmarshal(bytes, &stats)
 	if err != nil {
-		return err
+		return fmt.Errorf("json unmarshal: %w", err)
 	}
 
 	acc.AddFields("nats",

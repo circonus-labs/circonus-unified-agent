@@ -27,14 +27,14 @@ func mockExecCommand(arg0 string, args ...string) *exec.Cmd {
 func TestMockExecCommand(t *testing.T) {
 	cmd := make([]string, 0, len(os.Args))
 	for _, arg := range os.Args {
-		if string(arg) == "--" {
+		if arg == "--" {
 			cmd = []string{}
 			continue
 		}
 		if cmd == nil {
 			continue
 		}
-		cmd = append(cmd, string(arg))
+		cmd = append(cmd, arg)
 	}
 	if cmd == nil {
 		return

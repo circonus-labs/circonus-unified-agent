@@ -243,7 +243,7 @@ func (m *Modbus) InitRegister(fields []fieldContainer, name string) error {
 func connect(m *Modbus) error {
 	u, err := url.Parse(m.Controller)
 	if err != nil {
-		return err
+		return fmt.Errorf("url parse (%s): %w", m.Controller, err)
 	}
 
 	switch u.Scheme {
@@ -251,7 +251,7 @@ func connect(m *Modbus) error {
 		var host, port string
 		host, port, err = net.SplitHostPort(u.Host)
 		if err != nil {
-			return err
+			return fmt.Errorf("net split (%s): %w", u.Host, err)
 		}
 		m.tcpHandler = mb.NewTCPClientHandler(host + ":" + port)
 		m.tcpHandler.Timeout = m.Timeout.Duration
@@ -259,7 +259,7 @@ func connect(m *Modbus) error {
 		m.client = mb.NewClient(m.tcpHandler)
 		err := m.tcpHandler.Connect()
 		if err != nil {
-			return err
+			return fmt.Errorf("tcp handler connect: %w", err)
 		}
 		m.isConnected = true
 		return nil
@@ -276,7 +276,7 @@ func connect(m *Modbus) error {
 			m.client = mb.NewClient(m.rtuHandler)
 			err := m.rtuHandler.Connect()
 			if err != nil {
-				return err
+				return fmt.Errorf("rtu handler connect: %w", err)
 			}
 			m.isConnected = true
 			return nil
@@ -291,7 +291,7 @@ func connect(m *Modbus) error {
 			m.client = mb.NewClient(m.asciiHandler)
 			err := m.asciiHandler.Connect()
 			if err != nil {
-				return err
+				return fmt.Errorf("ascii handler connect: %w", err)
 			}
 			m.isConnected = true
 			return nil
@@ -306,7 +306,7 @@ func connect(m *Modbus) error {
 func disconnect(m *Modbus) error {
 	u, err := url.Parse(m.Controller)
 	if err != nil {
-		return err
+		return fmt.Errorf("url parse (%s): %w", m.Controller, err)
 	}
 
 	switch u.Scheme {
@@ -355,7 +355,7 @@ func validateFieldContainers(t []fieldContainer, n string) error {
 
 			// search data type
 			switch item.DataType {
-			case "UINT16", "INT16", "UINT32", "INT32", "UINT64", "INT64", "FLOAT32-IEEE", "FLOAT64-IEEE", "FLOAT32", "FIXED", "UFIXED":
+			case "UINT16", "INT16", "UINT32", "INT32", "UINT64", "INT64", "FLOAT32-IEEE", "FLOAT64-IEEE", "FLOAT32", "FIXED", "UFIXED": //nolint:goconst
 				break
 			default:
 				return fmt.Errorf("invalid data type '%s' in '%s' - '%s'", item.DataType, n, item.Name)
@@ -406,13 +406,13 @@ func removeDuplicates(elements []uint16) []uint16 {
 func readRegisterValues(m *Modbus, rt string, rr registerRange) ([]byte, error) {
 	switch rt {
 	case cDiscreteInputs:
-		return m.client.ReadDiscreteInputs(uint16(rr.address), uint16(rr.length))
+		return m.client.ReadDiscreteInputs(rr.address, rr.length)
 	case cCoils:
-		return m.client.ReadCoils(uint16(rr.address), uint16(rr.length))
+		return m.client.ReadCoils(rr.address, rr.length)
 	case cInputRegisters:
-		return m.client.ReadInputRegisters(uint16(rr.address), uint16(rr.length))
+		return m.client.ReadInputRegisters(rr.address, rr.length)
 	case cHoldingRegisters:
-		return m.client.ReadHoldingRegisters(uint16(rr.address), uint16(rr.length))
+		return m.client.ReadHoldingRegisters(rr.address, rr.length)
 	default:
 		return []byte{}, fmt.Errorf("not Valid function")
 	}
@@ -630,11 +630,11 @@ func scale16toFloat(s float64, v int16) float64 {
 }
 
 func scale32toFloat(s float64, v int32) float64 {
-	return float64(float64(v) * float64(s))
+	return float64(v) * s
 }
 
 func scale64toFloat(s float64, v int64) float64 {
-	return float64(float64(v) * float64(s))
+	return float64(v) * s
 }
 
 func scale16UtoFloat(s float64, v uint16) float64 {
@@ -642,11 +642,11 @@ func scale16UtoFloat(s float64, v uint16) float64 {
 }
 
 func scale32UtoFloat(s float64, v uint32) float64 {
-	return float64(float64(v) * float64(s))
+	return float64(v) * s
 }
 
 func scale64UtoFloat(s float64, v uint64) float64 {
-	return float64(float64(v) * float64(s))
+	return float64(v) * s
 }
 
 func scaleInt16(s float64, v int16) int16 {
@@ -658,11 +658,11 @@ func scaleUint16(s float64, v uint16) uint16 {
 }
 
 func scaleUint32(s float64, v uint32) uint32 {
-	return uint32(float64(v) * float64(s))
+	return uint32(float64(v) * s)
 }
 
 func scaleInt32(s float64, v int32) int32 {
-	return int32(float64(v) * float64(s))
+	return int32(float64(v) * s)
 }
 
 func scaleFloat32(s float64, v float32) float32 {
@@ -674,11 +674,11 @@ func scaleFloat64(s float64, v float64) float64 {
 }
 
 func scaleUint64(s float64, v uint64) uint64 {
-	return uint64(float64(v) * float64(s))
+	return uint64(float64(v) * s)
 }
 
 func scaleInt64(s float64, v int64) int64 {
-	return int64(float64(v) * float64(s))
+	return int64(float64(v) * s)
 }
 
 // Gather implements the plugin interface method for data accumulation

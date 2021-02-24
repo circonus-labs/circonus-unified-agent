@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"path"
@@ -98,7 +98,7 @@ type jolokiaResponse struct {
 func NewClient(url string, config *ClientConfig) (*Client, error) {
 	tlsConfig, err := config.ClientConfig.TLSConfig()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("TLSConfig: %w", err)
 	}
 
 	transport := &http.Transport{
@@ -122,7 +122,7 @@ func (c *Client) read(requests []ReadRequest) ([]ReadResponse, error) {
 	jrequests := makeJolokiaRequests(requests, c.config.ProxyConfig)
 	requestBody, err := json.Marshal(jrequests)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("json marshal: %w", err)
 	}
 
 	requestURL, err := formatReadURL(c.URL, c.config.Username, c.config.Password)
@@ -139,7 +139,7 @@ func (c *Client) read(requests []ReadRequest) ([]ReadResponse, error) {
 
 	resp, err := c.client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("http req do: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -148,13 +148,13 @@ func (c *Client) read(requests []ReadRequest) ([]ReadResponse, error) {
 			c.URL, resp.StatusCode, http.StatusText(resp.StatusCode), http.StatusOK, http.StatusText(http.StatusOK))
 	}
 
-	responseBody, err := ioutil.ReadAll(resp.Body)
+	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("readall: %w", err)
 	}
 
 	var jresponses []jolokiaResponse
-	if err = json.Unmarshal([]byte(responseBody), &jresponses); err != nil {
+	if err = json.Unmarshal(responseBody, &jresponses); err != nil {
 		return nil, fmt.Errorf("Error decoding JSON response: %w: %s", err, responseBody)
 	}
 
@@ -252,7 +252,7 @@ func makeReadResponses(jresponses []jolokiaResponse) []ReadResponse {
 func formatReadURL(configURL, username, password string) (string, error) {
 	parsedURL, err := url.Parse(configURL)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("url parse (%s): %w", configURL, err)
 	}
 
 	readURL := url.URL{

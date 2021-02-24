@@ -3,7 +3,6 @@ package shim
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 
@@ -55,9 +54,9 @@ func LoadConfig(filePath *string) (loaded LoadedConfig, err error) {
 	conf := Config{}
 	if filePath != nil && *filePath != "" {
 
-		b, err := ioutil.ReadFile(*filePath)
+		b, err := os.ReadFile(*filePath)
 		if err != nil {
-			return LoadedConfig{}, err
+			return LoadedConfig{}, fmt.Errorf("readfile (%s): %w", *filePath, err)
 		}
 
 		data = expandEnvVars(b)
@@ -71,7 +70,7 @@ func LoadConfig(filePath *string) (loaded LoadedConfig, err error) {
 
 	md, err := toml.Decode(data, &conf)
 	if err != nil {
-		return LoadedConfig{}, err
+		return LoadedConfig{}, fmt.Errorf("toml decode: %w", err)
 	}
 
 	return createPluginsWithTomlConfig(md, conf)
@@ -100,7 +99,7 @@ func createPluginsWithTomlConfig(md toml.MetaData, conf Config) (LoadedConfig, e
 		if len(primitives) > 0 {
 			primitive := primitives[0]
 			if err := md.PrimitiveDecode(primitive, plugin); err != nil {
-				return loadedConf, err
+				return loadedConf, fmt.Errorf("primitive decode: %w", err)
 			}
 		}
 
@@ -122,7 +121,7 @@ func createPluginsWithTomlConfig(md toml.MetaData, conf Config) (LoadedConfig, e
 				p = processor.Unwrap()
 			}
 			if err := md.PrimitiveDecode(primitive, p); err != nil {
-				return loadedConf, err
+				return loadedConf, fmt.Errorf("primitive decode: %w", err)
 			}
 		}
 		loadedConf.Processor = plugin
@@ -132,14 +131,14 @@ func createPluginsWithTomlConfig(md toml.MetaData, conf Config) (LoadedConfig, e
 	for name, primitives := range conf.Outputs {
 		creator, ok := outputs.Outputs[name]
 		if !ok {
-			return loadedConf, errors.New("unknown output " + name)
+			return loadedConf, fmt.Errorf("unknown output (%s)", name)
 		}
 
 		plugin := creator()
 		if len(primitives) > 0 {
 			primitive := primitives[0]
 			if err := md.PrimitiveDecode(primitive, plugin); err != nil {
-				return loadedConf, err
+				return loadedConf, fmt.Errorf("primitive decode: %w", err)
 			}
 		}
 		loadedConf.Output = plugin

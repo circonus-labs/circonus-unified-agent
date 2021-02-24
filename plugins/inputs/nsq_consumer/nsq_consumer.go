@@ -2,6 +2,7 @@ package nsqconsumer
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
@@ -189,7 +190,7 @@ func (n *NSQConsumer) connect() error {
 		config.MaxInFlight = n.MaxInFlight
 		consumer, err := nsq.NewConsumer(n.Topic, n.Channel, config)
 		if err != nil {
-			return err
+			return fmt.Errorf("new consumer (%s %s): %w", n.Topic, n.Channel, err)
 		}
 		n.consumer = consumer
 	}

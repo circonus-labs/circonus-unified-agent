@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -126,15 +126,15 @@ func (h *GrayLog) Gather(acc cua.Accumulator) error {
 	if h.client.HTTPClient() == nil {
 		tlsCfg, err := h.ClientConfig.TLSConfig()
 		if err != nil {
-			return err
+			return fmt.Errorf("TLSConfig: %w", err)
 		}
 		tr := &http.Transport{
-			ResponseHeaderTimeout: time.Duration(3 * time.Second),
+			ResponseHeaderTimeout: 3 * time.Second,
 			TLSClientConfig:       tlsCfg,
 		}
 		client := &http.Client{
 			Transport: tr,
-			Timeout:   time.Duration(4 * time.Second),
+			Timeout:   4 * time.Second,
 		}
 		h.client.SetHTTPClient(client)
 	}
@@ -176,7 +176,7 @@ func (h *GrayLog) gatherServer(
 	host, port, _ := net.SplitHostPort(requestURL.Host)
 	var dat ResponseMetrics
 	if err := json.Unmarshal([]byte(resp), &dat); err != nil {
-		return err
+		return fmt.Errorf("json unmarshal: %w", err)
 	}
 	for _, item := range dat.Metrics {
 		fields := make(map[string]interface{})
@@ -250,7 +250,7 @@ func (h *GrayLog) sendRequest(serverURL string) (string, float64, error) {
 	}
 	req, err := http.NewRequest(method, requestURL.String(), content)
 	if err != nil {
-		return "", -1, err
+		return "", -1, fmt.Errorf("http new request (%s): %w", requestURL.String(), err)
 	}
 	// Add header parameters
 	for k, v := range headers {
@@ -259,15 +259,15 @@ func (h *GrayLog) sendRequest(serverURL string) (string, float64, error) {
 	start := time.Now()
 	resp, err := h.client.MakeRequest(req)
 	if err != nil {
-		return "", -1, err
+		return "", -1, fmt.Errorf("make request (%s): %w", req.URL.String(), err)
 	}
 
 	defer resp.Body.Close()
 	responseTime := time.Since(start).Seconds()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return string(body), responseTime, err
+		return string(body), responseTime, fmt.Errorf("readall: %w", err)
 	}
 
 	// Process response

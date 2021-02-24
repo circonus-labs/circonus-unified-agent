@@ -4,6 +4,7 @@ package iptables
 
 import (
 	"errors"
+	"fmt"
 	"os/exec"
 	"regexp"
 	"strconv"
@@ -81,7 +82,7 @@ func (ipt *Iptables) chainList(table, chain string) (string, error) {
 	}
 	iptablePath, err := exec.LookPath(binary)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("iptables chainlist lookpath (%s): %w", binary, err)
 	}
 	var args []string
 	name := iptablePath
@@ -95,7 +96,10 @@ func (ipt *Iptables) chainList(table, chain string) (string, error) {
 	args = append(args, "-nvL", chain, "-t", table, "-x")
 	c := exec.Command(name, args...)
 	out, err := c.Output()
-	return string(out), err
+	if err != nil {
+		return string(out), fmt.Errorf("iptables cmd output: %w", err)
+	}
+	return string(out), nil
 }
 
 const measurement = "iptables"

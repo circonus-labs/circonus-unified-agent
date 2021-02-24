@@ -3,7 +3,7 @@ package docker
 import (
 	"context"
 	"crypto/tls"
-	"io/ioutil"
+	"io"
 	"sort"
 	"strings"
 	"testing"
@@ -140,7 +140,7 @@ func TestDockerGatherContainerStats(t *testing.T) {
 		"container_id": "123456789",
 	}
 	nettags = copyTags(tags)
-	nettags["network"] = "total"
+	nettags["network"] = ctotal
 	acc.AssertContainsTaggedFields(t, "docker_container_net", netfields, nettags)
 
 	// test docker_blkio measurement
@@ -154,7 +154,7 @@ func TestDockerGatherContainerStats(t *testing.T) {
 	acc.AssertContainsTaggedFields(t, "docker_container_blkio", blkiofields, blkiotags)
 
 	blkiotags = copyTags(tags)
-	blkiotags["device"] = "total"
+	blkiotags["device"] = ctotal
 	blkiofields = map[string]interface{}{
 		"io_service_bytes_recursive_read": uint64(100),
 		"io_serviced_recursive_write":     uint64(302),
@@ -805,7 +805,7 @@ func TestDockerGatherInfo(t *testing.T) {
 		"docker_data",
 		map[string]interface{}{
 			"used":      int64(17300000000),
-			"total":     int64(107400000000),
+			ctotal:      int64(107400000000),
 			"available": int64(36530000000),
 		},
 		map[string]string{
@@ -819,7 +819,7 @@ func TestDockerGatherInfo(t *testing.T) {
 		"docker_metadata",
 		map[string]interface{}{
 			"used":      int64(20970000),
-			"total":     int64(2146999999),
+			ctotal:      int64(2146999999),
 			"available": int64(2126999999),
 		},
 		map[string]string{
@@ -1040,7 +1040,7 @@ func TestContainerName(t *testing.T) {
 				}
 				client.ContainerStatsF = func(ctx context.Context, containerID string, stream bool) (types.ContainerStats, error) {
 					return types.ContainerStats{
-						Body: ioutil.NopCloser(strings.NewReader(`{"name": "logspout"}`)),
+						Body: io.NopCloser(strings.NewReader(`{"name": "logspout"}`)),
 					}, nil
 				}
 				return &client, nil
@@ -1060,7 +1060,7 @@ func TestContainerName(t *testing.T) {
 				}
 				client.ContainerStatsF = func(ctx context.Context, containerID string, stream bool) (types.ContainerStats, error) {
 					return types.ContainerStats{
-						Body: ioutil.NopCloser(strings.NewReader(`{}`)),
+						Body: io.NopCloser(strings.NewReader(`{}`)),
 					}, nil
 				}
 				return &client, nil

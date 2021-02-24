@@ -178,7 +178,7 @@ func (k *KafkaConsumer) Init() error {
 	config.Version = sarama.V0_10_2_0
 
 	if err := k.SetConfig(config); err != nil {
-		return err
+		return fmt.Errorf("set config: %w", err)
 	}
 
 	switch strings.ToLower(k.Offset) {
@@ -217,7 +217,7 @@ func (k *KafkaConsumer) Start(acc cua.Accumulator) error {
 		k.config,
 	)
 	if err != nil {
-		return err
+		return fmt.Errorf("consumer create: %w", err)
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -368,7 +368,7 @@ func (h *ConsumerGroupHandler) Handle(session sarama.ConsumerGroupSession, msg *
 	metrics, err := h.parser.Parse(msg.Value)
 	if err != nil {
 		h.release()
-		return err
+		return fmt.Errorf("parser parse: %w", err)
 	}
 
 	if len(h.TopicTag) > 0 {

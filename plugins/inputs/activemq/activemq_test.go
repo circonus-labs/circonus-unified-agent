@@ -10,6 +10,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const (
+	localhost = "localhost"
+)
+
 func TestGatherQueuesMetrics(t *testing.T) {
 
 	s := `<queues>
@@ -37,7 +41,7 @@ func TestGatherQueuesMetrics(t *testing.T) {
 	tags := make(map[string]string)
 
 	tags["name"] = "Test"
-	tags["source"] = "localhost"
+	tags["source"] = localhost
 	tags["port"] = "8161"
 
 	records["size"] = 0
@@ -48,7 +52,7 @@ func TestGatherQueuesMetrics(t *testing.T) {
 	var acc testutil.Accumulator
 
 	activeMQ := new(ActiveMQ)
-	activeMQ.Server = "localhost"
+	activeMQ.Server = localhost
 	activeMQ.Port = 8161
 	_ = activeMQ.Init()
 
@@ -84,7 +88,7 @@ func TestGatherTopicsMetrics(t *testing.T) {
 	tags := make(map[string]string)
 
 	tags["name"] = "ActiveMQ.Advisory.MasterBroker "
-	tags["source"] = "localhost"
+	tags["source"] = localhost
 	tags["port"] = "8161"
 
 	records["size"] = 0
@@ -95,7 +99,7 @@ func TestGatherTopicsMetrics(t *testing.T) {
 	var acc testutil.Accumulator
 
 	activeMQ := new(ActiveMQ)
-	activeMQ.Server = "localhost"
+	activeMQ.Server = localhost
 	activeMQ.Port = 8161
 	_ = activeMQ.Init()
 
@@ -118,13 +122,15 @@ func TestGatherSubscribersMetrics(t *testing.T) {
 	records := make(map[string]interface{})
 	tags := make(map[string]string)
 
-	tags["client_id"] = "AAA"
-	tags["subscription_name"] = "AAA"
+	const aaa = "AAA"
+
+	tags["client_id"] = aaa
+	tags["subscription_name"] = aaa
 	tags["connection_id"] = "NOTSET"
-	tags["destination_name"] = "AAA"
+	tags["destination_name"] = aaa
 	tags["selector"] = "AA"
 	tags["active"] = "no"
-	tags["source"] = "localhost"
+	tags["source"] = localhost
 	tags["port"] = "8161"
 
 	records["pending_queue_size"] = 0
@@ -136,7 +142,7 @@ func TestGatherSubscribersMetrics(t *testing.T) {
 	var acc testutil.Accumulator
 
 	activeMQ := new(ActiveMQ)
-	activeMQ.Server = "localhost"
+	activeMQ.Server = localhost
 	activeMQ.Port = 8161
 	_ = activeMQ.Init()
 

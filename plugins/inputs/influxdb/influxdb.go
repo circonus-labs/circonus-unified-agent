@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"sync"
@@ -82,7 +83,7 @@ func (i *InfluxDB) Gather(acc cua.Accumulator) error {
 	if i.client == nil {
 		tlsCfg, err := i.ClientConfig.TLSConfig()
 		if err != nil {
-			return err
+			return fmt.Errorf("TLSConfig: %w", err)
 		}
 		i.client = &http.Client{
 			Transport: &http.Transport{
@@ -161,7 +162,7 @@ func (i *InfluxDB) gatherURL(
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("http new req (%s): %w", url, err)
 	}
 
 	if i.Username != "" || i.Password != "" {
@@ -172,7 +173,7 @@ func (i *InfluxDB) gatherURL(
 
 	resp, err := i.client.Do(req)
 	if err != nil {
-		return err
+		return fmt.Errorf("http do: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -189,7 +190,7 @@ func (i *InfluxDB) gatherURL(
 
 	// Parse beginning of object
 	if t, err := dec.Token(); err != nil {
-		return err
+		return fmt.Errorf("json decoder token: %w", err)
 	} else if t != json.Delim('{') {
 		return errors.New("document root must be a JSON object")
 	}
@@ -205,7 +206,7 @@ func (i *InfluxDB) gatherURL(
 		// so it's discarded.
 		key, err := dec.Token()
 		if err != nil {
-			return err
+			return fmt.Errorf("json decoder token: %w", err)
 		}
 
 		if keyStr, ok := key.(string); ok {

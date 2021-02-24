@@ -2,6 +2,7 @@ package kubeinventory
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/circonus-labs/circonus-unified-agent/plugins/common/tls"
@@ -36,7 +37,7 @@ func newClient(baseURL, namespace, bearerToken string, timeout time.Duration, tl
 		}}},
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("new k8s client: %w", err)
 	}
 
 	return &client{

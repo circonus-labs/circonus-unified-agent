@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
@@ -137,7 +136,7 @@ func (ch *ClickHouse) Start(cua.Accumulator) error {
 	}
 	tlsCfg, err := ch.ClientConfig.TLSConfig()
 	if err != nil {
-		return err
+		return fmt.Errorf("TLSConfig: %w", err)
 	}
 
 	ch.HTTPClient = http.Client{
@@ -168,7 +167,7 @@ func (ch *ClickHouse) Gather(acc cua.Accumulator) (err error) {
 	for _, server := range ch.Servers {
 		u, err := url.Parse(server)
 		if err != nil {
-			return err
+			return fmt.Errorf("url parse (%s): %w", server, err)
 		}
 		switch {
 		case ch.AutoDiscovery:
@@ -583,11 +582,11 @@ func (ch *ClickHouse) execQuery(url *url.URL, query string, i interface{}) error
 	}
 	resp, err := ch.HTTPClient.Do(req)
 	if err != nil {
-		return err
+		return fmt.Errorf("http do: %w", err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode >= 300 {
-		body, _ := ioutil.ReadAll(io.LimitReader(resp.Body, 200))
+		body, _ := io.ReadAll(io.LimitReader(resp.Body, 200))
 		return &clickhouseError{
 			StatusCode: resp.StatusCode,
 			body:       body,
@@ -597,14 +596,14 @@ func (ch *ClickHouse) execQuery(url *url.URL, query string, i interface{}) error
 		Data json.RawMessage
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		return err
+		return fmt.Errorf("json decode: %w", err)
 	}
 	if err := json.Unmarshal(response.Data, i); err != nil {
-		return err
+		return fmt.Errorf("json unmarshal: %w", err)
 	}
 
-	if _, err := io.Copy(ioutil.Discard, resp.Body); err != nil {
-		return err
+	if _, err := io.Copy(io.Discard, resp.Body); err != nil {
+		return fmt.Errorf("io copy: %w", err)
 	}
 	return nil
 }
@@ -617,7 +616,7 @@ func (i *chUInt64) UnmarshalJSON(b []byte) error {
 	b = bytes.TrimSuffix(b, []byte(`"`))
 	v, err := strconv.ParseUint(string(b), 10, 64)
 	if err != nil {
-		return err
+		return fmt.Errorf("parseuint (%s): %w", string(b), err)
 	}
 	*i = chUInt64(v)
 	return nil

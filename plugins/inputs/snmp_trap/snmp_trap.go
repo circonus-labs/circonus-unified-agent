@@ -116,7 +116,7 @@ func realExecCmd(timeout internal.Duration, arg0 string, args ...string) ([]byte
 	cmd.Stdout = &out
 	err := internal.RunTimeout(cmd, timeout.Duration)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("run timeout: %w", err)
 	}
 	return out.Bytes(), nil
 }
@@ -402,7 +402,7 @@ func (s *SnmpTrap) snmptranslate(oid string) (e mibEntry, err error) {
 	scanner := bufio.NewScanner(bytes.NewBuffer(out))
 	ok := scanner.Scan()
 	if err = scanner.Err(); !ok && err != nil {
-		return e, err
+		return e, fmt.Errorf("scaner: %w", err)
 	}
 
 	e.oidText = scanner.Text()

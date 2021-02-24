@@ -1,6 +1,7 @@
 package hddtemp
 
 import (
+	"fmt"
 	"net"
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
@@ -51,7 +52,7 @@ func (h *HDDTemp) Gather(acc cua.Accumulator) error {
 
 	disks, err := h.fetcher.Fetch(h.Address)
 	if err != nil {
-		return err
+		return fmt.Errorf("fetch (%s): %w", h.Address, err)
 	}
 
 	for _, disk := range disks {

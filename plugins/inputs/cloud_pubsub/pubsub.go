@@ -164,7 +164,7 @@ func (ps *PubSub) startReceiver(parentCtx context.Context) error {
 		ps.Log.Info("Subscription pull ended (no error, most likely stopped)")
 	}
 	ccancel()
-	return err
+	return fmt.Errorf("starting receiver: %w", err)
 }
 
 // onMessage handles parsing and adding a received message to the accumulator.
@@ -180,7 +180,7 @@ func (ps *PubSub) onMessage(ctx context.Context, msg message) error {
 		if err != nil {
 			return fmt.Errorf("unable to base64 decode message: %w", err)
 		}
-		data = []byte(strData)
+		data = strData
 	} else {
 		data = msg.Data()
 	}
@@ -188,7 +188,7 @@ func (ps *PubSub) onMessage(ctx context.Context, msg message) error {
 	metrics, err := ps.parser.Parse(data)
 	if err != nil {
 		msg.Ack()
-		return err
+		return fmt.Errorf("parser: %w", err)
 	}
 
 	if len(metrics) == 0 {

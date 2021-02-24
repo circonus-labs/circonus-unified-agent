@@ -31,14 +31,14 @@ func (c *client) init() error {
 	// get session cookie
 	req, err := http.NewRequest("GET", c.baseURL, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("http new req (%s): %w", c.baseURL, err)
 	}
 	if c.username != "" || c.password != "" {
 		req.SetBasicAuth(c.username, c.password)
 	}
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return err
+		return fmt.Errorf("http req: %w", err)
 	}
 	defer resp.Body.Close()
 	for _, cc := range resp.Cookies() {
@@ -68,7 +68,7 @@ func (c *client) doGet(ctx context.Context, url string, v interface{}) error {
 	resp, err := c.httpClient.Do(req.WithContext(ctx))
 	if err != nil {
 		<-c.semaphore
-		return err
+		return fmt.Errorf("http req: %w", err)
 	}
 	defer func() {
 		resp.Body.Close()
@@ -98,7 +98,7 @@ func (c *client) doGet(ctx context.Context, url string, v interface{}) error {
 		}
 	}
 	if err = json.NewDecoder(resp.Body).Decode(v); err != nil {
-		return err
+		return fmt.Errorf("json decode: %w", err)
 	}
 	return nil
 }
@@ -120,7 +120,7 @@ func (e APIError) Error() string {
 func createGetRequest(url string, username, password string, sessionCookie *http.Cookie) (*http.Request, error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("http new req (%s): %w", url, err)
 	}
 	if username != "" || password != "" {
 		req.SetBasicAuth(username, password)

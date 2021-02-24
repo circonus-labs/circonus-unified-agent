@@ -123,14 +123,14 @@ type record struct {
 
 func (rec *record) read(r io.Reader) (err error) {
 	if err = binary.Read(r, binary.BigEndian, &rec.h); err != nil {
-		return err
+		return fmt.Errorf("read: %w", err)
 	}
 	if rec.h.Version != 1 {
 		return fmt.Errorf("fcgi: invalid header version")
 	}
 	n := int(rec.h.ContentLength) + int(rec.h.PaddingLength)
 	if _, err = io.ReadFull(r, rec.buf[:n]); err != nil {
-		return err
+		return fmt.Errorf("readfull: %w", err)
 	}
 	return nil
 }
@@ -146,16 +146,19 @@ func (c *conn) writeRecord(recType recType, reqID uint16, b []byte) error {
 	c.buf.Reset()
 	c.h.init(recType, reqID, len(b))
 	if err := binary.Write(&c.buf, binary.BigEndian, c.h); err != nil {
-		return err
+		return fmt.Errorf("write: %w", err)
 	}
 	if _, err := c.buf.Write(b); err != nil {
-		return err
+		return fmt.Errorf("write: %w", err)
 	}
 	if _, err := c.buf.Write(pad[:c.h.PaddingLength]); err != nil {
-		return err
+		return fmt.Errorf("write: %w", err)
 	}
-	_, err := c.rwc.Write(c.buf.Bytes())
-	return err
+
+	if _, err := c.rwc.Write(c.buf.Bytes()); err != nil {
+		return fmt.Errorf("write: %w", err)
+	}
+	return nil
 }
 
 func (c *conn) writeBeginRequest(reqID uint16, role uint16, flags uint8) error {
@@ -177,13 +180,13 @@ func (c *conn) writePairs(recType recType, reqID uint16, pairs map[string]string
 		n := encodeSize(b, uint32(len(k)))
 		n += encodeSize(b[n:], uint32(len(v)))
 		if _, err := w.Write(b[:n]); err != nil {
-			return err
+			return fmt.Errorf("write: %w", err)
 		}
 		if _, err := w.WriteString(k); err != nil {
-			return err
+			return fmt.Errorf("write: %w", err)
 		}
 		if _, err := w.WriteString(v); err != nil {
-			return err
+			return fmt.Errorf("write: %w", err)
 		}
 	}
 	w.Close()
@@ -233,7 +236,7 @@ type bufWriter struct {
 func (w *bufWriter) Close() error {
 	if err := w.Writer.Flush(); err != nil {
 		w.closer.Close()
-		return err
+		return fmt.Errorf("flush: %w", err)
 	}
 	return w.closer.Close()
 }

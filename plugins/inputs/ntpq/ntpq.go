@@ -186,7 +186,7 @@ func (n *NTPQ) Gather(acc cua.Accumulator) error {
 func (n *NTPQ) runq() ([]byte, error) {
 	bin, err := exec.LookPath("ntpq")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("lookpath (ntpq): %w", err)
 	}
 
 	var cmd *exec.Cmd

@@ -2,6 +2,7 @@ package pgbouncer
 
 import (
 	"bytes"
+	"fmt"
 	"strconv"
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
@@ -50,14 +51,14 @@ func (p *PgBouncer) Gather(acc cua.Accumulator) error {
 
 	rows, err := p.DB.Query(query)
 	if err != nil {
-		return err
+		return fmt.Errorf("db query (%s): %w", query, err)
 	}
 
 	defer rows.Close()
 
 	// grab the column information from the result
 	if columns, err = rows.Columns(); err != nil {
-		return err
+		return fmt.Errorf("row columns: %w", err)
 	}
 
 	for rows.Next() {
@@ -82,7 +83,7 @@ func (p *PgBouncer) Gather(acc cua.Accumulator) error {
 				// Integer fields are returned in pgbouncer 1.12
 				integer, err := strconv.ParseInt(v, 10, 64)
 				if err != nil {
-					return err
+					return fmt.Errorf("parseint (%s): %w", v, err)
 				}
 
 				fields[col] = integer
@@ -93,21 +94,21 @@ func (p *PgBouncer) Gather(acc cua.Accumulator) error {
 
 	err = rows.Err()
 	if err != nil {
-		return err
+		return fmt.Errorf("rows err: %w", err)
 	}
 
 	query = `SHOW POOLS`
 
 	poolRows, err := p.DB.Query(query)
 	if err != nil {
-		return err
+		return fmt.Errorf("db query (%s): %w", query, err)
 	}
 
 	defer poolRows.Close()
 
 	// grab the column information from the result
 	if columns, err = poolRows.Columns(); err != nil {
-		return err
+		return fmt.Errorf("row columns: %w", err)
 	}
 
 	for poolRows.Next() {
@@ -163,9 +164,8 @@ func (p *PgBouncer) parseRow(row scanner, columns []string) (map[string]string, 
 
 	// deconstruct array of variables and send to Scan
 	err := row.Scan(columnVars...)
-
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("row scan: %w", err)
 	}
 	if columnMap["database"] != nil {
 		// extract the database name from the column map
@@ -177,7 +177,7 @@ func (p *PgBouncer) parseRow(row scanner, columns []string) (map[string]string, 
 	var tagAddress string
 	tagAddress, err = p.SanitizedAddress()
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("sanitize addr: %w", err)
 	}
 
 	// Return basic tags and the mapped columns

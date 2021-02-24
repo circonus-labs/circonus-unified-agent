@@ -135,7 +135,7 @@ func (p *Parser) Compile() error {
 	var err error
 	p.g, err = grok.NewWithConfig(&grok.Config{NamedCapturesOnly: true})
 	if err != nil {
-		return err
+		return fmt.Errorf("new grok: %w", err)
 	}
 
 	if p.UniqueTimestamp == "" {
@@ -171,7 +171,7 @@ func (p *Parser) Compile() error {
 	for _, filename := range p.CustomPatternFiles {
 		file, fileErr := os.Open(filename)
 		if fileErr != nil {
-			return fileErr
+			return fmt.Errorf("os open: %w", fileErr)
 		}
 
 		scanner := bufio.NewScanner(bufio.NewReader(file))
@@ -200,7 +200,7 @@ func (p *Parser) ParseLine(line string) (cua.Metric, error) {
 	var patternName string
 	for _, pattern := range p.NamedPatterns {
 		if values, err = p.g.Parse(pattern, line); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("grok parse: %w", err)
 		}
 		if len(values) != 0 {
 			patternName = pattern

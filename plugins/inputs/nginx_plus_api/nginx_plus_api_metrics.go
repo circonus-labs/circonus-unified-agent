@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -70,9 +70,9 @@ func (n *NginxPlusAPI) gatherURL(addr *url.URL, path string) ([]byte, error) {
 	contentType := strings.Split(resp.Header.Get("Content-Type"), ";")[0]
 	switch contentType {
 	case "application/json":
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("readall: %w", err)
 		}
 
 		return body, nil
@@ -90,7 +90,7 @@ func (n *NginxPlusAPI) gatherProcessesMetrics(addr *url.URL, acc cua.Accumulator
 	var processes = &Processes{}
 
 	if err := json.Unmarshal(body, processes); err != nil {
-		return err
+		return fmt.Errorf("json unmarshal: %w", err)
 	}
 
 	acc.AddFields(
@@ -113,7 +113,7 @@ func (n *NginxPlusAPI) gatherConnectionsMetrics(addr *url.URL, acc cua.Accumulat
 	var connections = &Connections{}
 
 	if err := json.Unmarshal(body, connections); err != nil {
-		return err
+		return fmt.Errorf("json unmarshal: %w", err)
 	}
 
 	acc.AddFields(
@@ -139,7 +139,7 @@ func (n *NginxPlusAPI) gatherSslMetrics(addr *url.URL, acc cua.Accumulator) erro
 	var ssl = &Ssl{}
 
 	if err := json.Unmarshal(body, ssl); err != nil {
-		return err
+		return fmt.Errorf("json unmarshal: %w", err)
 	}
 
 	acc.AddFields(
@@ -164,7 +164,7 @@ func (n *NginxPlusAPI) gatherHTTPRequestsMetrics(addr *url.URL, acc cua.Accumula
 	var httpRequests = &HTTPRequests{}
 
 	if err := json.Unmarshal(body, httpRequests); err != nil {
-		return err
+		return fmt.Errorf("json unmarshal: %w", err)
 	}
 
 	acc.AddFields(
@@ -188,7 +188,7 @@ func (n *NginxPlusAPI) gatherHTTPServerZonesMetrics(addr *url.URL, acc cua.Accum
 	var httpServerZones HTTPServerZones
 
 	if err := json.Unmarshal(body, &httpServerZones); err != nil {
-		return err
+		return fmt.Errorf("json unmarshal: %w", err)
 	}
 
 	tags := getTags(addr)
@@ -236,7 +236,7 @@ func (n *NginxPlusAPI) gatherHTTPLocationZonesMetrics(addr *url.URL, acc cua.Acc
 	var httpLocationZones HTTPLocationZones
 
 	if err := json.Unmarshal(body, &httpLocationZones); err != nil {
-		return err
+		return fmt.Errorf("json unmarshal: %w", err)
 	}
 
 	tags := getTags(addr)
@@ -282,7 +282,7 @@ func (n *NginxPlusAPI) gatherHTTPUpstreamsMetrics(addr *url.URL, acc cua.Accumul
 	var httpUpstreams HTTPUpstreams
 
 	if err := json.Unmarshal(body, &httpUpstreams); err != nil {
-		return err
+		return fmt.Errorf("json unmarshal: %w", err)
 	}
 
 	tags := getTags(addr)
@@ -366,7 +366,7 @@ func (n *NginxPlusAPI) gatherHTTPCachesMetrics(addr *url.URL, acc cua.Accumulato
 	var httpCaches HTTPCaches
 
 	if err := json.Unmarshal(body, &httpCaches); err != nil {
-		return err
+		return fmt.Errorf("json unmarshal: %w", err)
 	}
 
 	tags := getTags(addr)
@@ -420,7 +420,7 @@ func (n *NginxPlusAPI) gatherStreamServerZonesMetrics(addr *url.URL, acc cua.Acc
 	var streamServerZones StreamServerZones
 
 	if err := json.Unmarshal(body, &streamServerZones); err != nil {
-		return err
+		return fmt.Errorf("json unmarshal: %w", err)
 	}
 
 	tags := getTags(addr)
@@ -456,7 +456,7 @@ func (n *NginxPlusAPI) gatherResolverZonesMetrics(addr *url.URL, acc cua.Accumul
 	var resolverZones ResolverZones
 
 	if err := json.Unmarshal(body, &resolverZones); err != nil {
-		return err
+		return fmt.Errorf("json unmarshal: %w", err)
 	}
 
 	tags := getTags(addr)
@@ -499,7 +499,7 @@ func (n *NginxPlusAPI) gatherStreamUpstreamsMetrics(addr *url.URL, acc cua.Accum
 	var streamUpstreams StreamUpstreams
 
 	if err := json.Unmarshal(body, &streamUpstreams); err != nil {
-		return err
+		return fmt.Errorf("json unmarshal: %w", err)
 	}
 
 	tags := getTags(addr)

@@ -1,6 +1,7 @@
 package minecraft
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -42,17 +43,17 @@ type connector struct {
 func (c *connector) Connect() (Connection, error) {
 	p, err := strconv.Atoi(c.port)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("atoi (%s): %w", c.port, err)
 	}
 
 	rcon, err := rcon.NewClient(c.hostname, p)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("rcon client: %w", err)
 	}
 
 	_, err = rcon.Authorize(c.password)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("rcon auth: %w", err)
 	}
 
 	return &connection{rcon: rcon}, nil
@@ -70,7 +71,7 @@ type client struct {
 func (c *client) Connect() error {
 	conn, err := c.connector.Connect()
 	if err != nil {
-		return err
+		return fmt.Errorf("connect: %w", err)
 	}
 	c.conn = conn
 	return nil
@@ -87,7 +88,7 @@ func (c *client) Players() ([]string, error) {
 	resp, err := c.conn.Execute("scoreboard players list")
 	if err != nil {
 		c.conn = nil
-		return nil, err
+		return nil, fmt.Errorf("conn execute: %w", err)
 	}
 
 	players := parsePlayers(resp)
@@ -106,7 +107,7 @@ func (c *client) Scores(player string) ([]Score, error) {
 	resp, err := c.conn.Execute("scoreboard players list " + player)
 	if err != nil {
 		c.conn = nil
-		return nil, err
+		return nil, fmt.Errorf("conn execute: %w", err)
 	}
 
 	scores := parseScores(resp)
@@ -121,7 +122,7 @@ type connection struct {
 func (c *connection) Execute(command string) (string, error) {
 	packet, err := c.rcon.Execute(command)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("conn execute: %w", err)
 	}
 	return packet.Body, nil
 }

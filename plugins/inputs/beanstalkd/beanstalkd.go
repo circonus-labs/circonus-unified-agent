@@ -36,7 +36,7 @@ func (b *Beanstalkd) SampleConfig() string {
 func (b *Beanstalkd) Gather(acc cua.Accumulator) error {
 	connection, err := textproto.Dial("tcp", b.Server)
 	if err != nil {
-		return err
+		return fmt.Errorf("dial: %w", err)
 	}
 	defer connection.Close()
 
@@ -171,7 +171,7 @@ func (b *Beanstalkd) gatherTubeStats(connection *textproto.Conn, tube string, ac
 func runQuery(connection *textproto.Conn, cmd string, result interface{}) error {
 	requestID, err := connection.Cmd(cmd)
 	if err != nil {
-		return err
+		return fmt.Errorf("cmd: %w", err)
 	}
 
 	connection.StartResponse(requestID)
@@ -179,17 +179,17 @@ func runQuery(connection *textproto.Conn, cmd string, result interface{}) error 
 
 	status, err := connection.ReadLine()
 	if err != nil {
-		return err
+		return fmt.Errorf("read line: %w", err)
 	}
 
 	size := 0
 	if _, err = fmt.Sscanf(status, "OK %d", &size); err != nil {
-		return err
+		return fmt.Errorf("sscanf: %w", err)
 	}
 
 	body := make([]byte, size+2)
 	if _, err = io.ReadFull(connection.R, body); err != nil {
-		return err
+		return fmt.Errorf("readfull: %w", err)
 	}
 
 	return yaml.Unmarshal(body, result)

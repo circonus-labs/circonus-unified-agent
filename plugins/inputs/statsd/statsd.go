@@ -364,12 +364,12 @@ func (s *Statsd) Start(ac cua.Accumulator) error {
 	if s.isUDP() {
 		address, err := net.ResolveUDPAddr(s.Protocol, s.ServiceAddress)
 		if err != nil {
-			return err
+			return fmt.Errorf("resolve udp (%s): %w", s.ServiceAddress, err)
 		}
 
 		conn, err := net.ListenUDP(s.Protocol, address)
 		if err != nil {
-			return err
+			return fmt.Errorf("listen (%s): %w", address.String(), err)
 		}
 
 		s.Log.Infof("UDP listening on %q", conn.LocalAddr().String())
@@ -383,11 +383,11 @@ func (s *Statsd) Start(ac cua.Accumulator) error {
 	} else {
 		address, err := net.ResolveTCPAddr("tcp", s.ServiceAddress)
 		if err != nil {
-			return err
+			return fmt.Errorf("resolve (%s): %w", s.ServiceAddress, err)
 		}
 		listener, err := net.ListenTCP("tcp", address)
 		if err != nil {
-			return err
+			return fmt.Errorf("listen (%s): %w", address.String(), err)
 		}
 
 		s.Log.Infof("TCP listening on %q", listener.Addr().String())
@@ -422,17 +422,17 @@ func (s *Statsd) tcpListen(listener *net.TCPListener) error {
 			// Accept connection:
 			conn, err := listener.AcceptTCP()
 			if err != nil {
-				return err
+				return fmt.Errorf("accept: %w", err)
 			}
 
 			if s.TCPKeepAlive {
 				if err = conn.SetKeepAlive(true); err != nil {
-					return err
+					return fmt.Errorf("set keep alive: %w", err)
 				}
 
 				if s.TCPKeepAlivePeriod != nil {
 					if err = conn.SetKeepAlivePeriod(s.TCPKeepAlivePeriod.Duration); err != nil {
-						return err
+						return fmt.Errorf("set keep alive period: %w", err)
 					}
 				}
 			}
@@ -471,7 +471,7 @@ func (s *Statsd) udpListen(conn *net.UDPConn) error {
 					s.Log.Errorf("Error reading: %s", err.Error())
 					continue
 				}
-				return err
+				return fmt.Errorf("read: %w", err)
 			}
 			s.UDPPacketsRecv.Incr(1)
 			s.UDPBytesRecv.Incr(int64(n))

@@ -122,7 +122,7 @@ func (r *Disque) gatherServer(addr *url.URL, acc cua.Accumulator) error {
 
 				line, err := rdr.ReadString('\n')
 				if err != nil {
-					return err
+					return fmt.Errorf("read string: %w", err)
 				}
 				if line[0] != '+' {
 					return fmt.Errorf("%s", strings.TrimSpace(line)[1:])
@@ -142,7 +142,7 @@ func (r *Disque) gatherServer(addr *url.URL, acc cua.Accumulator) error {
 
 	line, err := rdr.ReadString('\n')
 	if err != nil {
-		return err
+		return fmt.Errorf("read string: %w", err)
 	}
 
 	if line[0] != '$' {
@@ -165,7 +165,7 @@ func (r *Disque) gatherServer(addr *url.URL, acc cua.Accumulator) error {
 	for read < sz {
 		line, err := rdr.ReadString('\n')
 		if err != nil {
-			return err
+			return fmt.Errorf("read string: %w", err)
 		}
 
 		read += len(line)
@@ -176,7 +176,7 @@ func (r *Disque) gatherServer(addr *url.URL, acc cua.Accumulator) error {
 
 		parts := strings.SplitN(line, ":", 2)
 
-		name := string(parts[0])
+		name := parts[0]
 
 		metric, ok := Tracking[name]
 		if !ok {
@@ -193,7 +193,7 @@ func (r *Disque) gatherServer(addr *url.URL, acc cua.Accumulator) error {
 
 		fval, err := strconv.ParseFloat(val, 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse float (%s): %w", val, err)
 		}
 
 		fields[metric] = fval

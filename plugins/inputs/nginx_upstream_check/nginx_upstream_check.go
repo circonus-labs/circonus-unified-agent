@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -108,7 +107,7 @@ type UpstreamCheckServer struct {
 func (check *UpstreamCheck) createHTTPClient() (*http.Client, error) {
 	tlsConfig, err := check.ClientConfig.TLSConfig()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("TLSConfig: %w", err)
 	}
 
 	client := &http.Client{
@@ -122,7 +121,7 @@ func (check *UpstreamCheck) createHTTPClient() (*http.Client, error) {
 }
 
 // gatherJsonData query the data source and parse the response JSON
-func (check *UpstreamCheck) gatherJSONData(url string, value interface{}) error {
+func (check *UpstreamCheck) gatherJSONData(rurl string, value interface{}) error {
 
 	var method string
 	if check.Method != "" {
@@ -131,9 +130,9 @@ func (check *UpstreamCheck) gatherJSONData(url string, value interface{}) error 
 		method = "GET"
 	}
 
-	request, err := http.NewRequest(method, url, nil)
+	request, err := http.NewRequest(method, rurl, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("http new req (%s): %w", rurl, err)
 	}
 
 	if (check.Username != "") || (check.Password != "") {
@@ -148,19 +147,19 @@ func (check *UpstreamCheck) gatherJSONData(url string, value interface{}) error 
 
 	response, err := check.client.Do(request)
 	if err != nil {
-		return err
+		return fmt.Errorf("http do: %w", err)
 	}
 
 	defer response.Body.Close()
 	if response.StatusCode != http.StatusOK {
 		// ignore the err here; LimitReader returns io.EOF and we're not interested in read errors.
-		body, _ := ioutil.ReadAll(io.LimitReader(response.Body, 200))
-		return fmt.Errorf("%s returned HTTP status %s: %q", url, response.Status, body)
+		body, _ := io.ReadAll(io.LimitReader(response.Body, 200))
+		return fmt.Errorf("%s returned HTTP status %s: %q", rurl, response.Status, body)
 	}
 
 	err = json.NewDecoder(response.Body).Decode(value)
 	if err != nil {
-		return err
+		return fmt.Errorf("json decode: %w", err)
 	}
 
 	return nil
@@ -178,7 +177,7 @@ func (check *UpstreamCheck) Gather(accumulator cua.Accumulator) error {
 
 	statusURL, err := url.Parse(check.URL)
 	if err != nil {
-		return err
+		return fmt.Errorf("url parse (%s): %w", check.URL, err)
 	}
 
 	err = check.gatherStatusData(statusURL.String(), accumulator)

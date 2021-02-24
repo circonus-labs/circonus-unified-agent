@@ -33,12 +33,12 @@ func (*Stats) SampleConfig() string {
 func (s *Stats) Gather(acc cua.Accumulator) error {
 	loadavg, err := load.Avg()
 	if err != nil && !strings.Contains(err.Error(), "not implemented") {
-		return err
+		return fmt.Errorf("load avg: %w", err)
 	}
 
 	numCPUs, err := cpu.Counts(true)
 	if err != nil {
-		return err
+		return fmt.Errorf("cpu counts: %w", err)
 	}
 
 	fields := map[string]interface{}{
@@ -63,7 +63,7 @@ func (s *Stats) Gather(acc cua.Accumulator) error {
 
 	uptime, err := host.Uptime()
 	if err != nil {
-		return err
+		return fmt.Errorf("uptime: %w", err)
 	}
 
 	acc.AddCounter("system", map[string]interface{}{

@@ -1,3 +1,5 @@
+// +build go1.16
+
 package main
 
 import (
@@ -128,13 +130,13 @@ func runAgent(ctx context.Context,
 	c.InputFilters = inputFilters
 	err := c.LoadConfig(*fConfig)
 	if err != nil {
-		return err
+		return fmt.Errorf("loadconfig (%s): %w", *fConfig, err)
 	}
 
 	if *fConfigDirectory != "" {
 		err = c.LoadDirectory(*fConfigDirectory)
 		if err != nil {
-			return err
+			return fmt.Errorf("loaddir (%s): %w", *fConfigDirectory, err)
 		}
 	}
 	if !*fTest && len(c.Outputs) == 0 {
@@ -154,7 +156,7 @@ func runAgent(ctx context.Context,
 
 	ag, err := agent.NewAgent(c)
 	if err != nil {
-		return err
+		return fmt.Errorf("new agent: %w", err)
 	}
 
 	// Setup logging as configured.

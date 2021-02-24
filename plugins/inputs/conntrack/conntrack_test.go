@@ -3,7 +3,6 @@
 package conntrack
 
 import (
-	"io/ioutil"
 	"os"
 	"path"
 	"strconv"
@@ -34,11 +33,11 @@ func TestNoFilesFound(t *testing.T) {
 
 func TestDefaultsUsed(t *testing.T) {
 	defer restoreDflts(dfltFiles, dfltDirs)
-	tmpdir, err := ioutil.TempDir("", "tmp1")
+	tmpdir, err := os.MkdirTemp("", "tmp1")
 	assert.NoError(t, err)
 	defer os.Remove(tmpdir)
 
-	tmpFile, err := ioutil.TempFile(tmpdir, "ip_conntrack_count")
+	tmpFile, err := os.CreateTemp(tmpdir, "ip_conntrack_count")
 	assert.NoError(t, err)
 	defer os.Remove(tmpFile.Name())
 
@@ -47,7 +46,7 @@ func TestDefaultsUsed(t *testing.T) {
 	dfltFiles = []string{fname}
 
 	count := 1234321
-	_ = ioutil.WriteFile(tmpFile.Name(), []byte(strconv.Itoa(count)), 0600)
+	_ = os.WriteFile(tmpFile.Name(), []byte(strconv.Itoa(count)), 0600)
 	c := &Conntrack{}
 	acc := &testutil.Accumulator{}
 
@@ -58,12 +57,12 @@ func TestDefaultsUsed(t *testing.T) {
 
 func TestConfigsUsed(t *testing.T) {
 	defer restoreDflts(dfltFiles, dfltDirs)
-	tmpdir, err := ioutil.TempDir("", "tmp1")
+	tmpdir, err := os.MkdirTemp("", "tmp1")
 	assert.NoError(t, err)
 	defer os.Remove(tmpdir)
 
-	cntFile, _ := ioutil.TempFile(tmpdir, "nf_conntrack_count")
-	maxFile, err := ioutil.TempFile(tmpdir, "nf_conntrack_max")
+	cntFile, _ := os.CreateTemp(tmpdir, "nf_conntrack_count")
+	maxFile, err := os.CreateTemp(tmpdir, "nf_conntrack_max")
 	assert.NoError(t, err)
 	defer os.Remove(cntFile.Name())
 	defer os.Remove(maxFile.Name())
@@ -75,8 +74,8 @@ func TestConfigsUsed(t *testing.T) {
 
 	count := 1234321
 	max := 9999999
-	_ = ioutil.WriteFile(cntFile.Name(), []byte(strconv.Itoa(count)), 0600)
-	_ = ioutil.WriteFile(maxFile.Name(), []byte(strconv.Itoa(max)), 0600)
+	_ = os.WriteFile(cntFile.Name(), []byte(strconv.Itoa(count)), 0600)
+	_ = os.WriteFile(maxFile.Name(), []byte(strconv.Itoa(max)), 0600)
 	c := &Conntrack{}
 	acc := &testutil.Accumulator{}
 

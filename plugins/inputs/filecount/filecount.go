@@ -1,6 +1,7 @@
 package filecount
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"time"
@@ -91,7 +92,7 @@ func (fc *FileCount) nameFilter() fileFilterFunc {
 	return func(f os.FileInfo) (bool, error) {
 		match, err := filepath.Match(fc.Name, f.Name())
 		if err != nil {
-			return false, err
+			return false, fmt.Errorf("path match: %w", err)
 		}
 		return match, nil
 	}
@@ -169,7 +170,7 @@ func (fc *FileCount) count(acc cua.Accumulator, basedir string, glob globpath.Gl
 			if os.IsNotExist(err) {
 				return nil
 			}
-			return err
+			return fmt.Errorf("stat (%s): %w", path, err)
 		}
 		match, err := fc.filter(file)
 		if err != nil {

@@ -44,7 +44,7 @@ type Proc struct {
 func NewProc(pid PID) (Process, error) {
 	process, err := process.NewProcess(int32(pid))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("new process: %w", err)
 	}
 
 	proc := &Proc{
@@ -73,5 +73,10 @@ func (p *Proc) Percent(interval time.Duration) (float64, error) {
 		p.hasCPUTimes = true
 		return 0, fmt.Errorf("must call Percent twice to compute percent cpu")
 	}
-	return cpuPerc, err
+
+	if err != nil {
+		return cpuPerc, fmt.Errorf("process pct: %w", err)
+	}
+
+	return cpuPerc, nil
 }

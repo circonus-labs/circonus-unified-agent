@@ -11,9 +11,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const endpointPath = "/endpoint"
+
 func TestBasic(t *testing.T) {
 	fakeServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/endpoint" {
+		if r.URL.Path == endpointPath {
 			_, _ = w.Write([]byte(basicJSON))
 		} else {
 			w.WriteHeader(http.StatusNotFound)
@@ -22,7 +24,7 @@ func TestBasic(t *testing.T) {
 	defer fakeServer.Close()
 
 	plugin := &influxdb.InfluxDB{
-		URLs: []string{fakeServer.URL + "/endpoint"},
+		URLs: []string{fakeServer.URL + endpointPath},
 	}
 
 	var acc testutil.Accumulator
@@ -39,7 +41,7 @@ func TestBasic(t *testing.T) {
 	}
 	tags := map[string]string{
 		"id":  "ex1",
-		"url": fakeServer.URL + "/endpoint",
+		"url": fakeServer.URL + endpointPath,
 	}
 	acc.AssertContainsTaggedFields(t, "influxdb_foo", fields, tags)
 
@@ -48,7 +50,7 @@ func TestBasic(t *testing.T) {
 	}
 	tags = map[string]string{
 		"id":  "ex2",
-		"url": fakeServer.URL + "/endpoint",
+		"url": fakeServer.URL + endpointPath,
 	}
 	acc.AssertContainsTaggedFields(t, "influxdb_bar", fields, tags)
 
@@ -60,7 +62,7 @@ func TestBasic(t *testing.T) {
 
 func TestInfluxDB(t *testing.T) {
 	fakeInfluxServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/endpoint" {
+		if r.URL.Path == endpointPath {
 			_, _ = w.Write([]byte(influxReturn))
 		} else {
 			w.WriteHeader(http.StatusNotFound)
@@ -69,7 +71,7 @@ func TestInfluxDB(t *testing.T) {
 	defer fakeInfluxServer.Close()
 
 	plugin := &influxdb.InfluxDB{
-		URLs: []string{fakeInfluxServer.URL + "/endpoint"},
+		URLs: []string{fakeInfluxServer.URL + endpointPath},
 	}
 
 	var acc testutil.Accumulator
@@ -108,7 +110,7 @@ func TestInfluxDB(t *testing.T) {
 	}
 
 	tags := map[string]string{
-		"url": fakeInfluxServer.URL + "/endpoint",
+		"url": fakeInfluxServer.URL + endpointPath,
 	}
 	acc.AssertContainsTaggedFields(t, "influxdb_memstats", fields, tags)
 
@@ -120,7 +122,7 @@ func TestInfluxDB(t *testing.T) {
 
 func TestInfluxDB2(t *testing.T) {
 	fakeInfluxServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/endpoint" {
+		if r.URL.Path == endpointPath {
 			_, _ = w.Write([]byte(influxReturn2))
 		} else {
 			w.WriteHeader(http.StatusNotFound)
@@ -129,7 +131,7 @@ func TestInfluxDB2(t *testing.T) {
 	defer fakeInfluxServer.Close()
 
 	plugin := &influxdb.InfluxDB{
-		URLs: []string{fakeInfluxServer.URL + "/endpoint"},
+		URLs: []string{fakeInfluxServer.URL + endpointPath},
 	}
 
 	var acc testutil.Accumulator
@@ -145,7 +147,7 @@ func TestInfluxDB2(t *testing.T) {
 
 func TestErrorHandling(t *testing.T) {
 	badServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/endpoint" {
+		if r.URL.Path == endpointPath {
 			_, _ = w.Write([]byte("not json"))
 		} else {
 			w.WriteHeader(http.StatusNotFound)
@@ -154,7 +156,7 @@ func TestErrorHandling(t *testing.T) {
 	defer badServer.Close()
 
 	plugin := &influxdb.InfluxDB{
-		URLs: []string{badServer.URL + "/endpoint"},
+		URLs: []string{badServer.URL + endpointPath},
 	}
 
 	var acc testutil.Accumulator
@@ -163,7 +165,7 @@ func TestErrorHandling(t *testing.T) {
 
 func TestErrorHandling404(t *testing.T) {
 	badServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/endpoint" {
+		if r.URL.Path == endpointPath {
 			_, _ = w.Write([]byte(basicJSON))
 		} else {
 			w.WriteHeader(http.StatusNotFound)

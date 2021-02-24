@@ -25,12 +25,12 @@ func (*Infiniband) Gather(acc cua.Accumulator) error {
 		for _, port := range devicePorts {
 			portInt, err := strconv.Atoi(port)
 			if err != nil {
-				return err
+				return fmt.Errorf("infiniband atoi (%s): %w", port, err)
 			}
 
 			stats, err := rdmamap.GetRdmaSysfsStats(dev, portInt)
 			if err != nil {
-				return err
+				return fmt.Errorf("infiniband get stats: %w", err)
 			}
 
 			addStats(dev, port, stats, acc)

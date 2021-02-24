@@ -764,7 +764,7 @@ func TestFillFields(t *testing.T) {
 func setupServer(status int, resp string) *httptest.Server { //nolint:unparam
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		// body, err := ioutil.ReadAll(r.Body)
+		// body, err := io.ReadAll(r.Body)
 		// if err == nil {
 		// 	fmt.Println(string(body))
 		// }

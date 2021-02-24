@@ -2,6 +2,7 @@ package collectd
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"collectd.org/api"
@@ -295,7 +296,7 @@ func writeValueList(valueLists []api.ValueList) (*network.Buffer, error) {
 		vl := vl
 		err := buffer.Write(ctx, &vl)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("buffer write: %w", err)
 		}
 	}
 

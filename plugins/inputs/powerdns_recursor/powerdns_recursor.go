@@ -81,19 +81,19 @@ func (p *PowerdnsRecursor) gatherServer(address string, acc cua.Accumulator) err
 
 	laddr, err := net.ResolveUnixAddr("unixgram", recvSocket)
 	if err != nil {
-		return err
+		return fmt.Errorf("resolve (%s): %w", recvSocket, err)
 	}
 	defer os.Remove(recvSocket)
 	raddr, err := net.ResolveUnixAddr("unixgram", address)
 	if err != nil {
-		return err
+		return fmt.Errorf("resolve (%s): %w", address, err)
 	}
 	conn, err := net.DialUnix("unixgram", laddr, raddr)
 	if err != nil {
-		return err
+		return fmt.Errorf("dial (%s  %s): %w", laddr.String(), raddr.String(), err)
 	}
 	if err := os.Chmod(recvSocket, os.FileMode(p.mode)); err != nil {
-		return err
+		return fmt.Errorf("chmod: %w", err)
 	}
 	defer conn.Close()
 
@@ -107,14 +107,14 @@ func (p *PowerdnsRecursor) gatherServer(address string, acc cua.Accumulator) err
 		return nil
 	}
 	if err := rw.Flush(); err != nil {
-		return err
+		return fmt.Errorf("flush: %w", err)
 	}
 
 	// Read data
 	buf := make([]byte, 16384)
 	n, err := rw.Read(buf)
 	if err != nil {
-		return err
+		return fmt.Errorf("read: %w", err)
 	}
 	if n == 0 {
 		return errors.New("no data received")

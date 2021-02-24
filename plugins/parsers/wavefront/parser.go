@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"strconv"
@@ -115,7 +116,7 @@ func (p *PointParser) Parse(buf []byte) ([]cua.Metric, error) {
 		for _, element := range p.Elements {
 			err := element.parse(p, &point)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("parse: %w", err)
 			}
 		}
 
@@ -151,13 +152,13 @@ func (p *PointParser) convertPointToAgentMetric(points []Point) ([]cua.Metric, e
 		fields := make(map[string]interface{})
 		v, err := strconv.ParseFloat(point.Value, 64)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("parse float (%s): %w", point.Value, err)
 		}
 		fields["value"] = v
 
 		m, err := metric.New(point.Name, tags, fields, time.Unix(point.Timestamp, 0))
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("metric new: %w", err)
 		}
 
 		metrics = append(metrics, m)

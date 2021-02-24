@@ -15,6 +15,11 @@ import (
 	"github.com/gopcua/opcua/ua"
 )
 
+const (
+	none = "None"
+	auto = "auto"
+)
+
 // OpcUA type
 type OpcUA struct {
 	Name           string          `toml:"name"`
@@ -181,14 +186,14 @@ func (o *OpcUA) validateEndpoint() error {
 
 	// search security policy type
 	switch o.SecurityPolicy {
-	case "None", "Basic128Rsa15", "Basic256", "Basic256Sha256", "auto":
+	case none, "Basic128Rsa15", "Basic256", "Basic256Sha256", auto:
 		break
 	default:
 		return fmt.Errorf("invalid security type '%s' in '%s'", o.SecurityPolicy, o.Name)
 	}
 	// search security mode type
 	switch o.SecurityMode {
-	case "None", "Sign", "SignAndEncrypt", "auto":
+	case none, "Sign", "SignAndEncrypt", auto:
 		break
 	default:
 		return fmt.Errorf("invalid security type '%s' in '%s'", o.SecurityMode, o.Name)
@@ -261,7 +266,7 @@ func BuildNodeID(tag OPCTag) string {
 func Connect(o *OpcUA) error {
 	u, err := url.Parse(o.Endpoint)
 	if err != nil {
-		return err
+		return fmt.Errorf("url parse (%s): %w", o.Endpoint, err)
 	}
 
 	switch u.Scheme {
@@ -312,7 +317,7 @@ func (o *OpcUA) setupOptions() {
 	}
 
 	if o.Certificate == "" && o.PrivateKey == "" {
-		if o.SecurityPolicy != "None" || o.SecurityMode != "None" {
+		if o.SecurityPolicy != none || o.SecurityMode != none {
 			o.Certificate, o.PrivateKey = generateCert("urn:circonus:gopcua:client", 2048, o.Certificate, o.PrivateKey, (365 * 24 * time.Hour))
 		}
 	}
@@ -354,7 +359,7 @@ func readvalues(ids []*ua.NodeID) []*ua.ReadValueID {
 func disconnect(o *OpcUA) error {
 	u, err := url.Parse(o.Endpoint)
 	if err != nil {
-		return err
+		return fmt.Errorf("url parse (%s): %w", o.Endpoint, err)
 	}
 
 	o.ReadError = 0
@@ -410,8 +415,8 @@ func init() {
 		return &OpcUA{
 			Name:           "localhost",
 			Endpoint:       "opc.tcp://localhost:4840",
-			SecurityPolicy: "auto",
-			SecurityMode:   "auto",
+			SecurityPolicy: auto,
+			SecurityMode:   auto,
 			RequestTimeout: config.Duration(5 * time.Second),
 			ConnectTimeout: config.Duration(10 * time.Second),
 			Certificate:    "/etc/circonus-unified-agent/cert.pem",

@@ -35,7 +35,7 @@ const (
 	maxSampleConst     = 10   // Absolute maximum number of samples regardless of period
 	maxMetadataSamples = 100  // Number of resources to sample for metric metadata
 	maxRealtimeMetrics = 5000 // Absolute maximum metrics per realtime query
-	hwMarkTTL          = time.Duration(4 * time.Hour)
+	hwMarkTTL          = 4 * time.Hour
 )
 
 type queryChunk []types.PerfQuerySpec
@@ -342,7 +342,7 @@ func (e *Endpoint) getMetadata(ctx context.Context, obj *objectRef, sampling int
 	defer cancel1()
 	metrics, err := client.Perf.AvailableMetric(ctx1, obj.ref.Reference(), sampling)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("metadata: %w", err)
 	}
 	return metrics, nil
 }

@@ -9,7 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"testing"
 )
@@ -244,7 +243,7 @@ func TestChildServeCleansUp(t *testing.T) {
 			r *http.Request,
 		) {
 			// block on reading body of request
-			_, err := io.Copy(ioutil.Discard, r.Body)
+			_, err := io.Copy(io.Discard, r.Body)
 			if !errors.Is(err, tt.err) {
 				t.Errorf("Expected %#v, got %#v", tt.err, err)
 			}
@@ -276,7 +275,7 @@ func TestMalformedParams(t *testing.T) {
 		// end of params
 		1, 4, 0, 1, 0, 0, 0, 0,
 	}
-	rw := rwNopCloser{bytes.NewReader(input), ioutil.Discard}
+	rw := rwNopCloser{bytes.NewReader(input), io.Discard}
 	c := newChild(rw, http.DefaultServeMux)
 	c.serve()
 }

@@ -3,6 +3,7 @@ package azurestoragequeue
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/url"
 	"strings"
 	"time"
@@ -55,12 +56,12 @@ func (a *AzureStorageQueue) GetServiceURL() (azqueue.ServiceURL, error) {
 	if a.serviceURL == nil {
 		_url, err := url.Parse("https://" + a.StorageAccountName + ".queue.core.windows.net")
 		if err != nil {
-			return azqueue.ServiceURL{}, err
+			return azqueue.ServiceURL{}, fmt.Errorf("url parse: %w", err)
 		}
 
 		credential, err := azqueue.NewSharedKeyCredential(a.StorageAccountName, a.StorageAccountKey)
 		if err != nil {
-			return azqueue.ServiceURL{}, err
+			return azqueue.ServiceURL{}, fmt.Errorf("shared key creds: %w", err)
 		}
 
 		pipeline := azqueue.NewPipeline(credential, azqueue.PipelineOptions{})
@@ -98,7 +99,7 @@ func (a *AzureStorageQueue) Gather(acc cua.Accumulator) error {
 				Detail: azqueue.ListQueuesSegmentDetails{Metadata: false},
 			})
 		if err != nil {
-			return err
+			return fmt.Errorf("listen queues segment: %w", err)
 		}
 		marker = queuesSegment.NextMarker
 

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
@@ -56,7 +57,7 @@ func (rp *RunningProcessor) Init() error {
 	if p, ok := rp.Processor.(cua.Initializer); ok {
 		err := p.Init()
 		if err != nil {
-			return err
+			return fmt.Errorf("init (processor %s): %w", rp.Config.Name, err)
 		}
 	}
 	return nil

@@ -3,7 +3,6 @@ package ecs
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"time"
@@ -40,7 +39,7 @@ func NewClient(timeout time.Duration, endpoint string, version int) (*Connection
 
 	baseURL, err := url.Parse(endpoint)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("url parse (%s): %w", endpoint, err)
 	}
 
 	c := &http.Client{
@@ -107,13 +106,13 @@ func (c *Connection) Task() (*Task, error) {
 	req, _ := http.NewRequest("GET", c.taskURL, nil)
 	resp, err := c.client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("http new request (%s): %w", c.taskURL, err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		// ignore the err here; LimitReader returns io.EOF and we're not interested in read errors.
-		body, _ := ioutil.ReadAll(io.LimitReader(resp.Body, 200))
+		body, _ := io.ReadAll(io.LimitReader(resp.Body, 200))
 		return nil, fmt.Errorf("%s returned HTTP status %s: %q", c.taskURL, resp.Status, body)
 	}
 
@@ -130,14 +129,14 @@ func (c *Connection) ContainerStats() (map[string]types.StatsJSON, error) {
 	req, _ := http.NewRequest("GET", c.statsURL, nil)
 	resp, err := c.client.Do(req)
 	if err != nil {
-		return map[string]types.StatsJSON{}, err
+		return map[string]types.StatsJSON{}, fmt.Errorf("http new request (%s): %w", c.statsURL, err)
 	}
 
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		// ignore the err here; LimitReader returns io.EOF and we're not interested in read errors.
-		body, _ := ioutil.ReadAll(io.LimitReader(resp.Body, 200))
+		body, _ := io.ReadAll(io.LimitReader(resp.Body, 200))
 		return nil, fmt.Errorf("%s returned HTTP status %s: %q", c.statsURL, resp.Status, body)
 	}
 
@@ -158,11 +157,11 @@ func PollSync(c Client) (*Task, map[string]types.StatsJSON, error) {
 	var err error
 
 	if stats, err = c.ContainerStats(); err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("container stats: %w", err)
 	}
 
 	if task, err = c.Task(); err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("task: %w", err)
 	}
 
 	return task, stats, nil

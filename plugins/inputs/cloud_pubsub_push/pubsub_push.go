@@ -5,7 +5,8 @@ import (
 	"crypto/subtle"
 	"encoding/base64"
 	"encoding/json"
-	"io/ioutil"
+	"fmt"
+	"io"
 	"net/http"
 	"sync"
 	"time"
@@ -143,7 +144,7 @@ func (p *PubSubPush) Start(acc cua.Accumulator) error {
 
 	tlsConf, err := p.ServerConfig.TLSConfig()
 	if err != nil {
-		return err
+		return fmt.Errorf("TLSConfig: %w", err)
 	}
 
 	p.server = &http.Server{
@@ -218,7 +219,7 @@ func (p *PubSubPush) serveWrite(res http.ResponseWriter, req *http.Request) {
 	}
 
 	body := http.MaxBytesReader(res, req.Body, p.MaxBodySize.Size)
-	bytes, err := ioutil.ReadAll(body)
+	bytes, err := io.ReadAll(body)
 	if err != nil {
 		res.WriteHeader(http.StatusRequestEntityTooLarge)
 		return

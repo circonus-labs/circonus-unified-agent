@@ -2,9 +2,9 @@ package rabbitmq
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/circonus-labs/circonus-unified-agent/testutil"
@@ -33,7 +33,7 @@ func TestRabbitMQGeneratesMetrics(t *testing.T) {
 			panic("Cannot handle request")
 		}
 
-		data, err := ioutil.ReadFile(jsonFilePath)
+		data, err := os.ReadFile(jsonFilePath)
 
 		if err != nil {
 			panic(fmt.Sprintf("could not read from data file %s", jsonFilePath))

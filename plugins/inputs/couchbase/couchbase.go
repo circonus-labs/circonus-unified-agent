@@ -1,6 +1,7 @@
 package couchbase
 
 import (
+	"fmt"
 	"regexp"
 	"sync"
 
@@ -63,7 +64,7 @@ func (r *Couchbase) gatherServer(addr string, acc cua.Accumulator, pool *couchba
 	if pool == nil {
 		client, err := couchbase.Connect(addr)
 		if err != nil {
-			return err
+			return fmt.Errorf("connect (%s): %w", addr, err)
 		}
 
 		// `default` is the only possible pool name. It's a
@@ -71,7 +72,7 @@ func (r *Couchbase) gatherServer(addr string, acc cua.Accumulator, pool *couchba
 		// http://stackoverflow.com/a/16990911/17498.
 		p, err := client.GetPool("default")
 		if err != nil {
-			return err
+			return fmt.Errorf("get pool (default): %w", err)
 		}
 		pool = &p
 	}

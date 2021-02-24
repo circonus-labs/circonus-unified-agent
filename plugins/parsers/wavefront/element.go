@@ -102,7 +102,7 @@ func (ep *TimestampParser) parse(p *PointParser, pt *Point) error {
 	tsStr := p.writeBuf.String()
 	ts, err := strconv.ParseInt(tsStr, 10, 64)
 	if err != nil {
-		return err
+		return fmt.Errorf("parse int (%s): %w", tsStr, err)
 	}
 	return setTimestamp(pt, ts, len(tsStr))
 }
@@ -135,7 +135,7 @@ func (ep *LoopedParser) parse(p *PointParser, pt *Point) error {
 	for {
 		err := ep.wrappedParser.parse(p, pt)
 		if err != nil {
-			return err
+			return fmt.Errorf("parser: %w", err)
 		}
 		err = ep.wsParser.parse(p, pt)
 		if errors.Is(err, ErrEOF) {

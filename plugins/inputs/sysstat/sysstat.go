@@ -233,7 +233,7 @@ func (s *Sysstat) parse(acc cua.Accumulator, option string, ts time.Time) error 
 	cmd = withCLocale(cmd)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		return err
+		return fmt.Errorf("sysstat cmd: %w", err)
 	}
 	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("running command '%s' failed: %w", strings.Join(cmd.Args, " "), err)
@@ -256,13 +256,13 @@ func (s *Sysstat) parse(acc cua.Accumulator, option string, ts time.Time) error 
 			break
 		}
 		if err != nil {
-			return err
+			return fmt.Errorf("sysstat read csv: %w", err)
 		}
 
 		device := record[3]
 		value, err := strconv.ParseFloat(record[5], 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("sysstat parsefloat (%s): %w", record[5], err)
 		}
 
 		tags := map[string]string{}

@@ -92,7 +92,7 @@ func (a *Aerospike) Gather(acc cua.Accumulator) error {
 	if !a.initialized {
 		tlsConfig, err := a.ClientConfig.TLSConfig()
 		if err != nil {
-			return err
+			return fmt.Errorf("TLSConfig: %w", err)
 		}
 		if tlsConfig == nil && (a.EnableTLS || a.EnableSSL) {
 			tlsConfig = &tls.Config{MinVersion: tls.VersionTLS12}
@@ -130,7 +130,7 @@ func (a *Aerospike) Gather(acc cua.Accumulator) error {
 func (a *Aerospike) gatherServer(hostPort string, acc cua.Accumulator) error {
 	host, port, err := net.SplitHostPort(hostPort)
 	if err != nil {
-		return err
+		return fmt.Errorf("split host (%s): %w", hostPort, err)
 	}
 
 	iport, err := strconv.Atoi(port)
@@ -144,7 +144,7 @@ func (a *Aerospike) gatherServer(hostPort string, acc cua.Accumulator) error {
 	policy.TlsConfig = a.tlsConfig
 	c, err := as.NewClientWithPolicy(policy, host, iport)
 	if err != nil {
-		return err
+		return fmt.Errorf("new client with policy: %w", err)
 	}
 	defer c.Close()
 
@@ -224,7 +224,7 @@ func (a *Aerospike) gatherServer(hostPort string, acc cua.Accumulator) error {
 func (a *Aerospike) getNodeInfo(n *as.Node) (map[string]string, error) {
 	stats, err := as.RequestNodeStats(n)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("request node stats: %w", err)
 	}
 
 	return stats, nil
@@ -249,7 +249,7 @@ func (a *Aerospike) getNamespaces(n *as.Node) ([]string, error) {
 	if len(a.Namespaces) == 0 {
 		info, err := as.RequestNodeInfo(n, "namespaces")
 		if err != nil {
-			return namespaces, err
+			return namespaces, fmt.Errorf("request node info: %w", err)
 		}
 		namespaces = strings.Split(info["namespaces"], ";")
 	} else {
@@ -262,10 +262,10 @@ func (a *Aerospike) getNamespaces(n *as.Node) ([]string, error) {
 func (a *Aerospike) getNamespaceInfo(namespace string, n *as.Node) (map[string]string, error) {
 	stats, err := as.RequestNodeInfo(n, "namespace/"+namespace)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("request node info: %w", err)
 	}
 
-	return stats, err
+	return stats, nil
 }
 func (a *Aerospike) parseNamespaceInfo(stats map[string]string, hostPort string, namespace string, nodeName string, acc cua.Accumulator) {
 
@@ -294,7 +294,7 @@ func (a *Aerospike) getSets(n *as.Node) ([]string, error) {
 	if len(a.Sets) == 0 {
 		stats, err := as.RequestNodeInfo(n, "sets")
 		if err != nil {
-			return namespaceSets, err
+			return namespaceSets, fmt.Errorf("request node info: %w", err)
 		}
 
 		stat := strings.Split(stats["sets"], ";")
@@ -329,7 +329,7 @@ func (a *Aerospike) getSets(n *as.Node) ([]string, error) {
 func (a *Aerospike) getSetInfo(namespaceSet string, n *as.Node) (map[string]string, error) {
 	stats, err := as.RequestNodeInfo(n, "sets/"+namespaceSet)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("request node info: %w", err)
 	}
 	return stats, nil
 }
@@ -388,7 +388,7 @@ func (a *Aerospike) getHistogram(namespace string, set string, histogramType str
 
 	stats, err := as.RequestNodeInfo(n, queryArg)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("request node info: %w", err)
 	}
 	return stats, nil
 

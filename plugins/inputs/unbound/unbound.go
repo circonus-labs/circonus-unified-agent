@@ -131,7 +131,7 @@ func (s *Unbound) Gather(acc cua.Accumulator) error {
 	statExcluded := []string{"histogram.*"}
 	filterExcluded, err := filter.Compile(statExcluded)
 	if err != nil {
-		return err
+		return fmt.Errorf("filter compile: %w", err)
 	}
 
 	out, err := s.run(s.Binary, s.Timeout, s.UseSudo, s.Server, s.ThreadAsTag, s.ConfigFile)

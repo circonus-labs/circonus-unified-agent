@@ -5,14 +5,15 @@ package circonus
 import (
 	"crypto/x509"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	cgm "github.com/circonus-labs/circonus-gometrics/v3"
+	circonusgometrics "github.com/circonus-labs/circonus-gometrics/v3"
 	"github.com/circonus-labs/circonus-unified-agent/config"
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	inter "github.com/circonus-labs/circonus-unified-agent/internal"
@@ -26,19 +27,19 @@ const (
 
 // Circonus values are used to output data to the Circonus platform.
 type Circonus struct {
-	Broker           string `toml:"broker"`
-	APIURL           string `toml:"api_url"`
-	APIToken         string `toml:"api_token"`
-	APIApp           string `toml:"api_app"`
-	APITLSCA         string `toml:"api_tls_ca"`
-	OneCheck         bool   `toml:"one_check"`
-	CGMFlushInterval string `toml:"cgm_flush_interval"`
-	CheckNamePrefix  string `toml:"check_name_prefix"`
-	DebugCGM         bool   `toml:"debug_cgm"`
-	DebugMetrics     bool   `toml:"debug_metrics"`
-	apicfg           apiclient.Config
-	checks           map[string]*cgm.CirconusMetrics
-	Log              cua.Logger
+	Broker   string `toml:"broker"`
+	APIURL   string `toml:"api_url"`
+	APIToken string `toml:"api_token"`
+	APIApp   string `toml:"api_app"`
+	APITLSCA string `toml:"api_tls_ca"`
+	OneCheck bool   `toml:"one_check"`
+	// CGMFlushInterval string `toml:"cgm_flush_interval"`
+	CheckNamePrefix string `toml:"check_name_prefix"`
+	DebugCGM        bool   `toml:"debug_cgm"`
+	DebugMetrics    bool   `toml:"debug_metrics"`
+	apicfg          apiclient.Config
+	checks          map[string]*cgm.CirconusMetrics
+	Log             cua.Logger
 }
 
 // Init performs initialization of a Circonus client.
@@ -63,7 +64,7 @@ func (c *Circonus) Init() error {
 
 	if c.APITLSCA != "" {
 		cp := x509.NewCertPool()
-		cert, err := ioutil.ReadFile(c.APITLSCA)
+		cert, err := os.ReadFile(c.APITLSCA)
 		if err != nil {
 			return fmt.Errorf("unable to load api ca file (%s): %w", c.APITLSCA, err)
 		}
@@ -85,15 +86,15 @@ func (c *Circonus) Init() error {
 		c.CheckNamePrefix = hn
 	}
 
-	if c.CGMFlushInterval != "" {
-		interval, err := time.ParseDuration(c.CGMFlushInterval)
-		if err != nil {
-			return fmt.Errorf("invalid cgm flush interval (%s): %w", c.CGMFlushInterval, err)
-		}
-		if interval == time.Duration(0) {
-			return fmt.Errorf("invalid cgm flush interval (%s), must be >0", c.CGMFlushInterval)
-		}
-	}
+	// if c.CGMFlushInterval != "" {
+	// 	interval, err := time.ParseDuration(c.CGMFlushInterval)
+	// 	if err != nil {
+	// 		return fmt.Errorf("invalid cgm flush interval (%s): %w", c.CGMFlushInterval, err)
+	// 	}
+	// 	if interval == time.Duration(0) {
+	// 		return fmt.Errorf("invalid cgm flush interval (%s), must be >0", c.CGMFlushInterval)
+	// 	}
+	// }
 
 	return nil
 }
@@ -201,6 +202,16 @@ func (c *Circonus) Write(metrics []cua.Metric) error {
 	defaultDest.RecordValue(metricVolume, float64(numMetrics))
 	c.Log.Debugf("queued %d metrics for submission", numMetrics)
 
+	var wg sync.WaitGroup
+	wg.Add(len(c.checks))
+	for _, dest := range c.checks {
+		go func(d *circonusgometrics.CirconusMetrics) {
+			defer wg.Done()
+			d.Flush()
+		}(dest)
+	}
+	wg.Wait()
+
 	return nil
 }
 
@@ -283,9 +294,10 @@ func (c *Circonus) initCheck(id, name string) error {
 	if c.DebugCGM {
 		cfg.Log = logshim{logh: c.Log}
 	}
-	if c.CGMFlushInterval != "" {
-		cfg.Interval = c.CGMFlushInterval
-	}
+	cfg.Interval = "0"
+	// if c.CGMFlushInterval != "" {
+	// 	cfg.Interval = c.CGMFlushInterval
+	// }
 	cfg.CheckManager.API = c.apicfg
 	if c.Broker != "" {
 		cfg.CheckManager.Broker.ID = c.Broker

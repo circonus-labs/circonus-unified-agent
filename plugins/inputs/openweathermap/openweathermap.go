@@ -158,7 +158,7 @@ func (n *OpenWeatherMap) gatherURL(addr string) (*Status, error) {
 
 	mediaType, _, err := mime.ParseMediaType(resp.Header.Get("Content-Type"))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("parse media type (%s): %w", resp.Header.Get("Content-Type"), err)
 	}
 
 	if mediaType != "application/json" {
@@ -314,7 +314,7 @@ func (n *OpenWeatherMap) Init() error {
 	var err error
 	n.baseURL, err = url.Parse(n.BaseURL)
 	if err != nil {
-		return err
+		return fmt.Errorf("url parse (%s): %w", n.BaseURL, err)
 	}
 
 	// Create an HTTP client that is re-used for each

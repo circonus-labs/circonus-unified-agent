@@ -18,7 +18,7 @@ func (j *JSON) Decode(octets []byte) ([]codec.Span, error) {
 	var spans []span
 	err := json.Unmarshal(octets, &spans)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("json unmarshal: %w", err)
 	}
 
 	res := make([]codec.Span, len(spans))
@@ -224,14 +224,14 @@ func TraceIDFromString(s string) (string, error) {
 	case len(s) > 16:
 		hiLen := len(s) - 16
 		if hi, err = strconv.ParseUint(s[0:hiLen], 16, 64); err != nil {
-			return "", err
+			return "", fmt.Errorf("parseuint (%s): %w", s[0:hiLen], err)
 		}
 		if lo, err = strconv.ParseUint(s[hiLen:], 16, 64); err != nil {
-			return "", err
+			return "", fmt.Errorf("parseuint (%s): %w", s[hiLen:], err)
 		}
 	default:
 		if lo, err = strconv.ParseUint(s, 16, 64); err != nil {
-			return "", err
+			return "", fmt.Errorf("parseuint (%s): %w", s, err)
 		}
 	}
 	if hi == 0 {
@@ -247,7 +247,7 @@ func IDFromString(s string) (string, error) {
 	}
 	id, err := strconv.ParseUint(s, 16, 64)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("parseuint (%s): %w", s, err)
 	}
 	return strconv.FormatUint(id, 16), nil
 }

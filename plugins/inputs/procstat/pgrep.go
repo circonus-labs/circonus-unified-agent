@@ -2,7 +2,7 @@ package procstat
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -25,13 +25,13 @@ func NewPgrep() (PIDFinder, error) {
 
 func (pg *Pgrep) PidFile(path string) ([]PID, error) {
 	var pids []PID
-	pidString, err := ioutil.ReadFile(path)
+	pidString, err := os.ReadFile(path)
 	if err != nil {
 		return pids, fmt.Errorf("Failed to read pidfile (%s): %w", path, err)
 	}
 	pid, err := strconv.ParseInt(strings.TrimSpace(string(pidString)), 10, 32)
 	if err != nil {
-		return pids, err
+		return pids, fmt.Errorf("parseint (%s): %w", strings.TrimSpace(string(pidString)), err)
 	}
 	pids = append(pids, PID(pid))
 	return pids, nil
@@ -72,7 +72,7 @@ func run(path string, args []string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error running %s: %w", path, err)
 	}
-	return string(out), err
+	return string(out), nil
 }
 
 func parseOutput(out string) ([]PID, error) {
@@ -81,7 +81,7 @@ func parseOutput(out string) ([]PID, error) {
 	for _, field := range fields {
 		pid, err := strconv.ParseInt(field, 10, 32)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("parseint (%s): %w", field, err)
 		}
 		pids = append(pids, PID(pid))
 	}

@@ -1,6 +1,7 @@
 package kafka
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/Shopify/sarama"
@@ -62,7 +63,7 @@ func (k *Config) SetConfig(config *sarama.Config) error {
 	if k.Version != "" {
 		version, err := sarama.ParseKafkaVersion(k.Version)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse kafka ver (%s): %w", k.Version, err)
 		}
 
 		config.Version = version
@@ -78,7 +79,7 @@ func (k *Config) SetConfig(config *sarama.Config) error {
 
 	tlsConfig, err := k.ClientConfig.TLSConfig()
 	if err != nil {
-		return err
+		return fmt.Errorf("TLSConfig: %w", err)
 	}
 
 	if tlsConfig != nil {

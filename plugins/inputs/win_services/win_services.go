@@ -73,7 +73,7 @@ type MgProvider struct {
 func (rmr *MgProvider) Connect() (WinServiceManager, error) {
 	scmgr, err := mgr.Connect()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("win_service connecct: %w", err)
 	}
 	return &WinSvcMgr{scmgr}, nil
 }

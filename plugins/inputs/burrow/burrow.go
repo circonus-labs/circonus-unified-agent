@@ -201,15 +201,15 @@ func (b *burrow) compileGlobs() error {
 	// compile glob patterns
 	b.filterClusters, err = filter.NewIncludeExcludeFilter(b.ClustersInclude, b.ClustersExclude)
 	if err != nil {
-		return err
+		return fmt.Errorf("cluster filters: %w", err)
 	}
 	b.filterGroups, err = filter.NewIncludeExcludeFilter(b.GroupsInclude, b.GroupsExclude)
 	if err != nil {
-		return err
+		return fmt.Errorf("group filters: %w", err)
 	}
 	b.filterTopics, err = filter.NewIncludeExcludeFilter(b.TopicsInclude, b.TopicsExclude)
 	if err != nil {
-		return err
+		return fmt.Errorf("topic filters: %w", err)
 	}
 	return nil
 }
@@ -217,7 +217,7 @@ func (b *burrow) compileGlobs() error {
 func (b *burrow) createClient() (*http.Client, error) {
 	tlsCfg, err := b.ClientConfig.TLSConfig()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("TLSConfig: %w", err)
 	}
 
 	client := &http.Client{
@@ -233,7 +233,7 @@ func (b *burrow) createClient() (*http.Client, error) {
 func (b *burrow) getResponse(u fmt.Stringer) (*apiResponse, error) {
 	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("http new req (%s): %w", u.String(), err)
 	}
 	if b.Username != "" {
 		req.SetBasicAuth(b.Username, b.Password)
@@ -241,7 +241,7 @@ func (b *burrow) getResponse(u fmt.Stringer) (*apiResponse, error) {
 
 	res, err := b.client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("http req do: %w", err)
 	}
 
 	defer res.Body.Close()

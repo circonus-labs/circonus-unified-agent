@@ -104,7 +104,7 @@ func NewClient(ctx context.Context, u *url.URL, vs *VSphere) (*Client, error) {
 
 	tlsCfg, err := vs.ClientConfig.TLSConfig()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("TLSConfig: %w", err)
 	}
 	// Use a default TLS config if it's missing
 	if tlsCfg == nil {
@@ -126,7 +126,7 @@ func NewClient(ctx context.Context, u *url.URL, vs *VSphere) (*Client, error) {
 	// since it might fail on missing CA chains otherwise.
 	if vs.TLSCA != "" {
 		if err := soapClient.SetRootCAs(vs.TLSCA); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("set root CAs: %w", err)
 		}
 	}
 
@@ -134,7 +134,7 @@ func NewClient(ctx context.Context, u *url.URL, vs *VSphere) (*Client, error) {
 	defer cancel1()
 	vimClient, err := vim25.NewClient(ctx1, soapClient)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("new vim25 client: %w", err)
 	}
 	sm := session.NewManager(vimClient)
 
@@ -143,7 +143,7 @@ func NewClient(ctx context.Context, u *url.URL, vs *VSphere) (*Client, error) {
 		ctx2, cancel2 := context.WithTimeout(ctx, vs.Timeout.Duration)
 		defer cancel2()
 		if err := sm.LoginExtensionByCertificate(ctx2, vs.TLSKey); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("login by cert: %w", err)
 		}
 	}
 
@@ -156,7 +156,7 @@ func NewClient(ctx context.Context, u *url.URL, vs *VSphere) (*Client, error) {
 	// Only login if the URL contains user information.
 	if u.User != nil {
 		if err := c.Login(ctx, u.User); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("login: %w", err)
 		}
 	}
 
@@ -165,7 +165,7 @@ func NewClient(ctx context.Context, u *url.URL, vs *VSphere) (*Client, error) {
 
 	v, err := m.CreateContainerView(ctx, c.ServiceContent.RootFolder, []string{}, true)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("create container view: %w", err)
 	}
 
 	p := performance.NewManager(c.Client)
@@ -223,7 +223,7 @@ func (c *Client) GetServerTime(ctx context.Context) (time.Time, error) {
 	defer cancel()
 	t, err := methods.GetCurrentTime(ctx, c.Client)
 	if err != nil {
-		return time.Time{}, err
+		return time.Time{}, fmt.Errorf("get curr time: %w", err)
 	}
 	return *t, nil
 }
@@ -264,7 +264,7 @@ func (c *Client) GetMaxQueryMetrics(ctx context.Context) (int, error) {
 	c.log.Debugf("vCenter version is: %s", ver)
 	major, err := strconv.Atoi(parts[0])
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("atoi (%s): %w", parts[0], err)
 	}
 	if major < 6 || major == 6 && parts[1] == "0" {
 		return 64, nil
@@ -278,7 +278,7 @@ func (c *Client) QueryMetrics(ctx context.Context, pqs []types.PerfQuerySpec) ([
 	defer cancel1()
 	metrics, err := c.Perf.Query(ctx1, pqs)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("query metrics: %w", err)
 	}
 
 	ctx2, cancel2 := context.WithTimeout(ctx, c.Timeout)
@@ -313,7 +313,7 @@ func (c *Client) GetCustomFields(ctx context.Context) (map[int32]string, error) 
 	cfm := object.NewCustomFieldsManager(c.Client.Client)
 	fields, err := cfm.Field(ctx1)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("custom field: %w", err)
 	}
 	r := make(map[int32]string)
 	for _, f := range fields {

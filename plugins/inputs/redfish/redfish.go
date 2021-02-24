@@ -3,7 +3,7 @@ package redfish
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -153,12 +153,12 @@ func (r *Redfish) Init() error {
 	var err error
 	r.baseURL, err = url.Parse(r.Address)
 	if err != nil {
-		return err
+		return fmt.Errorf("url parse (%s): %w", r.Address, err)
 	}
 
 	tlsCfg, err := r.ClientConfig.TLSConfig()
 	if err != nil {
-		return err
+		return fmt.Errorf("TLSConfig: %w", err)
 	}
 
 	r.client = http.Client{
@@ -175,7 +175,7 @@ func (r *Redfish) Init() error {
 func (r *Redfish) getData(url string, payload interface{}) error {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("http new req (%s): %w", url, err)
 	}
 
 	req.SetBasicAuth(r.Username, r.Password)
@@ -184,7 +184,7 @@ func (r *Redfish) getData(url string, payload interface{}) error {
 	req.Header.Set("OData-Version", "4.0")
 	resp, err := r.client.Do(req)
 	if err != nil {
-		return err
+		return fmt.Errorf("http do: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -194,9 +194,9 @@ func (r *Redfish) getData(url string, payload interface{}) error {
 			http.StatusText(resp.StatusCode))
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return fmt.Errorf("readall: %w", err)
 	}
 
 	err = json.Unmarshal(body, &payload)

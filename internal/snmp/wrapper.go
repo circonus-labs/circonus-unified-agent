@@ -39,7 +39,10 @@ func (gsw GosnmpWrapper) Walk(oid string, fn gosnmp.WalkFunc) error {
 			return fmt.Errorf("reconnecting: %w", err)
 		}
 	}
-	return err
+	if err != nil {
+		return fmt.Errorf("walk: %w", err)
+	}
+	return nil
 }
 
 // Get wraps GoSNMP.GET().
@@ -56,7 +59,10 @@ func (gsw GosnmpWrapper) Get(oids []string) (*gosnmp.SnmpPacket, error) {
 			return nil, fmt.Errorf("reconnecting: %w", err)
 		}
 	}
-	return nil, err
+	if err != nil {
+		return nil, fmt.Errorf("get: %w", err)
+	}
+	return nil, nil
 }
 
 func NewWrapper(s ClientConfig) (GosnmpWrapper, error) {
@@ -153,7 +159,7 @@ func (gsw *GosnmpWrapper) SetAgent(agent string) error {
 
 	u, err := url.Parse(agent)
 	if err != nil {
-		return err
+		return fmt.Errorf("url parse (%s): %w", agent, err)
 	}
 
 	switch u.Scheme {

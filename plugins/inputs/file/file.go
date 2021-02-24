@@ -2,7 +2,7 @@ package file
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 
@@ -61,7 +61,7 @@ func (f *File) Description() string {
 func (f *File) Init() error {
 	var err error
 	f.decoder, err = encoding.NewDecoder(f.CharacterEncoding)
-	return err
+	return fmt.Errorf("new decoder: %w", err)
 }
 
 func (f *File) Gather(acc cua.Accumulator) error {
@@ -110,14 +110,14 @@ func (f *File) refreshFilePaths() error {
 func (f *File) readMetric(filename string) ([]cua.Metric, error) {
 	file, err := os.Open(filename)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("open (%s): %w", filename, err)
 	}
 	defer file.Close()
 
 	r, _ := utfbom.Skip(f.decoder.Reader(file))
-	fileContents, err := ioutil.ReadAll(r)
+	fileContents, err := io.ReadAll(r)
 	if err != nil {
-		return nil, fmt.Errorf("E! Error file: %v could not be read, %w", filename, err)
+		return nil, fmt.Errorf("E! Error file: %s could not be read, %w", filename, err)
 	}
 	return f.parser.Parse(fileContents)
 }

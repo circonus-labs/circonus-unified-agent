@@ -95,7 +95,7 @@ func (s *Sensors) parse(acc cua.Accumulator) error {
 			}
 			fieldValue, err := strconv.ParseFloat(strings.TrimSpace(splitted[1]), 64)
 			if err != nil {
-				return err
+				return fmt.Errorf("sensors parsefloat (%s): %w", strings.TrimSpace(splitted[1]), err)
 			}
 			fields[fieldName] = fieldValue
 		}

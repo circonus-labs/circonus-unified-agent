@@ -12,12 +12,12 @@ import (
 func newMetric(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	var name starlark.String
 	if err := starlark.UnpackPositionalArgs("Metric", args, kwargs, 1, &name); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("starlark unpack positional args: %w", err)
 	}
 
 	m, err := metric.New(string(name), nil, nil, time.Now())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("new metric: %w", err)
 	}
 
 	return &Metric{metric: m}, nil
@@ -26,7 +26,7 @@ func newMetric(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple
 func deepcopy(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	var sm *Metric
 	if err := starlark.UnpackPositionalArgs("deepcopy", args, kwargs, 1, &sm); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("starlark unpack positional args: %w", err)
 	}
 
 	dup := sm.metric.Copy()
@@ -39,7 +39,7 @@ func deepcopy(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple,
 func catch(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	var fn starlark.Callable
 	if err := starlark.UnpackArgs("catch", args, kwargs, "fn", &fn); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("starlark unpack args: %w", err)
 	}
 	if _, err := starlark.Call(thread, fn, nil, nil); err != nil {
 		return starlark.String(err.Error()), nil
@@ -176,7 +176,7 @@ func dictUpdate(b *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tupl
 			// Iterate over dict's key/value pairs, not just keys.
 			for _, item := range updates.Items() {
 				if err := dict.SetKey(item[0], item[1]); err != nil {
-					return nil, err // dict is frozen
+					return nil, fmt.Errorf("dict frozen: %w", err) // dict is frozen
 				}
 			}
 		default:
@@ -204,7 +204,7 @@ func dictUpdate(b *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tupl
 				iter2.Next(&k)
 				iter2.Next(&v)
 				if err := dict.SetKey(k, v); err != nil {
-					return nil, err
+					return nil, fmt.Errorf("set key %s: %w", k, err)
 				}
 			}
 		}
@@ -214,7 +214,7 @@ func dictUpdate(b *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tupl
 	before := starlark.Len(dict)
 	for _, pair := range kwargs {
 		if err := dict.SetKey(pair[0], pair[1]); err != nil {
-			return nil, err // dict is frozen
+			return nil, fmt.Errorf("dict frozen: %w", err) // dict is frozen
 		}
 	}
 	// In the common case, each kwarg will add another dict entry.

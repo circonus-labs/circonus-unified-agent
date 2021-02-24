@@ -155,7 +155,7 @@ func (n *natsConsumer) Start(acc cua.Accumulator) error {
 	if n.Secure {
 		tlsConfig, err := n.ClientConfig.TLSConfig()
 		if err != nil {
-			return err
+			return fmt.Errorf("TLSConfig: %w", err)
 		}
 
 		options = append(options, nats.Secure(tlsConfig))
@@ -164,7 +164,7 @@ func (n *natsConsumer) Start(acc cua.Accumulator) error {
 	if n.conn == nil || n.conn.IsClosed() {
 		n.conn, connectErr = nats.Connect(strings.Join(n.Servers, ","), options...)
 		if connectErr != nil {
-			return connectErr
+			return fmt.Errorf("net connect (%s): %w", strings.Join(n.Servers, ","), connectErr)
 		}
 
 		// Setup message and error channels
@@ -176,13 +176,13 @@ func (n *natsConsumer) Start(acc cua.Accumulator) error {
 				n.in <- m
 			})
 			if err != nil {
-				return err
+				return fmt.Errorf("queue subscribe: %w", err)
 			}
 
 			// set the subscription pending limits
 			err = sub.SetPendingLimits(n.PendingMessageLimit, n.PendingBytesLimit)
 			if err != nil {
-				return err
+				return fmt.Errorf("set sub pending limits: %w", err)
 			}
 
 			n.subs = append(n.subs, sub)

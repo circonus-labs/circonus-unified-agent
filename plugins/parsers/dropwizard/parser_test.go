@@ -88,11 +88,13 @@ const validEmbeddedCounterJSON = `
 }
 `
 
+const metricRegistryPath = "metrics"
+
 func TestParseValidEmbeddedCounterJSON(t *testing.T) {
 	timeFormat := "2006-01-02T15:04:05Z07:00"
 	metricTime, _ := time.Parse(timeFormat, "2017-02-22T15:33:03.662+03:00")
 	parser := NewParser()
-	parser.MetricRegistryPath = "metrics"
+	parser.MetricRegistryPath = metricRegistryPath
 	parser.TagsPath = "tags"
 	parser.TimePath = "time"
 
@@ -113,7 +115,7 @@ func TestParseValidEmbeddedCounterJSON(t *testing.T) {
 
 	// now test json tags through TagPathsMap
 	parser2 := NewParser()
-	parser2.MetricRegistryPath = "metrics"
+	parser2.MetricRegistryPath = metricRegistryPath
 	parser2.TagPathsMap = map[string]string{"tag1": "tags.tag1"}
 	parser2.TimePath = "time"
 	metrics2, err2 := parser2.Parse([]byte(validEmbeddedCounterJSON))
@@ -372,7 +374,7 @@ func TestParseValidAllJSON(t *testing.T) {
 func TestTagParsingProblems(t *testing.T) {
 	// giving a wrong path results in empty tags
 	parser1 := NewParser()
-	parser1.MetricRegistryPath = "metrics"
+	parser1.MetricRegistryPath = metricRegistryPath
 	parser1.TagsPath = "tags1"
 	metrics1, err1 := parser1.Parse([]byte(validEmbeddedCounterJSON))
 	assert.NoError(t, err1)
@@ -381,7 +383,7 @@ func TestTagParsingProblems(t *testing.T) {
 
 	// giving a wrong TagsPath falls back to TagPathsMap
 	parser2 := NewParser()
-	parser2.MetricRegistryPath = "metrics"
+	parser2.MetricRegistryPath = metricRegistryPath
 	parser2.TagsPath = "tags1"
 	parser2.TagPathsMap = map[string]string{"tag1": "tags.tag1"}
 	metrics2, err2 := parser2.Parse([]byte(validEmbeddedCounterJSON))

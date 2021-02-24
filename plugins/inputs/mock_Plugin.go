@@ -1,6 +1,8 @@
 package inputs
 
 import (
+	"fmt"
+
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/stretchr/testify/mock"
 )
@@ -26,5 +28,5 @@ func (m *MockPlugin) Gather(_a0 cua.Accumulator) error {
 
 	r0 := ret.Error(0)
 
-	return r0
+	return fmt.Errorf("mock call: %w", r0)
 }

@@ -3,8 +3,9 @@ package dcos
 import (
 	"context"
 	"errors"
-	"io/ioutil"
+	"fmt"
 	"net/url"
+	"os"
 	"sort"
 	"strings"
 	"sync"
@@ -131,13 +132,13 @@ func (d *DCOS) Gather(acc cua.Accumulator) error {
 
 	token, err := d.creds.Token(ctx, d.client)
 	if err != nil {
-		return err
+		return fmt.Errorf("token: %w", err)
 	}
 	d.client.SetToken(token)
 
 	summary, err := d.client.GetSummary(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("summary: %w", err)
 	}
 
 	var wg sync.WaitGroup
@@ -353,12 +354,12 @@ func (d *DCOS) init() error {
 func (d *DCOS) createClient() (Client, error) {
 	tlsCfg, err := d.ClientConfig.TLSConfig()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("TLSConfig: %w", err)
 	}
 
 	url, err := url.Parse(d.ClusterURL)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("url parse (%s): %w", d.ClusterURL, err)
 	}
 
 	client := NewClusterClient(
@@ -373,14 +374,14 @@ func (d *DCOS) createClient() (Client, error) {
 
 func (d *DCOS) createCredentials() (Credentials, error) {
 	if d.ServiceAccountID != "" && d.ServiceAccountPrivateKey != "" {
-		bs, err := ioutil.ReadFile(d.ServiceAccountPrivateKey)
+		bs, err := os.ReadFile(d.ServiceAccountPrivateKey)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("readfile: %w", err)
 		}
 
 		privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(bs)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("jwt parse pem: %w", err)
 		}
 
 		creds := &ServiceAccount{
@@ -403,22 +404,19 @@ func (d *DCOS) createCredentials() (Credentials, error) {
 
 func (d *DCOS) createFilters() error {
 	var err error
-	d.nodeFilter, err = filter.NewIncludeExcludeFilter(
-		d.NodeInclude, d.NodeExclude)
+	d.nodeFilter, err = filter.NewIncludeExcludeFilter(d.NodeInclude, d.NodeExclude)
 	if err != nil {
-		return err
+		return fmt.Errorf("new include/exclude filter: %w", err)
 	}
 
-	d.containerFilter, err = filter.NewIncludeExcludeFilter(
-		d.ContainerInclude, d.ContainerExclude)
+	d.containerFilter, err = filter.NewIncludeExcludeFilter(d.ContainerInclude, d.ContainerExclude)
 	if err != nil {
-		return err
+		return fmt.Errorf("new include/exclude filter: %w", err)
 	}
 
-	d.appFilter, err = filter.NewIncludeExcludeFilter(
-		d.AppInclude, d.AppExclude)
+	d.appFilter, err = filter.NewIncludeExcludeFilter(d.AppInclude, d.AppExclude)
 	if err != nil {
-		return err
+		return fmt.Errorf("new include/exclude filter: %w", err)
 	}
 
 	return nil

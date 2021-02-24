@@ -198,9 +198,8 @@ func NewInfluxSerializer() (Serializer, error) {
 
 func NewGraphiteSerializer(prefix, template string, tagSupport bool, separator string, templates []string) (Serializer, error) {
 	graphiteTemplates, defaultTemplate, err := graphite.InitGraphiteTemplates(templates)
-
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("init graphite templates: %w", err)
 	}
 
 	if defaultTemplate != "" {

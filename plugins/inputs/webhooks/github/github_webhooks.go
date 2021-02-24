@@ -5,7 +5,8 @@ import (
 	"crypto/sha1" //nolint:gosec // G505
 	"encoding/hex"
 	"encoding/json"
-	"io/ioutil"
+	"fmt"
+	"io"
 	"log"
 	"net/http"
 
@@ -28,7 +29,7 @@ func (gh *Webhook) Register(router *mux.Router, acc cua.Accumulator) {
 func (gh *Webhook) eventHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	eventType := r.Header.Get("X-Github-Event")
-	data, err := ioutil.ReadAll(r.Body)
+	data, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -56,7 +57,7 @@ func (gh *Webhook) eventHandler(w http.ResponseWriter, r *http.Request) {
 func generateEvent(data []byte, event Event) (Event, error) {
 	err := json.Unmarshal(data, event)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("json unmarshal: %w", err)
 	}
 	return event, nil
 }
@@ -76,7 +77,7 @@ func NewEvent(data []byte, name string) (Event, error) {
 		return generateEvent(data, &CommitCommentEvent{})
 	case "create":
 		return generateEvent(data, &CreateEvent{})
-	case "delete":
+	case "delete": //nolint:goconst
 		return generateEvent(data, &DeleteEvent{})
 	case "deployment":
 		return generateEvent(data, &DeploymentEvent{})

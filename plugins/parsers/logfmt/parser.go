@@ -41,7 +41,7 @@ func (p *Parser) Parse(b []byte) ([]cua.Metric, error) {
 		if !ok {
 			err := decoder.Err()
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("decoder scan record: %w", err)
 			}
 			break
 		}
@@ -69,7 +69,7 @@ func (p *Parser) Parse(b []byte) ([]cua.Metric, error) {
 
 		m, err := metric.New(p.MetricName, map[string]string{}, fields, p.Now())
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("metric new: %w", err)
 		}
 
 		metrics = append(metrics, m)

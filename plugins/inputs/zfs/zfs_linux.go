@@ -47,11 +47,11 @@ func getTags(pools []poolInfo) map[string]string {
 func gatherPoolStats(pool poolInfo, acc cua.Accumulator) error {
 	lines, err := internal.ReadLines(pool.ioFilename)
 	if err != nil {
-		return err
+		return fmt.Errorf("zfs pool stats (%s): %w", pool.ioFilename, err)
 	}
 
 	if len(lines) != 3 {
-		return err
+		return fmt.Errorf("zfs pool stats invalid #lines: %w", err)
 	}
 
 	keys := strings.Fields(lines[1])
@@ -68,7 +68,7 @@ func gatherPoolStats(pool poolInfo, acc cua.Accumulator) error {
 	for i := 0; i < keyCount; i++ {
 		value, err := strconv.ParseInt(values[i], 10, 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("zfs pool stats parseint (%s): %w", values[i], err)
 		}
 		fields[keys[i]] = value
 	}

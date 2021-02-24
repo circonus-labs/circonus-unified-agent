@@ -3,7 +3,6 @@ package shim
 import (
 	"bufio"
 	"io"
-	"io/ioutil"
 	"strings"
 	"testing"
 	"time"
@@ -45,7 +44,7 @@ func TestInputShimStdinSignalingWorks(t *testing.T) {
 
 	stdinWriter.Close()
 	go func() {
-		_, _ = ioutil.ReadAll(r)
+		_, _ = io.ReadAll(r)
 	}()
 	// check that it exits cleanly
 	<-exited

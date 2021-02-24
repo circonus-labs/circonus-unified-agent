@@ -89,7 +89,7 @@ func execCmd(arg0 string, args ...string) ([]byte, error) {
 		if errors.As(err, &exiterr) {
 			return nil, fmt.Errorf("%s: %w", bytes.TrimRight(exiterr.Stderr, "\r\n"), exiterr)
 		}
-		return nil, err
+		return nil, fmt.Errorf("exec cmd: %w", err)
 	}
 	return out, nil
 }
@@ -562,11 +562,11 @@ func (s *Snmp) getConnection(idx int) (snmpConnection, error) {
 	var gs snmp.GosnmpWrapper
 	gs, err = snmp.NewWrapper(s.ClientConfig)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("new wrapper: %w", err)
 	}
 	_ = gs.SetAgent(agent)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("set agent: %w", err)
 	}
 
 	s.connectionCache[idx] = gs
@@ -599,7 +599,7 @@ func fieldConvert(conv string, v interface{}) (interface{}, error) {
 		case float32:
 			v = float64(vt) / math.Pow10(d)
 		case float64:
-			v = float64(vt) / math.Pow10(d)
+			v = vt / math.Pow10(d)
 		case int:
 			v = float64(vt) / math.Pow10(d)
 		case int8:
@@ -645,7 +645,7 @@ func fieldConvert(conv string, v interface{}) (interface{}, error) {
 		case int32:
 			v = int64(vt)
 		case int64:
-			v = int64(vt)
+			v = vt
 		case uint:
 			v = int64(vt)
 		case uint8:

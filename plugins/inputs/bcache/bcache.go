@@ -6,7 +6,7 @@ package bcache
 
 import (
 	"errors"
-	"io/ioutil"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -78,14 +78,14 @@ func (b *Bcache) gatherBcache(bdev string, acc cua.Accumulator) error {
 	tags := getTags(bdev)
 	metrics, err := filepath.Glob(bdev + "/stats_total/*")
 	if err != nil {
-		return err
+		return fmt.Errorf("glob: %w", err)
 	}
 	if len(metrics) == 0 {
 		return errors.New("can't read any stats file")
 	}
-	file, err := ioutil.ReadFile(bdev + "/dirty_data")
+	file, err := os.ReadFile(bdev + "/dirty_data")
 	if err != nil {
-		return err
+		return fmt.Errorf("readfile (%s): %w", bdev+"/dirty_data", err)
 	}
 	rawValue := strings.TrimSpace(string(file))
 	value := prettyToBytes(rawValue)
@@ -95,11 +95,11 @@ func (b *Bcache) gatherBcache(bdev string, acc cua.Accumulator) error {
 
 	for _, path := range metrics {
 		key := filepath.Base(path)
-		file, err := ioutil.ReadFile(path)
-		rawValue := strings.TrimSpace(string(file))
+		file, err := os.ReadFile(path)
 		if err != nil {
-			return err
+			return fmt.Errorf("readfile (%s): %w", path, err)
 		}
+		rawValue := strings.TrimSpace(string(file))
 		if key == "bypassed" {
 			value := prettyToBytes(rawValue)
 			fields[key] = value

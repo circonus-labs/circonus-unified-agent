@@ -95,7 +95,7 @@ func (n *Apache) Gather(acc cua.Accumulator) error {
 func (n *Apache) createHTTPClient() (*http.Client, error) {
 	tlsCfg, err := n.ClientConfig.TLSConfig()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("TLSConfig: %w", err)
 	}
 
 	client := &http.Client{

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -123,7 +124,7 @@ func (ro *RunningOutput) Init() error {
 	if p, ok := ro.Output.(cua.Initializer); ok {
 		err := p.Init()
 		if err != nil {
-			return err
+			return fmt.Errorf("init (output %s): %w", ro.Config.Name, err)
 		}
 
 	}
@@ -250,7 +251,10 @@ func (ro *RunningOutput) write(metrics []cua.Metric) error {
 	if err == nil {
 		ro.log.Debugf("Wrote batch of %d metrics in %s", len(metrics), elapsed)
 	}
-	return err
+	if err != nil {
+		return fmt.Errorf("write (output %s): %w", ro.Config.Name, err)
+	}
+	return nil
 }
 
 func (ro *RunningOutput) LogBufferStatus() {

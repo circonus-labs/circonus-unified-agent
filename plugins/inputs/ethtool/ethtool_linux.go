@@ -3,6 +3,7 @@
 package ethtool
 
 import (
+	"fmt"
 	"net"
 	"sync"
 
@@ -28,7 +29,7 @@ func (e *Ethtool) Gather(acc cua.Accumulator) error {
 
 	interfaceFilter, err := filter.NewIncludeExcludeFilter(e.InterfaceInclude, e.InterfaceExclude)
 	if err != nil {
-		return err
+		return fmt.Errorf("ethtool new filters: %w", err)
 	}
 
 	// parallelize the ethtool call in event of many interfaces
@@ -98,11 +99,13 @@ func (c *CommandEthtool) Init() error {
 	}
 
 	e, err := ethtool.NewEthtool()
-	if err == nil {
-		c.ethtool = e
+	if err != nil {
+		return fmt.Errorf("ethtool init: %w", err)
 	}
 
-	return err
+	c.ethtool = e
+
+	return nil
 }
 
 func (c *CommandEthtool) DriverName(intf string) (string, error) {
@@ -118,7 +121,7 @@ func (c *CommandEthtool) Interfaces() ([]net.Interface, error) {
 	// Get the list of interfaces
 	interfaces, err := net.Interfaces()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("ethtool interfaces: %w", err)
 	}
 
 	return interfaces, nil

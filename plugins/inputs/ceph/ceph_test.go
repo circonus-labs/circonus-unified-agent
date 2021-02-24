@@ -2,7 +2,6 @@ package ceph
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -109,7 +108,7 @@ func TestGather(t *testing.T) {
 }
 
 func TestFindSockets(t *testing.T) {
-	tmpdir, err := ioutil.TempDir("", "socktest")
+	tmpdir, err := os.MkdirTemp("", "socktest")
 	assert.NoError(t, err)
 	defer func() {
 		err := os.Remove(tmpdir)
@@ -185,7 +184,7 @@ func createTestFiles(dir string, st *SockTest) {
 	writeFile := func(prefix string, i int) {
 		f := sockFile(prefix, i)
 		fpath := filepath.Join(dir, f)
-		_ = ioutil.WriteFile(fpath, []byte(""), 0600)
+		_ = os.WriteFile(fpath, []byte(""), 0600)
 	}
 	tstFileApply(st, writeFile)
 }

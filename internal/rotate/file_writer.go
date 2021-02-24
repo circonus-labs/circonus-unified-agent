@@ -77,7 +77,7 @@ func (w *FileWriter) Write(p []byte) (n int, err error) {
 	w.Lock()
 	defer w.Unlock()
 	if n, err = w.current.Write(p); err != nil {
-		return 0, err
+		return 0, fmt.Errorf("write: %w", err)
 	}
 	w.bytesWritten += int64(n)
 
@@ -143,14 +143,14 @@ func (w *FileWriter) rotateIfNeeded() error {
 
 func (w *FileWriter) rotate() (err error) {
 	if err = w.current.Close(); err != nil {
-		return err
+		return fmt.Errorf("close: %w", err)
 	}
 
 	// Use year-month-date for readability, unix time to make the file name unique with second precision
 	now := time.Now()
 	rotatedFilename := fmt.Sprintf(w.filenameRotationTemplate, now.Format(DateFormat), strconv.FormatInt(now.Unix(), 10))
 	if err = os.Rename(w.filename, rotatedFilename); err != nil {
-		return err
+		return fmt.Errorf("rename: %w", err)
 	}
 
 	if err = w.purgeArchivesIfNeeded(); err != nil {
@@ -168,7 +168,7 @@ func (w *FileWriter) purgeArchivesIfNeeded() (err error) {
 
 	var matches []string
 	if matches, err = filepath.Glob(fmt.Sprintf(w.filenameRotationTemplate, "*", "*")); err != nil {
-		return err
+		return fmt.Errorf("glob: %w", err)
 	}
 
 	// if there are more archives than the configured maximum, then purge older files
@@ -177,7 +177,7 @@ func (w *FileWriter) purgeArchivesIfNeeded() (err error) {
 		sort.Strings(matches)
 		for _, filename := range matches[:len(matches)-w.maxArchives] {
 			if err = os.Remove(filename); err != nil {
-				return err
+				return fmt.Errorf("remove: %w", err)
 			}
 		}
 	}

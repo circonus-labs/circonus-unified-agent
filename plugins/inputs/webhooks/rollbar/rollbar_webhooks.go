@@ -3,7 +3,8 @@ package rollbar
 import (
 	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"time"
@@ -25,7 +26,7 @@ func (rb *Webhook) Register(router *mux.Router, acc cua.Accumulator) {
 
 func (rb *Webhook) eventHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	data, err := ioutil.ReadAll(r.Body)
+	data, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -52,7 +53,7 @@ func (rb *Webhook) eventHandler(w http.ResponseWriter, r *http.Request) {
 func generateEvent(event Event, data []byte) (Event, error) {
 	err := json.Unmarshal(data, event)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("json unmarshal: %w", err)
 	}
 	return event, nil
 }

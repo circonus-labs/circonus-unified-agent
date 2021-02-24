@@ -3,6 +3,7 @@ package kafka
 import (
 	"crypto/sha256"
 	"crypto/sha512"
+	"fmt"
 
 	"github.com/xdg/scram"
 )
@@ -19,7 +20,7 @@ type XDGSCRAMClient struct {
 func (x *XDGSCRAMClient) Begin(userName, password, authzID string) (err error) {
 	x.Client, err = x.HashGeneratorFcn.NewClient(userName, password, authzID)
 	if err != nil {
-		return err
+		return fmt.Errorf("hash gen new: %w", err)
 	}
 	x.ClientConversation = x.Client.NewConversation()
 	return nil

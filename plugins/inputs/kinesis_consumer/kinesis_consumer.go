@@ -151,7 +151,7 @@ func (k *KinesisConsumer) connect(ac cua.Accumulator) error {
 	}
 	configProvider, err := credentialConfig.Credentials()
 	if err != nil {
-		return err
+		return fmt.Errorf("credentials: %w", err)
 	}
 	client := kinesis.New(configProvider)
 
@@ -168,7 +168,7 @@ func (k *KinesisConsumer) connect(ac cua.Accumulator) error {
 			EndpointURL: k.EndpointURL,
 		}).Credentials()
 		if err != nil {
-			return err
+			return fmt.Errorf("credentials: %w", err)
 		}
 
 		k.checkpoint, err = ddb.New(
@@ -178,7 +178,7 @@ func (k *KinesisConsumer) connect(ac cua.Accumulator) error {
 			ddb.WithMaxInterval(time.Second*10),
 		)
 		if err != nil {
-			return err
+			return fmt.Errorf("dynamo db: %w", err)
 		}
 	}
 
@@ -189,7 +189,7 @@ func (k *KinesisConsumer) connect(ac cua.Accumulator) error {
 		consumer.WithCheckpoint(k),
 	)
 	if err != nil {
-		return err
+		return fmt.Errorf("new consumer: %w", err)
 	}
 
 	k.cons = cons
@@ -248,7 +248,7 @@ func (k *KinesisConsumer) Start(ac cua.Accumulator) error {
 func (k *KinesisConsumer) onMessage(acc cua.TrackingAccumulator, r *consumer.Record) error {
 	metrics, err := k.parser.Parse(r.Data)
 	if err != nil {
-		return err
+		return fmt.Errorf("parser parse: %w", err)
 	}
 
 	k.recordsTex.Lock()

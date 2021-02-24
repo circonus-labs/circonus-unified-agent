@@ -3,7 +3,6 @@
 package diskio
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -20,7 +19,7 @@ S:foo/bar/devlink1
 
 // setupNullDisk sets up fake udev info as if /dev/null were a disk.
 func setupNullDisk(t *testing.T) func() error {
-	td, err := ioutil.TempDir("", ".circonus.TestDiskInfo")
+	td, err := os.MkdirTemp("", ".circonus.TestDiskInfo")
 	require.NoError(t, err)
 
 	origUdevPath := udevPath
@@ -31,7 +30,7 @@ func setupNullDisk(t *testing.T) func() error {
 	}
 
 	udevPath = td
-	err = ioutil.WriteFile(td+"/b1:3", nullDiskInfo, 0600) // 1:3 is the 'null' device
+	err = os.WriteFile(td+"/b1:3", nullDiskInfo, 0600) // 1:3 is the 'null' device
 	if err != nil {
 		_ = cleanFunc()
 		t.Fatal(err)

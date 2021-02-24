@@ -2,7 +2,6 @@ package puppetagent
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"reflect"
 	"strings"
@@ -90,19 +89,19 @@ func (pa *PuppetAgent) Gather(acc cua.Accumulator) error {
 	}
 
 	if _, err := os.Stat(pa.Location); err != nil {
-		return err
+		return fmt.Errorf("stat (%s): %w", pa.Location, err)
 	}
 
-	fh, err := ioutil.ReadFile(pa.Location)
+	fh, err := os.ReadFile(pa.Location)
 	if err != nil {
-		return err
+		return fmt.Errorf("readfile (%s): %w", pa.Location, err)
 	}
 
 	var puppetState State
 
 	err = yaml.Unmarshal(fh, &puppetState)
 	if err != nil {
-		return err
+		return fmt.Errorf("yaml unmarshal: %w", err)
 	}
 
 	tags := map[string]string{"location": pa.Location}

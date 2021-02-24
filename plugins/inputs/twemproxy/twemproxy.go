@@ -2,8 +2,8 @@ package twemproxy
 
 import (
 	"encoding/json"
-	"errors"
-	"io/ioutil"
+	"fmt"
+	"io"
 	"net"
 	"time"
 
@@ -35,16 +35,16 @@ func (t *Twemproxy) Description() string {
 func (t *Twemproxy) Gather(acc cua.Accumulator) error {
 	conn, err := net.DialTimeout("tcp", t.Addr, 1*time.Second)
 	if err != nil {
-		return err
+		return fmt.Errorf("dial (%s): %w", t.Addr, err)
 	}
-	body, err := ioutil.ReadAll(conn)
+	body, err := io.ReadAll(conn)
 	if err != nil {
-		return err
+		return fmt.Errorf("readall: %w", err)
 	}
 
 	var stats map[string]interface{}
-	if err = json.Unmarshal(body, &stats); err != nil {
-		return errors.New("Error decoding JSON response")
+	if err := json.Unmarshal(body, &stats); err != nil {
+		return fmt.Errorf("json unmarshal: %w", err)
 	}
 
 	tags := make(map[string]string)

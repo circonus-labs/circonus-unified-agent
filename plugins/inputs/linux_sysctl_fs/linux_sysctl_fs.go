@@ -2,7 +2,7 @@ package linuxsysctlfs
 
 import (
 	"bytes"
-	"io/ioutil"
+	"fmt"
 	"os"
 	"path"
 	"strconv"
@@ -27,9 +27,9 @@ func (*SysctlFS) SampleConfig() string {
 }
 
 func (sfs *SysctlFS) gatherList(file string, fields map[string]interface{}, fieldNames ...string) error {
-	bs, err := ioutil.ReadFile(sfs.path + "/" + file)
+	bs, err := os.ReadFile(sfs.path + "/" + file)
 	if err != nil {
-		return err
+		return fmt.Errorf("readfile: %w", err)
 	}
 
 	bsplit := bytes.Split(bytes.TrimRight(bs, "\n"), []byte{'\t'})
@@ -43,7 +43,7 @@ func (sfs *SysctlFS) gatherList(file string, fields map[string]interface{}, fiel
 
 		v, err := strconv.ParseUint(string(bsplit[i]), 10, 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("parseuint (%s): %w", string(bsplit[i]), err)
 		}
 		fields[name] = v
 	}
@@ -52,14 +52,14 @@ func (sfs *SysctlFS) gatherList(file string, fields map[string]interface{}, fiel
 }
 
 func (sfs *SysctlFS) gatherOne(name string, fields map[string]interface{}) error {
-	bs, err := ioutil.ReadFile(sfs.path + "/" + name)
+	bs, err := os.ReadFile(sfs.path + "/" + name)
 	if err != nil {
-		return err
+		return fmt.Errorf("readfile: %w", err)
 	}
 
 	v, err := strconv.ParseUint(string(bytes.TrimRight(bs, "\n")), 10, 64)
 	if err != nil {
-		return err
+		return fmt.Errorf("parseuint (%s): %w", string(bytes.TrimRight(bs, "\n")), err)
 	}
 
 	fields[name] = v

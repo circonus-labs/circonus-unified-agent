@@ -162,7 +162,7 @@ func (m *MongoDB) gatherServer(server *Server, acc cua.Accumulator) error {
 		} else {
 			tlsConfig, err = m.ClientConfig.TLSConfig()
 			if err != nil {
-				return err
+				return fmt.Errorf("TLSConfig: %w", err)
 			}
 		}
 
@@ -173,7 +173,7 @@ func (m *MongoDB) gatherServer(server *Server, acc cua.Accumulator) error {
 				if err != nil {
 					fmt.Printf("error in Dial, %s\n", err.Error())
 				}
-				return conn, err
+				return conn, fmt.Errorf("tls dial (%s): %w", addr.String(), err)
 			}
 		}
 

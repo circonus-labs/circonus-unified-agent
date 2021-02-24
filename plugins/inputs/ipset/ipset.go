@@ -94,7 +94,7 @@ func setList(timeout internal.Duration, useSudo bool) (*bytes.Buffer, error) {
 	// Is ipset installed ?
 	ipsetPath, err := exec.LookPath("ipset")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("lookpath (ipset): %w", err)
 	}
 	var args []string
 	cmdName := ipsetPath

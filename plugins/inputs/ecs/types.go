@@ -2,6 +2,7 @@ package ecs
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"strings"
 	"time"
@@ -50,14 +51,14 @@ type Network struct {
 func unmarshalTask(r io.Reader) (*Task, error) {
 	task := &Task{}
 	err := json.NewDecoder(r).Decode(task)
-	return task, err
+	return task, fmt.Errorf("json decode: %w", err)
 }
 
 // docker parsers
 func unmarshalStats(r io.Reader) (map[string]types.StatsJSON, error) {
 	var statsMap map[string]types.StatsJSON
 	err := json.NewDecoder(r).Decode(&statsMap)
-	return statsMap, err
+	return statsMap, fmt.Errorf("json decode: %w", err)
 }
 
 // interleaves Stats in to the Container objects in the Task

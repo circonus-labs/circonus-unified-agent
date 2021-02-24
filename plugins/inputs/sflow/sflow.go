@@ -74,7 +74,7 @@ func (s *SFlow) Start(acc cua.Accumulator) error {
 
 	u, err := url.Parse(s.ServiceAddress)
 	if err != nil {
-		return err
+		return fmt.Errorf("url parse (%s): %w", s.ServiceAddress, err)
 	}
 
 	conn, err := listenUDP(u.Scheme, u.Host)
@@ -141,7 +141,7 @@ func listenUDP(network string, address string) (*net.UDPConn, error) {
 	case "udp", "udp4", "udp6":
 		addr, err := net.ResolveUDPAddr(network, address)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("resolve udp addr (%s): %w", address, err)
 		}
 		return net.ListenUDP(network, addr)
 	default:

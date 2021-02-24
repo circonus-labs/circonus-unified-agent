@@ -170,7 +170,7 @@ func (e *EventHub) Init() (err error) {
 	if e.PersistenceDir != "" {
 		persister, err := persist.NewFilePersister(e.PersistenceDir)
 		if err != nil {
-			return err
+			return fmt.Errorf("new persister: %w", err)
 		}
 
 		hubOpts = append(hubOpts, eventhub.HubWithOffsetPersistence(persister))
@@ -189,7 +189,7 @@ func (e *EventHub) Init() (err error) {
 		e.hub, err = eventhub.NewHubFromEnvironment(hubOpts...)
 	}
 
-	return err
+	return fmt.Errorf("new hub: %w", err)
 }
 
 // Start the EventHub ServiceInput
@@ -214,7 +214,7 @@ func (e *EventHub) Start(acc cua.Accumulator) error {
 	if len(e.PartitionIDs) == 0 {
 		runtimeinfo, err := e.hub.GetRuntimeInformation(ctx)
 		if err != nil {
-			return err
+			return fmt.Errorf("runtime info: %w", err)
 		}
 
 		partitions = runtimeinfo.PartitionIDs
@@ -342,7 +342,7 @@ func deepCopyMetrics(in []cua.Metric) []cua.Metric {
 func (e *EventHub) createMetrics(event *eventhub.Event) ([]cua.Metric, error) {
 	metrics, err := e.parser.Parse(event.Data)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("parse: %w", err)
 	}
 
 	for i := range metrics {

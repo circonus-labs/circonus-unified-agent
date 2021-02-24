@@ -50,7 +50,7 @@ type Parser struct {
 func New(config *Config) (*Parser, error) {
 	stringFilter, err := filter.Compile(config.StringFields)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("filter compile: %w", err)
 	}
 
 	return &Parser{
@@ -126,7 +126,7 @@ func (p *Parser) parseObject(data map[string]interface{}, timestamp time.Time) (
 
 		timestamp, err = internal.ParseTimestamp(p.timeFormat, f.Fields[p.timeKey], p.timezone)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("parse timestamp: %w", err)
 		}
 
 		delete(f.Fields, p.timeKey)
@@ -140,7 +140,7 @@ func (p *Parser) parseObject(data map[string]interface{}, timestamp time.Time) (
 	tags, nFields := p.switchFieldToTag(tags, f.Fields)
 	metric, err := metric.New(name, tags, nFields, timestamp)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("metric new: %w", err)
 	}
 	return []cua.Metric{metric}, nil
 }
@@ -202,7 +202,7 @@ func (p *Parser) Parse(buf []byte) ([]cua.Metric, error) {
 	var data interface{}
 	err := json.Unmarshal(buf, &data)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("json unmarshal: %w", err)
 	}
 
 	timestamp := time.Now().UTC()

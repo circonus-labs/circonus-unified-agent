@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"encoding/base64"
 	"fmt"
-	"io/ioutil"
 	"math/big"
 	"os"
 	"path/filepath"
@@ -29,7 +28,7 @@ func TestGatherRemote(t *testing.T) {
 		t.Skip("Skipping network-dependent test in short mode.")
 	}
 
-	tmpfile, err := ioutil.TempFile("", "example")
+	tmpfile, err := os.CreateTemp("", "example")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -159,7 +158,7 @@ func TestGatherLocal(t *testing.T) {
 	for _, test := range tests {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
-			f, err := ioutil.TempFile("", "x509_cert")
+			f, err := os.CreateTemp("", "x509_cert")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -206,7 +205,7 @@ func TestGatherLocal(t *testing.T) {
 func TestTags(t *testing.T) {
 	cert := fmt.Sprintf("%s\n%s", pki.ReadServerCert(), pki.ReadCACert())
 
-	f, err := ioutil.TempFile("", "x509_cert")
+	f, err := os.CreateTemp("", "x509_cert")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -272,7 +271,7 @@ func TestGatherChain(t *testing.T) {
 	for _, test := range tests {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
-			f, err := ioutil.TempFile("", "x509_cert")
+			f, err := os.CreateTemp("", "x509_cert")
 			if err != nil {
 				t.Fatal(err)
 			}

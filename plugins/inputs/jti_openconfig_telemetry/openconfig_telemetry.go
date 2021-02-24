@@ -349,7 +349,7 @@ func (m *OpenConfigTelemetry) Start(acc cua.Accumulator) error {
 	if m.EnableTLS {
 		tlscfg, err := m.ClientConfig.TLSConfig()
 		if err != nil {
-			return err
+			return fmt.Errorf("TLSConfig: %w", err)
 		}
 		opts = append(opts, grpc.WithTransportCredentials(credentials.NewTLS(tlscfg)))
 	} else {

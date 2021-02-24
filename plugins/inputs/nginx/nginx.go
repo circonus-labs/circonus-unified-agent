@@ -83,7 +83,7 @@ func (n *Nginx) Gather(acc cua.Accumulator) error {
 func (n *Nginx) createHTTPClient() (*http.Client, error) {
 	tlsCfg, err := n.ClientConfig.TLSConfig()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("TLSConfig: %w", err)
 	}
 
 	if n.ResponseTimeout.Duration < time.Second {
@@ -114,58 +114,58 @@ func (n *Nginx) gatherURL(addr *url.URL, acc cua.Accumulator) error {
 	// Active connections
 	_, err = r.ReadString(':')
 	if err != nil {
-		return err
+		return fmt.Errorf("read string: %w", err)
 	}
 	line, err := r.ReadString('\n')
 	if err != nil {
-		return err
+		return fmt.Errorf("read string: %w", err)
 	}
 	active, err := strconv.ParseUint(strings.TrimSpace(line), 10, 64)
 	if err != nil {
-		return err
+		return fmt.Errorf("parseuint (%s): %w", line, err)
 	}
 
 	// Server accepts handled requests
 	_, err = r.ReadString('\n')
 	if err != nil {
-		return err
+		return fmt.Errorf("read string: %w", err)
 	}
 	line, err = r.ReadString('\n')
 	if err != nil {
-		return err
+		return fmt.Errorf("read string: %w", err)
 	}
 	data := strings.Fields(line)
 	accepts, err := strconv.ParseUint(data[0], 10, 64)
 	if err != nil {
-		return err
+		return fmt.Errorf("parseuint (%s): %w", data[0], err)
 	}
 
 	handled, err := strconv.ParseUint(data[1], 10, 64)
 	if err != nil {
-		return err
+		return fmt.Errorf("parseuint (%s): %w", data[1], err)
 	}
 	requests, err := strconv.ParseUint(data[2], 10, 64)
 	if err != nil {
-		return err
+		return fmt.Errorf("parseuint (%s): %w", data[2], err)
 	}
 
 	// Reading/Writing/Waiting
 	line, err = r.ReadString('\n')
 	if err != nil {
-		return err
+		return fmt.Errorf("read string: %w", err)
 	}
 	data = strings.Fields(line)
 	reading, err := strconv.ParseUint(data[1], 10, 64)
 	if err != nil {
-		return err
+		return fmt.Errorf("parseuint (%s): %w", data[1], err)
 	}
 	writing, err := strconv.ParseUint(data[3], 10, 64)
 	if err != nil {
-		return err
+		return fmt.Errorf("parseuint (%s): %w", data[3], err)
 	}
 	waiting, err := strconv.ParseUint(data[5], 10, 64)
 	if err != nil {
-		return err
+		return fmt.Errorf("parseuint (%s): %w", data[5], err)
 	}
 
 	tags := getTags(addr)

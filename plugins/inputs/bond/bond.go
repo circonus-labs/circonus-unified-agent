@@ -3,7 +3,6 @@ package bond
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -53,7 +52,7 @@ func (bond *Bond) Gather(acc cua.Accumulator) error {
 	}
 	for _, bondName := range bondNames {
 		bondAbsPath := bond.HostProc + "/net/bonding/" + bondName
-		file, err := ioutil.ReadFile(bondAbsPath)
+		file, err := os.ReadFile(bondAbsPath)
 		if err != nil {
 			acc.AddError(fmt.Errorf("error inspecting '%s' interface: %w", bondAbsPath, err))
 			continue
@@ -114,7 +113,7 @@ func (bond *Bond) gatherBondPart(bondName string, rawFile string, acc cua.Accumu
 		}
 	}
 	if err := scanner.Err(); err != nil {
-		return err
+		return fmt.Errorf("scanner (bond part): %w", err)
 	}
 	return fmt.Errorf("Couldn't find status info for '%s' ", bondName)
 }
@@ -144,7 +143,7 @@ func (bond *Bond) gatherSlavePart(bondName string, rawFile string, acc cua.Accum
 		if strings.Contains(name, "Link Failure Count") {
 			count, err := strconv.Atoi(value)
 			if err != nil {
-				return err
+				return fmt.Errorf("atoi (%s): %w", value, err)
 			}
 			fields := map[string]interface{}{
 				"status":   status,
@@ -158,7 +157,7 @@ func (bond *Bond) gatherSlavePart(bondName string, rawFile string, acc cua.Accum
 		}
 	}
 	if err := scanner.Err(); err != nil {
-		return err
+		return fmt.Errorf("scanner (slave part): %w", err)
 	}
 	return nil
 }
@@ -188,7 +187,7 @@ func (bond *Bond) listInterfaces() ([]string, error) {
 	} else {
 		paths, err := filepath.Glob(bond.HostProc + "/net/bonding/*")
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("glob: %w", err)
 		}
 		for _, p := range paths {
 			interfaces = append(interfaces, filepath.Base(p))

@@ -1,6 +1,8 @@
 package minecraft
 
 import (
+	"fmt"
+
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
 )
@@ -57,13 +59,13 @@ func (s *Minecraft) Gather(acc cua.Accumulator) error {
 
 	players, err := s.client.Players()
 	if err != nil {
-		return err
+		return fmt.Errorf("players: %w", err)
 	}
 
 	for _, player := range players {
 		scores, err := s.client.Scores(player)
 		if err != nil {
-			return err
+			return fmt.Errorf("scores: %w", err)
 		}
 
 		tags := map[string]string{

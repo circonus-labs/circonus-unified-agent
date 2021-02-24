@@ -160,7 +160,7 @@ func (r *Redis) init(acc cua.Accumulator) error {
 
 		tlsConfig, err := r.ClientConfig.TLSConfig()
 		if err != nil {
-			return err
+			return fmt.Errorf("TLSConfig: %w", err)
 		}
 
 		client := redis.NewClient(
@@ -221,7 +221,7 @@ func (r *Redis) gatherCommandValues(client Client, acc cua.Accumulator) error {
 	for _, command := range r.Commands {
 		val, err := client.Do(command.Type, command.Command...)
 		if err != nil {
-			return err
+			return fmt.Errorf("client do: %w", err)
 		}
 
 		fields[command.Field] = val
@@ -235,7 +235,7 @@ func (r *Redis) gatherCommandValues(client Client, acc cua.Accumulator) error {
 func (r *Redis) gatherServer(client Client, acc cua.Accumulator) error {
 	info, err := client.Info().Result()
 	if err != nil {
-		return err
+		return fmt.Errorf("client info result: %w", err)
 	}
 
 	rdr := strings.NewReader(info)
@@ -271,7 +271,7 @@ func gatherInfoOutput(
 		if len(parts) < 2 {
 			continue
 		}
-		name := string(parts[0])
+		name := parts[0]
 
 		if section == "Server" {
 			if name != "lru_clock" && name != "uptime_in_seconds" && name != "redis_version" {
@@ -294,7 +294,7 @@ func gatherInfoOutput(
 		metric, ok := Tracking[name]
 		if !ok {
 			if section == "Keyspace" {
-				kline := strings.TrimSpace(string(parts[1]))
+				kline := strings.TrimSpace(parts[1])
 				gatherKeyspaceLine(name, kline, acc, tags)
 				continue
 			}

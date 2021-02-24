@@ -39,7 +39,7 @@ func (k *Synproxy) getSynproxyStat() (map[string]interface{}, error) {
 	// Open synproxy file in proc filesystem
 	file, err := os.Open(k.statFile)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("synproxy open (%s): %w", k.statFile, err)
 	}
 	defer file.Close()
 

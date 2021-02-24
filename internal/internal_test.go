@@ -5,7 +5,6 @@ import (
 	"compress/gzip"
 	"crypto/rand"
 	"io"
-	"io/ioutil"
 	"log"
 	"os/exec"
 	"regexp"
@@ -229,7 +228,7 @@ func TestCompressWithGzip(t *testing.T) {
 	assert.NoError(t, err)
 	defer gzipReader.Close()
 
-	output, err := ioutil.ReadAll(gzipReader)
+	output, err := io.ReadAll(gzipReader)
 	assert.NoError(t, err)
 
 	assert.Equal(t, testData, string(output))
@@ -250,7 +249,7 @@ func TestCompressWithGzipEarlyClose(t *testing.T) {
 	rc, err := CompressWithGzip(mr)
 	assert.NoError(t, err)
 
-	n, err := io.CopyN(ioutil.Discard, rc, 10000)
+	n, err := io.CopyN(io.Discard, rc, 10000)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(10000), n)
 
@@ -258,7 +257,7 @@ func TestCompressWithGzipEarlyClose(t *testing.T) {
 	err = rc.Close()
 	assert.NoError(t, err)
 
-	n, err = io.CopyN(ioutil.Discard, rc, 10000)
+	n, err = io.CopyN(io.Discard, rc, 10000)
 	assert.Error(t, io.EOF, err)
 	assert.Equal(t, int64(0), n)
 

@@ -3,8 +3,8 @@ package http
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -109,12 +109,12 @@ func (*HTTP) Description() string {
 func (h *HTTP) Init() error {
 	tlsCfg, err := h.ClientConfig.TLSConfig()
 	if err != nil {
-		return err
+		return fmt.Errorf("TLSConfig: %w", err)
 	}
 
 	proxy, err := h.HTTPProxy.Proxy()
 	if err != nil {
-		return err
+		return fmt.Errorf("proxy: %w", err)
 	}
 
 	transport := &http.Transport{
@@ -177,13 +177,13 @@ func (h *HTTP) gatherURL(
 
 	request, err := http.NewRequest(h.Method, url, body)
 	if err != nil {
-		return err
+		return fmt.Errorf("http new req (%s): %w", url, err)
 	}
 
 	if h.BearerToken != "" {
-		token, err := ioutil.ReadFile(h.BearerToken)
+		token, err := os.ReadFile(h.BearerToken)
 		if err != nil {
-			return err
+			return fmt.Errorf("readfile: %w", err)
 		}
 		bearer := "Bearer " + strings.Trim(string(token), "\n")
 		request.Header.Set("Authorization", bearer)
@@ -207,7 +207,7 @@ func (h *HTTP) gatherURL(
 
 	resp, err := h.client.Do(request)
 	if err != nil {
-		return err
+		return fmt.Errorf("http do: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -226,14 +226,14 @@ func (h *HTTP) gatherURL(
 			h.SuccessStatusCodes)
 	}
 
-	b, err := ioutil.ReadAll(resp.Body)
+	b, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return fmt.Errorf("readall: %w", err)
 	}
 
 	metrics, err := h.parser.Parse(b)
 	if err != nil {
-		return err
+		return fmt.Errorf("parse: %w", err)
 	}
 
 	for _, metric := range metrics {
@@ -251,11 +251,11 @@ func makeRequestBodyReader(contentEncoding, body string) (io.ReadCloser, error) 
 	if contentEncoding == "gzip" {
 		rc, err := internal.CompressWithGzip(reader)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("compress w/gzip: %w", err)
 		}
 		return rc, nil
 	}
-	return ioutil.NopCloser(reader), nil
+	return io.NopCloser(reader), nil
 }
 
 func init() {

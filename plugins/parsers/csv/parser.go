@@ -100,7 +100,7 @@ func (p *Parser) Parse(buf []byte) ([]cua.Metric, error) {
 	for i := 0; i < p.SkipRows; i++ {
 		_, err := csvReader.Read()
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("csv read: %w", err)
 		}
 	}
 	// if there is a header and we did not get DataColumns
@@ -110,7 +110,7 @@ func (p *Parser) Parse(buf []byte) ([]cua.Metric, error) {
 		for i := 0; i < p.HeaderRowCount; i++ {
 			header, err := csvReader.Read()
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("csv read: %w", err)
 			}
 			// concatenate header names
 			for i := range header {
@@ -131,14 +131,14 @@ func (p *Parser) Parse(buf []byte) ([]cua.Metric, error) {
 		for i := 0; i < p.HeaderRowCount; i++ {
 			_, err := csvReader.Read()
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("csv read: %w", err)
 			}
 		}
 	}
 
 	table, err := csvReader.ReadAll()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("csv readall: %w", err)
 	}
 
 	metrics := make([]cua.Metric, 0)
@@ -165,7 +165,7 @@ func (p *Parser) ParseLine(line string) (cua.Metric, error) {
 
 	record, err := csvReader.Read()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("csv read: %w", err)
 	}
 	m, err := p.parseRecord(record)
 	if err != nil {
@@ -272,7 +272,7 @@ outer:
 
 	m, err := metric.New(measurementName, tags, recordFields, metricTime)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("new metric: %w", err)
 	}
 	return m, nil
 }
@@ -294,9 +294,9 @@ func parseTimestamp(timeFunc func() time.Time, recordFields map[string]interface
 		default:
 			metricTime, err := internal.ParseTimestamp(timestampFormat, recordFields[timestampColumn], timezone)
 			if err != nil {
-				return time.Time{}, err
+				return time.Time{}, fmt.Errorf("parse timestamp: %w", err)
 			}
-			return metricTime, err
+			return metricTime, nil
 		}
 	}
 

@@ -125,7 +125,7 @@ func (s *Serializer) createObject(metric cua.Metric) ([]byte, error) {
 
 	metricsJSON, err := json.Marshal(allmetrics)
 
-	return metricsJSON, err
+	return metricsJSON, fmt.Errorf("json marshal: %w", err)
 }
 
 func verifyValue(v interface{}) bool {

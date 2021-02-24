@@ -89,7 +89,7 @@ func (p *phpfpm) Description() string {
 func (p *phpfpm) Init() error {
 	tlsCfg, err := p.ClientConfig.TLSConfig()
 	if err != nil {
-		return err
+		return fmt.Errorf("TLSConfig: %w", err)
 	}
 
 	p.client = &http.Client{

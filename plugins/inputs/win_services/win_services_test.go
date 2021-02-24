@@ -188,8 +188,8 @@ func TestGather2(t *testing.T) {
 	for _, s := range testSimpleData[0].services {
 		fields := make(map[string]interface{})
 		tags := make(map[string]string)
-		fields["state"] = int(s.state)
-		fields["startup_mode"] = int(s.startUpMode)
+		fields["state"] = s.state
+		fields["startup_mode"] = s.startUpMode
 		tags["service_name"] = s.serviceName
 		tags["display_name"] = s.displayName
 		acc1.AssertContainsTaggedFields(t, "win_services", fields, tags)

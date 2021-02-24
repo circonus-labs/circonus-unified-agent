@@ -71,7 +71,7 @@ func (f *File) Connect() error {
 			of, err := rotate.NewFileWriter(
 				file, f.RotationInterval.Duration, f.RotationMaxSize.Size, f.RotationMaxArchives)
 			if err != nil {
-				return err
+				return fmt.Errorf("roate new file: %w", err)
 			}
 
 			writers = append(writers, of)

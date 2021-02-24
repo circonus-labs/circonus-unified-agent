@@ -93,7 +93,7 @@ func (z *Zipkin) Start(acc cua.Accumulator) error {
 	router := mux.NewRouter()
 	converter := NewLineProtocolConverter(acc)
 	if err := z.handler.Register(router, converter); err != nil {
-		return err
+		return fmt.Errorf("handler register: %w", err)
 	}
 
 	z.server = &http.Server{
@@ -103,7 +103,7 @@ func (z *Zipkin) Start(acc cua.Accumulator) error {
 	addr := ":" + strconv.Itoa(z.Port)
 	ln, err := net.Listen(DefaultNetwork, addr)
 	if err != nil {
-		return err
+		return fmt.Errorf("net listen (%s): %w", addr, err)
 	}
 
 	z.address = ln.Addr().String()

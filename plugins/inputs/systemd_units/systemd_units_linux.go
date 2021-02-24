@@ -195,7 +195,7 @@ func setSystemctl(timeout internal.Duration, unitType string) (*bytes.Buffer, er
 	// is systemctl available ?
 	systemctlPath, err := exec.LookPath("systemctl")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("systemd_units lookpath (systemctl): %w", err)
 	}
 
 	cmd := exec.Command(systemctlPath, "list-units", "--all", "--plain", fmt.Sprintf("--type=%s", unitType), "--no-legend")

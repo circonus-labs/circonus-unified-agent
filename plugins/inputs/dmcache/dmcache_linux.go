@@ -4,6 +4,7 @@ package dmcache
 
 import (
 	"errors"
+	"fmt"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -70,12 +71,12 @@ func parseDMSetupStatus(line string) (cacheStatus, error) {
 	status.device = strings.TrimRight(values[0], ":")
 	status.length, err = strconv.ParseInt(values[2], 10, 64)
 	if err != nil {
-		return cacheStatus{}, err
+		return cacheStatus{}, fmt.Errorf("dmcache parseint len (%s): %w", values[2], err)
 	}
 	status.target = values[3]
 	status.metadataBlocksize, err = strconv.ParseInt(values[4], 10, 64)
 	if err != nil {
-		return cacheStatus{}, err
+		return cacheStatus{}, fmt.Errorf("dmcache parseint blksz (%s): %w", values[4], err)
 	}
 	metadata := strings.Split(values[5], "/")
 	if len(metadata) != 2 {
@@ -83,15 +84,15 @@ func parseDMSetupStatus(line string) (cacheStatus, error) {
 	}
 	status.metadataUsed, err = strconv.ParseInt(metadata[0], 10, 64)
 	if err != nil {
-		return cacheStatus{}, err
+		return cacheStatus{}, fmt.Errorf("dmcache parseint metaused (%s): %w", metadata[0], err)
 	}
 	status.metadataTotal, err = strconv.ParseInt(metadata[1], 10, 64)
 	if err != nil {
-		return cacheStatus{}, err
+		return cacheStatus{}, fmt.Errorf("dmcache parseint metatot (%s): %w", metadata[1], err)
 	}
 	status.cacheBlocksize, err = strconv.ParseInt(values[6], 10, 64)
 	if err != nil {
-		return cacheStatus{}, err
+		return cacheStatus{}, fmt.Errorf("dmcache parseint cacheblksz (%s): %w", values[6], err)
 	}
 	cache := strings.Split(values[7], "/")
 	if len(cache) != 2 {
@@ -99,39 +100,39 @@ func parseDMSetupStatus(line string) (cacheStatus, error) {
 	}
 	status.cacheUsed, err = strconv.ParseInt(cache[0], 10, 64)
 	if err != nil {
-		return cacheStatus{}, err
+		return cacheStatus{}, fmt.Errorf("dmcache parseint cacheused (%s): %w", cache[0], err)
 	}
 	status.cacheTotal, err = strconv.ParseInt(cache[1], 10, 64)
 	if err != nil {
-		return cacheStatus{}, err
+		return cacheStatus{}, fmt.Errorf("dmcache parseint cachetot (%s): %w", cache[1], err)
 	}
 	status.readHits, err = strconv.ParseInt(values[8], 10, 64)
 	if err != nil {
-		return cacheStatus{}, err
+		return cacheStatus{}, fmt.Errorf("dmcache parseint rhit (%s): %w", values[8], err)
 	}
 	status.readMisses, err = strconv.ParseInt(values[9], 10, 64)
 	if err != nil {
-		return cacheStatus{}, err
+		return cacheStatus{}, fmt.Errorf("dmcache parseint rmiss (%s): %w", values[9], err)
 	}
 	status.writeHits, err = strconv.ParseInt(values[10], 10, 64)
 	if err != nil {
-		return cacheStatus{}, err
+		return cacheStatus{}, fmt.Errorf("dmcache parseint whit (%s): %w", values[10], err)
 	}
 	status.writeMisses, err = strconv.ParseInt(values[11], 10, 64)
 	if err != nil {
-		return cacheStatus{}, err
+		return cacheStatus{}, fmt.Errorf("dmcache parseint wmiss (%s): %w", values[11], err)
 	}
 	status.demotions, err = strconv.ParseInt(values[12], 10, 64)
 	if err != nil {
-		return cacheStatus{}, err
+		return cacheStatus{}, fmt.Errorf("dmcache parseint demotions (%s): %w", values[12], err)
 	}
 	status.promotions, err = strconv.ParseInt(values[13], 10, 64)
 	if err != nil {
-		return cacheStatus{}, err
+		return cacheStatus{}, fmt.Errorf("dmcache parseint promotions (%s): %w", values[13], err)
 	}
 	status.dirty, err = strconv.ParseInt(values[14], 10, 64)
 	if err != nil {
-		return cacheStatus{}, err
+		return cacheStatus{}, fmt.Errorf("dmcache parseint dirty (%s): %w", values[14], err)
 	}
 
 	return status, nil
@@ -176,7 +177,7 @@ func toFields(status cacheStatus) map[string]interface{} {
 func dmSetupStatus() ([]string, error) {
 	out, err := exec.Command("/bin/sh", "-c", "sudo /sbin/dmsetup status --target cache").Output()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("dmcache exec: %w", err)
 	}
 	if string(out) == "No devices found\n" {
 		return []string{}, nil

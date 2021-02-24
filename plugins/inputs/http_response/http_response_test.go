@@ -5,7 +5,7 @@ package httpresponse
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -112,7 +112,7 @@ func setUpTestMux() http.Handler {
 		fmt.Fprintf(w, "used post correctly!")
 	})
 	mux.HandleFunc("/musthaveabody", func(w http.ResponseWriter, req *http.Request) {
-		body, err := ioutil.ReadAll(req.Body)
+		body, err := io.ReadAll(req.Body)
 		req.Body.Close()
 		if err != nil {
 			http.Error(w, "couldn't read request body", http.StatusBadRequest)

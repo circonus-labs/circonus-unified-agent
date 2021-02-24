@@ -111,7 +111,7 @@ func (s *Varnish) Gather(acc cua.Accumulator) error {
 			s.filter, err = filter.Compile(s.Stats)
 		}
 		if err != nil {
-			return err
+			return fmt.Errorf("filter compile: %w", err)
 		}
 	}
 

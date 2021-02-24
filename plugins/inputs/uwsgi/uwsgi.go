@@ -78,47 +78,47 @@ func (u *Uwsgi) Gather(acc cua.Accumulator) error {
 	return nil
 }
 
-func (u *Uwsgi) gatherServer(acc cua.Accumulator, url *url.URL) error {
+func (u *Uwsgi) gatherServer(acc cua.Accumulator, surl *url.URL) error {
 	var err error
 	var r io.ReadCloser
 	var s StatsServer
 
-	switch url.Scheme {
+	switch surl.Scheme {
 	case "tcp":
-		r, err = net.DialTimeout(url.Scheme, url.Host, u.Timeout.Duration)
+		r, err = net.DialTimeout(surl.Scheme, surl.Host, u.Timeout.Duration)
 		if err != nil {
-			return err
+			return fmt.Errorf("dial (%s): %w", surl.Host, err)
 		}
-		s.source = url.Host
+		s.source = surl.Host
 	case "unix":
-		r, err = net.DialTimeout(url.Scheme, url.Path, u.Timeout.Duration)
+		r, err = net.DialTimeout(surl.Scheme, surl.Path, u.Timeout.Duration)
 		if err != nil {
-			return err
+			return fmt.Errorf("dial (%s): %w", surl.Path, err)
 		}
 		s.source, err = os.Hostname()
 		if err != nil {
 			s.source = ""
 		}
 	case "http":
-		resp, err := u.client.Get(url.String())
+		resp, err := u.client.Get(surl.String())
 		if err != nil {
-			return err
+			return fmt.Errorf("http get (%s): %w", surl.String(), err)
 		}
 		r = resp.Body
-		s.source = url.Host
+		s.source = surl.Host
 	default:
-		return fmt.Errorf("'%s' is not a supported scheme", url.Scheme)
+		return fmt.Errorf("'%s' is not a supported scheme", surl.Scheme)
 	}
 
 	defer r.Close()
 
 	if err := json.NewDecoder(r).Decode(&s); err != nil {
-		return fmt.Errorf("failed to decode json payload from '%s': %w", url.String(), err)
+		return fmt.Errorf("failed to decode json payload from '%s': %w", surl.String(), err)
 	}
 
 	u.gatherStatServer(acc, &s)
 
-	return err
+	return nil
 }
 
 func (u *Uwsgi) gatherStatServer(acc cua.Accumulator, s *StatsServer) {

@@ -1,6 +1,7 @@
 package template
 
 import (
+	"fmt"
 	"strings"
 	"text/template"
 
@@ -56,7 +57,7 @@ func (r *Processor) Init() error {
 	t, err := template.New("configured_template").Parse(r.Template)
 
 	r.tmpl = t
-	return err
+	return fmt.Errorf("template new: %w", err)
 }
 
 func init() {

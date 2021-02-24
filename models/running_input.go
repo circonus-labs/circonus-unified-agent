@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
@@ -82,7 +83,7 @@ func (r *RunningInput) Init() error {
 	if p, ok := r.Input.(cua.Initializer); ok {
 		err := p.Init()
 		if err != nil {
-			return err
+			return fmt.Errorf("init (input %s): %w", r.Config.Name, err)
 		}
 	}
 	return nil
@@ -121,7 +122,10 @@ func (r *RunningInput) Gather(acc cua.Accumulator) error {
 	err := r.Input.Gather(acc)
 	elapsed := time.Since(start)
 	r.GatherTime.Incr(elapsed.Nanoseconds())
-	return err
+	if err != nil {
+		return fmt.Errorf("gather (input %s): %w", r.Config.Name, err)
+	}
+	return nil
 }
 
 func (r *RunningInput) SetDefaultTags(tags map[string]string) {

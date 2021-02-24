@@ -251,12 +251,12 @@ func (m *WinPerfCounters) AddItem(counterPath string, objectName string, instanc
 	if !m.query.IsVistaOrNewer() {
 		counterHandle, err = m.query.AddCounterToQuery(counterPath)
 		if err != nil {
-			return err
+			return fmt.Errorf("win_perf_counters add counterToQuery: %w", err)
 		}
 	} else {
 		counterHandle, err = m.query.AddEnglishCounterToQuery(counterPath)
 		if err != nil {
-			return err
+			return fmt.Errorf("win_perf_counters add englishCounterToQuery: %w", err)
 		}
 
 	}
@@ -265,11 +265,11 @@ func (m *WinPerfCounters) AddItem(counterPath string, objectName string, instanc
 		origInstance := instance
 		counterPath, err = m.query.GetCounterPath(counterHandle)
 		if err != nil {
-			return err
+			return fmt.Errorf("win_perf_counters add getCounterPath: %w", err)
 		}
 		counters, err := m.query.ExpandWildCardPath(counterPath)
 		if err != nil {
-			return err
+			return fmt.Errorf("win_perf_counters add expandWildCardPath: %w", err)
 		}
 
 		for _, counterPath := range counters {
@@ -349,15 +349,15 @@ func (m *WinPerfCounters) Gather(acc cua.Accumulator) error {
 		}
 
 		if err = m.query.Open(); err != nil {
-			return err
+			return fmt.Errorf("win_perf_counters query open: %w", err)
 		}
 
 		if err = m.ParseConfig(); err != nil {
-			return err
+			return fmt.Errorf("win_perf_counters parse config: %w", err)
 		}
 		// some counters need two data samples before computing a value
 		if err = m.query.CollectData(); err != nil {
-			return err
+			return fmt.Errorf("win_perf_counters collect data: %w", err)
 		}
 		m.lastRefreshed = time.Now()
 
@@ -370,12 +370,12 @@ func (m *WinPerfCounters) Gather(acc cua.Accumulator) error {
 	if m.UsePerfCounterTime && m.query.IsVistaOrNewer() {
 		timestamp, err = m.query.CollectDataWithTime()
 		if err != nil {
-			return err
+			return fmt.Errorf("win_perf_counters collectDataWithTime: %w", err)
 		}
 	} else {
 		timestamp = time.Now()
 		if err = m.query.CollectData(); err != nil {
-			return err
+			return fmt.Errorf("win_perf_counters collectData: %w", err)
 		}
 	}
 

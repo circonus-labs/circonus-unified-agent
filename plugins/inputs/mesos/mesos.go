@@ -3,7 +3,8 @@ package mesos
 import (
 	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"fmt"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -204,7 +205,7 @@ func (m *Mesos) Gather(acc cua.Accumulator) error {
 func (m *Mesos) createHTTPClient() (*http.Client, error) {
 	tlsCfg, err := m.ClientConfig.TLSConfig()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("TLSConfig: %w", err)
 	}
 
 	client := &http.Client{
@@ -543,7 +544,7 @@ type TaskStats struct {
 // 		return err
 // 	}
 
-// 	data, err := ioutil.ReadAll(resp.Body)
+// 	data, err := io.ReadAll(resp.Body)
 // 	resp.Body.Close()
 // 	if err != nil {
 // 		return err
@@ -597,18 +598,17 @@ func (m *Mesos) gatherMainMetrics(u *url.URL, role Role, acc cua.Accumulator) er
 	}
 
 	resp, err := m.client.Get(withPath(u, "/metrics/snapshot").String())
-
 	if err != nil {
-		return err
+		return fmt.Errorf("client get: %w", err)
 	}
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	resp.Body.Close()
 	if err != nil {
-		return err
+		return fmt.Errorf("read all: %w", err)
 	}
 
-	if err = json.Unmarshal([]byte(data), &jsonOut); err != nil {
+	if err = json.Unmarshal(data, &jsonOut); err != nil {
 		return errors.New("Error decoding JSON response")
 	}
 
@@ -617,9 +617,8 @@ func (m *Mesos) gatherMainMetrics(u *url.URL, role Role, acc cua.Accumulator) er
 	jf := jsonparser.Flattener{}
 
 	err = jf.FlattenJSON("", jsonOut)
-
 	if err != nil {
-		return err
+		return fmt.Errorf("flatten json: %w", err)
 	}
 
 	if role == MASTER {

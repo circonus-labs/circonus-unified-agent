@@ -123,7 +123,7 @@ func (d *DockerLogs) Init() error {
 	} else {
 		tlsConfig, err := d.ClientConfig.TLSConfig()
 		if err != nil {
-			return err
+			return fmt.Errorf("TLSConfig: %w", err)
 		}
 		d.client, err = d.newClient(d.Endpoint, tlsConfig)
 		if err != nil {
@@ -209,7 +209,7 @@ func (d *DockerLogs) Gather(acc cua.Accumulator) error {
 	defer cancel()
 	containers, err := d.client.ContainerList(ctx, d.opts)
 	if err != nil {
-		return err
+		return fmt.Errorf("container list: %w", err)
 	}
 
 	for _, container := range containers {
@@ -247,7 +247,7 @@ func (d *DockerLogs) hasTTY(ctx context.Context, container types.Container) (boo
 	defer cancel()
 	c, err := d.client.ContainerInspect(ctx, container.ID)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("container inspect: %w", err)
 	}
 	return c.Config.Tty, nil
 }
@@ -297,7 +297,7 @@ func (d *DockerLogs) tailContainerLogs(
 
 	logReader, err := d.client.ContainerLogs(ctx, container.ID, logOptions)
 	if err != nil {
-		return err
+		return fmt.Errorf("container logs: %w", err)
 	}
 
 	// If the container is using a TTY, there is only a single stream
@@ -370,7 +370,7 @@ func tailStream(
 			if errors.Is(err, io.EOF) {
 				return nil
 			}
-			return err
+			return fmt.Errorf("read: %w", err)
 		}
 	}
 }
@@ -408,7 +408,7 @@ func tailMultiplexed(
 	errWriter.Close()
 	src.Close()
 	wg.Wait()
-	return err
+	return fmt.Errorf("std copy: %w", err)
 }
 
 // Start is a noop which is required for a *DockerLogs to implement
@@ -426,7 +426,7 @@ func (d *DockerLogs) Stop() {
 func (d *DockerLogs) createContainerFilters() error {
 	filter, err := filter.NewIncludeExcludeFilter(d.ContainerInclude, d.ContainerExclude)
 	if err != nil {
-		return err
+		return fmt.Errorf("container filters: %w", err)
 	}
 	d.containerFilter = filter
 	return nil
@@ -435,7 +435,7 @@ func (d *DockerLogs) createContainerFilters() error {
 func (d *DockerLogs) createLabelFilters() error {
 	filter, err := filter.NewIncludeExcludeFilter(d.LabelInclude, d.LabelExclude)
 	if err != nil {
-		return err
+		return fmt.Errorf("label filters: %w", err)
 	}
 	d.labelFilter = filter
 	return nil
@@ -447,7 +447,7 @@ func (d *DockerLogs) createContainerStateFilters() error {
 	}
 	filter, err := filter.NewIncludeExcludeFilter(d.ContainerStateInclude, d.ContainerStateExclude)
 	if err != nil {
-		return err
+		return fmt.Errorf("container state filters: %w", err)
 	}
 	d.stateFilter = filter
 	return nil

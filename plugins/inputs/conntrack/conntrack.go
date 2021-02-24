@@ -4,7 +4,6 @@ package conntrack
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -90,7 +89,7 @@ func (c *Conntrack) Gather(acc cua.Accumulator) error {
 				continue
 			}
 
-			contents, err := ioutil.ReadFile(fName)
+			contents, err := os.ReadFile(fName)
 			if err != nil {
 				acc.AddError(fmt.Errorf("E! failed to read file '%s': %w", fName, err))
 				continue

@@ -3,6 +3,7 @@ package vsphere
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 	"time"
 
@@ -273,7 +274,7 @@ func (v *VSphere) Start(acc cua.Accumulator) error {
 	for i, rawURL := range v.Vcenters {
 		u, err := soap.ParseURL(rawURL)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse url (%s): %w", rawURL, err)
 		}
 		ep, err := NewEndpoint(ctx, v, u, v.Log)
 		if err != nil {

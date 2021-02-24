@@ -1,6 +1,7 @@
 package teamspeak
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
@@ -43,12 +44,12 @@ func (ts *Teamspeak) Gather(acc cua.Accumulator) error {
 	if !ts.connected {
 		ts.client, err = ts3.NewClient(ts.Server)
 		if err != nil {
-			return err
+			return fmt.Errorf("new client (%s): %w", ts.Server, err)
 		}
 
 		err = ts.client.Login(ts.Username, ts.Password)
 		if err != nil {
-			return err
+			return fmt.Errorf("login: %w", err)
 		}
 
 		ts.connected = true
@@ -60,13 +61,13 @@ func (ts *Teamspeak) Gather(acc cua.Accumulator) error {
 		sm, err := ts.client.Server.Info()
 		if err != nil {
 			ts.connected = false
-			return err
+			return fmt.Errorf("server info: %w", err)
 		}
 
 		sc, err := ts.client.Server.ServerConnectionInfo()
 		if err != nil {
 			ts.connected = false
-			return err
+			return fmt.Errorf("conn info: %w", err)
 		}
 
 		tags := map[string]string{

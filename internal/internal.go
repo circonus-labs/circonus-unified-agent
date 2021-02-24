@@ -121,11 +121,11 @@ func (s *Size) UnmarshalTOML(b []byte) error {
 	}
 	uq, err := strconv.Unquote(string(b))
 	if err != nil {
-		return err
+		return fmt.Errorf("unquote (%s): %w", string(b), err)
 	}
 	val, err = units.ParseStrictBytes(uq)
 	if err != nil {
-		return err
+		return fmt.Errorf("parsestrictbytes (%s): %w", uq, err)
 	}
 	s.Size = val
 	return nil
@@ -134,7 +134,7 @@ func (s *Size) UnmarshalTOML(b []byte) error {
 func (n *Number) UnmarshalTOML(b []byte) error {
 	value, err := strconv.ParseFloat(string(b), 64)
 	if err != nil {
-		return err
+		return fmt.Errorf("parsefloat (%s): %w", string(b), err)
 	}
 
 	n.Value = value
@@ -155,7 +155,7 @@ func ReadLines(filename string) ([]string, error) {
 func ReadLinesOffsetN(filename string, offset uint, n int) ([]string, error) {
 	f, err := os.Open(filename)
 	if err != nil {
-		return []string{""}, err
+		return []string{""}, fmt.Errorf("open (%s): %w", filename, err)
 	}
 	defer f.Close()
 
@@ -282,7 +282,10 @@ func ExitStatus(err error) (int, bool) {
 func (r *ReadWaitCloser) Close() error {
 	err := r.pipeReader.Close()
 	r.wg.Wait() // wait for the gzip goroutine finish
-	return err
+	if err != nil {
+		return fmt.Errorf("close: %w", err)
+	}
+	return nil
 }
 
 // CompressWithGzip takes an io.Reader as input and pipes
@@ -308,7 +311,7 @@ func CompressWithGzip(data io.Reader) (io.ReadCloser, error) {
 		rc.wg.Done()
 	}()
 
-	return pipeReader, err
+	return pipeReader, err //nolint:wrapcheck
 }
 
 // ParseTimestamp parses a Time according to the standard agent options.
@@ -380,7 +383,7 @@ func parseComponents(timestamp interface{}) (int64, int64, error) {
 
 		integer, err := strconv.ParseInt(ts, 10, 64)
 		if err != nil {
-			return 0, 0, err
+			return 0, 0, fmt.Errorf("parseint (%s): %w", ts, err)
 		}
 		return integer, 0, nil
 	case int64:
@@ -396,7 +399,7 @@ func parseComponents(timestamp interface{}) (int64, int64, error) {
 func parseUnixTimeComponents(first, second string) (int64, int64, error) {
 	integer, err := strconv.ParseInt(first, 10, 64)
 	if err != nil {
-		return 0, 0, err
+		return 0, 0, fmt.Errorf("parseint (%s): %w", first, err)
 	}
 
 	// Convert to nanoseconds, dropping any greater precision.
@@ -405,7 +408,7 @@ func parseUnixTimeComponents(first, second string) (int64, int64, error) {
 
 	fractional, err := strconv.ParseInt(string(buf), 10, 64)
 	if err != nil {
-		return 0, 0, err
+		return 0, 0, fmt.Errorf("parseint (%s): %w", string(buf), err)
 	}
 	return integer, fractional, nil
 }
@@ -416,7 +419,7 @@ func parseTime(format string, timestamp interface{}, location string) (time.Time
 	case string:
 		loc, err := time.LoadLocation(location)
 		if err != nil {
-			return time.Unix(0, 0), err
+			return time.Unix(0, 0), fmt.Errorf("loadlocation (%s): %w", location, err)
 		}
 		return time.ParseInLocation(format, ts, loc)
 	default:

@@ -12,15 +12,17 @@ type ConversionFunc func(value sql.RawBytes) (interface{}, error)
 
 func ParseInt(value sql.RawBytes) (interface{}, error) {
 	v, err := strconv.ParseInt(string(value), 10, 64)
-
-	// Ignore ErrRange.  When this error is set the returned value is "the
-	// maximum magnitude integer of the appropriate bitSize and sign."
-	var numErr *strconv.NumError
-	if errors.As(err, &numErr) && errors.Is(numErr.Err, strconv.ErrRange) {
-		return v, nil
+	if err != nil {
+		// Ignore ErrRange.  When this error is set the returned value is "the
+		// maximum magnitude integer of the appropriate bitSize and sign."
+		var numErr *strconv.NumError
+		if errors.As(err, &numErr) && errors.Is(numErr.Err, strconv.ErrRange) {
+			return v, nil
+		}
+		return v, fmt.Errorf("parseint (%s): %w", string(value), err)
 	}
 
-	return v, err
+	return v, nil
 }
 
 func ParseBoolAsInteger(value sql.RawBytes) (interface{}, error) {

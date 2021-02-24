@@ -110,7 +110,7 @@ func (r *Ras) Stop() {
 func (r *Ras) Gather(acc cua.Accumulator) error {
 	rows, err := r.db.Query(mceQuery, r.latestTimestamp)
 	if err != nil {
-		return err
+		return fmt.Errorf("ras db query: %w", err)
 	}
 	defer rows.Close()
 
@@ -313,7 +313,7 @@ func fetchMachineCheckError(rows *sql.Rows) (*machineCheckError, error) {
 	err := rows.Scan(&mcError.ID, &mcError.Timestamp, &mcError.ErrorMsg, &mcError.MciStatusMsg, &mcError.SocketID)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("ras row scan: %w", err)
 	}
 
 	return mcError, nil

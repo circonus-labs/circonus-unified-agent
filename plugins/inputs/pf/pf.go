@@ -173,7 +173,7 @@ func storeFieldValues(lines []string, regex *regexp.Regexp, fields map[string]in
 				if f.PfctlTitle == entries[1] {
 					var err error
 					if f.Value, err = strconv.ParseInt(entries[2], 10, 64); err != nil {
-						return err
+						return fmt.Errorf("parseint (%s): %w", entries[2], err)
 					}
 				}
 			}
@@ -200,7 +200,7 @@ func (pf *PF) callPfctl() (string, error) {
 		}
 		return string(out), fmt.Errorf("error running %s: %w: %s", pfctlCommand, oerr, eerr.Stderr)
 	}
-	return string(out), oerr
+	return string(out), nil
 }
 
 var execLookPath = exec.LookPath

@@ -127,7 +127,7 @@ func (a *Aurora) Gather(acc cua.Accumulator) error {
 func (a *Aurora) initialize() error {
 	tlsCfg, err := a.ClientConfig.TLSConfig()
 	if err != nil {
-		return err
+		return fmt.Errorf("TLSConfig: %w", err)
 	}
 
 	client := &http.Client{
@@ -141,7 +141,7 @@ func (a *Aurora) initialize() error {
 	for _, s := range a.Schedulers {
 		loc, err := url.Parse(s)
 		if err != nil {
-			return err
+			return fmt.Errorf("url parse (%s): %w", s, err)
 		}
 
 		urls = append(urls, loc)
@@ -178,7 +178,7 @@ func (a *Aurora) gatherRole(ctx context.Context, origin *url.URL) (RoleType, err
 	loc.Path = "leaderhealth"
 	req, err := http.NewRequest("GET", loc.String(), nil)
 	if err != nil {
-		return Unknown, err
+		return Unknown, fmt.Errorf("http new req (%s): %w", loc.String(), err)
 	}
 
 	if a.Username != "" || a.Password != "" {
@@ -188,7 +188,7 @@ func (a *Aurora) gatherRole(ctx context.Context, origin *url.URL) (RoleType, err
 
 	resp, err := a.client.Do(req.WithContext(ctx))
 	if err != nil {
-		return Unknown, err
+		return Unknown, fmt.Errorf("http do: %w", err)
 	}
 	resp.Body.Close()
 
@@ -211,7 +211,7 @@ func (a *Aurora) gatherScheduler(
 	loc.Path = "vars.json"
 	req, err := http.NewRequest("GET", loc.String(), nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("http new req (%s): %w", loc.String(), err)
 	}
 
 	if a.Username != "" || a.Password != "" {
@@ -221,7 +221,7 @@ func (a *Aurora) gatherScheduler(
 
 	resp, err := a.client.Do(req.WithContext(ctx))
 	if err != nil {
-		return err
+		return fmt.Errorf("http do: %w", err)
 	}
 	defer resp.Body.Close()
 

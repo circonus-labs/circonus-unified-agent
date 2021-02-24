@@ -3,7 +3,6 @@ package syslog
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"os"
 	"path/filepath"
@@ -289,11 +288,11 @@ func TestStrict_udp(t *testing.T) {
 }
 
 func TestBestEffort_unixgram(t *testing.T) {
-	if runtime.GOOS == "windows" {
+	if runtime.GOOS == goosWindows {
 		t.Skip("Skipping test on Windows, as unixgram sockets are not supported")
 	}
 
-	tmpdir, err := ioutil.TempDir("", "cua")
+	tmpdir, err := os.MkdirTemp("", "cua")
 	require.NoError(t, err)
 	defer os.RemoveAll(tmpdir)
 	sock := filepath.Join(tmpdir, "syslog.TestBestEffort_unixgram.sock")
@@ -302,11 +301,11 @@ func TestBestEffort_unixgram(t *testing.T) {
 }
 
 func TestStrict_unixgram(t *testing.T) {
-	if runtime.GOOS == "windows" {
+	if runtime.GOOS == goosWindows {
 		t.Skip("Skipping test on Windows, as unixgram sockets are not supported")
 	}
 
-	tmpdir, err := ioutil.TempDir("", "cua")
+	tmpdir, err := os.MkdirTemp("", "cua")
 	require.NoError(t, err)
 	defer os.RemoveAll(tmpdir)
 	sock := filepath.Join(tmpdir, "syslog.TestStrict_unixgram.sock")

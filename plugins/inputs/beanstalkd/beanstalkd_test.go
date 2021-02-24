@@ -2,6 +2,7 @@ package beanstalkd_test
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"net"
 	"net/textproto"
@@ -97,7 +98,7 @@ func TestBeanstalkd(t *testing.T) {
 func startTestServer(t *testing.T) (net.Listener, error) {
 	server, err := net.Listen("tcp", "localhost:0")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("net listen: %w", err)
 	}
 
 	go func() {

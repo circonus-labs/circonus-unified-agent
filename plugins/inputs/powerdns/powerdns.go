@@ -52,7 +52,7 @@ func (p *Powerdns) Gather(acc cua.Accumulator) error {
 func (p *Powerdns) gatherServer(address string, acc cua.Accumulator) error {
 	conn, err := net.DialTimeout("unix", address, defaultTimeout)
 	if err != nil {
-		return err
+		return fmt.Errorf("set dial timeout: %w", err)
 	}
 
 	defer conn.Close()
@@ -67,7 +67,7 @@ func (p *Powerdns) gatherServer(address string, acc cua.Accumulator) error {
 		return nil
 	}
 	if err := rw.Flush(); err != nil {
-		return err
+		return fmt.Errorf("flush: %w", err)
 	}
 
 	// Read data
@@ -77,7 +77,7 @@ func (p *Powerdns) gatherServer(address string, acc cua.Accumulator) error {
 		n, err := rw.Read(tmp)
 		if err != nil {
 			if !errors.Is(err, io.EOF) {
-				return err
+				return fmt.Errorf("read: %w", err)
 			}
 
 			break

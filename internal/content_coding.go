@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"errors"
+	"fmt"
 	"io"
 )
 
@@ -36,7 +37,7 @@ func NewGzipReader(r io.Reader) (io.Reader, error) {
 	// Reads the first gzip stream header.
 	z, err := gzip.NewReader(br)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("gzip new reader: %w", err)
 	}
 
 	// Prevent future calls to Read from reading the following gzip header.
@@ -50,7 +51,7 @@ func (r *GzipReader) Read(b []byte) (int, error) {
 		// Reads the next gzip header and prepares for the next stream.
 		err := r.z.Reset(r.r)
 		if err != nil {
-			return 0, err
+			return 0, fmt.Errorf("reset: %w", err)
 		}
 		r.z.Multistream(false)
 		r.endOfStream = false
@@ -64,7 +65,10 @@ func (r *GzipReader) Read(b []byte) (int, error) {
 		r.endOfStream = true
 		return n, nil
 	}
-	return n, err
+	if err != nil {
+		return n, fmt.Errorf("read: %w", err)
+	}
+	return n, nil
 
 }
 
@@ -117,11 +121,11 @@ func (e *GzipEncoder) Encode(data []byte) ([]byte, error) {
 
 	_, err := e.writer.Write(data)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("write: %w", err)
 	}
 	err = e.writer.Close()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("close: %w", err)
 	}
 	return e.buf.Bytes(), nil
 }
@@ -161,11 +165,11 @@ func (d *GzipDecoder) Decode(data []byte) ([]byte, error) {
 
 	_, err := d.buf.ReadFrom(d.reader)
 	if err != nil && !errors.Is(err, io.EOF) {
-		return nil, err
+		return nil, fmt.Errorf("read from: %w", err)
 	}
 	err = d.reader.Close()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("close: %w", err)
 	}
 	return d.buf.Bytes(), nil
 }

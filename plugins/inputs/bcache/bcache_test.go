@@ -3,7 +3,6 @@
 package bcache
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -49,31 +48,31 @@ func TestBcacheGeneratesMetrics(t *testing.T) {
 	err = os.MkdirAll(testBcacheUUIDPath+"/bdev0/stats_total", 0755)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(testBcacheUUIDPath+"/bdev0/dirty_data", []byte(dirtyData), 0600)
+	err = os.WriteFile(testBcacheUUIDPath+"/bdev0/dirty_data", []byte(dirtyData), 0600)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(testBcacheUUIDPath+"/bdev0/stats_total/bypassed", []byte(bypassed), 0600)
+	err = os.WriteFile(testBcacheUUIDPath+"/bdev0/stats_total/bypassed", []byte(bypassed), 0600)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(testBcacheUUIDPath+"/bdev0/stats_total/cache_bypass_hits", []byte(cacheBypassHits), 0600)
+	err = os.WriteFile(testBcacheUUIDPath+"/bdev0/stats_total/cache_bypass_hits", []byte(cacheBypassHits), 0600)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(testBcacheUUIDPath+"/bdev0/stats_total/cache_bypass_misses", []byte(cacheBypassMisses), 0600)
+	err = os.WriteFile(testBcacheUUIDPath+"/bdev0/stats_total/cache_bypass_misses", []byte(cacheBypassMisses), 0600)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(testBcacheUUIDPath+"/bdev0/stats_total/cache_hit_ratio", []byte(cacheHitRatio), 0600)
+	err = os.WriteFile(testBcacheUUIDPath+"/bdev0/stats_total/cache_hit_ratio", []byte(cacheHitRatio), 0600)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(testBcacheUUIDPath+"/bdev0/stats_total/cache_hits", []byte(cacheHits), 0600)
+	err = os.WriteFile(testBcacheUUIDPath+"/bdev0/stats_total/cache_hits", []byte(cacheHits), 0600)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(testBcacheUUIDPath+"/bdev0/stats_total/cache_miss_collisions", []byte(cacheMissCollisions), 0600)
+	err = os.WriteFile(testBcacheUUIDPath+"/bdev0/stats_total/cache_miss_collisions", []byte(cacheMissCollisions), 0600)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(testBcacheUUIDPath+"/bdev0/stats_total/cache_misses", []byte(cacheMisses), 0600)
+	err = os.WriteFile(testBcacheUUIDPath+"/bdev0/stats_total/cache_misses", []byte(cacheMisses), 0600)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(testBcacheUUIDPath+"/bdev0/stats_total/cache_readaheads", []byte(cacheReadaheads), 0600)
+	err = os.WriteFile(testBcacheUUIDPath+"/bdev0/stats_total/cache_readaheads", []byte(cacheReadaheads), 0600)
 	require.NoError(t, err)
 
 	fields := map[string]interface{}{

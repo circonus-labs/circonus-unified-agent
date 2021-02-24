@@ -2,6 +2,7 @@ package vsphere
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"strings"
 
@@ -97,7 +98,7 @@ func (f *Finder) descend(ctx context.Context, root types.ManagedObjectReference,
 	m := view.NewManager(f.client.Client.Client)
 	v, err := m.CreateContainerView(ctx, root, ct, false)
 	if err != nil {
-		return err
+		return fmt.Errorf("create container view: %w", err)
 	}
 	defer func() {
 		_ = v.Destroy(ctx)
@@ -117,14 +118,14 @@ func (f *Finder) descend(ctx context.Context, root types.ManagedObjectReference,
 			// recursively in a single call.
 			v2, err := m.CreateContainerView(ctx, root, []string{resType}, true)
 			if err != nil {
-				return err
+				return fmt.Errorf("create container view: %w", err)
 			}
 			defer func() {
 				_ = v2.Destroy(ctx)
 			}()
 			err = v2.Retrieve(ctx, []string{resType}, fields, &content)
 			if err != nil {
-				return err
+				return fmt.Errorf("retrieve: %w", err)
 			}
 			for _, c := range content {
 				objs[c.Obj.String()] = c
@@ -135,7 +136,7 @@ func (f *Finder) descend(ctx context.Context, root types.ManagedObjectReference,
 	}
 	err = v.Retrieve(ctx, types, fields, &content)
 	if err != nil {
-		return err
+		return fmt.Errorf("retrieve: %w", err)
 	}
 
 	rerunAsLeaf := false
@@ -210,7 +211,7 @@ func objectContentToTypedArray(objs map[string]types.ObjectContent, dst interfac
 	for _, p := range objs {
 		v, err := mo.ObjectContentToType(p)
 		if err != nil {
-			return err
+			return fmt.Errorf("obj to type: %w", err)
 		}
 
 		vt := reflect.TypeOf(v)

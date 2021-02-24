@@ -3,7 +3,7 @@ package procstat
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strconv"
@@ -402,7 +402,7 @@ func (p *Procstat) systemdUnitPIDs() ([]PID, error) {
 	cmd := execCommand("systemctl", "show", p.SystemdUnit)
 	out, err := cmd.Output()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("cmd output: %w", err)
 	}
 	for _, line := range bytes.Split(out, []byte{'\n'}) {
 		kv := bytes.SplitN(line, []byte{'='}, 2)
@@ -432,9 +432,9 @@ func (p *Procstat) cgroupPIDs() ([]PID, error) {
 		procsPath = "/sys/fs/cgroup/" + procsPath
 	}
 	procsPath = filepath.Join(procsPath, "cgroup.procs")
-	out, err := ioutil.ReadFile(procsPath)
+	out, err := os.ReadFile(procsPath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("readfile (%s): %w", procsPath, err)
 	}
 	for _, pidBS := range bytes.Split(out, []byte{'\n'}) {
 		if len(pidBS) == 0 {

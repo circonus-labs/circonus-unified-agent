@@ -1,6 +1,7 @@
 package sflow
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 
@@ -36,7 +37,7 @@ func makeMetrics(p *V5Format) ([]cua.Metric, error) {
 				}
 				m, err := metric.New("sflow", tags2, fields2, now)
 				if err != nil {
-					return nil, err
+					return nil, fmt.Errorf("metric new: %w", err)
 				}
 				metrics = append(metrics, m)
 			}

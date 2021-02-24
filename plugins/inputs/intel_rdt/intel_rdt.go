@@ -430,11 +430,11 @@ func validateAndParseCores(coreStr string) ([]int, error) {
 
 		startValue, err := strconv.Atoi(rangeValues[0])
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("atoi (%s): %w", rangeValues[0], err)
 		}
 		stopValue, err := strconv.Atoi(rangeValues[1])
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("atoi (%s): %w", rangeValues[1], err)
 		}
 
 		if startValue > stopValue {
@@ -446,7 +446,7 @@ func validateAndParseCores(coreStr string) ([]int, error) {
 	} else {
 		newCore, err := strconv.Atoi(coreStr)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("atoi (%s): %w", coreStr, err)
 		}
 		processedCores = append(processedCores, newCore)
 	}
@@ -499,7 +499,7 @@ func splitMeasurementLine(line string) ([]string, error) {
 func parseTime(value string) (time.Time, error) {
 	timestamp, err := time.Parse(timestampFormat, value)
 	if err != nil {
-		return time.Time{}, err
+		return time.Time{}, fmt.Errorf("time parse (%s): %w", value, err)
 	}
 	return timestamp, nil
 }
@@ -507,7 +507,7 @@ func parseTime(value string) (time.Time, error) {
 func parseFloat(value string) (float64, error) {
 	result, err := strconv.ParseFloat(value, 64)
 	if err != nil {
-		return result, err
+		return result, fmt.Errorf("parse float (%s): %w", value, err)
 	}
 	return result, nil
 }

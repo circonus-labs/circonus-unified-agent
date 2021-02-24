@@ -25,8 +25,15 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
 )
 
-const defaultReadTimeout = time.Second * 5
-const ipMaxPacketSize = 64 * 1024
+const (
+	defaultReadTimeout = time.Second * 5
+	ipMaxPacketSize    = 64 * 1024
+	localhost          = "localhost"
+	goosWindows        = "windows"
+	schemeUnix         = "unix"
+	schemeUnixgram     = "unixgram"
+	schemeUnixpacket   = "unixpacket"
+)
 
 // Syslog is a syslog plugin
 type Syslog struct {
@@ -132,28 +139,28 @@ func (s *Syslog) Start(acc cua.Accumulator) error {
 	s.Address = host
 
 	switch scheme {
-	case "tcp", "tcp4", "tcp6", "unix", "unixpacket":
+	case "tcp", "tcp4", "tcp6", schemeUnix, schemeUnixpacket:
 		s.isStream = true
-	case "udp", "udp4", "udp6", "ip", "ip4", "ip6", "unixgram":
+	case "udp", "udp4", "udp6", "ip", "ip4", "ip6", schemeUnixgram:
 		s.isStream = false
 	default:
 		return fmt.Errorf("unknown protocol '%s' in '%s'", scheme, s.Address)
 	}
 
-	if scheme == "unix" || scheme == "unixpacket" || scheme == "unixgram" {
+	if scheme == schemeUnix || scheme == schemeUnixpacket || scheme == schemeUnixgram {
 		os.Remove(s.Address)
 	}
 
 	if s.isStream {
 		l, err := net.Listen(scheme, s.Address)
 		if err != nil {
-			return err
+			return fmt.Errorf("net listen (%s %s): %w", scheme, s.Address, err)
 		}
 		s.Closer = l
 		s.tcpListener = l
 		s.tlsConfig, err = s.TLSConfig()
 		if err != nil {
-			return err
+			return fmt.Errorf("TLSConfig: %w", err)
 		}
 
 		s.wg.Add(1)
@@ -161,7 +168,7 @@ func (s *Syslog) Start(acc cua.Accumulator) error {
 	} else {
 		l, err := net.ListenPacket(scheme, s.Address)
 		if err != nil {
-			return err
+			return fmt.Errorf("net listen pkt (%s %s): %w", scheme, s.Address, err)
 		}
 		s.Closer = l
 		s.udpListener = l
@@ -170,7 +177,7 @@ func (s *Syslog) Start(acc cua.Accumulator) error {
 		go s.listenPacket(acc)
 	}
 
-	if scheme == "unix" || scheme == "unixpacket" || scheme == "unixgram" {
+	if scheme == schemeUnix || scheme == schemeUnixpacket || scheme == schemeUnixgram {
 		s.Closer = unixCloser{path: s.Address, closer: s.Closer}
 	}
 
@@ -202,7 +209,7 @@ func getAddressParts(a string) (string, string, error) {
 		return "", "", fmt.Errorf("could not parse address '%s': %w", a, err)
 	}
 	switch u.Scheme {
-	case "unix", "unixpacket", "unixgram":
+	case schemeUnix, schemeUnixpacket, schemeUnixgram:
 		return parts[0], parts[1], nil
 	}
 
@@ -344,7 +351,7 @@ func (s *Syslog) setKeepAlive(c *net.TCPConn) error {
 		return c.SetKeepAlive(false)
 	}
 	if err := c.SetKeepAlive(true); err != nil {
-		return err
+		return fmt.Errorf("set keepalive: %w", err)
 	}
 	return c.SetKeepAlivePeriod(s.KeepAlivePeriod.Duration)
 }
@@ -423,9 +430,15 @@ type unixCloser struct {
 }
 
 func (uc unixCloser) Close() error {
-	err := uc.closer.Close()
-	os.Remove(uc.path) // ignore error
-	return err
+	if err := uc.closer.Close(); err != nil {
+		return fmt.Errorf("close: %w", err)
+	}
+
+	if err := os.Remove(uc.path); err != nil {
+		return fmt.Errorf("remove (%s): %w", uc.path, err)
+	}
+
+	return nil
 }
 
 func (s *Syslog) time() time.Time {

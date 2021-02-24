@@ -48,6 +48,8 @@ type Attribute struct {
 
 var levels = []string{"ok", "warning", "critical", "unknown"}
 
+const objTypeServices = "services"
+
 type ObjectType string
 
 var sampleConfig = `
@@ -97,7 +99,7 @@ func (i *Icinga2) GatherStatus(acc cua.Accumulator, checks []Object) {
 
 		// source is dependent on 'services' or 'hosts' check
 		source := check.Attrs.Name
-		if i.ObjectType == "services" {
+		if i.ObjectType == objTypeServices {
 			source = check.Attrs.HostName
 		}
 
@@ -118,7 +120,7 @@ func (i *Icinga2) GatherStatus(acc cua.Accumulator, checks []Object) {
 func (i *Icinga2) createHTTPClient() (*http.Client, error) {
 	tlsCfg, err := i.ClientConfig.TLSConfig()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("TLSConfig: %w", err)
 	}
 
 	client := &http.Client{
@@ -148,7 +150,7 @@ func (i *Icinga2) Gather(acc cua.Accumulator) error {
 
 	// Note: attrs=host_name is only valid for 'services' requests, using check.Attrs.HostName for the host
 	//       'hosts' requests will need to use attrs=name only, using check.Attrs.Name for the host
-	if i.ObjectType == "services" {
+	if i.ObjectType == objTypeServices {
 		requestURL += "&attrs=host_name"
 	}
 
@@ -156,7 +158,7 @@ func (i *Icinga2) Gather(acc cua.Accumulator) error {
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("new request (%s): %w", url, err)
 	}
 
 	if i.Username != "" {
@@ -165,15 +167,14 @@ func (i *Icinga2) Gather(acc cua.Accumulator) error {
 
 	resp, err := i.client.Do(req)
 	if err != nil {
-		return err
+		return fmt.Errorf("http do: %w", err)
 	}
 
 	defer resp.Body.Close()
 
 	result := Result{}
-	_ = json.NewDecoder(resp.Body).Decode(&result)
-	if err != nil {
-		return err
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return fmt.Errorf("json decode: %w", err)
 	}
 
 	i.GatherStatus(acc, result.Results)

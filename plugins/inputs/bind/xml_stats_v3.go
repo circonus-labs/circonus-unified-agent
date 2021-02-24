@@ -142,7 +142,7 @@ func (b *Bind) readStatsXMLv3(addr *url.URL, acc cua.Accumulator) error {
 
 		resp, err := client.Get(scrapeURL)
 		if err != nil {
-			return err
+			return fmt.Errorf("http get (%s): %w", scrapeURL, err)
 		}
 
 		defer resp.Body.Close()

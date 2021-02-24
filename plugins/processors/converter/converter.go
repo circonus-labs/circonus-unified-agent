@@ -113,41 +113,43 @@ func compileFilter(conv *Conversion) (*ConversionFilter, error) {
 		return nil, nil
 	}
 
+	const errFmt = "filter compile: %w"
+
 	var err error
 	cf := &ConversionFilter{}
 	cf.Measurement, err = filter.Compile(conv.Measurement)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(errFmt, err)
 	}
 
 	cf.Tag, err = filter.Compile(conv.Tag)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(errFmt, err)
 	}
 
 	cf.String, err = filter.Compile(conv.String)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(errFmt, err)
 	}
 
 	cf.Integer, err = filter.Compile(conv.Integer)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(errFmt, err)
 	}
 
 	cf.Unsigned, err = filter.Compile(conv.Unsigned)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(errFmt, err)
 	}
 
 	cf.Boolean, err = filter.Compile(conv.Boolean)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(errFmt, err)
 	}
 
 	cf.Float, err = filter.Compile(conv.Float)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(errFmt, err)
 	}
 
 	return cf, nil

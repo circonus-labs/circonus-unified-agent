@@ -72,7 +72,7 @@ func (smi *NvidiaSMI) pollSMI() ([]byte, error) {
 		exec.Command(smi.BinPath, "-q", "-x"), //nolint:gosec // G204
 		smi.Timeout.Duration)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("combined output timeout: %w", err)
 	}
 	return ret, nil
 }
@@ -81,7 +81,7 @@ func gatherNvidiaSMI(ret []byte, acc cua.Accumulator) error {
 	smi := &SMI{}
 	err := xml.Unmarshal(ret, smi)
 	if err != nil {
-		return err
+		return fmt.Errorf("xml unmarshal: %w", err)
 	}
 
 	metrics := smi.genTagsFields()

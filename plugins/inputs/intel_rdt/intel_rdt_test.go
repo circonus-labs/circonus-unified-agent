@@ -46,8 +46,9 @@ func TestAssociateProcessesWithPIDs(t *testing.T) {
 }
 
 func TestSplitCSVLineIntoValues(t *testing.T) {
-	line := "2020-08-12 13:34:36,\"45417,29170\",37,44,0.00,0,0.0,0.0,0.0,0.0"
-	expectedTimeValue := "2020-08-12 13:34:36"
+	const tm = "2020-08-12 13:34:36"
+	line := tm + ",\"45417,29170\",37,44,0.00,0,0.0,0.0,0.0,0.0"
+	expectedTimeValue := tm
 	expectedMetricsValue := []string{"0.00", "0", "0.0", "0.0", "0.0", "0.0"}
 	expectedCoreOrPidsValue := []string{"\"45417", "29170\"", "37", "44"}
 
@@ -57,7 +58,7 @@ func TestSplitCSVLineIntoValues(t *testing.T) {
 	assert.Equal(t, expectedMetricsValue, metricsValue)
 	assert.Equal(t, expectedCoreOrPidsValue, coreOrPidsValue)
 
-	wrongLine := "2020-08-12 13:34:36,37,44,0.00,0,0.0"
+	wrongLine := tm + ",37,44,0.00,0,0.0"
 	timeValue, metricsValue, coreOrPidsValue, err = splitCSVLineIntoValues(wrongLine)
 	assert.NotNil(t, err)
 	assert.Equal(t, "", timeValue)

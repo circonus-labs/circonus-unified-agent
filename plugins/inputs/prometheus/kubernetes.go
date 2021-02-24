@@ -3,10 +3,10 @@ package prometheus
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/url"
+	"os"
 	"os/user"
 	"path/filepath"
 	"sync"
@@ -25,7 +25,7 @@ import (
 // loadClient parses a kubeconfig from a file and returns a Kubernetes
 // client. It does not support extensions or client auth providers.
 func loadClient(kubeconfigPath string) (*k8s.Client, error) {
-	data, err := ioutil.ReadFile(kubeconfigPath)
+	data, err := os.ReadFile(kubeconfigPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed reading '%s': %w", kubeconfigPath, err)
 	}
@@ -33,7 +33,7 @@ func loadClient(kubeconfigPath string) (*k8s.Client, error) {
 	// Unmarshal YAML into a Kubernetes config object.
 	var config k8s.Config
 	if err := yaml.Unmarshal(data, &config); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("yaml unmarshal: %w", err)
 	}
 	return k8s.NewClient(&config)
 }
@@ -88,7 +88,7 @@ func (p *Prometheus) watch(ctx context.Context, client *k8s.Client) error {
 	// pod := &corev1.Pod{}
 	watcher, err := client.Watch(ctx, p.PodNamespace, &corev1.Pod{}, selectors...)
 	if err != nil {
-		return err
+		return fmt.Errorf("k8s watch: %w", err)
 	}
 	defer watcher.Close()
 
@@ -101,7 +101,7 @@ func (p *Prometheus) watch(ctx context.Context, client *k8s.Client) error {
 			// An error here means we need to reconnect the watcher.
 			eventType, err := watcher.Next(pod)
 			if err != nil {
-				return err
+				return fmt.Errorf("k8s watch next: %w", err)
 			}
 
 			// If the pod is not "ready", there will be no ip associated with it.

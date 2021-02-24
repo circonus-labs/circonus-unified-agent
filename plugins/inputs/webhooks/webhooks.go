@@ -111,7 +111,7 @@ func (wh *Webhooks) Start(acc cua.Accumulator) error {
 	ln, err := net.Listen("tcp", wh.ServiceAddress)
 	if err != nil {
 		log.Fatalf("E! Error starting server: %v", err)
-		return err
+		return fmt.Errorf("listen (%s): %w", wh.ServiceAddress, err)
 
 	}
 

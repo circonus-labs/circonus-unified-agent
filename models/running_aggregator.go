@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
@@ -88,7 +89,7 @@ func (r *RunningAggregator) Init() error {
 	if p, ok := r.Aggregator.(cua.Initializer); ok {
 		err := p.Init()
 		if err != nil {
-			return err
+			return fmt.Errorf("init (aggregator %s): %w", r.Config.Name, err)
 		}
 	}
 	return nil

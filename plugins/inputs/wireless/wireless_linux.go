@@ -4,7 +4,7 @@ package wireless
 
 import (
 	"bytes"
-	"io/ioutil"
+	"fmt"
 	"log"
 	"os"
 	"path"
@@ -46,9 +46,9 @@ func (w *Wireless) Gather(acc cua.Accumulator) error {
 	w.loadPath()
 
 	wirelessPath := path.Join(w.HostProc, "net", "wireless")
-	table, err := ioutil.ReadFile(wirelessPath)
+	table, err := os.ReadFile(wirelessPath)
 	if err != nil {
-		return err
+		return fmt.Errorf("wireless readfile (%s): %w", wirelessPath, err)
 	}
 
 	interfaces, err := loadWirelessTable(table)
@@ -94,7 +94,7 @@ func loadWirelessTable(table []byte) ([]*wirelessInterface, error) {
 		for j := 1; j < len(fields); j++ {
 			v, err := strconv.ParseInt(strings.Trim(fields[j], "."), 10, 64)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("wireless parseint (%s): %w", strings.Trim(fields[j], "."), err)
 			}
 			values = append(values, v)
 		}

@@ -3,7 +3,7 @@ package http_test
 import (
 	"compress/gzip"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -13,6 +13,8 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/testutil"
 	"github.com/stretchr/testify/require"
 )
+
+const metricName = "metricName"
 
 func TestHTTPwithJSONFormat(t *testing.T) {
 	fakeServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -28,11 +30,10 @@ func TestHTTPwithJSONFormat(t *testing.T) {
 	plugin := &plugin.HTTP{
 		URLs: []string{url},
 	}
-	metricName := "metricName"
 
 	p, _ := parsers.NewParser(&parsers.Config{
 		DataFormat: "json",
-		MetricName: "metricName",
+		MetricName: metricName,
 	})
 	plugin.SetParser(p)
 
@@ -74,7 +75,7 @@ func TestHTTPHeaders(t *testing.T) {
 
 	p, _ := parsers.NewParser(&parsers.Config{
 		DataFormat: "json",
-		MetricName: "metricName",
+		MetricName: metricName,
 	})
 	plugin.SetParser(p)
 
@@ -94,7 +95,6 @@ func TestInvalidStatusCode(t *testing.T) {
 		URLs: []string{url},
 	}
 
-	metricName := "metricName"
 	p, _ := parsers.NewParser(&parsers.Config{
 		DataFormat: "json",
 		MetricName: metricName,
@@ -118,7 +118,6 @@ func TestSuccessStatusCodes(t *testing.T) {
 		SuccessStatusCodes: []int{200, 202},
 	}
 
-	metricName := "metricName"
 	p, _ := parsers.NewParser(&parsers.Config{
 		DataFormat: "json",
 		MetricName: metricName,
@@ -147,7 +146,7 @@ func TestMethod(t *testing.T) {
 
 	p, _ := parsers.NewParser(&parsers.Config{
 		DataFormat: "json",
-		MetricName: "metricName",
+		MetricName: metricName,
 	})
 	plugin.SetParser(p)
 
@@ -180,7 +179,7 @@ func TestBodyAndContentEncoding(t *testing.T) {
 				URLs:   []string{url},
 			},
 			queryHandlerFunc: func(t *testing.T, w http.ResponseWriter, r *http.Request) {
-				body, err := ioutil.ReadAll(r.Body)
+				body, err := io.ReadAll(r.Body)
 				require.NoError(t, err)
 				require.Equal(t, []byte(""), body)
 				w.WriteHeader(http.StatusOK)
@@ -194,7 +193,7 @@ func TestBodyAndContentEncoding(t *testing.T) {
 				Body:   "test",
 			},
 			queryHandlerFunc: func(t *testing.T, w http.ResponseWriter, r *http.Request) {
-				body, err := ioutil.ReadAll(r.Body)
+				body, err := io.ReadAll(r.Body)
 				require.NoError(t, err)
 				require.Equal(t, []byte("test"), body)
 				w.WriteHeader(http.StatusOK)
@@ -208,7 +207,7 @@ func TestBodyAndContentEncoding(t *testing.T) {
 				Body:   "test",
 			},
 			queryHandlerFunc: func(t *testing.T, w http.ResponseWriter, r *http.Request) {
-				body, err := ioutil.ReadAll(r.Body)
+				body, err := io.ReadAll(r.Body)
 				require.NoError(t, err)
 				require.Equal(t, []byte("test"), body)
 				w.WriteHeader(http.StatusOK)
@@ -227,7 +226,7 @@ func TestBodyAndContentEncoding(t *testing.T) {
 
 				gr, err := gzip.NewReader(r.Body)
 				require.NoError(t, err)
-				body, err := ioutil.ReadAll(gr)
+				body, err := io.ReadAll(gr)
 				require.NoError(t, err)
 				require.Equal(t, []byte("test"), body)
 				w.WriteHeader(http.StatusOK)

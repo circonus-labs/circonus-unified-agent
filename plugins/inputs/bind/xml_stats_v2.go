@@ -91,7 +91,7 @@ func (b *Bind) readStatsXMLv2(addr *url.URL, acc cua.Accumulator) error {
 
 	resp, err := client.Get(addr.String())
 	if err != nil {
-		return err
+		return fmt.Errorf("http get (%s): %w", addr.String(), err)
 	}
 
 	defer resp.Body.Close()
@@ -110,11 +110,11 @@ func (b *Bind) readStatsXMLv2(addr *url.URL, acc cua.Accumulator) error {
 	tags["port"] = port
 
 	// Opcodes
-	tags["type"] = "opcode"
+	tags["type"] = opcode
 	addXMLv2Counter(acc, tags, stats.Statistics.Server.OpCodes)
 
 	// Query RDATA types
-	tags["type"] = "qtype"
+	tags["type"] = qtype
 	addXMLv2Counter(acc, tags, stats.Statistics.Server.RdTypes)
 
 	// Nameserver stats
@@ -155,7 +155,7 @@ func (b *Bind) readStatsXMLv2(addr *url.URL, acc cua.Accumulator) error {
 			tags := map[string]string{"url": addr.Host, "view": v.Name}
 
 			// Query RDATA types
-			tags["type"] = "qtype"
+			tags["type"] = qtype
 			addXMLv2Counter(acc, tags, v.RdTypes)
 
 			// Resolver stats

@@ -204,7 +204,7 @@ func (l *LeoFS) gatherServer(
 	cmd := exec.Command("snmpwalk", "-v2c", "-cpublic", "-On", endpoint, oid)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		return err
+		return fmt.Errorf("cmd stdout: %w", err)
 	}
 	_ = cmd.Start()
 	defer internal.WaitTimeout(cmd, time.Second*5) //nolint:errcheck

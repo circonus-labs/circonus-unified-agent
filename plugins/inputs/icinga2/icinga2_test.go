@@ -34,7 +34,7 @@ func TestGatherServicesStatus(t *testing.T) {
 
 	icinga2 := new(Icinga2)
 	icinga2.Log = testutil.Logger{}
-	icinga2.ObjectType = "services"
+	icinga2.ObjectType = objTypeServices
 	icinga2.Server = "https://localhost:5665"
 
 	var acc testutil.Accumulator

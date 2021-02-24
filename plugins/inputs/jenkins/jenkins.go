@@ -144,7 +144,7 @@ func (j *Jenkins) initialize(client *http.Client) error {
 	// init jenkins tags
 	u, err := url.Parse(j.URL)
 	if err != nil {
-		return err
+		return fmt.Errorf("url parse (%s): %w", j.URL, err)
 	}
 	if u.Port() == "" {
 		if u.Scheme == "http" {
@@ -424,7 +424,7 @@ type buildResponse struct {
 }
 
 func (b *buildResponse) GetTimestamp() time.Time {
-	return time.Unix(0, int64(b.Timestamp)*int64(time.Millisecond))
+	return time.Unix(0, b.Timestamp*int64(time.Millisecond))
 }
 
 const (
@@ -497,7 +497,7 @@ func mapResultCode(s string) int {
 func init() {
 	inputs.Add("jenkins", func() cua.Input {
 		return &Jenkins{
-			MaxBuildAge:       internal.Duration{Duration: time.Duration(time.Hour)},
+			MaxBuildAge:       internal.Duration{Duration: time.Hour},
 			MaxConnections:    5,
 			MaxSubJobPerLayer: 10,
 		}

@@ -89,7 +89,7 @@ func (n *NginxPlus) createHTTPClient() (*http.Client, error) {
 
 	tlsConfig, err := n.ClientConfig.TLSConfig()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("TLSConfig: %w", err)
 	}
 
 	client := &http.Client{

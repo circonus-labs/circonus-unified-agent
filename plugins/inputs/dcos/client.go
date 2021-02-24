@@ -154,29 +154,27 @@ func (c *ClusterClient) Login(ctx context.Context, sa *ServiceAccount) (*AuthTok
 
 	octets, err := json.Marshal(body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("json marshal: %w", err)
 	}
 
 	loc := c.url("/acs/api/v1/auth/login")
 	req, err := http.NewRequest("POST", loc, bytes.NewBuffer(octets))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("http request (%s): %w", loc, err)
 	}
 	req.Header.Add("Content-Type", "application/json")
 
 	req = req.WithContext(ctx)
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("http do: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusOK {
 		auth := &LoginAuth{}
-		dec := json.NewDecoder(resp.Body)
-		err = dec.Decode(auth)
-		if err != nil {
-			return nil, err
+		if err := json.NewDecoder(resp.Body).Decode(auth); err != nil {
+			return nil, fmt.Errorf("json decode: %w", err)
 		}
 
 		token := &AuthToken{
@@ -264,7 +262,7 @@ func (c *ClusterClient) GetAppMetrics(ctx context.Context, node, container strin
 func createGetRequest(url string, token string) (*http.Request, error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("new request (%s): %w", url, err)
 	}
 
 	if token != "" {
@@ -291,7 +289,7 @@ func (c *ClusterClient) doGet(ctx context.Context, url string, v interface{}) er
 	resp, err := c.httpClient.Do(req.WithContext(ctx))
 	if err != nil {
 		<-c.semaphore
-		return err
+		return fmt.Errorf("http do: %w", err)
 	}
 	defer func() {
 		resp.Body.Close()
@@ -315,8 +313,11 @@ func (c *ClusterClient) doGet(ctx context.Context, url string, v interface{}) er
 		return nil
 	}
 
-	err = json.NewDecoder(resp.Body).Decode(v)
-	return err
+	if err := json.NewDecoder(resp.Body).Decode(v); err != nil {
+		return fmt.Errorf("json decode: %w", err)
+	}
+
+	return nil
 }
 
 func (c *ClusterClient) url(path string) string {

@@ -253,7 +253,7 @@ func newGrokParser(metricName string,
 	}
 
 	err := parser.Compile()
-	return &parser, err
+	return &parser, fmt.Errorf("parser compile: %w", err)
 }
 
 func NewNagiosParser() (Parser, error) {
@@ -314,9 +314,9 @@ func NewDropwizardParser(
 	parser.DefaultTags = defaultTags
 	err := parser.SetTemplates(separator, templates)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("parser set templates: %w", err)
 	}
-	return parser, err
+	return parser, nil
 }
 
 // NewLogFmtParser returns a logfmt parser with the default options.

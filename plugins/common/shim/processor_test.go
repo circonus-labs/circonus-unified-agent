@@ -3,7 +3,6 @@ package shim
 import (
 	"bufio"
 	"io"
-	"io/ioutil"
 	"sync"
 	"testing"
 	"time"
@@ -67,7 +66,7 @@ func TestProcessorShim(t *testing.T) {
 	require.Equal(t, "mom", val)
 
 	go func() {
-		_, _ = ioutil.ReadAll(r)
+		_, _ = io.ReadAll(r)
 	}()
 	wg.Wait()
 }

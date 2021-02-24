@@ -64,7 +64,7 @@ func (c *CiscoTelemetryMDT) Start(acc cua.Accumulator) error {
 	c.acc = acc
 	c.listener, err = net.Listen("tcp", c.ServiceAddress)
 	if err != nil {
-		return err
+		return fmt.Errorf("net listen tcp (%s): %w", c.ServiceAddress, err)
 	}
 
 	// Invert aliases list
@@ -98,7 +98,7 @@ func (c *CiscoTelemetryMDT) Start(acc cua.Accumulator) error {
 		tlsConfig, err := c.ServerConfig.TLSConfig()
 		if err != nil {
 			c.listener.Close()
-			return err
+			return fmt.Errorf("TLSConfig: %w", err)
 		} else if tlsConfig != nil {
 			opts = append(opts, grpc.Creds(credentials.NewTLS(tlsConfig)))
 		}
@@ -187,7 +187,7 @@ func (c *CiscoTelemetryMDT) handleTCPClient(conn io.Reader) error {
 	for {
 		// Read and validate dialout telemetry header
 		if err := binary.Read(conn, binary.BigEndian, &hdr); err != nil {
-			return err
+			return fmt.Errorf("read: %w", err)
 		}
 
 		maxMsgSize := tcpMaxMsgLen
@@ -205,7 +205,7 @@ func (c *CiscoTelemetryMDT) handleTCPClient(conn io.Reader) error {
 		payload.Reset()
 		if size, err := payload.ReadFrom(io.LimitReader(conn, int64(hdr.MsgLen))); size != int64(hdr.MsgLen) {
 			if err != nil {
-				return err
+				return fmt.Errorf("payload read: %w", err)
 			}
 			return fmt.Errorf("TCP dialout premature EOF")
 		}

@@ -83,7 +83,7 @@ func (z *Zookeeper) Gather(acc cua.Accumulator) error {
 	if !z.initialized {
 		tlsConfig, err := z.ClientConfig.TLSConfig()
 		if err != nil {
-			return err
+			return fmt.Errorf("TLSConfig: %w", err)
 		}
 		z.tlsConfig = tlsConfig
 		z.initialized = true
@@ -137,7 +137,7 @@ func (z *Zookeeper) gatherServer(ctx context.Context, address string, acc cua.Ac
 	fields := make(map[string]interface{})
 	for scanner.Scan() {
 		line := scanner.Text()
-		parts := zookeeperFormatRE.FindStringSubmatch(string(line))
+		parts := zookeeperFormatRE.FindStringSubmatch(line)
 
 		if len(parts) != 3 {
 			return fmt.Errorf("unexpected line in mntr response: %q", line)
@@ -147,7 +147,7 @@ func (z *Zookeeper) gatherServer(ctx context.Context, address string, acc cua.Ac
 		if measurement == "server_state" {
 			zookeeperState = parts[2]
 		} else {
-			sValue := string(parts[2])
+			sValue := parts[2]
 
 			iVal, err := strconv.ParseInt(sValue, 10, 64)
 			if err == nil {

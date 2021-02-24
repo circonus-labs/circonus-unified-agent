@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -131,7 +130,7 @@ func (p *Processes) gatherFromPS(fields map[string]interface{}) error {
 func (p *Processes) gatherFromProc(fields map[string]interface{}) error {
 	filenames, err := filepath.Glob(linuxsysctlfs.GetHostProc() + "/[0-9]*/stat")
 	if err != nil {
-		return err
+		return fmt.Errorf("glob: %w", err)
 	}
 
 	for _, filename := range filenames {
@@ -192,7 +191,7 @@ func (p *Processes) gatherFromProc(fields map[string]interface{}) error {
 }
 
 func readProcFile(filename string) ([]byte, error) {
-	data, err := ioutil.ReadFile(filename)
+	data, err := os.ReadFile(filename)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, nil
@@ -205,7 +204,7 @@ func readProcFile(filename string) ([]byte, error) {
 			return nil, nil
 		}
 
-		return nil, err
+		return nil, fmt.Errorf("readfile (%s): %w", filename, err)
 	}
 
 	return data, nil
@@ -214,15 +213,15 @@ func readProcFile(filename string) ([]byte, error) {
 func execPS() ([]byte, error) {
 	bin, err := exec.LookPath("ps")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("lookpath (ps): %w", err)
 	}
 
 	out, err := exec.Command(bin, "axo", "state").Output()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("exec cmd (%s): %w", bin, err)
 	}
 
-	return out, err
+	return out, nil
 }
 
 func init() {

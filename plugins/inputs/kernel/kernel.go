@@ -5,7 +5,6 @@ package kernel
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
@@ -41,20 +40,20 @@ func (k *Kernel) Gather(acc cua.Accumulator) error {
 		return err
 	}
 
-	entropyData, err := ioutil.ReadFile(k.entropyStatFile)
+	entropyData, err := os.ReadFile(k.entropyStatFile)
 	if err != nil {
-		return err
+		return fmt.Errorf("readfile: %w", err)
 	}
 
 	entropyString := string(entropyData)
 	entropyValue, err := strconv.ParseInt(strings.TrimSpace(entropyString), 10, 64)
 	if err != nil {
-		return err
+		return fmt.Errorf("kernel parseint %s: %w", strings.TrimSpace(entropyString), err)
 	}
 
 	fields := make(map[string]interface{})
 
-	fields["entropy_avail"] = int64(entropyValue)
+	fields["entropy_avail"] = entropyValue
 
 	dataFields := bytes.Fields(data)
 	for i, field := range dataFields {
@@ -62,38 +61,38 @@ func (k *Kernel) Gather(acc cua.Accumulator) error {
 		case bytes.Equal(field, interrupts):
 			m, err := strconv.ParseInt(string(dataFields[i+1]), 10, 64)
 			if err != nil {
-				return err
+				return fmt.Errorf("kernel parseint interrupts %s: %w", string(dataFields[i+1]), err)
 			}
-			fields["interrupts"] = int64(m)
+			fields["interrupts"] = m
 		case bytes.Equal(field, contextSwitches):
 			m, err := strconv.ParseInt(string(dataFields[i+1]), 10, 64)
 			if err != nil {
-				return err
+				return fmt.Errorf("kernel parseint context_switches %s: %w", string(dataFields[i+1]), err)
 			}
-			fields["context_switches"] = int64(m)
+			fields["context_switches"] = m
 		case bytes.Equal(field, processesForked):
 			m, err := strconv.ParseInt(string(dataFields[i+1]), 10, 64)
 			if err != nil {
-				return err
+				return fmt.Errorf("kernel parseint processes_forked %s: %w", string(dataFields[i+1]), err)
 			}
-			fields["processes_forked"] = int64(m)
+			fields["processes_forked"] = m
 		case bytes.Equal(field, bootTime):
 			m, err := strconv.ParseInt(string(dataFields[i+1]), 10, 64)
 			if err != nil {
-				return err
+				return fmt.Errorf("kernel parseint boot_time %s: %w", string(dataFields[i+1]), err)
 			}
-			fields["boot_time"] = int64(m)
+			fields["boot_time"] = m
 		case bytes.Equal(field, diskPages):
 			in, err := strconv.ParseInt(string(dataFields[i+1]), 10, 64)
 			if err != nil {
-				return err
+				return fmt.Errorf("kernel parseint disk_pages_in %s: %w", string(dataFields[i+1]), err)
 			}
 			out, err := strconv.ParseInt(string(dataFields[i+2]), 10, 64)
 			if err != nil {
-				return err
+				return fmt.Errorf("kernel parseint disk_pages_out %s: %w", string(dataFields[i+2]), err)
 			}
-			fields["disk_pages_in"] = int64(in)
-			fields["disk_pages_out"] = int64(out)
+			fields["disk_pages_in"] = in
+			fields["disk_pages_out"] = out
 		}
 	}
 
@@ -106,12 +105,12 @@ func (k *Kernel) getProcStat() ([]byte, error) {
 	if _, err := os.Stat(k.statFile); os.IsNotExist(err) {
 		return nil, fmt.Errorf("kernel: %s does not exist", k.statFile)
 	} else if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("kernel stat (%s): %w", k.statFile, err)
 	}
 
-	data, err := ioutil.ReadFile(k.statFile)
+	data, err := os.ReadFile(k.statFile)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("kernel readfile (%s): %w", k.statFile, err)
 	}
 
 	return data, nil

@@ -2,6 +2,7 @@ package splunkmetric
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
@@ -105,9 +106,11 @@ func (s *Serializer) createMulti(metric cua.Metric, dataGroup HECTimeSeries, com
 		dataGroup.Fields["time"] = dataGroup.Time
 		metricJSON, err = json.Marshal(dataGroup.Fields)
 	}
+
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("json marshal: %w", err)
 	}
+
 	// Let the JSON fall through to the return below
 	metricGroup = metricJSON
 
@@ -152,11 +155,12 @@ func (s *Serializer) createSingle(metric cua.Metric, dataGroup HECTimeSeries, co
 			metricJSON, err = json.Marshal(dataGroup.Fields)
 		}
 
+		if err != nil {
+			return nil, fmt.Errorf("json marshal: %w", err)
+		}
+
 		metricGroup = append(metricGroup, metricJSON...)
 
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	return metricGroup, nil

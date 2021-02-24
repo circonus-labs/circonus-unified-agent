@@ -70,7 +70,7 @@ func (s *Starlark) Init() error {
 	// Execute source
 	globals, err := program.Init(s.thread, builtins)
 	if err != nil {
-		return err
+		return fmt.Errorf("program init: %w", err)
 	}
 
 	// Make available a shared state to the apply function
@@ -113,10 +113,10 @@ func (s *Starlark) Init() error {
 func (s *Starlark) sourceProgram(builtins starlark.StringDict) (*starlark.Program, error) {
 	if s.Source != "" {
 		_, program, err := starlark.SourceProgram("processor.starlark", s.Source, builtins.Has)
-		return program, err
+		return program, fmt.Errorf("source program (source:%s): %w", s.Source, err)
 	}
 	_, program, err := starlark.SourceProgram(s.Script, nil, builtins.Has)
-	return program, err
+	return program, fmt.Errorf("source program (script:%s): %w", s.Script, err)
 }
 
 func (s *Starlark) SampleConfig() string {
@@ -143,7 +143,7 @@ func (s *Starlark) Add(metric cua.Metric, acc cua.Accumulator) error {
 			}
 		}
 		metric.Reject()
-		return err
+		return fmt.Errorf("starlark call: %w", err)
 	}
 
 	switch rv := rv.(type) {

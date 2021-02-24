@@ -165,7 +165,7 @@ func createSim(folders int) (*simulator.Model, *simulator.Server, error) {
 
 	err := model.Create()
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("create model: %w", err)
 	}
 
 	model.Service.TLS = new(tls.Config)

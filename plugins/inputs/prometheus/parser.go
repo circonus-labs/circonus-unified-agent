@@ -94,7 +94,7 @@ func ParseV2(buf []byte, header http.Header) ([]cua.Metric, error) {
 		}
 	}
 
-	return metrics, err
+	return metrics, fmt.Errorf("metric new: %w", err)
 }
 
 // Get Quantiles for summary metric & Buckets for histogram
@@ -108,7 +108,7 @@ func makeQuantilesV2(m *dto.Metric, tags map[string]string, metricName string, m
 		t = now
 	}
 	fields[metricName+"_count"] = float64(m.GetSummary().GetSampleCount())
-	fields[metricName+"_sum"] = float64(m.GetSummary().GetSampleSum())
+	fields[metricName+"_sum"] = m.GetSummary().GetSampleSum()
 	met, err := metric.New("prometheus", tags, fields, t, valueType(metricType))
 	if err == nil {
 		metrics = append(metrics, met)
@@ -119,7 +119,7 @@ func makeQuantilesV2(m *dto.Metric, tags map[string]string, metricName string, m
 		fields = make(map[string]interface{})
 
 		newTags["quantile"] = fmt.Sprint(q.GetQuantile())
-		fields[metricName] = float64(q.GetValue())
+		fields[metricName] = q.GetValue()
 
 		quantileMetric, err := metric.New("prometheus", newTags, fields, t, valueType(metricType))
 		if err == nil {
@@ -140,7 +140,7 @@ func makeBucketsV2(m *dto.Metric, tags map[string]string, metricName string, met
 		t = now
 	}
 	fields[metricName+"_count"] = float64(m.GetHistogram().GetSampleCount())
-	fields[metricName+"_sum"] = float64(m.GetHistogram().GetSampleSum())
+	fields[metricName+"_sum"] = m.GetHistogram().GetSampleSum()
 
 	met, err := metric.New("prometheus", tags, fields, t, valueType(metricType))
 	if err == nil {
@@ -210,12 +210,12 @@ func Parse(buf []byte, header http.Header) ([]cua.Metric, error) {
 				// summary metric
 				fields = makeQuantiles(m)
 				fields["count"] = float64(m.GetSummary().GetSampleCount())
-				fields["sum"] = float64(m.GetSummary().GetSampleSum())
+				fields["sum"] = m.GetSummary().GetSampleSum()
 			case dto.MetricType_HISTOGRAM:
 				// histogram metric
 				fields = makeBuckets(m)
 				fields["count"] = float64(m.GetHistogram().GetSampleCount())
-				fields["sum"] = float64(m.GetHistogram().GetSampleSum())
+				fields["sum"] = m.GetHistogram().GetSampleSum()
 			default:
 				// standard metric
 				fields = getNameAndValue(m)
@@ -236,7 +236,7 @@ func Parse(buf []byte, header http.Header) ([]cua.Metric, error) {
 		}
 	}
 
-	return metrics, err
+	return metrics, fmt.Errorf("metric new: %w", err)
 }
 
 func valueType(mt dto.MetricType) cua.ValueType {
@@ -259,7 +259,7 @@ func makeQuantiles(m *dto.Metric) map[string]interface{} {
 	fields := make(map[string]interface{})
 	for _, q := range m.GetSummary().Quantile {
 		if !math.IsNaN(q.GetValue()) {
-			fields[fmt.Sprint(q.GetQuantile())] = float64(q.GetValue())
+			fields[fmt.Sprint(q.GetQuantile())] = q.GetValue()
 		}
 	}
 	return fields
@@ -289,15 +289,15 @@ func getNameAndValue(m *dto.Metric) map[string]interface{} {
 	switch {
 	case m.Gauge != nil:
 		if !math.IsNaN(m.GetGauge().GetValue()) {
-			fields["gauge"] = float64(m.GetGauge().GetValue())
+			fields["gauge"] = m.GetGauge().GetValue()
 		}
 	case m.Counter != nil:
 		if !math.IsNaN(m.GetCounter().GetValue()) {
-			fields["counter"] = float64(m.GetCounter().GetValue())
+			fields["counter"] = m.GetCounter().GetValue()
 		}
 	case m.Untyped != nil:
 		if !math.IsNaN(m.GetUntyped().GetValue()) {
-			fields["value"] = float64(m.GetUntyped().GetValue())
+			fields["value"] = m.GetUntyped().GetValue()
 		}
 	}
 	return fields
@@ -309,15 +309,15 @@ func getNameAndValueV2(m *dto.Metric, metricName string) map[string]interface{} 
 	switch {
 	case m.Gauge != nil:
 		if !math.IsNaN(m.GetGauge().GetValue()) {
-			fields[metricName] = float64(m.GetGauge().GetValue())
+			fields[metricName] = m.GetGauge().GetValue()
 		}
 	case m.Counter != nil:
 		if !math.IsNaN(m.GetCounter().GetValue()) {
-			fields[metricName] = float64(m.GetCounter().GetValue())
+			fields[metricName] = m.GetCounter().GetValue()
 		}
 	case m.Untyped != nil:
 		if !math.IsNaN(m.GetUntyped().GetValue()) {
-			fields[metricName] = float64(m.GetUntyped().GetValue())
+			fields[metricName] = m.GetUntyped().GetValue()
 		}
 	}
 	return fields

@@ -714,7 +714,7 @@ func (a *Agent) connectOutput(ctx context.Context, output *models.RunningOutput)
 
 		err := internal.SleepContext(ctx, 15*time.Second)
 		if err != nil {
-			return err
+			return fmt.Errorf("sleepcontext: %w", err)
 		}
 
 		err = output.Output.Connect()

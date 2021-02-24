@@ -45,20 +45,20 @@ func DecodeUTF16(b []byte) ([]byte, error) {
 // GetFromSnapProcess finds information about process by the given pid
 // Returns process parent pid, threads info handle and process name
 func GetFromSnapProcess(pid uint32) (uint32, uint32, string, error) {
-	snap, err := windows.CreateToolhelp32Snapshot(windows.TH32CS_SNAPPROCESS, uint32(pid))
+	snap, err := windows.CreateToolhelp32Snapshot(windows.TH32CS_SNAPPROCESS, pid)
 	if err != nil {
-		return 0, 0, "", err
+		return 0, 0, "", fmt.Errorf("win_eventlog get from snap process: %w", err)
 	}
 	defer func() { _ = windows.CloseHandle(snap) }()
 	var pe32 windows.ProcessEntry32
 	pe32.Size = uint32(unsafe.Sizeof(pe32))
 	if err = windows.Process32First(snap, &pe32); err != nil {
-		return 0, 0, "", err
+		return 0, 0, "", fmt.Errorf("win_eventlog process32first: %w", err)
 	}
 	for {
-		if pe32.ProcessID == uint32(pid) {
+		if pe32.ProcessID == pid {
 			szexe := windows.UTF16ToString(pe32.ExeFile[:])
-			return uint32(pe32.ParentProcessID), uint32(pe32.Threads), szexe, nil
+			return pe32.ParentProcessID, pe32.Threads, szexe, nil
 		}
 		if err = windows.Process32Next(snap, &pe32); err != nil {
 			break

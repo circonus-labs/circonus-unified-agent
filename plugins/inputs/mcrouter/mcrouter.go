@@ -204,7 +204,7 @@ func (m *Mcrouter) gatherServer(ctx context.Context, address string, acc cua.Acc
 
 	conn, err = dialer.DialContext(ctx, protocol, address)
 	if err != nil {
-		return err
+		return fmt.Errorf("dial (%s %s): %w", protocol, address, err)
 	}
 
 	defer conn.Close()
@@ -222,7 +222,7 @@ func (m *Mcrouter) gatherServer(ctx context.Context, address string, acc cua.Acc
 
 	// Send command
 	if _, err := fmt.Fprint(conn, "stats\r\n"); err != nil {
-		return err
+		return fmt.Errorf("fprint (stats): %w", err)
 	}
 
 	values, err := parseResponse(scanner)

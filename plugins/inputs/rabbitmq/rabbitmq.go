@@ -328,7 +328,7 @@ func (r *RabbitMQ) Gather(acc cua.Accumulator) error {
 	if r.Client == nil {
 		tlsCfg, err := r.ClientConfig.TLSConfig()
 		if err != nil {
-			return err
+			return fmt.Errorf("TLSConfig: %w", err)
 		}
 		tr := &http.Transport{
 			ResponseHeaderTimeout: r.ResponseHeaderTimeout.Duration,
@@ -374,7 +374,7 @@ func (r *RabbitMQ) requestJSON(u string, target interface{}) error {
 
 	req, err := http.NewRequest("GET", u, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("http new req (%s): %w", u, err)
 	}
 
 	username := r.Username
@@ -391,7 +391,7 @@ func (r *RabbitMQ) requestJSON(u string, target interface{}) error {
 
 	resp, err := r.Client.Do(req)
 	if err != nil {
-		return err
+		return fmt.Errorf("http do: %w", err)
 	}
 
 	defer resp.Body.Close()
@@ -709,7 +709,7 @@ func (r *RabbitMQ) createQueueFilter() error {
 
 	queueFilter, err := filter.NewIncludeExcludeFilter(r.QueueInclude, r.QueueExclude)
 	if err != nil {
-		return err
+		return fmt.Errorf("queue filters: %w", err)
 	}
 	r.queueFilter = queueFilter
 
@@ -725,7 +725,7 @@ func (r *RabbitMQ) createQueueFilter() error {
 func (r *RabbitMQ) createUpstreamFilter() error {
 	upstreamFilter, err := filter.NewIncludeExcludeFilter(r.FederationUpstreamInclude, r.FederationUpstreamExclude)
 	if err != nil {
-		return err
+		return fmt.Errorf("upstream filters: %w", err)
 	}
 	r.upstreamFilter = upstreamFilter
 

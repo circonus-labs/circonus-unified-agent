@@ -1,6 +1,9 @@
 package binaryio
 
-import "io"
+import (
+	"fmt"
+	"io"
+)
 
 // MinimumReader is the implementation for MinReader.
 type MinimumReader struct {
@@ -23,7 +26,7 @@ func MinReader(r io.Reader, minNumberOfBytesToRead int64) *MinimumReader {
 func (r *MinimumReader) Read(p []byte) (n int, err error) {
 	n, err = r.R.Read(p)
 	r.MinNumberOfBytesToRead -= int64(n)
-	return n, err
+	return n, fmt.Errorf("read: %w", err)
 }
 
 // Close does not close the underlying reader, only the MinimumReader
@@ -31,7 +34,7 @@ func (r *MinimumReader) Close() error {
 	if r.MinNumberOfBytesToRead > 0 {
 		b := make([]byte, r.MinNumberOfBytesToRead)
 		_, err := r.R.Read(b)
-		return err
+		return fmt.Errorf("close/read: %w", err)
 	}
 	return nil
 }

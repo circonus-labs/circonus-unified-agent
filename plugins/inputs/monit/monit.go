@@ -13,15 +13,16 @@ import (
 )
 
 const (
-	fileSystem string = "0"
-	directory  string = "1"
-	file       string = "2"
-	process    string = "3"
-	remoteHost string = "4"
-	system     string = "5"
-	fifo       string = "6"
-	program    string = "7"
-	network    string = "8"
+	fileSystem = "0"
+	directory  = "1"
+	file       = "2"
+	process    = "3"
+	remoteHost = "4"
+	system     = "5"
+	fifo       = "6"
+	program    = "7"
+	network    = "8"
+	unknown    = "unknown"
 )
 
 var pendingActions = []string{"ignore", "alert", "restart", "stop", "exec", "unmonitor", "start", "monitor"}
@@ -215,7 +216,7 @@ func (m *Monit) SampleConfig() string {
 func (m *Monit) Init() error {
 	tlsCfg, err := m.ClientConfig.TLSConfig()
 	if err != nil {
-		return err
+		return fmt.Errorf("TLSConfig: %w", err)
 	}
 
 	m.client = http.Client{
@@ -232,7 +233,7 @@ func (m *Monit) Gather(acc cua.Accumulator) error {
 
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s/_status?format=xml", m.Address), nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("http new req: %w", err)
 	}
 	if len(m.Username) > 0 || len(m.Password) > 0 {
 		req.SetBasicAuth(m.Username, m.Password)
@@ -240,7 +241,7 @@ func (m *Monit) Gather(acc cua.Accumulator) error {
 
 	resp, err := m.client.Do(req)
 	if err != nil {
-		return err
+		return fmt.Errorf("http req do: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -360,7 +361,7 @@ func linkMode(s Service) string {
 	} else if s.Link.Duplex == 0 {
 		return "simplex"
 	}
-	return "unknown"
+	return unknown
 }
 
 func serviceStatus(s Service) string {
@@ -373,7 +374,7 @@ func serviceStatus(s Service) string {
 func pendingAction(s Service) string {
 	if s.PendingAction > 0 {
 		if s.PendingAction >= len(pendingActions) {
-			return "unknown"
+			return unknown
 		}
 		return pendingActions[s.PendingAction-1]
 	}
@@ -387,7 +388,7 @@ func monitoringMode(s Service) string {
 	case 1:
 		return "passive"
 	}
-	return "unknown"
+	return unknown
 }
 
 func monitoringStatus(s Service) string {

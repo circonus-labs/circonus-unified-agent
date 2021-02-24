@@ -2,7 +2,6 @@ package passenger
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -27,7 +26,7 @@ func fakePassengerStatus(stat string) string {
 	}
 
 	tempFilePath := filepath.Join(os.TempDir(), "passenger-status"+fileExtension)
-	_ = ioutil.WriteFile(tempFilePath, []byte(content), 0700) //nolint:gosec // G306 perms (it's a test shell script)
+	_ = os.WriteFile(tempFilePath, []byte(content), 0700) //nolint:gosec // G306 perms (it's a test shell script)
 
 	return tempFilePath
 }

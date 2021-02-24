@@ -24,6 +24,10 @@ import (
 	"github.com/docker/docker/api/types/swarm"
 )
 
+const (
+	ctotal = "total"
+)
+
 // Docker object
 type Docker struct {
 	Endpoint       string
@@ -205,7 +209,7 @@ func (d *Docker) Gather(acc cua.Accumulator) error {
 		return errListTimeout
 	}
 	if err != nil {
-		return err
+		return fmt.Errorf("container list: %w", err)
 	}
 
 	// Get container data
@@ -233,18 +237,18 @@ func (d *Docker) gatherSwarmInfo(acc cua.Accumulator) error {
 		return errServiceTimeout
 	}
 	if err != nil {
-		return err
+		return fmt.Errorf("service list: %w", err)
 	}
 
 	if len(services) > 0 {
 		tasks, err := d.client.TaskList(ctx, types.TaskListOptions{})
 		if err != nil {
-			return err
+			return fmt.Errorf("task list: %w", err)
 		}
 
 		nodes, err := d.client.NodeList(ctx, types.NodeListOptions{})
 		if err != nil {
-			return err
+			return fmt.Errorf("node list: %w", err)
 		}
 
 		running := map[string]int{}
@@ -311,7 +315,7 @@ func (d *Docker) gatherInfo(acc cua.Accumulator) error {
 		return errInfoTimeout
 	}
 	if err != nil {
-		return err
+		return fmt.Errorf("info: %w", err)
 	}
 
 	d.engineHost = info.Name
@@ -739,7 +743,7 @@ func parseContainerStats(
 	// totalNetworkStatMap could be empty if container is running with --net=host.
 	if total && len(totalNetworkStatMap) != 0 {
 		nettags := copyTags(tags)
-		nettags["network"] = "total"
+		nettags["network"] = ctotal
 		totalNetworkStatMap["container_id"] = id
 		acc.AddFields("docker_container_net", totalNetworkStatMap, nettags, tm)
 	}
@@ -852,7 +856,7 @@ func gatherBlockIOMetrics(
 	if total {
 		totalStatMap["container_id"] = id
 		iotags := copyTags(tags)
-		iotags["device"] = "total"
+		iotags["device"] = ctotal
 		acc.AddFields("docker_container_blkio", totalStatMap, iotags, tm)
 	}
 }
@@ -883,7 +887,7 @@ func parseSize(sizeStr string) (int64, error) {
 
 	size, err := strconv.ParseFloat(matches[1], 64)
 	if err != nil {
-		return -1, err
+		return -1, fmt.Errorf("parse float (%s): %w", matches[1], err)
 	}
 
 	uMap := map[string]int64{"k": KB, "m": MB, "g": GB, "t": TB, "p": PB}
@@ -903,7 +907,7 @@ func (d *Docker) createContainerFilters() error {
 
 	filter, err := filter.NewIncludeExcludeFilter(d.ContainerInclude, d.ContainerExclude)
 	if err != nil {
-		return err
+		return fmt.Errorf("container filters: %w", err)
 	}
 	d.containerFilter = filter
 	return nil
@@ -912,7 +916,7 @@ func (d *Docker) createContainerFilters() error {
 func (d *Docker) createLabelFilters() error {
 	filter, err := filter.NewIncludeExcludeFilter(d.LabelInclude, d.LabelExclude)
 	if err != nil {
-		return err
+		return fmt.Errorf("label filters: %w", err)
 	}
 	d.labelFilter = filter
 	return nil
@@ -924,7 +928,7 @@ func (d *Docker) createContainerStateFilters() error {
 	}
 	filter, err := filter.NewIncludeExcludeFilter(d.ContainerStateInclude, d.ContainerStateExclude)
 	if err != nil {
-		return err
+		return fmt.Errorf("container state filters: %w", err)
 	}
 	d.stateFilter = filter
 	return nil
@@ -937,7 +941,7 @@ func (d *Docker) getNewClient() (Client, error) {
 
 	tlsConfig, err := d.ClientConfig.TLSConfig()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("TLSConfig: %w", err)
 	}
 
 	return d.newClient(d.Endpoint, tlsConfig)

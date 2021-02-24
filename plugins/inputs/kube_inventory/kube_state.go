@@ -3,8 +3,8 @@ package kubeinventory
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -100,9 +100,9 @@ func (ki *KubernetesInventory) Init() error {
 	}
 
 	if ki.BearerToken != "" {
-		token, err := ioutil.ReadFile(ki.BearerToken)
+		token, err := os.ReadFile(ki.BearerToken)
 		if err != nil {
-			return err
+			return fmt.Errorf("readfile: %w", err)
 		}
 		ki.BearerTokenString = strings.TrimSpace(string(token))
 	}
@@ -121,12 +121,12 @@ func (ki *KubernetesInventory) Init() error {
 func (ki *KubernetesInventory) Gather(acc cua.Accumulator) (err error) {
 	resourceFilter, err := filter.NewIncludeExcludeFilter(ki.ResourceInclude, ki.ResourceExclude)
 	if err != nil {
-		return err
+		return fmt.Errorf("resource filters: %w", err)
 	}
 
 	ki.selectorFilter, err = filter.NewIncludeExcludeFilter(ki.SelectorInclude, ki.SelectorExclude)
 	if err != nil {
-		return err
+		return fmt.Errorf("selector filters: %w", err)
 	}
 
 	wg := sync.WaitGroup{}
@@ -165,7 +165,7 @@ func atoi(s string) int64 {
 	if err != nil {
 		return 0
 	}
-	return int64(i)
+	return i
 }
 
 func convertQuantity(s string, m float64) int64 {
@@ -188,7 +188,7 @@ func convertQuantity(s string, m float64) int64 {
 func (ki *KubernetesInventory) createSelectorFilters() error {
 	filter, err := filter.NewIncludeExcludeFilter(ki.SelectorInclude, ki.SelectorExclude)
 	if err != nil {
-		return err
+		return fmt.Errorf("selector filters: %w", err)
 	}
 	ki.selectorFilter = filter
 	return nil

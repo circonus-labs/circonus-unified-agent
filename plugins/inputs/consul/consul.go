@@ -1,6 +1,7 @@
 package consul
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -112,7 +113,7 @@ func (c *Consul) createAPIClient() (*api.Client, error) {
 
 	tlsCfg, err := c.ClientConfig.TLSConfig()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("TLSConfig: %w", err)
 	}
 
 	config.Transport = &http.Transport{
@@ -177,7 +178,7 @@ func (c *Consul) Gather(acc cua.Accumulator) error {
 	checks, _, err := c.client.Health().State("any", nil)
 
 	if err != nil {
-		return err
+		return fmt.Errorf("health state: %w", err)
 	}
 
 	c.GatherHealthCheck(acc, checks)

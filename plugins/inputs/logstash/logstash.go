@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
@@ -161,7 +160,7 @@ func (logstash *Logstash) Init() error {
 func (logstash *Logstash) createHTTPClient() (*http.Client, error) {
 	tlsConfig, err := logstash.ClientConfig.TLSConfig()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("TLSConfig: %w", err)
 	}
 
 	client := &http.Client{
@@ -178,7 +177,7 @@ func (logstash *Logstash) createHTTPClient() (*http.Client, error) {
 func (logstash *Logstash) gatherJSONData(url string, value interface{}) error {
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("http new req (%s): %w", url, err)
 	}
 
 	if (logstash.Username != "") || (logstash.Password != "") {
@@ -195,19 +194,18 @@ func (logstash *Logstash) gatherJSONData(url string, value interface{}) error {
 
 	response, err := logstash.client.Do(request)
 	if err != nil {
-		return err
+		return fmt.Errorf("client do: %w", err)
 	}
 
 	defer response.Body.Close()
 	if response.StatusCode != http.StatusOK {
 		// ignore the err here; LimitReader returns io.EOF and we're not interested in read errors.
-		body, _ := ioutil.ReadAll(io.LimitReader(response.Body, 200))
+		body, _ := io.ReadAll(io.LimitReader(response.Body, 200))
 		return fmt.Errorf("%s returned HTTP status %s: %q", url, response.Status, body)
 	}
 
-	err = json.NewDecoder(response.Body).Decode(value)
-	if err != nil {
-		return err
+	if err := json.NewDecoder(response.Body).Decode(value); err != nil {
+		return fmt.Errorf("json decode: %w", err)
 	}
 
 	return nil
@@ -232,7 +230,7 @@ func (logstash *Logstash) gatherJVMStats(url string, accumulator cua.Accumulator
 	flattener := jsonParser.Flattener{}
 	err = flattener.FlattenJSON("", jvmStats.JVM)
 	if err != nil {
-		return err
+		return fmt.Errorf("flatten json: %w", err)
 	}
 	accumulator.AddFields("logstash_jvm", flattener.Fields, tags)
 
@@ -258,7 +256,7 @@ func (logstash *Logstash) gatherProcessStats(url string, accumulator cua.Accumul
 	flattener := jsonParser.Flattener{}
 	err = flattener.FlattenJSON("", processStats.Process)
 	if err != nil {
-		return err
+		return fmt.Errorf("flatten json: %w", err)
 	}
 	accumulator.AddFields("logstash_process", flattener.Fields, tags)
 
@@ -284,7 +282,7 @@ func (logstash *Logstash) gatherPluginsStats(
 		flattener := jsonParser.Flattener{}
 		err := flattener.FlattenJSON("", plugin.Events)
 		if err != nil {
-			return err
+			return fmt.Errorf("flatten json: %w", err)
 		}
 		accumulator.AddFields("logstash_plugins", flattener.Fields, pluginTags)
 	}
@@ -313,11 +311,11 @@ func (logstash *Logstash) gatherQueueStats(
 		flattener := jsonParser.Flattener{}
 		err = flattener.FlattenJSON("", queue.Capacity)
 		if err != nil {
-			return err
+			return fmt.Errorf("flatten json: %w", err)
 		}
 		err = flattener.FlattenJSON("", queue.Data)
 		if err != nil {
-			return err
+			return fmt.Errorf("flatten json: %w", err)
 		}
 		for field, value := range flattener.Fields {
 			queueFields[field] = value
@@ -348,7 +346,7 @@ func (logstash *Logstash) gatherPipelineStats(url string, accumulator cua.Accumu
 	flattener := jsonParser.Flattener{}
 	err = flattener.FlattenJSON("", pipelineStats.Pipeline.Events)
 	if err != nil {
-		return err
+		return fmt.Errorf("flatten json: %w", err)
 	}
 	accumulator.AddFields("logstash_events", flattener.Fields, tags)
 
@@ -394,7 +392,7 @@ func (logstash *Logstash) gatherPipelinesStats(url string, accumulator cua.Accum
 		flattener := jsonParser.Flattener{}
 		err := flattener.FlattenJSON("", pipeline.Events)
 		if err != nil {
-			return err
+			return fmt.Errorf("flatten json: %w", err)
 		}
 		accumulator.AddFields("logstash_events", flattener.Fields, tags)
 
@@ -434,7 +432,7 @@ func (logstash *Logstash) Gather(accumulator cua.Accumulator) error {
 	if choice.Contains("jvm", logstash.Collect) {
 		jvmURL, err := url.Parse(logstash.URL + jvmStats)
 		if err != nil {
-			return err
+			return fmt.Errorf("url parse (%s): %w", logstash.URL+jvmStats, err)
 		}
 		if err := logstash.gatherJVMStats(jvmURL.String(), accumulator); err != nil {
 			return err
@@ -444,7 +442,7 @@ func (logstash *Logstash) Gather(accumulator cua.Accumulator) error {
 	if choice.Contains("process", logstash.Collect) {
 		processURL, err := url.Parse(logstash.URL + processStats)
 		if err != nil {
-			return err
+			return fmt.Errorf("url parse (%s): %w", logstash.URL+processStats, err)
 		}
 		if err := logstash.gatherProcessStats(processURL.String(), accumulator); err != nil {
 			return err
@@ -455,7 +453,7 @@ func (logstash *Logstash) Gather(accumulator cua.Accumulator) error {
 		if logstash.SinglePipeline {
 			pipelineURL, err := url.Parse(logstash.URL + pipelineStats)
 			if err != nil {
-				return err
+				return fmt.Errorf("url parse (%s): %w", logstash.URL+pipelineStats, err)
 			}
 			if err := logstash.gatherPipelineStats(pipelineURL.String(), accumulator); err != nil {
 				return err
@@ -463,7 +461,7 @@ func (logstash *Logstash) Gather(accumulator cua.Accumulator) error {
 		} else {
 			pipelinesURL, err := url.Parse(logstash.URL + pipelinesStats)
 			if err != nil {
-				return err
+				return fmt.Errorf("url parse (%s): %w", logstash.URL+pipelinesStats, err)
 			}
 			if err := logstash.gatherPipelinesStats(pipelinesURL.String(), accumulator); err != nil {
 				return err

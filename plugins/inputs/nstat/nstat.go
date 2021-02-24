@@ -2,7 +2,7 @@ package nstat
 
 import (
 	"bytes"
-	"io/ioutil"
+	"fmt"
 	"os"
 	"strconv"
 
@@ -62,9 +62,9 @@ func (ns *Nstat) Gather(acc cua.Accumulator) error {
 	// load paths, get from env if config values are empty
 	ns.loadPaths()
 
-	netstat, err := ioutil.ReadFile(ns.ProcNetNetstat)
+	netstat, err := os.ReadFile(ns.ProcNetNetstat)
 	if err != nil {
-		return err
+		return fmt.Errorf("readfile (%s): %w", ns.ProcNetNetstat, err)
 	}
 
 	// collect netstat data
@@ -74,9 +74,9 @@ func (ns *Nstat) Gather(acc cua.Accumulator) error {
 	}
 
 	// collect SNMP data
-	snmp, err := ioutil.ReadFile(ns.ProcNetSNMP)
+	snmp, err := os.ReadFile(ns.ProcNetSNMP)
 	if err != nil {
-		return err
+		return fmt.Errorf("readfile (%s): %w", ns.ProcNetSNMP, err)
 	}
 	err = ns.gatherSNMP(snmp, acc)
 	if err != nil {
@@ -84,15 +84,16 @@ func (ns *Nstat) Gather(acc cua.Accumulator) error {
 	}
 
 	// collect SNMP6 data, if SNMP6 directory exists (IPv6 enabled)
-	snmp6, err := ioutil.ReadFile(ns.ProcNetSNMP6)
-	if err == nil {
-		err = ns.gatherSNMP6(snmp6, acc)
-		if err != nil {
-			return err
+	snmp6, err := os.ReadFile(ns.ProcNetSNMP6)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
 		}
-	} else if !os.IsNotExist(err) {
+		return fmt.Errorf("readfile (%s): %w", ns.ProcNetSNMP6, err)
+	} else if err := ns.gatherSNMP6(snmp6, acc); err != nil {
 		return err
 	}
+
 	return nil
 }
 

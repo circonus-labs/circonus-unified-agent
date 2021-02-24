@@ -3,7 +3,7 @@ package elasticsearch
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"regexp"
 	"sort"
@@ -22,8 +22,11 @@ import (
 var mask = regexp.MustCompile(`https?:\/\/\S+:\S+@`)
 
 // Nodestats are always generated, so simply define a constant for these endpoints
-const statsPath = "/_nodes/stats"
-const statsPathLocal = "/_nodes/_local/stats"
+const (
+	statsPath      = "/_nodes/stats"
+	statsPathLocal = "/_nodes/_local/stats"
+	cshards        = "shards"
+)
 
 type nodeStat struct {
 	Host       string            `json:"host"`
@@ -293,7 +296,7 @@ func (e *Elasticsearch) Gather(acc cua.Accumulator) error {
 			}
 
 			if len(e.IndicesInclude) > 0 && (e.serverInfo[s].isMaster() || !e.ClusterStatsOnlyFromMaster || !e.Local) {
-				if e.IndicesLevel != "shards" {
+				if e.IndicesLevel != cshards {
 					if err := e.gatherIndicesStats(s+"/"+strings.Join(e.IndicesInclude, ",")+"/_stats", acc); err != nil {
 						acc.AddError(fmt.Errorf(mask.ReplaceAllString(err.Error(), "http(s)://XXX:XXX@")))
 						return
@@ -315,7 +318,7 @@ func (e *Elasticsearch) Gather(acc cua.Accumulator) error {
 func (e *Elasticsearch) createHTTPClient() (*http.Client, error) {
 	tlsCfg, err := e.ClientConfig.TLSConfig()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("TLSConfig: %w", err)
 	}
 	tr := &http.Transport{
 		ResponseHeaderTimeout: e.HTTPTimeout.Duration,
@@ -407,7 +410,7 @@ func (e *Elasticsearch) gatherNodeStats(url string, acc cua.Accumulator) error {
 			// parse Json, ignoring strings and bools
 			err := f.FlattenJSON("", s)
 			if err != nil {
-				return err
+				return fmt.Errorf("flatten json: %w", err)
 			}
 			acc.AddFields("elasticsearch_"+p, f.Fields, tags, now)
 		}
@@ -489,7 +492,7 @@ func (e *Elasticsearch) gatherClusterStats(url string, acc cua.Accumulator) erro
 		// parse json, including bools and strings
 		err := f.FullFlattenJSON("", s, true, true)
 		if err != nil {
-			return err
+			return fmt.Errorf("full flatten json: %w", err)
 		}
 		acc.AddFields("elasticsearch_clusterstats_"+p, f.Fields, tags, now)
 	}
@@ -522,7 +525,7 @@ func (e *Elasticsearch) gatherIndicesStats(url string, acc cua.Accumulator) erro
 		jsonParser := jsonparser.Flattener{}
 		err := jsonParser.FullFlattenJSON("_", s, true, true)
 		if err != nil {
-			return err
+			return fmt.Errorf("full flatten json: %w", err)
 		}
 		acc.AddFields("elasticsearch_indices_stats_"+m, jsonParser.Fields, map[string]string{"index_name": "_all"}, now)
 	}
@@ -539,12 +542,12 @@ func (e *Elasticsearch) gatherIndicesStats(url string, acc cua.Accumulator) erro
 			// parse Json, getting strings and bools
 			err := f.FullFlattenJSON("", s, true, true)
 			if err != nil {
-				return err
+				return fmt.Errorf("full flatten json: %w", err)
 			}
 			acc.AddFields("elasticsearch_indices_stats_"+m, f.Fields, indexTag, now)
 		}
 
-		if e.IndicesLevel == "shards" {
+		if e.IndicesLevel == cshards {
 			for shardNumber, shards := range index.Shards {
 				for _, shard := range shards {
 
@@ -552,7 +555,7 @@ func (e *Elasticsearch) gatherIndicesStats(url string, acc cua.Accumulator) erro
 					flattened := jsonparser.Flattener{}
 					err := flattened.FullFlattenJSON("", shard, true, true)
 					if err != nil {
-						return err
+						return fmt.Errorf("full flatten json: %w", err)
 					}
 
 					// determine shard tag and primary/replica designation
@@ -571,7 +574,7 @@ func (e *Elasticsearch) gatherIndicesStats(url string, acc cua.Accumulator) erro
 					shardTags := map[string]string{
 						"index_name": id,
 						"node_id":    routingNode,
-						"shard_name": string(shardNumber),
+						"shard_name": shardNumber,
 						"type":       shardType,
 					}
 
@@ -597,7 +600,7 @@ func (e *Elasticsearch) gatherIndicesStats(url string, acc cua.Accumulator) erro
 func (e *Elasticsearch) getCatMaster(url string) (string, error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("http new request (%s): %w", url, err)
 	}
 
 	if e.Username != "" || e.Password != "" {
@@ -606,7 +609,7 @@ func (e *Elasticsearch) getCatMaster(url string) (string, error) {
 
 	r, err := e.client.Do(req)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("http do: %w", err)
 	}
 	defer r.Body.Close()
 	if r.StatusCode != http.StatusOK {
@@ -615,10 +618,9 @@ func (e *Elasticsearch) getCatMaster(url string) (string, error) {
 		// future calls.
 		return "", fmt.Errorf("elasticsearch: Unable to retrieve master node information. API responded with status-code %d, expected %d", r.StatusCode, http.StatusOK)
 	}
-	response, err := ioutil.ReadAll(r.Body)
-
+	response, err := io.ReadAll(r.Body)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("read all: %w", err)
 	}
 
 	masterID := strings.Split(string(response), " ")[0]
@@ -629,7 +631,7 @@ func (e *Elasticsearch) getCatMaster(url string) (string, error) {
 func (e *Elasticsearch) gatherJSONData(url string, v interface{}) error {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("http new request (%s): %w", url, err)
 	}
 
 	if e.Username != "" || e.Password != "" {
@@ -638,7 +640,7 @@ func (e *Elasticsearch) gatherJSONData(url string, v interface{}) error {
 
 	r, err := e.client.Do(req)
 	if err != nil {
-		return err
+		return fmt.Errorf("http do: %w", err)
 	}
 	defer r.Body.Close()
 	if r.StatusCode != http.StatusOK {
@@ -650,7 +652,7 @@ func (e *Elasticsearch) gatherJSONData(url string, v interface{}) error {
 	}
 
 	if err = json.NewDecoder(r.Body).Decode(v); err != nil {
-		return err
+		return fmt.Errorf("json decode: %w", err)
 	}
 
 	return nil

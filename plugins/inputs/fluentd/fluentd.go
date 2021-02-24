@@ -3,7 +3,7 @@ package fluentd
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"time"
@@ -88,12 +88,12 @@ func (h *Fluentd) Gather(acc cua.Accumulator) error {
 	if h.client == nil {
 
 		tr := &http.Transport{
-			ResponseHeaderTimeout: time.Duration(3 * time.Second),
+			ResponseHeaderTimeout: 3 * time.Second,
 		}
 
 		client := &http.Client{
 			Transport: tr,
-			Timeout:   time.Duration(4 * time.Second),
+			Timeout:   4 * time.Second,
 		}
 
 		h.client = client
@@ -107,7 +107,7 @@ func (h *Fluentd) Gather(acc cua.Accumulator) error {
 
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 
 	if err != nil {
 		return fmt.Errorf("Unable to read the HTTP body \"%s\": %w", string(body), err)

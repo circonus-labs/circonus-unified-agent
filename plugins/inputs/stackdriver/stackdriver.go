@@ -550,7 +550,7 @@ func (s *Stackdriver) generatetimeSeriesConfs(
 		req.Filter = filter
 		mdRespChan, err := s.client.ListMetricDescriptors(ctx, req)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("list metric descriptors: %w", err)
 		}
 
 		for metricDescriptor := range mdRespChan {
@@ -595,7 +595,7 @@ func (s *Stackdriver) gatherTimeSeries(
 
 	tsRespChan, err := s.client.ListTimeSeries(ctx, tsReq)
 	if err != nil {
-		return err
+		return fmt.Errorf("list time series: %w", err)
 	}
 
 	for tsDesc := range tsRespChan {

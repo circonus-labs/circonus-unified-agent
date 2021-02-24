@@ -425,7 +425,7 @@ func (m *Mysql) gatherServer(serv string, acc cua.Accumulator) error {
 
 	db, err := sql.Open("mysql", serv)
 	if err != nil {
-		return err
+		return fmt.Errorf("sql open (%s): %w", serv, err)
 	}
 
 	defer db.Close()
@@ -547,7 +547,7 @@ func (m *Mysql) gatherGlobalVariables(db *sql.DB, serv string, acc cua.Accumulat
 	// run query
 	rows, err := db.Query(globalVariablesQuery)
 	if err != nil {
-		return err
+		return fmt.Errorf("db query (global var): %w", err)
 	}
 	defer rows.Close()
 
@@ -560,7 +560,7 @@ func (m *Mysql) gatherGlobalVariables(db *sql.DB, serv string, acc cua.Accumulat
 	fields := make(map[string]interface{})
 	for rows.Next() {
 		if err := rows.Scan(&key, &val); err != nil {
-			return err
+			return fmt.Errorf("row scan (global var): %w", err)
 		}
 		key = strings.ToLower(key)
 
@@ -609,7 +609,7 @@ func (m *Mysql) gatherSlaveStatuses(db *sql.DB, serv string, acc cua.Accumulator
 	// run query
 	rows, err := db.Query(slaveStatusQuery)
 	if err != nil {
-		return err
+		return fmt.Errorf("query (slave status): %w", err)
 	}
 	defer rows.Close()
 
@@ -624,7 +624,7 @@ func (m *Mysql) gatherSlaveStatuses(db *sql.DB, serv string, acc cua.Accumulator
 		// get columns names, and create an array with its length
 		cols, err := rows.Columns()
 		if err != nil {
-			return err
+			return fmt.Errorf("row cols (slave status): %w", err)
 		}
 		vals := make([]interface{}, len(cols))
 		// fill the array with sql.Rawbytes
@@ -632,7 +632,7 @@ func (m *Mysql) gatherSlaveStatuses(db *sql.DB, serv string, acc cua.Accumulator
 			vals[i] = &sql.RawBytes{}
 		}
 		if err = rows.Scan(vals...); err != nil {
-			return err
+			return fmt.Errorf("row scan (slave status): %w", err)
 		}
 		// range over columns, and try to parse values
 		for i, col := range cols {
@@ -655,7 +655,7 @@ func (m *Mysql) gatherBinaryLogs(db *sql.DB, serv string, acc cua.Accumulator) e
 	// run query
 	rows, err := db.Query(binaryLogsQuery)
 	if err != nil {
-		return err
+		return fmt.Errorf("query (binary logs): %w", err)
 	}
 	defer rows.Close()
 
@@ -672,7 +672,7 @@ func (m *Mysql) gatherBinaryLogs(db *sql.DB, serv string, acc cua.Accumulator) e
 	// iterate over rows and count the size and count of files
 	for rows.Next() {
 		if err := rows.Scan(&fileName, &fileSize); err != nil {
-			return err
+			return fmt.Errorf("rows scan (binary logs): %w", err)
 		}
 		size += fileSize
 		count++
@@ -692,7 +692,7 @@ func (m *Mysql) gatherGlobalStatuses(db *sql.DB, serv string, acc cua.Accumulato
 	// run query
 	rows, err := db.Query(globalStatusQuery)
 	if err != nil {
-		return err
+		return fmt.Errorf("query (global status): %w", err)
 	}
 	defer rows.Close()
 
@@ -705,7 +705,7 @@ func (m *Mysql) gatherGlobalStatuses(db *sql.DB, serv string, acc cua.Accumulato
 		var val sql.RawBytes
 
 		if err = rows.Scan(&key, &val); err != nil {
-			return err
+			return fmt.Errorf("row scan (global status): %w", err)
 		}
 
 		if m.MetricVersion < 2 {
@@ -802,7 +802,7 @@ func (m *Mysql) GatherProcessListStatuses(db *sql.DB, serv string, acc cua.Accum
 	// run query
 	rows, err := db.Query(infoSchemaProcessListQuery)
 	if err != nil {
-		return err
+		return fmt.Errorf("query (process list status): %w", err)
 	}
 	defer rows.Close()
 	var (
@@ -825,7 +825,7 @@ func (m *Mysql) GatherProcessListStatuses(db *sql.DB, serv string, acc cua.Accum
 	for rows.Next() {
 		err = rows.Scan(&command, &state, &count)
 		if err != nil {
-			return err
+			return fmt.Errorf("row scan (process list status): %w", err)
 		}
 		// each state has its mapping
 		foundState := findThreadState(command, state)
@@ -846,7 +846,7 @@ func (m *Mysql) GatherProcessListStatuses(db *sql.DB, serv string, acc cua.Accum
 	// get count of connections from each user
 	connRows, err := db.Query("SELECT user, sum(1) AS connections FROM INFORMATION_SCHEMA.PROCESSLIST GROUP BY user")
 	if err != nil {
-		return err
+		return fmt.Errorf("query (process list status2): %w", err)
 	}
 
 	for connRows.Next() {
@@ -855,7 +855,7 @@ func (m *Mysql) GatherProcessListStatuses(db *sql.DB, serv string, acc cua.Accum
 
 		err = connRows.Scan(&user, &connections)
 		if err != nil {
-			return err
+			return fmt.Errorf("row scan (process list status2): %w", err)
 		}
 
 		tags := map[string]string{"server": servtag, "user": user}
@@ -879,7 +879,7 @@ func (m *Mysql) GatherUserStatisticsStatuses(db *sql.DB, serv string, acc cua.Ac
 		if strings.Contains(err.Error(), "nknown table 'user_statistics'") {
 			m.GatherUserStatistics = false
 		}
-		return err
+		return fmt.Errorf("query (user stats): %w", err)
 	}
 	defer rows.Close()
 
@@ -897,7 +897,7 @@ func (m *Mysql) GatherUserStatisticsStatuses(db *sql.DB, serv string, acc cua.Ac
 	for rows.Next() {
 		err = rows.Scan(read...)
 		if err != nil {
-			return err
+			return fmt.Errorf("row scan (user stats): %w", err)
 		}
 
 		tags := map[string]string{"server": servtag, "user": *read[0].(*string)}
@@ -1087,7 +1087,7 @@ func getColSlice(l int) ([]interface{}, error) {
 func (m *Mysql) gatherPerfTableIOWaits(db *sql.DB, serv string, acc cua.Accumulator) error {
 	rows, err := db.Query(perfTableIOWaitsQuery)
 	if err != nil {
-		return err
+		return fmt.Errorf("query (table io waits): %w", err)
 	}
 
 	defer rows.Close()
@@ -1106,7 +1106,7 @@ func (m *Mysql) gatherPerfTableIOWaits(db *sql.DB, serv string, acc cua.Accumula
 		)
 
 		if err != nil {
-			return err
+			return fmt.Errorf("row scan (table io waits): %w", err)
 		}
 
 		tags := map[string]string{
@@ -1136,7 +1136,7 @@ func (m *Mysql) gatherPerfTableIOWaits(db *sql.DB, serv string, acc cua.Accumula
 func (m *Mysql) gatherPerfIndexIOWaits(db *sql.DB, serv string, acc cua.Accumulator) error {
 	rows, err := db.Query(perfIndexIOWaitsQuery)
 	if err != nil {
-		return err
+		return fmt.Errorf("query (index io waits): %w", err)
 	}
 	defer rows.Close()
 
@@ -1155,7 +1155,7 @@ func (m *Mysql) gatherPerfIndexIOWaits(db *sql.DB, serv string, acc cua.Accumula
 		)
 
 		if err != nil {
-			return err
+			return fmt.Errorf("row scan (index io waits): %w", err)
 		}
 
 		tags := map[string]string{
@@ -1189,7 +1189,7 @@ func (m *Mysql) gatherPerfIndexIOWaits(db *sql.DB, serv string, acc cua.Accumula
 func (m *Mysql) gatherInfoSchemaAutoIncStatuses(db *sql.DB, serv string, acc cua.Accumulator) error {
 	rows, err := db.Query(infoSchemaAutoIncQuery)
 	if err != nil {
-		return err
+		return fmt.Errorf("query (info schema auto inc): %w", err)
 	}
 	defer rows.Close()
 
@@ -1202,7 +1202,7 @@ func (m *Mysql) gatherInfoSchemaAutoIncStatuses(db *sql.DB, serv string, acc cua
 
 	for rows.Next() {
 		if err := rows.Scan(&schema, &table, &column, &incValue, &maxInt); err != nil {
-			return err
+			return fmt.Errorf("row scan (info schema auto inc): %w", err)
 		}
 		tags := map[string]string{
 			"server": servtag,
@@ -1229,7 +1229,7 @@ func (m *Mysql) gatherInnoDBMetrics(db *sql.DB, serv string, acc cua.Accumulator
 	// run query
 	rows, err := db.Query(innoDBMetricsQuery)
 	if err != nil {
-		return err
+		return fmt.Errorf("query (innodb metrics): %w", err)
 	}
 	defer rows.Close()
 
@@ -1241,7 +1241,7 @@ func (m *Mysql) gatherInnoDBMetrics(db *sql.DB, serv string, acc cua.Accumulator
 		var key string
 		var val sql.RawBytes
 		if err := rows.Scan(&key, &val); err != nil {
-			return err
+			return fmt.Errorf("row scan (innodb metrics): %w", err)
 		}
 		key = strings.ToLower(key)
 		if value, ok := m.parseValue(val); ok {
@@ -1274,12 +1274,12 @@ func (m *Mysql) gatherPerfTableLockWaits(db *sql.DB, serv string, acc cua.Accumu
 	case errors.Is(err, sql.ErrNoRows):
 		return nil
 	case err != nil:
-		return err
+		return fmt.Errorf("queryrow (table lock waits): %w", err)
 	}
 
 	rows, err := db.Query(perfTableLockWaitsQuery)
 	if err != nil {
-		return err
+		return fmt.Errorf("query (table lock waits): %w", err)
 	}
 	defer rows.Close()
 
@@ -1337,7 +1337,7 @@ func (m *Mysql) gatherPerfTableLockWaits(db *sql.DB, serv string, acc cua.Accumu
 		)
 
 		if err != nil {
-			return err
+			return fmt.Errorf("row scan (table lock waits): %w", err)
 		}
 		tags := map[string]string{
 			"server": servtag,
@@ -1396,7 +1396,7 @@ func (m *Mysql) gatherPerfTableLockWaits(db *sql.DB, serv string, acc cua.Accumu
 func (m *Mysql) gatherPerfEventWaits(db *sql.DB, serv string, acc cua.Accumulator) error {
 	rows, err := db.Query(perfEventWaitsQuery)
 	if err != nil {
-		return err
+		return fmt.Errorf("query (event waits): %w", err)
 	}
 	defer rows.Close()
 
@@ -1411,7 +1411,7 @@ func (m *Mysql) gatherPerfEventWaits(db *sql.DB, serv string, acc cua.Accumulato
 	}
 	for rows.Next() {
 		if err := rows.Scan(&event, &starCount, &timeWait); err != nil {
-			return err
+			return fmt.Errorf("row scan (event waits): %w", err)
 		}
 		tags["event_name"] = event
 		fields := map[string]interface{}{
@@ -1428,7 +1428,7 @@ func (m *Mysql) gatherPerfEventWaits(db *sql.DB, serv string, acc cua.Accumulato
 func (m *Mysql) gatherPerfFileEventsStatuses(db *sql.DB, serv string, acc cua.Accumulator) error {
 	rows, err := db.Query(perfFileEventsQuery)
 	if err != nil {
-		return err
+		return fmt.Errorf("query (file events): %w", err)
 	}
 
 	defer rows.Close()
@@ -1452,7 +1452,7 @@ func (m *Mysql) gatherPerfFileEventsStatuses(db *sql.DB, serv string, acc cua.Ac
 			&countMisc, &sumTimerMisc,
 		)
 		if err != nil {
-			return err
+			return fmt.Errorf("row scan (file events): %w", err)
 		}
 
 		tags["event_name"] = eventName
@@ -1493,7 +1493,7 @@ func (m *Mysql) gatherPerfEventsStatements(db *sql.DB, serv string, acc cua.Accu
 
 	rows, err := db.Query(query)
 	if err != nil {
-		return err
+		return fmt.Errorf("query (event stmnts): %w", err)
 	}
 
 	defer rows.Close()
@@ -1523,7 +1523,7 @@ func (m *Mysql) gatherPerfEventsStatements(db *sql.DB, serv string, acc cua.Accu
 		)
 
 		if err != nil {
-			return err
+			return fmt.Errorf("row scan (event stmnts): %w", err)
 		}
 		tags["schema"] = schemaName
 		tags["digest"] = digest
@@ -1558,7 +1558,7 @@ func (m *Mysql) gatherTableSchema(db *sql.DB, serv string, acc cua.Accumulator) 
 	if len(m.TableSchemaDatabases) == 0 {
 		rows, err := db.Query(dbListQuery)
 		if err != nil {
-			return err
+			return fmt.Errorf("query (table schema): %w", err)
 		}
 		defer rows.Close()
 
@@ -1566,7 +1566,7 @@ func (m *Mysql) gatherTableSchema(db *sql.DB, serv string, acc cua.Accumulator) 
 		for rows.Next() {
 			err = rows.Scan(&database)
 			if err != nil {
-				return err
+				return fmt.Errorf("row scan (table schema): %w", err)
 			}
 
 			dbList = append(dbList, database)
@@ -1578,7 +1578,7 @@ func (m *Mysql) gatherTableSchema(db *sql.DB, serv string, acc cua.Accumulator) 
 	for _, database := range dbList {
 		rows, err := db.Query(fmt.Sprintf(tableSchemaQuery, database))
 		if err != nil {
-			return err
+			return fmt.Errorf("query (db table schema): %w", err)
 		}
 		defer rows.Close()
 		var (
@@ -1609,7 +1609,7 @@ func (m *Mysql) gatherTableSchema(db *sql.DB, serv string, acc cua.Accumulator) 
 				&createOptions,
 			)
 			if err != nil {
-				return err
+				return fmt.Errorf("row next (db table schema): %w", err)
 			}
 			tags := map[string]string{"server": servtag}
 			tags["schema"] = tableSchema
@@ -1747,7 +1747,7 @@ func copyTags(in map[string]string) map[string]string {
 func dsnAddTimeout(dsn string) (string, error) {
 	conf, err := mysql.ParseDSN(dsn)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("parse dsn: %w", err)
 	}
 
 	if conf.Timeout == 0 {

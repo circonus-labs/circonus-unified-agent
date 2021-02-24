@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
@@ -62,11 +61,11 @@ const defaultEnvironment = "production"
 // returns a new Salesforce plugin instance
 func NewSalesforce() *Salesforce {
 	tr := &http.Transport{
-		ResponseHeaderTimeout: time.Duration(5 * time.Second),
+		ResponseHeaderTimeout: 5 * time.Second,
 	}
 	client := &http.Client{
 		Transport: tr,
-		Timeout:   time.Duration(10 * time.Second),
+		Timeout:   10 * time.Second,
 	}
 	return &Salesforce{
 		client:      client,
@@ -110,7 +109,7 @@ func (s *Salesforce) queryLimits() (*http.Response, error) {
 	endpoint := fmt.Sprintf("%s://%s/services/data/v%s/limits", s.ServerURL.Scheme, s.ServerURL.Host, s.Version)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("http new req (%s): %w", endpoint, err)
 	}
 	req.Header.Add("Accept", "encoding/json")
 	req.Header.Add("Authorization", "Bearer "+s.SessionID)
@@ -152,7 +151,7 @@ func (s *Salesforce) fetchLimits() (limits, error) {
 
 	l = limits{}
 	err = json.NewDecoder(resp.Body).Decode(&l)
-	return l, err
+	return l, fmt.Errorf("json decode: %w", err)
 }
 
 func (s *Salesforce) getLoginEndpoint() (string, error) {
@@ -191,25 +190,25 @@ func (s *Salesforce) login() error {
 
 	req, err := http.NewRequest(http.MethodPost, loginEndpoint, strings.NewReader(body))
 	if err != nil {
-		return err
+		return fmt.Errorf("http new req (%s): %w", loginEndpoint, err)
 	}
 	req.Header.Add("Content-Type", "text/xml")
 	req.Header.Add("SOAPAction", "login")
 
 	resp, err := s.client.Do(req)
 	if err != nil {
-		return err
+		return fmt.Errorf("http do: %w", err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		// ignore the err here; LimitReader returns io.EOF and we're not interested in read errors.
-		body, _ := ioutil.ReadAll(io.LimitReader(resp.Body, 200))
+		body, _ := io.ReadAll(io.LimitReader(resp.Body, 200))
 		return fmt.Errorf("%s returned HTTP status %s: %q", loginEndpoint, resp.Status, body)
 	}
 
-	respBody, err := ioutil.ReadAll(resp.Body)
+	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return fmt.Errorf("readall: %w", err)
 	}
 
 	soapFault := struct {
@@ -217,9 +216,8 @@ func (s *Salesforce) login() error {
 		Message string `xml:"Body>Fault>faultstring"`
 	}{}
 
-	err = xml.Unmarshal(respBody, &soapFault)
-	if err != nil {
-		return err
+	if err := xml.Unmarshal(respBody, &soapFault); err != nil {
+		return fmt.Errorf("xml unmarshal: %w", err)
 	}
 
 	if soapFault.Code != "" {
@@ -232,16 +230,20 @@ func (s *Salesforce) login() error {
 		OrganizationID string `xml:"Body>loginResponse>result>userInfo>organizationId"`
 	}{}
 
-	err = xml.Unmarshal(respBody, &loginResult)
-	if err != nil {
-		return err
+	if err := xml.Unmarshal(respBody, &loginResult); err != nil {
+		return fmt.Errorf("xml unmarshal: %w", err)
 	}
 
 	s.SessionID = loginResult.SessionID
 	s.OrganizationID = loginResult.OrganizationID
-	s.ServerURL, err = url.Parse(loginResult.ServerURL)
 
-	return err
+	surl, err := url.Parse(loginResult.ServerURL)
+	if err != nil {
+		return fmt.Errorf("url parse (%s): %w", loginResult.ServerURL, err)
+	}
+	s.ServerURL = surl
+
+	return nil
 }
 
 func init() {

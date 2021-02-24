@@ -403,10 +403,10 @@ func TestForecastGeneratesMetrics(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var rsp string
 		switch r.URL.Path {
-		case "/data/2.5/forecast":
+		case "/data/2.5/forecast": //nolint:goconst
 			rsp = sampleStatusResponse
 			w.Header()["Content-Type"] = []string{"application/json"}
-		case "/data/2.5/group":
+		case "/data/2.5/group": //nolint:goconst
 			rsp = sampleNoContent
 		default:
 			panic("Cannot handle request")

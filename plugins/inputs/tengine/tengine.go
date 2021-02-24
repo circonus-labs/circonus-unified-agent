@@ -84,7 +84,7 @@ func (n *Tengine) Gather(acc cua.Accumulator) error {
 func (n *Tengine) createHTTPClient() (*http.Client, error) {
 	tlsCfg, err := n.ClientConfig.TLSConfig()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("TLSConfig: %w", err)
 	}
 
 	if n.ResponseTimeout.Duration < time.Second {
@@ -158,123 +158,123 @@ func (n *Tengine) gatherURL(addr *url.URL, acc cua.Accumulator) error {
 		}
 		tenginestatus.host = lineSplit[0]
 		if err != nil {
-			return err
+			return fmt.Errorf("readstring: %w", err)
 		}
 		tenginestatus.bytesIn, err = strconv.ParseUint(lineSplit[1], 10, 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse bytesIn (%s): %w", lineSplit[1], err)
 		}
 		tenginestatus.bytesOut, err = strconv.ParseUint(lineSplit[2], 10, 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse bytesOut (%s): %w", lineSplit[2], err)
 		}
 		tenginestatus.connTotal, err = strconv.ParseUint(lineSplit[3], 10, 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse connTotal (%s): %w", lineSplit[3], err)
 		}
 		tenginestatus.reqTotal, err = strconv.ParseUint(lineSplit[4], 10, 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse reqTotal (%s): %w", lineSplit[4], err)
 		}
 		tenginestatus.http2xx, err = strconv.ParseUint(lineSplit[5], 10, 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse http2xx (%s): %w", lineSplit[5], err)
 		}
 		tenginestatus.http3xx, err = strconv.ParseUint(lineSplit[6], 10, 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse http3xx (%s): %w", lineSplit[6], err)
 		}
 		tenginestatus.http4xx, err = strconv.ParseUint(lineSplit[7], 10, 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse http4xx (%s): %w", lineSplit[7], err)
 		}
 		tenginestatus.http5xx, err = strconv.ParseUint(lineSplit[8], 10, 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse http5xx (%s): %w", lineSplit[8], err)
 		}
 		tenginestatus.httpOtherStatus, err = strconv.ParseUint(lineSplit[9], 10, 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse httpOtherStatus (%s): %w", lineSplit[9], err)
 		}
 		tenginestatus.rt, err = strconv.ParseUint(lineSplit[10], 10, 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse rt (%s): %w", lineSplit[10], err)
 		}
 		tenginestatus.upsReq, err = strconv.ParseUint(lineSplit[11], 10, 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse upsReq (%s): %w", lineSplit[11], err)
 		}
 		tenginestatus.upsRt, err = strconv.ParseUint(lineSplit[12], 10, 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse upsRt (%s): %w", lineSplit[12], err)
 		}
 		tenginestatus.upsTries, err = strconv.ParseUint(lineSplit[13], 10, 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse upsTries (%s): %w", lineSplit[13], err)
 		}
 		tenginestatus.http200, err = strconv.ParseUint(lineSplit[14], 10, 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse http200 (%s): %w", lineSplit[14], err)
 		}
 		tenginestatus.http206, err = strconv.ParseUint(lineSplit[15], 10, 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse http206 (%s): %w", lineSplit[15], err)
 		}
 		tenginestatus.http302, err = strconv.ParseUint(lineSplit[16], 10, 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse http302 (%s): %w", lineSplit[16], err)
 		}
 		tenginestatus.http304, err = strconv.ParseUint(lineSplit[17], 10, 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse http304 (%s): %w", lineSplit[17], err)
 		}
 		tenginestatus.http403, err = strconv.ParseUint(lineSplit[18], 10, 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse http403 (%s): %w", lineSplit[18], err)
 		}
 		tenginestatus.http404, err = strconv.ParseUint(lineSplit[19], 10, 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse http404 (%s): %w", lineSplit[19], err)
 		}
 		tenginestatus.http416, err = strconv.ParseUint(lineSplit[20], 10, 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse http416 (%s): %w", lineSplit[20], err)
 		}
 		tenginestatus.http499, err = strconv.ParseUint(lineSplit[21], 10, 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse http499 (%s): %w", lineSplit[21], err)
 		}
 		tenginestatus.http500, err = strconv.ParseUint(lineSplit[22], 10, 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse http500 (%s): %w", lineSplit[22], err)
 		}
 		tenginestatus.http502, err = strconv.ParseUint(lineSplit[23], 10, 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse http502 (%s): %w", lineSplit[23], err)
 		}
 		tenginestatus.http503, err = strconv.ParseUint(lineSplit[24], 10, 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse http503 (%s): %w", lineSplit[24], err)
 		}
 		tenginestatus.http504, err = strconv.ParseUint(lineSplit[25], 10, 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse http504 (%s): %w", lineSplit[25], err)
 		}
 		tenginestatus.http508, err = strconv.ParseUint(lineSplit[26], 10, 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse http508 (%s): %w", lineSplit[26], err)
 		}
 		tenginestatus.httpOtherDetailStatus, err = strconv.ParseUint(lineSplit[27], 10, 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse httpOtherDetailStatus (%s): %w", lineSplit[27], err)
 		}
 		tenginestatus.httpUps4xx, err = strconv.ParseUint(lineSplit[28], 10, 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse httpUps4xx (%s): %w", lineSplit[28], err)
 		}
 		tenginestatus.httpUps5xx, err = strconv.ParseUint(lineSplit[29], 10, 64)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse httpUps5xx (%s): %w", lineSplit[29], err)
 		}
 		tags := getTags(addr, tenginestatus.host)
 		fields := map[string]interface{}{

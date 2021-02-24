@@ -122,12 +122,12 @@ func (p *Parser) SetTemplates(separator string, templates []string) error {
 
 	defaultTemplate, err := templating.NewDefaultTemplateWithPattern("measurement*")
 	if err != nil {
-		return err
+		return fmt.Errorf("new default template: %w", err)
 	}
 
 	templateEngine, err := templating.NewEngine(separator, defaultTemplate, templates)
 	if err != nil {
-		return err
+		return fmt.Errorf("new template engine: %w", err)
 	}
 
 	p.separator = separator

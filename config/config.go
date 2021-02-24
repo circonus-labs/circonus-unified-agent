@@ -3,7 +3,7 @@ package config
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -766,7 +766,7 @@ func (c *Config) LoadConfigData(data []byte) error {
 		if c.Agent.Hostname == "" {
 			hostname, err := os.Hostname()
 			if err != nil {
-				return err
+				return fmt.Errorf("hostname: %w", err)
 			}
 
 			c.Agent.Hostname = hostname
@@ -901,7 +901,7 @@ func escapeEnv(value string) string {
 func loadConfig(config string) ([]byte, error) {
 	u, err := url.Parse(config)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("url parse (%s): %w", config, err)
 	}
 
 	switch u.Scheme {
@@ -910,14 +910,14 @@ func loadConfig(config string) ([]byte, error) {
 	default:
 		// If it isn't a https scheme, try it as a file.
 	}
-	return ioutil.ReadFile(config)
+	return os.ReadFile(config)
 
 }
 
 func fetchConfig(u fmt.Stringer) ([]byte, error) {
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("http new req (%s): %w", u.String(), err)
 	}
 
 	if v, exists := os.LookupEnv("INFLUX_TOKEN"); exists {
@@ -927,7 +927,7 @@ func fetchConfig(u fmt.Stringer) ([]byte, error) {
 	req.Header.Set("User-Agent", internal.ProductToken())
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("http do: %w", err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
@@ -935,7 +935,7 @@ func fetchConfig(u fmt.Stringer) ([]byte, error) {
 	}
 
 	defer resp.Body.Close()
-	return ioutil.ReadAll(resp.Body)
+	return io.ReadAll(resp.Body)
 }
 
 // parseConfig loads a TOML configuration from a provided path and
@@ -983,7 +983,7 @@ func (c *Config) addAggregator(name string, table *ast.Table) error {
 	}
 
 	if err := c.toml.UnmarshalTable(table, aggregator); err != nil {
-		return err
+		return fmt.Errorf("toml unmarshaltable: %w", err)
 	}
 
 	c.Aggregators = append(c.Aggregators, models.NewRunningAggregator(aggregator, conf))
@@ -1027,11 +1027,11 @@ func (c *Config) newRunningProcessor(
 
 	if p, ok := processor.(unwrappable); ok {
 		if err := c.toml.UnmarshalTable(table, p.Unwrap()); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("toml unmarshal table: %w", err)
 		}
 	} else {
 		if err := c.toml.UnmarshalTable(table, processor); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("toml unmarshaltable: %w", err)
 		}
 	}
 
@@ -1067,7 +1067,7 @@ func (c *Config) addOutput(name string, table *ast.Table) error {
 	}
 
 	if err := c.toml.UnmarshalTable(table, output); err != nil {
-		return err
+		return fmt.Errorf("toml unmarshaltable: %w", err)
 	}
 
 	ro := models.NewRunningOutput(name, output, outputConfig,
@@ -1117,7 +1117,7 @@ func (c *Config) addInput(name string, table *ast.Table) error {
 	}
 
 	if err := c.toml.UnmarshalTable(table, input); err != nil {
-		return err
+		return fmt.Errorf("toml unmarshaltable: %w", err)
 	}
 
 	// mgm:require an alias on all input plugins
@@ -1216,7 +1216,7 @@ func (c *Config) buildFilter(tbl *ast.Table) (models.Filter, error) {
 	}
 
 	if err := f.Compile(); err != nil {
-		return f, err
+		return f, fmt.Errorf("filter compile: %w", err)
 	}
 
 	return f, nil
@@ -1350,7 +1350,7 @@ func (c *Config) getParserConfig(name string, tbl *ast.Table) (*parsers.Config, 
 // a serializers.Serializer object, and creates it, which can then be added onto
 // an Output object.
 func (c *Config) buildSerializer(name string, tbl *ast.Table) (serializers.Serializer, error) { //nolint:unparam
-	sc := &serializers.Config{TimestampUnits: time.Duration(1 * time.Second)}
+	sc := &serializers.Config{TimestampUnits: 1 * time.Second}
 
 	c.getFieldString(tbl, "data_format", &sc.DataFormat)
 
@@ -1675,6 +1675,10 @@ func IsDefaultInstanceID(id string) bool {
 	return id == defaultInstanceID
 }
 
+func DefaultInstanceID() string {
+	return defaultInstanceID
+}
+
 func IsDefaultPlugin(name string) bool {
 	if name == "" {
 		return false
@@ -1684,6 +1688,12 @@ func IsDefaultPlugin(name string) bool {
 
 	if plugList == nil {
 		return false
+	}
+
+	if strings.HasPrefix(name, "internal_") {
+		// internal sends internal_agent, internal_memstats, internal_gather, internal_write, etc.
+		// we just want the plugin to appear as "internal" for all of them
+		name = "internal"
 	}
 
 	if _, ok := (*plugList)[name]; ok {

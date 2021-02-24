@@ -2,7 +2,11 @@
 
 package intelrdt
 
-import "github.com/prometheus/procfs"
+import (
+	"fmt"
+
+	"github.com/prometheus/procfs"
+)
 
 type ProcessesHandler interface {
 	getAllProcesses() ([]Process, error)
@@ -22,7 +26,7 @@ func NewProcessor() ProcessesHandler {
 func (p *ProcessManager) getAllProcesses() ([]Process, error) {
 	allProcesses, err := procfs.AllProcs()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("procfs allprocs: %w", err)
 	}
 	processes := make([]Process, 0, len(allProcesses))
 	for _, proc := range allProcesses {

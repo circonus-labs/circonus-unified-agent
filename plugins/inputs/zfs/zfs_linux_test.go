@@ -3,7 +3,6 @@
 package zfs
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -252,10 +251,10 @@ func TestZfsPoolMetrics(t *testing.T) {
 	err = os.MkdirAll(testKstatPath+"/HOME", 0755)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(testKstatPath+"/HOME/io", []byte(poolIOContents), 0600)
+	err = os.WriteFile(testKstatPath+"/HOME/io", []byte(poolIOContents), 0600)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(testKstatPath+"/arcstats", []byte(arcstatsContents), 0600)
+	err = os.WriteFile(testKstatPath+"/arcstats", []byte(arcstatsContents), 0600)
 	require.NoError(t, err)
 
 	poolMetrics := getPoolMetrics()
@@ -291,25 +290,25 @@ func TestZfsGeneratesMetrics(t *testing.T) {
 	err = os.MkdirAll(testKstatPath+"/HOME", 0755)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(testKstatPath+"/HOME/io", []byte(""), 0600)
+	err = os.WriteFile(testKstatPath+"/HOME/io", []byte(""), 0600)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(testKstatPath+"/arcstats", []byte(arcstatsContents), 0600)
+	err = os.WriteFile(testKstatPath+"/arcstats", []byte(arcstatsContents), 0600)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(testKstatPath+"/zfetchstats", []byte(zfetchstatsContents), 0600)
+	err = os.WriteFile(testKstatPath+"/zfetchstats", []byte(zfetchstatsContents), 0600)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(testKstatPath+"/zil", []byte(zilContents), 0600)
+	err = os.WriteFile(testKstatPath+"/zil", []byte(zilContents), 0600)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(testKstatPath+"/fm", []byte(fmContents), 0600)
+	err = os.WriteFile(testKstatPath+"/fm", []byte(fmContents), 0600)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(testKstatPath+"/dmu_tx", []byte(dmuTxContents), 0600)
+	err = os.WriteFile(testKstatPath+"/dmu_tx", []byte(dmuTxContents), 0600)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(testKstatPath+"/abdstats", []byte(abdstatsContents), 0600)
+	err = os.WriteFile(testKstatPath+"/abdstats", []byte(abdstatsContents), 0600)
 	require.NoError(t, err)
 
 	intMetrics := getKstatMetricsAll()
@@ -332,7 +331,7 @@ func TestZfsGeneratesMetrics(t *testing.T) {
 	err = os.MkdirAll(testKstatPath+"/STORAGE", 0755)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(testKstatPath+"/STORAGE/io", []byte(""), 0600)
+	err = os.WriteFile(testKstatPath+"/STORAGE/io", []byte(""), 0600)
 	require.NoError(t, err)
 
 	tags = map[string]string{

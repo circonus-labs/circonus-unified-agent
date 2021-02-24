@@ -2,7 +2,7 @@ package tail
 
 import (
 	"bytes"
-	"io/ioutil"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -26,7 +26,7 @@ var (
 )
 
 func TestTailBadLine(t *testing.T) {
-	tmpfile, err := ioutil.TempFile("", "")
+	tmpfile, err := os.CreateTemp("", "")
 	require.NoError(t, err)
 	defer os.Remove(tmpfile.Name())
 
@@ -63,7 +63,7 @@ func TestTailBadLine(t *testing.T) {
 }
 
 func TestTailDosLineEndings(t *testing.T) {
-	tmpfile, err := ioutil.TempFile("", "")
+	tmpfile, err := os.CreateTemp("", "")
 	require.NoError(t, err)
 	defer os.Remove(tmpfile.Name())
 	_, err = tmpfile.WriteString("cpu usage_idle=100\r\ncpu2 usage_idle=200\r\n")
@@ -150,7 +150,7 @@ func TestGrokParseLogFilesWithMultiline(t *testing.T) {
 }
 
 func TestGrokParseLogFilesWithMultilineTimeout(t *testing.T) {
-	tmpfile, err := ioutil.TempFile("", "")
+	tmpfile, err := os.CreateTemp("", "")
 	require.NoError(t, err)
 	defer os.Remove(tmpfile.Name())
 
@@ -257,12 +257,12 @@ func createGrokParser() (parsers.Parser, error) {
 		DataFormat:             "grok",
 	}
 	parser, err := parsers.NewParser(grokConfig)
-	return parser, err
+	return parser, fmt.Errorf("new parser: %w", err)
 }
 
 // The csv parser should only parse the header line once per file.
 func TestCSVHeadersParsedOnce(t *testing.T) {
-	tmpfile, err := ioutil.TempFile("", "")
+	tmpfile, err := os.CreateTemp("", "")
 	require.NoError(t, err)
 	defer os.Remove(tmpfile.Name())
 
@@ -321,7 +321,7 @@ cpu,42
 
 // Ensure that the first line can produce multiple metrics (#6138)
 func TestMultipleMetricsOnFirstLine(t *testing.T) {
-	tmpfile, err := ioutil.TempFile("", "")
+	tmpfile, err := os.CreateTemp("", "")
 	require.NoError(t, err)
 	defer os.Remove(tmpfile.Name())
 
@@ -521,7 +521,7 @@ func TestCharacterEncoding(t *testing.T) {
 }
 
 func TestTailEOF(t *testing.T) {
-	tmpfile, err := ioutil.TempFile("", "")
+	tmpfile, err := os.CreateTemp("", "")
 	require.NoError(t, err)
 	defer os.Remove(tmpfile.Name())
 	_, err = tmpfile.WriteString("cpu usage_idle=100\r\n")

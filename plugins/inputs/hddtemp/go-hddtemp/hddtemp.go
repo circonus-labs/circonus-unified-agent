@@ -2,6 +2,7 @@ package hddtemp
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"net"
 	"strconv"
@@ -32,11 +33,11 @@ func (h *HDDTemp) Fetch(address string) ([]Disk, error) {
 	)
 
 	if conn, err = net.Dial("tcp", address); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("dial tcp (%s): %w", address, err)
 	}
 
 	if _, err = io.Copy(&buffer, conn); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("io copy: %w", err)
 	}
 
 	fields := strings.Split(buffer.String(), "|")

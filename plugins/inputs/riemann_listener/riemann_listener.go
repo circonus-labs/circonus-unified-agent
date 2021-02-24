@@ -127,7 +127,7 @@ func (rsl *riemannListener) setKeepAlive(c net.Conn) error {
 		return tcpc.SetKeepAlive(false)
 	}
 	if err := tcpc.SetKeepAlive(true); err != nil {
-		return err
+		return fmt.Errorf("set keep alive: %w", err)
 	}
 	return tcpc.SetKeepAlivePeriod(rsl.KeepAlivePeriod.Duration)
 }
@@ -150,7 +150,7 @@ func readMessages(r io.Reader, p []byte) error {
 		n, err := r.Read(p)
 		p = p[n:]
 		if err != nil {
-			return err
+			return fmt.Errorf("read: %w", err)
 		}
 	}
 	return nil
@@ -331,7 +331,7 @@ func (rsl *RiemannSocketListener) Start(acc cua.Accumulator) error {
 	case "tcp", "tcp4", "tcp6":
 		tlsCfg, err := rsl.ServerConfig.TLSConfig()
 		if err != nil {
-			return err
+			return fmt.Errorf("TLSConfig: %w", err)
 		}
 
 		var l net.Listener
@@ -341,7 +341,7 @@ func (rsl *RiemannSocketListener) Start(acc cua.Accumulator) error {
 			l, err = tls.Listen(protocol, addr, tlsCfg)
 		}
 		if err != nil {
-			return err
+			return fmt.Errorf("listen (%s): %w", addr, err)
 		}
 
 		rsl.Log.Infof("Listening on %s://%s", protocol, l.Addr())

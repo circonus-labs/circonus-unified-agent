@@ -152,9 +152,8 @@ func (p *passenger) Gather(acc cua.Accumulator) error {
 
 	cmd, args := p.parseCommand()
 	out, err := exec.Command(cmd, args...).Output()
-
 	if err != nil {
-		return err
+		return fmt.Errorf("execd (%s): %w", cmd, err)
 	}
 
 	if err = importMetric(out, acc); err != nil {

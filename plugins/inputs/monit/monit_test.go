@@ -14,6 +14,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const pathStatus = "/_status"
+
 type transportMock struct {
 }
 
@@ -324,7 +326,7 @@ func TestServiceType(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				switch r.URL.Path {
-				case "/_status":
+				case pathStatus:
 					http.ServeFile(w, r, tt.filename)
 				default:
 					w.WriteHeader(http.StatusNotFound)
@@ -524,7 +526,7 @@ func TestMonitFailure(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				switch r.URL.Path {
-				case "/_status":
+				case pathStatus:
 					http.ServeFile(w, r, tt.filename)
 				default:
 					w.WriteHeader(http.StatusNotFound)
@@ -603,7 +605,7 @@ func TestInvalidUsernameOrPassword(t *testing.T) {
 		}
 
 		switch r.URL.Path {
-		case "/_status":
+		case pathStatus:
 			http.ServeFile(w, r, "testdata/response_servicetype_0.xml")
 		default:
 			panic("Cannot handle request")
@@ -637,7 +639,7 @@ func TestNoUsernameOrPasswordConfiguration(t *testing.T) {
 		}
 
 		switch r.URL.Path {
-		case "/_status":
+		case pathStatus:
 			http.ServeFile(w, r, "testdata/response_servicetype_0.xml")
 		default:
 			panic("Cannot handle request")
@@ -683,7 +685,7 @@ func TestInvalidXMLAndInvalidTypes(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				switch r.URL.Path {
-				case "/_status":
+				case pathStatus:
 					http.ServeFile(w, r, tt.filename)
 				default:
 					w.WriteHeader(http.StatusNotFound)

@@ -25,7 +25,7 @@ package nsq
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -104,14 +104,14 @@ func (n *NSQ) Gather(acc cua.Accumulator) error {
 func (n *NSQ) getHTTPClient() (*http.Client, error) {
 	tlsConfig, err := n.ClientConfig.TLSConfig()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("TLSConfig: %w", err)
 	}
 	tr := &http.Transport{
 		TLSClientConfig: tlsConfig,
 	}
 	httpClient := &http.Client{
 		Transport: tr,
-		Timeout:   time.Duration(4 * time.Second),
+		Timeout:   4 * time.Second,
 	}
 	return httpClient, nil
 }
@@ -131,7 +131,7 @@ func (n *NSQ) gatherEndpoint(e string, acc cua.Accumulator) error {
 		return fmt.Errorf("%s returned HTTP status %s", u.String(), r.Status)
 	}
 
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		return fmt.Errorf(`Error reading body: %w`, err)
 	}

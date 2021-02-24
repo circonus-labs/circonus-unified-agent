@@ -229,7 +229,7 @@ func addCoreMetricsToAcc(acc cua.Accumulator, core string, mBeansData *MBeansDat
 		return fmt.Errorf("no core metric data to unmarshal")
 	}
 	if err := json.Unmarshal(mBeansData.SolrMbeans[1], &coreMetrics); err != nil {
-		return err
+		return fmt.Errorf("json unmarshal: %w", err)
 	}
 	for name, metrics := range coreMetrics {
 		if strings.Contains(name, "@") {
@@ -261,7 +261,7 @@ func addQueryHandlerMetricsToAcc(acc cua.Accumulator, core string, mBeansData *M
 	}
 
 	if err := json.Unmarshal(mBeansData.SolrMbeans[3], &queryMetrics); err != nil {
-		return err
+		return fmt.Errorf("json unmarshal: %w", err)
 	}
 
 	for name, metrics := range queryMetrics {
@@ -335,7 +335,7 @@ func addUpdateHandlerMetricsToAcc(acc cua.Accumulator, core string, mBeansData *
 		return fmt.Errorf("no update handler metric data to unmarshal")
 	}
 	if err := json.Unmarshal(mBeansData.SolrMbeans[5], &updateMetrics); err != nil {
-		return err
+		return fmt.Errorf("json unmarshal: %w", err)
 	}
 	for name, metrics := range updateMetrics {
 		var autoCommitMaxTime int64
@@ -414,7 +414,7 @@ func addCacheMetricsToAcc(acc cua.Accumulator, core string, mBeansData *MBeansDa
 	}
 	var cacheMetrics map[string]Cache
 	if err := json.Unmarshal(mBeansData.SolrMbeans[7], &cacheMetrics); err != nil {
-		return err
+		return fmt.Errorf("json unmarshal: %w", err)
 	}
 	for name, metrics := range cacheMetrics {
 		coreFields := make(map[string]interface{})
@@ -479,7 +479,7 @@ func (s *Solr) createHTTPClient() *http.Client {
 func (s *Solr) gatherData(url string, v interface{}) error {
 	req, reqErr := http.NewRequest(http.MethodGet, url, nil)
 	if reqErr != nil {
-		return reqErr
+		return fmt.Errorf("http new req (%s): %w", url, reqErr)
 	}
 
 	if s.Username != "" {
@@ -490,7 +490,7 @@ func (s *Solr) gatherData(url string, v interface{}) error {
 
 	r, err := s.client.Do(req)
 	if err != nil {
-		return err
+		return fmt.Errorf("http do: %w", err)
 	}
 	defer r.Body.Close()
 	if r.StatusCode != http.StatusOK {
@@ -498,7 +498,7 @@ func (s *Solr) gatherData(url string, v interface{}) error {
 			r.StatusCode, http.StatusOK, url)
 	}
 	if err = json.NewDecoder(r.Body).Decode(v); err != nil {
-		return err
+		return fmt.Errorf("json decode: %w", err)
 	}
 	return nil
 }

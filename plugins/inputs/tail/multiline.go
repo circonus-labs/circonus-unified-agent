@@ -41,7 +41,7 @@ func (m *MultilineConfig) NewMultiline() (*Multiline, error) {
 	if m.Pattern != "" {
 		enabled = true
 		if r, err = regexp.Compile(m.Pattern); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("rx compile (%s): %w", m.Pattern, err)
 		}
 		if m.Timeout == nil || m.Timeout.Duration.Nanoseconds() == int64(0) {
 			m.Timeout = &internal.Duration{Duration: 5 * time.Second}

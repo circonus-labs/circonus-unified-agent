@@ -2,6 +2,7 @@ package system
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -56,14 +57,14 @@ func (s *SysPS) CPUTimes(perCPU, totalCPU bool) ([]cpu.TimesStat, error) {
 		if perCPUTimes, err := cpu.Times(true); err == nil {
 			cpuTimes = append(cpuTimes, perCPUTimes...)
 		} else {
-			return nil, err
+			return nil, fmt.Errorf("cpu times (percpu): %w", err)
 		}
 	}
 	if totalCPU {
 		if totalCPUTimes, err := cpu.Times(false); err == nil {
 			cpuTimes = append(cpuTimes, totalCPUTimes...)
 		} else {
-			return nil, err
+			return nil, fmt.Errorf("cpu times (tot): %w", err)
 		}
 	}
 	return cpuTimes, nil
@@ -158,7 +159,7 @@ func (s *SysPS) DiskIO(names []string) (map[string]disk.IOCountersStat, error) {
 		return nil, nil
 	}
 
-	return m, err
+	return m, fmt.Errorf("disk iocounters: %w", err)
 }
 
 func (s *SysPS) VMStat() (*mem.VirtualMemoryStat, error) {
@@ -174,7 +175,7 @@ func (s *SysPS) Temperature() ([]host.TemperatureStat, error) {
 	if err != nil {
 		var hwerr *host.Warnings
 		if errors.As(err, &hwerr) {
-			return temp, err
+			return temp, fmt.Errorf("temp sensors: %w", err)
 		}
 	}
 	return temp, nil

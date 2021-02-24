@@ -116,7 +116,7 @@ func (c *Marklogic) Init() error {
 	for _, u := range c.Hosts {
 		base, err := url.Parse(c.URL)
 		if err != nil {
-			return err
+			return fmt.Errorf("url parse (%s): %w", c.URL, err)
 		}
 
 		base.Path = path.Join(base.Path, statsPath, u)
@@ -213,14 +213,14 @@ func (c *Marklogic) fetchAndInsertData(acc cua.Accumulator, url string) error {
 func (c *Marklogic) createHTTPClient() (*http.Client, error) {
 	tlsCfg, err := c.ClientConfig.TLSConfig()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("TLSConfig: %w", err)
 	}
 
 	client := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: tlsCfg,
 		},
-		Timeout: time.Duration(5 * time.Second),
+		Timeout: 5 * time.Second,
 	}
 
 	return client, nil
@@ -229,7 +229,7 @@ func (c *Marklogic) createHTTPClient() (*http.Client, error) {
 func (c *Marklogic) gatherJSONData(url string, v interface{}) error {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("http new req (%s): %w", url, err)
 	}
 
 	if c.Username != "" || c.Password != "" {
@@ -238,7 +238,7 @@ func (c *Marklogic) gatherJSONData(url string, v interface{}) error {
 
 	response, err := c.client.Do(req)
 	if err != nil {
-		return err
+		return fmt.Errorf("http req do: %w", err)
 	}
 	defer response.Body.Close()
 	if response.StatusCode != http.StatusOK {
@@ -247,7 +247,7 @@ func (c *Marklogic) gatherJSONData(url string, v interface{}) error {
 	}
 
 	if err = json.NewDecoder(response.Body).Decode(v); err != nil {
-		return err
+		return fmt.Errorf("json decode: %w", err)
 	}
 
 	return nil

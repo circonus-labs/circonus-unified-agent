@@ -3,7 +3,6 @@ package syslog
 import (
 	"crypto/tls"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"os"
 	"path/filepath"
@@ -357,7 +356,7 @@ func testStrictOctetCounting(t *testing.T, protocol string, address string, want
 			if wantTLS {
 				config, e := pki.TLSClientConfig().TLSConfig()
 				require.NoError(t, e)
-				config.ServerName = "localhost"
+				config.ServerName = localhost
 				conn, err = tls.Dial(protocol, address, config)
 			} else {
 				conn, err = net.Dial(protocol, address)
@@ -414,7 +413,7 @@ func testBestEffortOctetCounting(t *testing.T, protocol string, address string, 
 			if wantTLS {
 				config, e := pki.TLSClientConfig().TLSConfig()
 				require.NoError(t, e)
-				config.ServerName = "localhost"
+				config.ServerName = localhost
 				conn, err = tls.Dial(protocol, address, config)
 			} else {
 				conn, err = net.Dial(protocol, address)
@@ -467,7 +466,7 @@ func TestOctetCountingStrictWithZeroKeepAlive_tcp_tls(t *testing.T) {
 }
 
 func TestOctetCountingStrict_unix(t *testing.T) {
-	tmpdir, err := ioutil.TempDir("", "cua")
+	tmpdir, err := os.MkdirTemp("", "cua")
 	require.NoError(t, err)
 	defer os.RemoveAll(tmpdir)
 	sock := filepath.Join(tmpdir, "syslog.TestStrict_unix.sock")
@@ -475,7 +474,7 @@ func TestOctetCountingStrict_unix(t *testing.T) {
 }
 
 func TestOctetCountingBestEffort_unix(t *testing.T) {
-	tmpdir, err := ioutil.TempDir("", "cua")
+	tmpdir, err := os.MkdirTemp("", "cua")
 	require.NoError(t, err)
 	defer os.RemoveAll(tmpdir)
 	sock := filepath.Join(tmpdir, "syslog.TestBestEffort_unix.sock")
@@ -483,7 +482,7 @@ func TestOctetCountingBestEffort_unix(t *testing.T) {
 }
 
 func TestOctetCountingStrict_unix_tls(t *testing.T) {
-	tmpdir, err := ioutil.TempDir("", "cua")
+	tmpdir, err := os.MkdirTemp("", "cua")
 	require.NoError(t, err)
 	defer os.RemoveAll(tmpdir)
 	sock := filepath.Join(tmpdir, "syslog.TestStrict_unix_tls.sock")
@@ -491,7 +490,7 @@ func TestOctetCountingStrict_unix_tls(t *testing.T) {
 }
 
 func TestOctetCountingBestEffort_unix_tls(t *testing.T) {
-	tmpdir, err := ioutil.TempDir("", "cua")
+	tmpdir, err := os.MkdirTemp("", "cua")
 	require.NoError(t, err)
 	defer os.RemoveAll(tmpdir)
 	sock := filepath.Join(tmpdir, "syslog.TestBestEffort_unix_tls.sock")

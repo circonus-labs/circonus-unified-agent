@@ -16,26 +16,26 @@ import (
 func UnmarshalThrift(body []byte) ([]*zipkincore.Span, error) {
 	buffer := thrift.NewTMemoryBuffer()
 	if _, err := buffer.Write(body); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("buff write: %w", err)
 	}
 
 	transport := thrift.NewTBinaryProtocolTransport(buffer)
 	_, size, err := transport.ReadListBegin()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("transport read begin: %w", err)
 	}
 
 	spans := make([]*zipkincore.Span, size)
 	for i := 0; i < size; i++ {
 		zs := &zipkincore.Span{}
 		if err = zs.Read(transport); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("zsread: %w", err)
 		}
 		spans[i] = zs
 	}
 
 	if err = transport.ReadListEnd(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("transport read end: %w", err)
 	}
 	return spans, nil
 }

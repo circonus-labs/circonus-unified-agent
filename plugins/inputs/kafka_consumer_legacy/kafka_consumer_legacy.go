@@ -113,7 +113,7 @@ func (k *Kafka) Start(acc cua.Accumulator) error {
 			config,
 		)
 		if consumerErr != nil {
-			return consumerErr
+			return fmt.Errorf("consumergroup join: %w", consumerErr)
 		}
 
 		// Setup message and error channels

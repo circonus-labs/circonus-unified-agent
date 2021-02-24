@@ -102,6 +102,7 @@ API endpoint. In the following order the plugin will attempt to authenticate.
   #    name = "LoadBalancerName"
   #    value = "p-example"
 ```
+
 #### Requirements and Terminology
 
 Plugin Configuration utilizes [CloudWatch concepts](http://docs.aws.amazon.com/AmazonCloudWatch/latest/DeveloperGuide/cloudwatch_concepts.html) and access pattern to allow monitoring of any CloudWatch Metric.
@@ -152,6 +153,7 @@ would be exported containing the aggregate values of the ELB across availability
 To maximize efficiency and savings, consider making fewer requests by increasing `interval` but keeping `period` at the duration you would like metrics to be reported. The above example will request metrics from Cloudwatch every 5 minutes but will output five metrics timestamped one minute apart.
 
 #### Restrictions and Limitations
+
 - CloudWatch metrics are not available instantly via the CloudWatch API. You should adjust your collection `delay` to account for this lag in metrics availability based on your [monitoring subscription level](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-cloudwatch-new.html)
 - CloudWatch API usage incurs cost - see [GetMetricData Pricing](https://aws.amazon.com/cloudwatch/pricing/)
 
@@ -167,8 +169,8 @@ Namespace and Metrics are represented in [snake case](https://en.wikipedia.org/w
   - {metric}_maximum     (metric Maximum value)
   - {metric}_sample_count (metric SampleCount value)
 
-
 ### Tags:
+
 Each measurement is tagged with the following identifiers to uniquely identify the associated metric
 Tag Dimension names are represented in [snake case](https://en.wikipedia.org/wiki/Snake_case)
 
@@ -179,6 +181,7 @@ Tag Dimension names are represented in [snake case](https://en.wikipedia.org/wik
 ### Troubleshooting:
 
 You can use the aws cli to get a list of available metrics and dimensions:
+
 ```
 aws cloudwatch list-metrics --namespace AWS/EC2 --region us-east-1
 aws cloudwatch list-metrics --namespace AWS/EC2 --region us-east-1 --metric-name CPUCreditBalance
@@ -186,6 +189,7 @@ aws cloudwatch list-metrics --namespace AWS/EC2 --region us-east-1 --metric-name
 
 If the expected metrics are not returned, you can try getting them manually
 for a short period of time:
+
 ```
 aws cloudwatch get-metric-data \
   --start-time 2018-07-01T00:00:00Z \

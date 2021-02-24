@@ -2,6 +2,7 @@ package json
 
 import (
 	"encoding/json"
+	"fmt"
 	"math"
 	"time"
 
@@ -23,7 +24,7 @@ func (s *Serializer) Serialize(metric cua.Metric) ([]byte, error) {
 	m := s.createObject(metric)
 	serialized, err := json.Marshal(m)
 	if err != nil {
-		return []byte{}, err
+		return []byte{}, fmt.Errorf("json marshal: %w", err)
 	}
 	serialized = append(serialized, '\n')
 
@@ -43,7 +44,7 @@ func (s *Serializer) SerializeBatch(metrics []cua.Metric) ([]byte, error) {
 
 	serialized, err := json.Marshal(obj)
 	if err != nil {
-		return []byte{}, err
+		return []byte{}, fmt.Errorf("json marshal: %w", err)
 	}
 	return serialized, nil
 }

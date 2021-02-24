@@ -14,6 +14,13 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/plugins/processors"
 )
 
+const (
+	aggMean = "mean"
+	aggSum  = "sum"
+	aggMin  = "min"
+	aggMax  = "max"
+)
+
 type TopK struct {
 	Period             internal.Duration
 	K                  int
@@ -40,7 +47,7 @@ func New() *TopK {
 	topk.Period = internal.Duration{Duration: time.Second * time.Duration(10)}
 	topk.K = 10
 	topk.Fields = []string{"value"}
-	topk.Aggregation = "mean"
+	topk.Aggregation = aggMean
 	topk.GroupBy = []string{"*"}
 	topk.AddGroupByTag = ""
 	topk.AddRankFields = []string{}
@@ -349,7 +356,7 @@ func (t *TopK) getAggregationFunction(aggOperation string) (func([]cua.Metric, [
 	}
 
 	switch aggOperation {
-	case "sum":
+	case aggSum:
 		return func(ms []cua.Metric, fields []string) map[string]float64 {
 			sum := func(agg map[string]float64, val float64, field string) {
 				agg[field] += val
@@ -357,7 +364,7 @@ func (t *TopK) getAggregationFunction(aggOperation string) (func([]cua.Metric, [
 			return aggregator(ms, fields, sum)
 		}, nil
 
-	case "min":
+	case aggMin:
 		return func(ms []cua.Metric, fields []string) map[string]float64 {
 			min := func(agg map[string]float64, val float64, field string) {
 				// If this field has not been set, set it to the maximum float64
@@ -374,7 +381,7 @@ func (t *TopK) getAggregationFunction(aggOperation string) (func([]cua.Metric, [
 			return aggregator(ms, fields, min)
 		}, nil
 
-	case "max":
+	case aggMax:
 		return func(ms []cua.Metric, fields []string) map[string]float64 {
 			max := func(agg map[string]float64, val float64, field string) {
 				// If this field has not been set, set it to the minimum float64
@@ -391,7 +398,7 @@ func (t *TopK) getAggregationFunction(aggOperation string) (func([]cua.Metric, [
 			return aggregator(ms, fields, max)
 		}, nil
 
-	case "mean":
+	case aggMean:
 		return func(ms []cua.Metric, fields []string) map[string]float64 {
 			mean := make(map[string]float64)
 			meanCounters := make(map[string]float64)

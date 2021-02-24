@@ -3,7 +3,7 @@ package activemq
 import (
 	"encoding/xml"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"path"
@@ -120,7 +120,7 @@ func (a *ActiveMQ) SampleConfig() string {
 func (a *ActiveMQ) createHTTPClient() (*http.Client, error) {
 	tlsCfg, err := a.ClientConfig.TLSConfig()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("TLSConfig: %w", err)
 	}
 
 	client := &http.Client{
@@ -143,7 +143,7 @@ func (a *ActiveMQ) Init() error {
 	if a.URL != "" {
 		u, err = url.Parse(a.URL)
 		if err != nil {
-			return err
+			return fmt.Errorf("url parse (%s): %w", a.URL, err)
 		}
 	}
 
@@ -167,7 +167,7 @@ func (a *ActiveMQ) Init() error {
 func (a *ActiveMQ) GetMetrics(u string) ([]byte, error) {
 	req, err := http.NewRequest("GET", u, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("http new request (%s): %w", u, err)
 	}
 
 	if a.Username != "" || a.Password != "" {
@@ -176,7 +176,7 @@ func (a *ActiveMQ) GetMetrics(u string) ([]byte, error) {
 
 	resp, err := a.client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("http do: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -184,7 +184,7 @@ func (a *ActiveMQ) GetMetrics(u string) ([]byte, error) {
 		return nil, fmt.Errorf("GET %s returned status %q", u, resp.Status)
 	}
 
-	return ioutil.ReadAll(resp.Body)
+	return io.ReadAll(resp.Body)
 }
 
 func (a *ActiveMQ) GatherQueuesMetrics(acc cua.Accumulator, queues Queues) {

@@ -11,7 +11,8 @@ for HPC environments. It stores statistics about its activity in
 package lustre2
 
 import (
-	"io/ioutil"
+	"fmt"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -362,7 +363,7 @@ var wantedMdtJobstatsFields = []*mapping{
 func (l *Lustre2) GetLustreProcStats(fileglob string, wantedFields []*mapping, acc cua.Accumulator) error {
 	files, err := filepath.Glob(fileglob)
 	if err != nil {
-		return err
+		return fmt.Errorf("filepath glob (%s): %w", fileglob, err)
 	}
 
 	for _, file := range files {
@@ -375,13 +376,13 @@ func (l *Lustre2) GetLustreProcStats(fileglob string, wantedFields []*mapping, a
 		name := path[len(path)-2]
 
 		// lines, err := internal.ReadLines(file)
-		wholeFile, err := ioutil.ReadFile(file)
+		wholeFile, err := os.ReadFile(file)
 		if err != nil {
-			return err
+			return fmt.Errorf("read file (%s): %w", file, err)
 		}
 		jobs := strings.Split(string(wholeFile), "- ")
 		for _, job := range jobs {
-			lines := strings.Split(string(job), "\n")
+			lines := strings.Split(job, "\n")
 			jobid := ""
 
 			// figure out if the data should be tagged with job_id here
@@ -413,9 +414,10 @@ func (l *Lustre2) GetLustreProcStats(fileglob string, wantedFields []*mapping, a
 						if wantedField == 0 {
 							wantedField = 1
 						}
-						data, err = strconv.ParseUint(strings.TrimSuffix((parts[wantedField]), ","), 10, 64)
+						s := strings.TrimSuffix((parts[wantedField]), ",")
+						data, err = strconv.ParseUint(s, 10, 64)
 						if err != nil {
-							return err
+							return fmt.Errorf("parseuint (%s): %w", s, err)
 						}
 						reportName := wanted.inProc
 						if wanted.reportAs != "" {

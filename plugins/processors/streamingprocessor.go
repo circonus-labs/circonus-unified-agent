@@ -1,6 +1,8 @@
 package processors
 
 import (
+	"fmt"
+
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/models"
 )
@@ -52,7 +54,7 @@ func (sp *streamingProcessor) Init() error {
 	if p, ok := sp.processor.(cua.Initializer); ok {
 		err := p.Init()
 		if err != nil {
-			return err
+			return fmt.Errorf("streaming processor init: %w", err)
 		}
 	}
 	return nil

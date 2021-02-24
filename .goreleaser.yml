@@ -3,8 +3,7 @@ project_name: circonus-unified-agent
 before:
     hooks:
         - go mod tidy
-        - golangci-lint run
-        #- ./build_lint.sh
+        - ./build_lint.sh
         
 builds:
     -

@@ -241,7 +241,10 @@ func init() {
 //
 
 // getMetricDest returns cgm instance for the plugin identified by a plugin and plugin instance id
-func (c *Circonus) getMetricDest(defaultDest *cgm.CirconusMetrics, plugin, instanceID string) *cgm.CirconusMetrics {
+func (c *Circonus) getMetricDest(defaultDest *cgm.CirconusMetrics, m cua.Metric) *cgm.CirconusMetrics {
+	plugin := m.Origin()
+	instanceID := m.OriginInstance()
+
 	if c.OneCheck || plugin == "" {
 		return defaultDest
 	}
@@ -318,13 +321,13 @@ func (c *Circonus) initCheck(id, name string) error {
 
 // buildNumerics constructs numeric metrics from a cua metric.
 func (c *Circonus) buildNumerics(defaultDest *cgm.CirconusMetrics, m cua.Metric) int64 {
-	dest := c.getMetricDest(defaultDest, m.Name(), m.OriginInstance())
+	dest := c.getMetricDest(defaultDest, m)
 	if dest == nil {
 		// no default and no plugin specific
 		return 0
 	}
 	numMetrics := int64(0)
-	tags := c.convertTags(m.Origin(), m.OriginInstance(), m.TagList())
+	tags := c.convertTags(m)
 	for _, field := range m.FieldList() {
 		mn := strings.TrimSuffix(field.Key, "__value")
 		if c.DebugMetrics {
@@ -339,13 +342,14 @@ func (c *Circonus) buildNumerics(defaultDest *cgm.CirconusMetrics, m cua.Metric)
 
 // buildTexts constructs text metrics from a cua metric.
 func (c *Circonus) buildTexts(defaultDest *cgm.CirconusMetrics, m cua.Metric) int64 {
-	dest := c.getMetricDest(defaultDest, m.Name(), m.OriginInstance())
+	dest := c.getMetricDest(defaultDest, m)
 	if dest == nil {
 		// no default and no plugin specific
 		return 0
 	}
 	numMetrics := int64(0)
-	tags := c.convertTags(m.Origin(), m.OriginInstance(), m.TagList())
+	tags := c.convertTags(m)
+
 	for _, field := range m.FieldList() {
 		mn := strings.TrimSuffix(field.Key, "__value")
 		if c.DebugMetrics {
@@ -365,7 +369,7 @@ func (c *Circonus) buildTexts(defaultDest *cgm.CirconusMetrics, m cua.Metric) in
 
 // buildHistogram constructs histogram metrics from a cua metric.
 func (c *Circonus) buildHistogram(defaultDest *cgm.CirconusMetrics, m cua.Metric) int64 {
-	dest := c.getMetricDest(defaultDest, m.Name(), m.OriginInstance())
+	dest := c.getMetricDest(defaultDest, m)
 	if dest == nil {
 		// no default and no plugin specific
 		return 0
@@ -373,7 +377,7 @@ func (c *Circonus) buildHistogram(defaultDest *cgm.CirconusMetrics, m cua.Metric
 
 	numMetrics := int64(0)
 	mn := strings.TrimSuffix(m.Name(), "__value")
-	tags := c.convertTags(m.Origin(), m.OriginInstance(), m.TagList())
+	tags := c.convertTags(m)
 
 	for _, field := range m.FieldList() {
 		v, err := strconv.ParseFloat(field.Key, 64)
@@ -394,7 +398,7 @@ func (c *Circonus) buildHistogram(defaultDest *cgm.CirconusMetrics, m cua.Metric
 
 // buildCumulativeHistogram constructs cumulative histogram metrics from a cua metric.
 func (c *Circonus) buildCumulativeHistogram(defaultDest *cgm.CirconusMetrics, m cua.Metric) int64 {
-	dest := c.getMetricDest(defaultDest, m.Name(), m.OriginInstance())
+	dest := c.getMetricDest(defaultDest, m)
 	if dest == nil {
 		// no default and no plugin specific
 		return 0
@@ -402,7 +406,7 @@ func (c *Circonus) buildCumulativeHistogram(defaultDest *cgm.CirconusMetrics, m 
 
 	numMetrics := int64(0)
 	mn := strings.TrimSuffix(m.Name(), "__value")
-	tags := c.convertTags(m.Origin(), m.OriginInstance(), m.TagList())
+	tags := c.convertTags(m)
 
 	buckets := make([]string, 0)
 
@@ -432,10 +436,12 @@ func (c *Circonus) buildCumulativeHistogram(defaultDest *cgm.CirconusMetrics, m 
 }
 
 // convertTags reformats cua tags to cgm tags
-func (c *Circonus) convertTags(pluginName, pluginInstanceID string, tags []*cua.Tag) cgm.Tags { //nolint:unparam
+func (c *Circonus) convertTags(m cua.Metric) cgm.Tags { //nolint:unparam
 	var ctags cgm.Tags
 
-	if len(tags) == 0 && pluginName == "" {
+	tags := m.TagList()
+
+	if len(tags) == 0 && m.Origin() == "" {
 		return ctags
 	}
 
@@ -454,12 +460,19 @@ func (c *Circonus) convertTags(pluginName, pluginInstanceID string, tags []*cua.
 		}
 	}
 
-	if pluginName != "" {
-		ctags = append(ctags, cgm.Tag{Category: "input_plugin", Value: pluginName})
+	if m.Origin() != "" {
+		// from config file `inputs.*`, the part after period
+		ctags = append(ctags, cgm.Tag{Category: "input_plugin", Value: m.Origin()})
+	}
+	if m.Name() != "" && m.Name() != m.Origin() {
+		// what the plugin identifies a subgroup of metrics as, some have multiple names
+		// e.g. internal, smart, aws, etc.
+		ctags = append(ctags, cgm.Tag{Category: "input_metric_group", Value: m.Name()})
 	}
 
-	// if pluginInstanceID != "" {
-	// 	ctags = append(ctags, cgm.Tag{Category: "input_instance_id", Value: pluginInstanceID})
+	// this is included in the check type/display name now so it doesn't need to be a tag
+	// if m.OriginInstance() != "" {
+	// 	ctags = append(ctags, cgm.Tag{Category: "input_instance_id", Value: m.OriginInstance()})
 	// }
 
 	return ctags

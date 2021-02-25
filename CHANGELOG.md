@@ -1,3 +1,10 @@
+# v0.0.14
+
+* upd: switch back to metric origin for check type
+* add: `input_metric_group` tag for plugins which produce multiple groups of metrics
+* upd: refactor tagging and metric dest methods to use the metric struct directly
+* fix: typo in rollup tag for memstats `__rollup` missing underscore
+
 # v0.0.13
 
 * upd: replace deprecated ioutil methods

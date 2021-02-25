@@ -52,7 +52,7 @@ func (s *Self) Gather(acc cua.Accumulator) error {
 			"heap_objects":        m.HeapObjects,  // total number of allocated objects
 			"num_gc":              m.NumGC,
 		}
-		acc.AddFields("internal_memstats", fields, map[string]string{"_rollup": "false"})
+		acc.AddFields("internal_memstats", fields, map[string]string{"__rollup": "false"})
 	}
 
 	// agentVersion := inter.Version()

@@ -27,13 +27,12 @@ const (
 
 // Circonus values are used to output data to the Circonus platform.
 type Circonus struct {
-	Broker   string `toml:"broker"`
-	APIURL   string `toml:"api_url"`
-	APIToken string `toml:"api_token"`
-	APIApp   string `toml:"api_app"`
-	APITLSCA string `toml:"api_tls_ca"`
-	OneCheck bool   `toml:"one_check"`
-	// CGMFlushInterval string `toml:"cgm_flush_interval"`
+	Broker          string `toml:"broker"`
+	APIURL          string `toml:"api_url"`
+	APIToken        string `toml:"api_token"`
+	APIApp          string `toml:"api_app"`
+	APITLSCA        string `toml:"api_tls_ca"`
+	OneCheck        bool   `toml:"one_check"`
 	CheckNamePrefix string `toml:"check_name_prefix"`
 	DebugCGM        bool   `toml:"debug_cgm"`
 	DebugMetrics    bool   `toml:"debug_metrics"`
@@ -85,16 +84,6 @@ func (c *Circonus) Init() error {
 		}
 		c.CheckNamePrefix = hn
 	}
-
-	// if c.CGMFlushInterval != "" {
-	// 	interval, err := time.ParseDuration(c.CGMFlushInterval)
-	// 	if err != nil {
-	// 		return fmt.Errorf("invalid cgm flush interval (%s): %w", c.CGMFlushInterval, err)
-	// 	}
-	// 	if interval == time.Duration(0) {
-	// 		return fmt.Errorf("invalid cgm flush interval (%s), must be >0", c.CGMFlushInterval)
-	// 	}
-	// }
 
 	return nil
 }
@@ -150,6 +139,14 @@ func (c *Circonus) Connect() error {
 		c.Log.Errorf("unable to initialize circonus check (%s)", err)
 		return err
 	}
+	if err := c.initCheck("host", "host"); err != nil {
+		c.Log.Errorf("unable to initialize circonus check (%s)", err)
+		return err
+	}
+	if err := c.initCheck("agent", "agent"); err != nil {
+		c.Log.Errorf("unable to initialize circonus check (%s)", err)
+		return err
+	}
 
 	c.emitAgentVersion()
 	go func() {
@@ -162,9 +159,9 @@ func (c *Circonus) Connect() error {
 }
 
 func (c *Circonus) emitAgentVersion() {
-	if defaultDest := c.checks["*"]; defaultDest != nil {
+	if d, ok := c.checks["agent"]; ok {
 		agentVersion := inter.Version()
-		defaultDest.SetText("cua_version", agentVersion)
+		d.SetText("cua_version", agentVersion)
 	}
 }
 
@@ -174,32 +171,33 @@ func (c *Circonus) Write(metrics []cua.Metric) error {
 		return fmt.Errorf("Circonus API Token is required, dropping metrics")
 	}
 
-	defaultDest := c.checks["*"]
 	numMetrics := int64(0)
 	for _, m := range metrics {
 		switch m.Type() {
 		case cua.Counter, cua.Gauge, cua.Summary:
-			numMetrics += c.buildNumerics(defaultDest, m)
+			numMetrics += c.buildNumerics(m)
 		case cua.Untyped:
 			fields := m.FieldList()
 			if s, ok := fields[0].Value.(string); ok {
 				if strings.Contains(s, "H[") && strings.Contains(s, "]=") {
-					numMetrics += c.buildHistogram(defaultDest, m)
+					numMetrics += c.buildHistogram(m)
 				} else {
-					numMetrics += c.buildTexts(defaultDest, m)
+					numMetrics += c.buildTexts(m)
 				}
 			} else {
-				numMetrics += c.buildNumerics(defaultDest, m)
+				numMetrics += c.buildNumerics(m)
 			}
 		case cua.Histogram:
-			numMetrics += c.buildHistogram(defaultDest, m)
+			numMetrics += c.buildHistogram(m)
 		case cua.CumulativeHistogram:
-			numMetrics += c.buildCumulativeHistogram(defaultDest, m)
+			numMetrics += c.buildCumulativeHistogram(m)
 		default:
 		}
 	}
-	defaultDest.AddGauge(metricVolume+"_batch", numMetrics)
-	defaultDest.RecordValue(metricVolume, float64(numMetrics))
+	if d, ok := c.checks["agent"]; ok {
+		d.AddGauge(metricVolume+"_batch", numMetrics)
+		d.RecordValue(metricVolume, float64(numMetrics))
+	}
 	c.Log.Debugf("queued %d metrics for submission", numMetrics)
 
 	var wg sync.WaitGroup
@@ -241,15 +239,39 @@ func init() {
 //
 
 // getMetricDest returns cgm instance for the plugin identified by a plugin and plugin instance id
-func (c *Circonus) getMetricDest(defaultDest *cgm.CirconusMetrics, m cua.Metric) *cgm.CirconusMetrics {
+func (c *Circonus) getMetricDest(m cua.Metric) *cgm.CirconusMetrics {
 	plugin := m.Origin()
 	instanceID := m.OriginInstance()
+
+	// default - used in two cases:
+	// 1. plugin cannot be identified
+	// 2. user as enabled one_check
+	var defaultDest *cgm.CirconusMetrics
+	if d, ok := c.checks["*"]; ok {
+		defaultDest = d
+	}
 
 	if c.OneCheck || plugin == "" {
 		return defaultDest
 	}
+
+	// host metrics - the "default" plugins which are always enabled
+	var hostDest *cgm.CirconusMetrics
+	if d, ok := c.checks["host"]; ok {
+		hostDest = d
+	}
+
+	// agent metrics - metrics the agent emits about itself
+	var agentDest *cgm.CirconusMetrics
+	if d, ok := c.checks["agent"]; ok {
+		agentDest = d
+	}
+
 	if config.IsDefaultPlugin(plugin) && config.IsDefaultInstanceID(instanceID) {
-		return defaultDest
+		if plugin == "internal" {
+			return agentDest
+		}
+		return hostDest
 	}
 
 	id := plugin
@@ -257,6 +279,7 @@ func (c *Circonus) getMetricDest(defaultDest *cgm.CirconusMetrics, m cua.Metric)
 		id += ":" + instanceID
 	}
 
+	// otherwise - find (or create) a check for the specific plugin
 	if d, ok := c.checks[id]; ok {
 		return d
 	}
@@ -270,6 +293,8 @@ func (c *Circonus) getMetricDest(defaultDest *cgm.CirconusMetrics, m cua.Metric)
 	return defaultDest
 }
 
+// logshim is for cgm - it uses the info level cgm and
+// agent debug logging are controlled independently
 type logshim struct {
 	logh cua.Logger
 }
@@ -298,9 +323,6 @@ func (c *Circonus) initCheck(id, name string) error {
 		cfg.Log = logshim{logh: c.Log}
 	}
 	cfg.Interval = "0"
-	// if c.CGMFlushInterval != "" {
-	// 	cfg.Interval = c.CGMFlushInterval
-	// }
 	cfg.CheckManager.API = c.apicfg
 	if c.Broker != "" {
 		cfg.CheckManager.Broker.ID = c.Broker
@@ -320,10 +342,10 @@ func (c *Circonus) initCheck(id, name string) error {
 }
 
 // buildNumerics constructs numeric metrics from a cua metric.
-func (c *Circonus) buildNumerics(defaultDest *cgm.CirconusMetrics, m cua.Metric) int64 {
-	dest := c.getMetricDest(defaultDest, m)
+func (c *Circonus) buildNumerics(m cua.Metric) int64 {
+	dest := c.getMetricDest(m)
 	if dest == nil {
-		// no default and no plugin specific
+		c.Log.Warnf("no check destination found for metric (%#v)", m)
 		return 0
 	}
 	numMetrics := int64(0)
@@ -341,10 +363,10 @@ func (c *Circonus) buildNumerics(defaultDest *cgm.CirconusMetrics, m cua.Metric)
 }
 
 // buildTexts constructs text metrics from a cua metric.
-func (c *Circonus) buildTexts(defaultDest *cgm.CirconusMetrics, m cua.Metric) int64 {
-	dest := c.getMetricDest(defaultDest, m)
+func (c *Circonus) buildTexts(m cua.Metric) int64 {
+	dest := c.getMetricDest(m)
 	if dest == nil {
-		// no default and no plugin specific
+		c.Log.Warnf("no check destination found for metric (%#v)", m)
 		return 0
 	}
 	numMetrics := int64(0)
@@ -368,10 +390,10 @@ func (c *Circonus) buildTexts(defaultDest *cgm.CirconusMetrics, m cua.Metric) in
 }
 
 // buildHistogram constructs histogram metrics from a cua metric.
-func (c *Circonus) buildHistogram(defaultDest *cgm.CirconusMetrics, m cua.Metric) int64 {
-	dest := c.getMetricDest(defaultDest, m)
+func (c *Circonus) buildHistogram(m cua.Metric) int64 {
+	dest := c.getMetricDest(m)
 	if dest == nil {
-		// no default and no plugin specific
+		c.Log.Warnf("no check destination found for metric (%#v)", m)
 		return 0
 	}
 
@@ -397,10 +419,10 @@ func (c *Circonus) buildHistogram(defaultDest *cgm.CirconusMetrics, m cua.Metric
 }
 
 // buildCumulativeHistogram constructs cumulative histogram metrics from a cua metric.
-func (c *Circonus) buildCumulativeHistogram(defaultDest *cgm.CirconusMetrics, m cua.Metric) int64 {
-	dest := c.getMetricDest(defaultDest, m)
+func (c *Circonus) buildCumulativeHistogram(m cua.Metric) int64 {
+	dest := c.getMetricDest(m)
 	if dest == nil {
-		// no default and no plugin specific
+		c.Log.Warnf("no check destination found for metric (%#v)", m)
 		return 0
 	}
 
@@ -452,10 +474,14 @@ func (c *Circonus) convertTags(m cua.Metric) cgm.Tags { //nolint:unparam
 			if t.Key == "alias" {
 				continue
 			}
-			if t.Key == "host" && c.CheckNamePrefix != "" {
-				ctags = append(ctags, cgm.Tag{Category: t.Key, Value: c.CheckNamePrefix})
-				continue
-			}
+			//
+			// confused a user who was trying to add host tag on a specific
+			// plugin will comment out for time being and see what happens
+			//
+			// if t.Key == "host" && c.CheckNamePrefix != "" {
+			// 	ctags = append(ctags, cgm.Tag{Category: t.Key, Value: c.CheckNamePrefix})
+			// 	continue
+			// }
 			ctags = append(ctags, cgm.Tag{Category: t.Key, Value: t.Value})
 		}
 	}

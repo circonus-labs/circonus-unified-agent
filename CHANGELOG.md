@@ -1,3 +1,7 @@
+# v0.0.15
+
+* upd: rearrange checks default,host,agent
+
 # v0.0.14
 
 * upd: switch back to metric origin for check type

@@ -75,9 +75,9 @@ func init() {
 
 ### Development
 
-* Run `make static` followed by `make plugin-[pluginName]` to spin up a docker
-  dev environment using docker-compose.
-* ***[Optional]*** When developing a plugin, add a `dev` directory with a
+- Run `make static` followed by `make plugin-[pluginName]` to spin up a docker
+  dev environment using docker-compose. 
+- ***[Optional]*** When developing a plugin, add a `dev` directory with a
   `docker-compose.yml` and `circonus-unified-agent.conf` as well as any other supporting
   files, where sensible.
 

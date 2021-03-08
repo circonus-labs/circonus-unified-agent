@@ -425,7 +425,9 @@ func (w *WinEventLog) renderEvent(eventHandle EvtHandle) (Event, error) {
 	if err != nil {
 		return event, nil
 	}
-	defer _EvtClose(publisherHandle)
+	defer func() {
+		_ = _EvtClose(publisherHandle)
+	}()
 
 	// Populating text values
 	keywords, err := formatEventString(EvtFormatMessageKeyword, eventHandle, publisherHandle)

@@ -8,9 +8,11 @@ import (
 )
 
 /*
-	The code below is lifted from numerous articles and originates from Andrew Gerrand's 10 things you (probably) don't know about Go.
-	it allows for mocking a filesystem; this allows for consistent testing of this code across platforms (directory sizes reported
-	differently by different platforms, for example), while preserving the rest of the functionality as-is, without modification.
+	The code below is lifted from numerous articles and originates from Andrew Gerrand's 10
+	things you (probably) don't know about Go. it allows for mocking a filesystem; this allows
+	for consistent testing of this code across platforms (directory sizes reported
+	differently by different platforms, for example), while preserving the rest of
+	the functionality as-is, without modification.
 */
 
 type fileSystem interface {
@@ -40,6 +42,7 @@ func (osFS) Stat(name string) (os.FileInfo, error) { return os.Stat(name) }
 	walk functions, that we cannot mock from here.
 */
 
+// When tests can be done on windows, remove these nolint:unused comments - see filesystem_helpers_test.go
 //nolint:unused
 type fakeFileSystem struct {
 	files map[string]fakeFileInfo
@@ -55,18 +58,18 @@ type fakeFileInfo struct {
 	sys      interface{}
 }
 
-func (f fakeFileInfo) Name() string       { return f.name }
-func (f fakeFileInfo) Size() int64        { return f.size }
-func (f fakeFileInfo) Mode() os.FileMode  { return os.FileMode(f.filemode) }
-func (f fakeFileInfo) ModTime() time.Time { return f.modtime }
-func (f fakeFileInfo) IsDir() bool        { return f.isdir }
-func (f fakeFileInfo) Sys() interface{}   { return f.sys }
+func (f fakeFileInfo) Name() string       { return f.name }                  //nolint:unused
+func (f fakeFileInfo) Size() int64        { return f.size }                  //nolint:unused
+func (f fakeFileInfo) Mode() os.FileMode  { return os.FileMode(f.filemode) } //nolint:unused
+func (f fakeFileInfo) ModTime() time.Time { return f.modtime }               //nolint:unused
+func (f fakeFileInfo) IsDir() bool        { return f.isdir }                 //nolint:unused
+func (f fakeFileInfo) Sys() interface{}   { return f.sys }                   //nolint:unused
 
-func (f fakeFileSystem) Open(name string) (file, error) {
+func (f fakeFileSystem) Open(name string) (file, error) { //nolint:unused
 	return nil, &os.PathError{Op: "Open", Path: name, Err: errors.New("Not implemented by fake filesystem")}
 }
 
-func (f fakeFileSystem) Stat(name string) (os.FileInfo, error) {
+func (f fakeFileSystem) Stat(name string) (os.FileInfo, error) { //nolint:unused
 	if fakeInfo, found := f.files[name]; found {
 		return fakeInfo, nil
 	}

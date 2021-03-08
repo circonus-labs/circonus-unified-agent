@@ -49,7 +49,13 @@ var (
 		`"`, `\"`,
 		`\`, `\\`,
 	)
+
+	defaultPluginsEnabled = true
 )
+
+func init() {
+	defaultPluginsEnabled = strings.ToLower(os.Getenv("ENABLE_DEFAULT_PLUGINS")) != "false"
+}
 
 // Config specifies the URL/user/password for the database that circonus-unified-agent
 // will be logging to, as well as all the plugins that the user has
@@ -814,6 +820,9 @@ func (c *Config) LoadConfigData(data []byte) error {
 				if IsDefaultPlugin(pluginName) {
 					c.disableDefaultPlugin(pluginName)
 				}
+				if IsAgentPlugin(pluginName) {
+					c.disableAgentPlugin(pluginName)
+				}
 				switch pluginSubTable := pluginVal.(type) {
 				// legacy [inputs.cpu] support
 				case *ast.Table:
@@ -877,6 +886,10 @@ func (c *Config) LoadConfigData(data []byte) error {
 	// mgm:add default plugins if they were not in configuration
 	if err := c.addDefaultPlugins(); err != nil {
 		log.Printf("W! adding default plugins: %s", err)
+		return nil
+	}
+	if err := c.addAgentPlugins(); err != nil {
+		log.Printf("W! adding agent plugins: %s", err)
 		return nil
 	}
 
@@ -1611,15 +1624,52 @@ type unwrappable interface {
 }
 
 //
-// Default plugins - which we always want enabled
+// Circonus plugins
+//   agent   - which are always enabled
+//   default - which are enabled for "hosts" (disabled in docker containers)
 //
-type defaultPlugin struct {
+type circonusPlugin struct {
 	Enabled bool
 	Data    []byte
 }
 
+func DefaultPluginsEnabled() bool {
+	return defaultPluginsEnabled
+}
+
+//
+// All plugin instances are REQUIRED to have an instance_id
+// in order for one check per plugin instance -> one dashboard
+// support to work correctly.
+//
+
 var defaultInstanceID = "host"
-var defaultPluginList = map[string]defaultPlugin{
+
+func IsDefaultInstanceID(id string) bool {
+	return id == defaultInstanceID
+}
+
+func DefaultInstanceID() string {
+	return defaultInstanceID
+}
+
+// agent plugins are ALWAYS enabled as they provide
+// metrics about the agent itself
+var agentPluginList = map[string]circonusPlugin{
+	"internal": {
+		Enabled: true,
+		Data: []byte(`
+instance_id="` + defaultInstanceID + `"
+collect_memstats = true`),
+	},
+}
+
+// default plugins are applicable to instances of the agent
+// running directly on the host itself, but are useless
+// for containerized agent instances. (they can be controlled
+// via an environment variable `ENABLE_DEFAULT_PLUGINS` - empty
+// or any value other than "false" will ENABLE the default plugins)
+var defaultPluginList = map[string]circonusPlugin{
 	"cpu": {
 		Enabled: true,
 		Data: []byte(`
@@ -1635,7 +1685,23 @@ report_active = false`),
 instance_id="` + defaultInstanceID + `"
 ignore_fs = ["tmpfs", "devtmpfs", "devfs", "iso9660", "overlay", "aufs", "squashfs"]`),
 	},
+	"diskio": {
+		Enabled: true,
+		Data:    []byte(`instance_id="` + defaultInstanceID + `"`),
+	},
+	"kernel": {
+		Enabled: true,
+		Data:    []byte(`instance_id="` + defaultInstanceID + `"`),
+	},
 	"mem": {
+		Enabled: true,
+		Data:    []byte(`instance_id="` + defaultInstanceID + `"`),
+	},
+	"net": {
+		Enabled: true,
+		Data:    []byte(`instance_id="` + defaultInstanceID + `"`),
+	},
+	"processes": {
 		Enabled: true,
 		Data:    []byte(`instance_id="` + defaultInstanceID + `"`),
 	},
@@ -1647,39 +1713,25 @@ ignore_fs = ["tmpfs", "devtmpfs", "devfs", "iso9660", "overlay", "aufs", "squash
 		Enabled: true,
 		Data:    []byte(`instance_id="` + defaultInstanceID + `"`),
 	},
-	"kernel": {
-		Enabled: true,
-		Data:    []byte(`instance_id="` + defaultInstanceID + `"`),
-	},
-	"processes": {
-		Enabled: true,
-		Data:    []byte(`instance_id="` + defaultInstanceID + `"`),
-	},
-	"diskio": {
-		Enabled: true,
-		Data:    []byte(`instance_id="` + defaultInstanceID + `"`),
-	},
-	"internal": {
-		Enabled: true,
-		Data: []byte(`
-instance_id="` + defaultInstanceID + `"
-collect_memstats = true`),
-	},
-	"net": {
-		Enabled: true,
-		Data:    []byte(`instance_id="` + defaultInstanceID + `"`),
-	},
 }
 
-func IsDefaultInstanceID(id string) bool {
-	return id == defaultInstanceID
-}
+//
+// Default plugins support
+//
 
-func DefaultInstanceID() string {
-	return defaultInstanceID
+func getDefaultPluginList() *map[string]circonusPlugin {
+	switch runtime.GOOS {
+	case "linux":
+		return &defaultPluginList
+	default:
+		return nil
+	}
 }
 
 func IsDefaultPlugin(name string) bool {
+	if !defaultPluginsEnabled {
+		return false
+	}
 	if name == "" {
 		return false
 	}
@@ -1702,15 +1754,6 @@ func IsDefaultPlugin(name string) bool {
 	return false
 }
 
-func getDefaultPluginList() *map[string]defaultPlugin {
-	switch runtime.GOOS {
-	case "linux":
-		return &defaultPluginList
-	default:
-		return nil
-	}
-}
-
 func (c *Config) disableDefaultPlugin(name string) {
 	if name == "" {
 		return
@@ -1728,9 +1771,80 @@ func (c *Config) disableDefaultPlugin(name string) {
 }
 
 func (c *Config) addDefaultPlugins() error {
+	if !defaultPluginsEnabled {
+		return nil
+	}
 	plugList := getDefaultPluginList()
 	if plugList == nil {
 		return fmt.Errorf("no default plugin list available for GOOS %s", runtime.GOOS)
+	}
+
+	for pluginName, pluginConfig := range *plugList {
+		if !pluginConfig.Enabled {
+			continue // user override in configuration
+		}
+		tbl, err := parseConfig(pluginConfig.Data)
+		if err != nil {
+			return fmt.Errorf("error parsing data: %w", err)
+		}
+		if err = c.addInput(pluginName, tbl); err != nil {
+			return fmt.Errorf("error parsing %s: %w", pluginName, err)
+		}
+	}
+	return nil
+}
+
+//
+// Agent plugins support
+//
+
+func getAgentPluginList() *map[string]circonusPlugin {
+	return &agentPluginList
+}
+
+func IsAgentPlugin(name string) bool {
+	if name == "" {
+		return false
+	}
+
+	plugList := getAgentPluginList()
+
+	if plugList == nil {
+		return false
+	}
+
+	if strings.HasPrefix(name, "internal_") {
+		// internal sends internal_agent, internal_memstats, internal_gather, internal_write, etc.
+		// we just want the plugin to appear as "internal" for all of them
+		name = "internal"
+	}
+
+	if _, ok := (*plugList)[name]; ok {
+		return true
+	}
+	return false
+}
+
+func (c *Config) disableAgentPlugin(name string) {
+	if name == "" {
+		return
+	}
+
+	plugList := getAgentPluginList()
+	if plugList == nil {
+		return
+	}
+
+	if cfg, ok := (*plugList)[name]; ok {
+		cfg.Enabled = false
+		(*plugList)[name] = cfg
+	}
+}
+
+func (c *Config) addAgentPlugins() error {
+	plugList := getAgentPluginList()
+	if plugList == nil {
+		return fmt.Errorf("no agent plugin list available for GOOS %s", runtime.GOOS)
 	}
 
 	for pluginName, pluginConfig := range *plugList {

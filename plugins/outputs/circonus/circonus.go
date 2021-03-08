@@ -139,9 +139,11 @@ func (c *Circonus) Connect() error {
 		c.Log.Errorf("unable to initialize circonus check (%s)", err)
 		return err
 	}
-	if err := c.initCheck("host", "host"); err != nil {
-		c.Log.Errorf("unable to initialize circonus check (%s)", err)
-		return err
+	if config.DefaultPluginsEnabled() {
+		if err := c.initCheck("host", "host"); err != nil {
+			c.Log.Errorf("unable to initialize circonus check (%s)", err)
+			return err
+		}
 	}
 	if err := c.initCheck("agent", "agent"); err != nil {
 		c.Log.Errorf("unable to initialize circonus check (%s)", err)
@@ -149,6 +151,7 @@ func (c *Circonus) Connect() error {
 	}
 
 	c.emitAgentVersion()
+
 	go func() {
 		for range time.NewTicker(5 * time.Minute).C {
 			c.emitAgentVersion()
@@ -197,6 +200,7 @@ func (c *Circonus) Write(metrics []cua.Metric) error {
 	if d, ok := c.checks["agent"]; ok {
 		d.AddGauge(metricVolume+"_batch", numMetrics)
 		d.RecordValue(metricVolume, float64(numMetrics))
+		numMetrics += 2
 	}
 	c.Log.Debugf("queued %d metrics for submission", numMetrics)
 
@@ -255,23 +259,29 @@ func (c *Circonus) getMetricDest(m cua.Metric) *cgm.CirconusMetrics {
 		return defaultDest
 	}
 
-	// host metrics - the "default" plugins which are always enabled
-	var hostDest *cgm.CirconusMetrics
-	if d, ok := c.checks["host"]; ok {
-		hostDest = d
+	// host metrics - the "default" plugins which are enabled by default
+	// but can be controlled via the (ENABLE_DEFAULT_PLUGINS env var
+	// any value other than "false" will enable the default plugins)
+	hostDest := defaultDest
+	if config.DefaultPluginsEnabled() {
+		if d, ok := c.checks["host"]; ok {
+			hostDest = d
+		}
 	}
 
-	// agent metrics - metrics the agent emits about itself
+	// agent metrics - metrics the agent emits about itself - always enabled
 	var agentDest *cgm.CirconusMetrics
 	if d, ok := c.checks["agent"]; ok {
 		agentDest = d
 	}
 
-	if config.IsDefaultPlugin(plugin) && config.IsDefaultInstanceID(instanceID) {
-		if plugin == "internal" {
+	if config.IsDefaultInstanceID(instanceID) {
+		if config.IsDefaultPlugin(plugin) {
+			return hostDest
+		}
+		if config.IsAgentPlugin(plugin) {
 			return agentDest
 		}
-		return hostDest
 	}
 
 	id := plugin
@@ -296,14 +306,15 @@ func (c *Circonus) getMetricDest(m cua.Metric) *cgm.CirconusMetrics {
 // logshim is for cgm - it uses the info level cgm and
 // agent debug logging are controlled independently
 type logshim struct {
-	logh cua.Logger
+	logh   cua.Logger
+	prefix string
 }
 
 func (l logshim) Printf(fmt string, args ...interface{}) {
 	if len(args) == 0 {
-		l.logh.Info(fmt)
+		l.logh.Info(l.prefix + ": " + fmt)
 	} else {
-		l.logh.Infof(fmt, args...)
+		l.logh.Infof(l.prefix+": "+fmt, args...)
 	}
 }
 
@@ -320,7 +331,10 @@ func (c *Circonus) initCheck(id, name string) error {
 	cfg := &cgm.Config{}
 	cfg.Debug = c.DebugCGM
 	if c.DebugCGM {
-		cfg.Log = logshim{logh: c.Log}
+		cfg.Log = logshim{
+			logh:   c.Log,
+			prefix: plugID,
+		}
 	}
 	cfg.Interval = "0"
 	cfg.CheckManager.API = c.apicfg

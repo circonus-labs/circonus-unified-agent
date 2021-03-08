@@ -198,19 +198,19 @@ func getPacketStats(line string, trans, recv int) (int, int, error) { //nolint:s
 
 	// Transmitted packets
 	tpkts := strings.Split(stats[0], " ")[0]
-	trans, err = strconv.Atoi(tpkts)
+	t, err := strconv.Atoi(tpkts)
 	if err != nil {
-		return trans, recv, fmt.Errorf("atoi (%s): %w", tpkts, err)
+		return t, recv, fmt.Errorf("atoi (%s): %w", tpkts, err)
 	}
 
 	// Received packets
 	rpkts := strings.Split(stats[1], " ")[0]
-	recv, err = strconv.Atoi(rpkts)
+	r, err := strconv.Atoi(rpkts)
 	if err != nil {
-		return trans, recv, fmt.Errorf("atoi (%s): %w", rpkts, err)
+		return t, r, fmt.Errorf("atoi (%s): %w", rpkts, err)
 	}
 
-	return trans, recv, nil
+	return t, r, nil
 }
 
 func getTTL(line string) (int, error) {
@@ -223,29 +223,29 @@ func checkRoundTripTimeStats(line string, min, avg, max, stddev float64) (float6
 	stats := strings.Split(line, " ")[3]
 	data := strings.Split(stats, "/")
 
-	var err error
-
-	min, err = strconv.ParseFloat(data[0], 64)
+	mi, err := strconv.ParseFloat(data[0], 64)
 	if err != nil {
-		return min, avg, max, stddev, fmt.Errorf("parsefloat (%s): %w", data[0], err)
+		return mi, avg, max, stddev, fmt.Errorf("parsefloat (%s): %w", data[0], err)
 	}
 
-	avg, err = strconv.ParseFloat(data[1], 64)
+	av, err := strconv.ParseFloat(data[1], 64)
 	if err != nil {
-		return min, avg, max, stddev, fmt.Errorf("parsefloat (%s): %w", data[1], err)
+		return mi, av, max, stddev, fmt.Errorf("parsefloat (%s): %w", data[1], err)
 	}
 
-	max, err = strconv.ParseFloat(data[2], 64)
+	mx, err := strconv.ParseFloat(data[2], 64)
 	if err != nil {
-		return min, avg, max, stddev, fmt.Errorf("parsefloat (%s): %w", data[2], err)
+		return mi, av, mx, stddev, fmt.Errorf("parsefloat (%s): %w", data[2], err)
 	}
 
+	sd := stddev
 	if len(data) == 4 {
-		stddev, err = strconv.ParseFloat(data[3], 64)
+		s, err := strconv.ParseFloat(data[3], 64)
 		if err != nil {
-			return min, avg, max, stddev, fmt.Errorf("parse float (%s): %w", data[3], err)
+			return mi, av, mx, s, fmt.Errorf("parse float (%s): %w", data[3], err)
 		}
+		sd = s
 	}
 
-	return min, avg, max, stddev, nil
+	return mi, av, mx, sd, nil
 }

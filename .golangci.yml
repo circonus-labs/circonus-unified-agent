@@ -22,7 +22,7 @@ linters:
     - typecheck
     - golint
     - gosec
-    - interfacer
+    # - interfacer -- deprecated, owner archived repo
     - misspell
     - unparam
     - prealloc

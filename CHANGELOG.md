@@ -1,3 +1,13 @@
+# v0.0.16
+
+* add: simple installer script (rpm el7,el8 & deb u18,u20)
+* upd: disable deprecated linter
+* fix: lint issues
+* upd: lint v1.38
+* upd: disable default plugins in containers
+* upd: ignore vagrant testing files
+* upd: collection interval 60s
+
 # v0.0.15
 
 * upd: rearrange checks default,host,agent

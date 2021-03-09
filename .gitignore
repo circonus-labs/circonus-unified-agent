@@ -8,3 +8,5 @@
 /dist
 /circonus-unified-agent.conf
 .envrc
+Vagrantfile
+.vagrant

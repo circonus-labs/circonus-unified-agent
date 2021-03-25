@@ -13,8 +13,6 @@ For additional details reference the [RabbitMQ Management HTTP Stats][management
 [[inputs.rabbitmq]]
   ## Management Plugin url. (default: http://localhost:15672)
   # url = "http://localhost:15672"
-  ## Tag added to rabbitmq_overview series; deprecated: use tags
-  # name = "rmq-server-1"
   ## Credentials
   # username = "guest"
   # password = "guest"

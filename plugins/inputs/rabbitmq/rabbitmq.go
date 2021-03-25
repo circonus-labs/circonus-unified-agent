@@ -3,11 +3,13 @@ package rabbitmq
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 	"sync"
 	"time"
 
+	"github.com/blang/semver/v4"
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/filter"
 	"github.com/circonus-labs/circonus-unified-agent/internal"
@@ -35,7 +37,6 @@ const DefaultClientTimeout = 4
 // see the sample config for further details
 type RabbitMQ struct {
 	URL      string `toml:"url"`
-	Name     string `toml:"name"`
 	Username string `toml:"username"`
 	Password string `toml:"password"`
 	tls.ClientConfig
@@ -58,14 +59,18 @@ type RabbitMQ struct {
 	excludeEveryQueue bool
 	queueFilter       filter.Filter
 	upstreamFilter    filter.Filter
+
+	Log             cua.Logger
+	versionLastSent time.Time
 }
 
 // OverviewResponse ...
 type OverviewResponse struct {
-	MessageStats *MessageStats `json:"message_stats"`
-	ObjectTotals *ObjectTotals `json:"object_totals"`
-	QueueTotals  *QueueTotals  `json:"queue_totals"`
-	Listeners    []Listeners   `json:"listeners"`
+	ManagementVersion *string       `json:"management_version"`
+	MessageStats      *MessageStats `json:"message_stats"`
+	ObjectTotals      *ObjectTotals `json:"object_totals"`
+	QueueTotals       *QueueTotals  `json:"queue_totals"`
+	Listeners         []Listeners   `json:"listeners"`
 }
 
 // Listeners ...
@@ -80,60 +85,64 @@ type Details struct {
 
 // MessageStats ...
 type MessageStats struct {
-	Ack                     int64
-	AckDetails              Details `json:"ack_details"`
-	Deliver                 int64
-	DeliverDetails          Details `json:"deliver_details"`
-	DeliverGet              int64   `json:"deliver_get"`
-	DeliverGetDetails       Details `json:"deliver_get_details"`
-	Publish                 int64
-	PublishDetails          Details `json:"publish_details"`
-	Redeliver               int64
-	RedeliverDetails        Details `json:"redeliver_details"`
-	PublishIn               int64   `json:"publish_in"`
-	PublishInDetails        Details `json:"publish_in_details"`
-	PublishOut              int64   `json:"publish_out"`
-	PublishOutDetails       Details `json:"publish_out_details"`
-	ReturnUnroutable        int64   `json:"return_unroutable"`
-	ReturnUnroutableDetails Details `json:"return_unroutable_details"`
+	Ack                     *int64
+	AckDetails              *Details `json:"ack_details"`
+	Deliver                 *int64
+	DeliverDetails          *Details `json:"deliver_details"`
+	DeliverGet              *int64   `json:"deliver_get"`
+	DeliverGetDetails       *Details `json:"deliver_get_details"`
+	DeliverNoAck            *int64
+	DeliverNoAckDetails     *Details `json:"deliver_no_ack_details"`
+	GetNoAck                *int64
+	GetNoAckDetails         *Details `json:"get_no_ack_details"`
+	Publish                 *int64
+	PublishDetails          *Details `json:"publish_details"`
+	Redeliver               *int64
+	RedeliverDetails        *Details `json:"redeliver_details"`
+	PublishIn               *int64   `json:"publish_in"`
+	PublishInDetails        *Details `json:"publish_in_details"`
+	PublishOut              *int64   `json:"publish_out"`
+	PublishOutDetails       *Details `json:"publish_out_details"`
+	ReturnUnroutable        *int64   `json:"return_unroutable"`
+	ReturnUnroutableDetails *Details `json:"return_unroutable_details"`
 }
 
 // ObjectTotals ...
 type ObjectTotals struct {
-	Channels    int64
-	Connections int64
-	Consumers   int64
-	Exchanges   int64
-	Queues      int64
+	Channels    *int64
+	Connections *int64
+	Consumers   *int64
+	Exchanges   *int64
+	Queues      *int64
 }
 
 // QueueTotals ...
 type QueueTotals struct {
-	Messages                   int64
-	MessagesReady              int64 `json:"messages_ready"`
-	MessagesUnacknowledged     int64 `json:"messages_unacknowledged"`
-	MessageBytes               int64 `json:"message_bytes"`
-	MessageBytesReady          int64 `json:"message_bytes_ready"`
-	MessageBytesUnacknowledged int64 `json:"message_bytes_unacknowledged"`
-	MessageRAM                 int64 `json:"message_bytes_ram"`
-	MessagePersistent          int64 `json:"message_bytes_persistent"`
+	Messages                   *int64
+	MessagesReady              *int64 `json:"messages_ready"`
+	MessagesUnacknowledged     *int64 `json:"messages_unacknowledged"`
+	MessageBytes               *int64 `json:"message_bytes"`
+	MessageBytesReady          *int64 `json:"message_bytes_ready"`
+	MessageBytesUnacknowledged *int64 `json:"message_bytes_unacknowledged"`
+	MessageRAM                 *int64 `json:"message_bytes_ram"`
+	MessagePersistent          *int64 `json:"message_bytes_persistent"`
 }
 
 // Queue ...
 type Queue struct {
 	QueueTotals            // just to not repeat the same code
 	MessageStats           `json:"message_stats"`
-	Memory                 int64
-	Consumers              int64
-	ConsumerUtilisation    float64 `json:"consumer_utilisation"`
-	Name                   string
-	Node                   string
-	Vhost                  string
-	Durable                bool
-	AutoDelete             bool     `json:"auto_delete"`
-	IdleSince              string   `json:"idle_since"`
-	SlaveNodes             []string `json:"slave_nodes"`
-	SynchronisedSlaveNodes []string `json:"synchronised_slave_nodes"`
+	Memory                 *int64
+	Consumers              *int64
+	ConsumerUtilisation    *float64 `json:"consumer_utilisation"`
+	Name                   *string
+	Node                   *string
+	Vhost                  *string
+	Durable                *bool
+	AutoDelete             *bool     `json:"auto_delete"`
+	IdleSince              *string   `json:"idle_since"`
+	SlaveNodes             *[]string `json:"slave_nodes"`
+	SynchronisedSlaveNodes *[]string `json:"synchronised_slave_nodes"`
 }
 
 // Node ...
@@ -254,6 +263,8 @@ type gatherFunc func(r *RabbitMQ, acc cua.Accumulator)
 var gatherFunctions = []gatherFunc{gatherOverview, gatherNodes, gatherQueues, gatherExchanges, gatherFederationLinks}
 
 var sampleConfig = `
+  ## an instance id is required
+  instance_id  ""
   ## Management Plugin url. (default: http://localhost:15672)
   # url = "http://localhost:15672"
   ## Tag added to rabbitmq_overview series; deprecated: use tags
@@ -396,6 +407,12 @@ func (r *RabbitMQ) requestJSON(u string, target interface{}) error {
 
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		r.Log.Errorf("unexpected response code (%d) from (%s): message - %s", resp.StatusCode, u, string(body))
+		return nil // fmt.Errorf("unexpected response code (%d) from (%s): message - %s", resp.StatusCode, u, string(body))
+	}
+
 	_ = json.NewDecoder(resp.Body).Decode(target)
 
 	return nil
@@ -410,42 +427,151 @@ func gatherOverview(r *RabbitMQ, acc cua.Accumulator) {
 		return
 	}
 
-	if overview.QueueTotals == nil || overview.ObjectTotals == nil || overview.MessageStats == nil || overview.Listeners == nil {
-		acc.AddError(fmt.Errorf("Wrong answer from rabbitmq. Probably auth issue"))
-		return
+	fields := make(map[string]interface{})
+
+	if overview.ManagementVersion != nil {
+		// quick version check to emit a message of the right version is not found
+		// based on mgmt api link in README.md, looks like plugin was written against v3.6.9+
+		targetVersion := "3.6.9"
+		target, err := semver.Make(targetVersion)
+		if err != nil {
+			r.Log.Errorf("parsing (%s): %s", targetVersion, err)
+		} else {
+			currVer, err := semver.Make(*overview.ManagementVersion)
+			if err != nil {
+				r.Log.Errorf("parsing (%s): %s", *overview.ManagementVersion, err)
+			} else if currVer.LT(target) {
+				r.Log.Warnf("some metrics may be absent, old version of management api found (want:%s+ found:%s)", target.String(), currVer.String())
+			}
+		}
+
+		if time.Since(r.versionLastSent) >= 5*time.Minute {
+			r.Log.Warn("sending management_version")
+			fields["management_version"] = *overview.ManagementVersion
+			r.versionLastSent = time.Now()
+		}
+
+	} else {
+		r.Log.Error("no 'management_version' field received in /api/overview")
 	}
 
-	var clusteringListeners, amqpListeners int64 = 0, 0
-	for _, listener := range overview.Listeners {
-		if listener.Protocol == "clustering" {
-			clusteringListeners++
-		} else if listener.Protocol == "amqp" {
-			amqpListeners++
+	if overview.Listeners == nil {
+		r.Log.Warnf("did not receive listener metrics from /api/overview")
+	} else {
+		var clusteringListeners, amqpListeners int64 = 0, 0
+		for _, listener := range overview.Listeners {
+			if listener.Protocol == "clustering" {
+				clusteringListeners++
+			} else if listener.Protocol == "amqp" {
+				amqpListeners++
+			}
+		}
+		fields["clustering_listeners"] = clusteringListeners
+		fields["amqp_listeners"] = amqpListeners
+	}
+
+	if overview.MessageStats == nil {
+		r.Log.Warnf("did not receive message stats from /api/overview")
+	} else {
+		if overview.MessageStats.Ack == nil {
+			r.Log.Warnf("did not receive message stats acked from /api/overview")
+		} else {
+			fields["messages_acked"] = *overview.MessageStats.Ack
+		}
+
+		if overview.MessageStats.Deliver == nil {
+			r.Log.Warnf("did not receive message stats delivered from /api/overview")
+		} else {
+			fields["messages_delivered"] = *overview.MessageStats.Deliver
+		}
+
+		if overview.MessageStats.DeliverGet == nil {
+			r.Log.Warnf("did not receive message stats delivered_get from /api/overview")
+		} else {
+			fields["messages_delivered_get"] = *overview.MessageStats.DeliverGet
+		}
+
+		if overview.MessageStats.Publish == nil {
+			r.Log.Warnf("did not receive message stats published from /api/overview")
+		} else {
+			fields["messages_published"] = *overview.MessageStats.Publish
+		}
+
+		if overview.MessageStats.ReturnUnroutable == nil {
+			r.Log.Warnf("did not receive message stats unroutable from /api/overview")
+		} else {
+			fields["return_unroutable"] = *overview.MessageStats.ReturnUnroutable
+		}
+
+		if overview.MessageStats.ReturnUnroutableDetails == nil {
+			r.Log.Warnf("did not receive message stats unroutable details from /api/overview")
+		} else {
+			fields["return_unroutable_rate"] = overview.MessageStats.ReturnUnroutableDetails.Rate
 		}
 	}
 
+	if overview.QueueTotals == nil {
+		r.Log.Warnf("did not receive queue totals from /api/overview")
+	} else {
+		if overview.QueueTotals.Messages == nil {
+			r.Log.Warnf("did not receive queue totals messages from /api/overview")
+		} else {
+			fields["messages"] = *overview.QueueTotals.Messages
+		}
+
+		if overview.QueueTotals.MessagesReady == nil {
+			r.Log.Warnf("did not receive queue totals messages ready from /api/overview")
+		} else {
+			fields["messages_ready"] = *overview.QueueTotals.MessagesReady
+		}
+
+		if overview.QueueTotals.MessagesUnacknowledged == nil {
+			r.Log.Warnf("did not receive queue totals messages unacked from /api/overview")
+		} else {
+			fields["messages_unacked"] = *overview.QueueTotals.MessagesUnacknowledged
+		}
+	}
+
+	if overview.ObjectTotals == nil {
+		r.Log.Warnf("did not receive object totals from /api/overview")
+	} else {
+		if overview.ObjectTotals.Channels == nil {
+			r.Log.Warnf("did not receive object totals from /api/overview")
+		} else {
+			fields["channels"] = *overview.ObjectTotals.Channels
+		}
+
+		if overview.ObjectTotals.Connections == nil {
+			r.Log.Warnf("did not receive object totals connections from /api/overview")
+		} else {
+			fields["connections"] = *overview.ObjectTotals.Connections
+		}
+
+		if overview.ObjectTotals.Consumers == nil {
+			r.Log.Warnf("did not receive object totals consumers from /api/overview")
+		} else {
+			fields["consumers"] = *overview.ObjectTotals.Consumers
+		}
+
+		if overview.ObjectTotals.Exchanges == nil {
+			r.Log.Warnf("did not receive object totals exchanges from /api/overview")
+		} else {
+			fields["exchanges"] = *overview.ObjectTotals.Exchanges
+		}
+
+		if overview.ObjectTotals.Queues == nil {
+			r.Log.Warnf("did not receive object totals queues from /api/overview")
+		} else {
+			fields["queues"] = *overview.ObjectTotals.Queues
+		}
+	}
+
+	if len(fields) == 0 {
+		r.Log.Error("no metrics were returned from /api/overview")
+		return
+	}
+
 	tags := map[string]string{"url": r.URL}
-	if r.Name != "" {
-		tags["name"] = r.Name
-	}
-	fields := map[string]interface{}{
-		"messages":               overview.QueueTotals.Messages,
-		"messages_ready":         overview.QueueTotals.MessagesReady,
-		"messages_unacked":       overview.QueueTotals.MessagesUnacknowledged,
-		"channels":               overview.ObjectTotals.Channels,
-		"connections":            overview.ObjectTotals.Connections,
-		"consumers":              overview.ObjectTotals.Consumers,
-		"exchanges":              overview.ObjectTotals.Exchanges,
-		"queues":                 overview.ObjectTotals.Queues,
-		"messages_acked":         overview.MessageStats.Ack,
-		"messages_delivered":     overview.MessageStats.Deliver,
-		"messages_delivered_get": overview.MessageStats.DeliverGet,
-		"messages_published":     overview.MessageStats.Publish,
-		"clustering_listeners":   clusteringListeners,
-		"amqp_listeners":         amqpListeners,
-		"return_unroutable":      overview.MessageStats.ReturnUnroutable,
-		"return_unroutable_rate": overview.MessageStats.ReturnUnroutableDetails.Rate,
-	}
 	acc.AddFields("rabbitmq_overview", fields, tags)
 }
 
@@ -511,6 +637,8 @@ func gatherNodes(r *RabbitMQ, acc cua.Accumulator) {
 			var memory MemoryResponse
 			err = r.requestJSON("/api/nodes/"+node.Name+"/memory", &memory)
 			if err != nil {
+				// submit the metrics we have and add the error
+				acc.AddFields("rabbitmq_node", fields, tags)
 				acc.AddError(err)
 				return
 			}
@@ -558,50 +686,159 @@ func gatherQueues(r *RabbitMQ, acc cua.Accumulator) {
 	}
 
 	for _, queue := range queues {
-		if !r.queueFilter.Match(queue.Name) {
+		if queue.Name == nil {
+			r.Log.Warnf("did not receive queue name from /api/queues")
 			continue
 		}
-		tags := map[string]string{
-			"url":         r.URL,
-			"queue":       queue.Name,
-			"vhost":       queue.Vhost,
-			"node":        queue.Node,
-			"durable":     strconv.FormatBool(queue.Durable),
-			"auto_delete": strconv.FormatBool(queue.AutoDelete),
+
+		if !r.queueFilter.Match(*queue.Name) {
+			continue
 		}
 
-		acc.AddFields(
-			"rabbitmq_queue",
-			map[string]interface{}{
-				// common information
-				"consumers":                queue.Consumers,
-				"consumer_utilisation":     queue.ConsumerUtilisation,
-				"idle_since":               queue.IdleSince,
-				"slave_nodes":              len(queue.SlaveNodes),
-				"synchronised_slave_nodes": len(queue.SynchronisedSlaveNodes),
-				"memory":                   queue.Memory,
-				// messages information
-				"message_bytes":             queue.MessageBytes,
-				"message_bytes_ready":       queue.MessageBytesReady,
-				"message_bytes_unacked":     queue.MessageBytesUnacknowledged,
-				"message_bytes_ram":         queue.MessageRAM,
-				"message_bytes_persist":     queue.MessagePersistent,
-				"messages":                  queue.Messages,
-				"messages_ready":            queue.MessagesReady,
-				"messages_unack":            queue.MessagesUnacknowledged,
-				"messages_ack":              queue.MessageStats.Ack,
-				"messages_ack_rate":         queue.MessageStats.AckDetails.Rate,
-				"messages_deliver":          queue.MessageStats.Deliver,
-				"messages_deliver_rate":     queue.MessageStats.DeliverDetails.Rate,
-				"messages_deliver_get":      queue.MessageStats.DeliverGet,
-				"messages_deliver_get_rate": queue.MessageStats.DeliverGetDetails.Rate,
-				"messages_publish":          queue.MessageStats.Publish,
-				"messages_publish_rate":     queue.MessageStats.PublishDetails.Rate,
-				"messages_redeliver":        queue.MessageStats.Redeliver,
-				"messages_redeliver_rate":   queue.MessageStats.RedeliverDetails.Rate,
-			},
-			tags,
-		)
+		tags := map[string]string{
+			"url":   r.URL,
+			"queue": *queue.Name,
+		}
+
+		if queue.Vhost != nil {
+			tags["vhost"] = *queue.Vhost
+		}
+		if queue.Node != nil {
+			tags["node"] = *queue.Node
+		}
+		if queue.Durable != nil {
+			tags["durable"] = strconv.FormatBool(*queue.Durable)
+		}
+		if queue.AutoDelete != nil {
+			tags["auto_delete"] = strconv.FormatBool(*queue.AutoDelete)
+		}
+
+		fields := make(map[string]interface{})
+
+		// common information
+		if queue.Consumers == nil {
+			r.Log.Warnf("did not receive consumers from /api/queues (%s)", *queue.Name)
+		} else {
+			fields["consumers"] = *queue.Consumers
+		}
+		if queue.ConsumerUtilisation == nil {
+			r.Log.Warnf("did not receive consumer utilisation from /api/queues (%s)", *queue.Name)
+		} else {
+			fields["consumer_utilisation"] = *queue.ConsumerUtilisation
+		}
+		if queue.IdleSince == nil {
+			r.Log.Warnf("did not receive idle since from /api/queues (%s)", *queue.Name)
+		} else {
+			fields["idle_since"] = *queue.IdleSince
+		}
+		if queue.SlaveNodes == nil {
+			r.Log.Warnf("did not receive slave nodes from /api/queues (%s)", *queue.Name)
+		} else {
+			fields["slave_nodes"] = len(*queue.SlaveNodes)
+		}
+		if queue.SynchronisedSlaveNodes == nil {
+			r.Log.Warnf("did not receive synchronised slave nodes from /api/queues (%s)", *queue.Name)
+		} else {
+			fields["synchronised_slave_nodes"] = len(*queue.SynchronisedSlaveNodes)
+		}
+		if queue.Memory == nil {
+			r.Log.Warnf("did not receive memory from /api/queues (%s)", *queue.Name)
+		} else {
+			fields["memory"] = *queue.Memory
+		}
+		// messages information
+		if queue.MessageBytes == nil {
+			r.Log.Warnf("did not receive message bytes from /api/queues (%s)", *queue.Name)
+		} else {
+			fields["message_bytes"] = *queue.MessageBytes
+		}
+		if queue.MessageBytesReady == nil {
+			r.Log.Warnf("did not receive message bytes ready from /api/queues (%s)", *queue.Name)
+		} else {
+			fields["message_bytes_ready"] = *queue.MessageBytesReady
+		}
+		if queue.MessageBytesUnacknowledged == nil {
+			r.Log.Warnf("did not receive message bytes unacked from /api/queues (%s)", *queue.Name)
+		} else {
+			fields["message_bytes_unacked"] = queue.MessageBytesUnacknowledged
+		}
+		if queue.MessageRAM == nil {
+			r.Log.Warnf("did not receive message bytes ram from /api/queues (%s)", *queue.Name)
+		} else {
+			fields["message_bytes_ram"] = queue.MessageRAM
+		}
+		if queue.MessagePersistent == nil {
+			r.Log.Warnf("did not receive message bytes persistent from /api/queues (%s)", *queue.Name)
+		} else {
+			fields["message_bytes_persist"] = queue.MessagePersistent
+		}
+		if queue.Messages == nil {
+			r.Log.Warnf("did not receive messages from /api/queues (%s)", *queue.Name)
+		} else {
+			fields["messages"] = queue.Messages
+		}
+		if queue.MessagesReady == nil {
+			r.Log.Warnf("did not receive messages ready from /api/queues (%s)", *queue.Name)
+		} else {
+			fields["messages_ready"] = queue.MessagesReady
+		}
+		if queue.MessagesUnacknowledged == nil {
+			r.Log.Warnf("did not receive messages unack from /api/queues (%s)", *queue.Name)
+		} else {
+			fields["messages_unack"] = queue.MessagesUnacknowledged
+		}
+		if queue.MessageStats.Ack == nil {
+			r.Log.Warnf("did not receive messages ack from /api/queues (%s)", *queue.Name)
+		} else {
+			fields["messages_ack"] = queue.MessageStats.Ack
+		}
+		if queue.MessageStats.AckDetails == nil {
+			r.Log.Warnf("did not receive message stats ack details from /api/queues (%s)", *queue.Name)
+		} else {
+			fields["messages_ack_rate"] = queue.MessageStats.AckDetails.Rate
+		}
+		if queue.MessageStats.Deliver == nil {
+			r.Log.Warnf("did not receive message stats deliver from /api/queues (%s)", *queue.Name)
+		} else {
+			fields["messages_deliver"] = queue.MessageStats.Deliver
+		}
+		if queue.MessageStats.DeliverDetails == nil {
+			r.Log.Warnf("did not receive message stats deliver details from /api/queues (%s)", *queue.Name)
+		} else {
+			fields["messages_deliver_rate"] = queue.MessageStats.DeliverDetails.Rate
+		}
+		if queue.MessageStats.DeliverGet == nil {
+			r.Log.Warnf("did not receive message stats deliver get from /api/queues (%s)", *queue.Name)
+		} else {
+			fields["messages_deliver_get"] = queue.MessageStats.DeliverGet
+		}
+		if queue.MessageStats.DeliverGetDetails == nil {
+			r.Log.Warnf("did not receive message stats deliver get details from /api/queues (%s)", *queue.Name)
+		} else {
+			fields["messages_deliver_get_rate"] = queue.MessageStats.DeliverGetDetails.Rate
+		}
+		if queue.MessageStats.Publish == nil {
+			r.Log.Warnf("did not receive message stats publish from /api/queues (%s)", *queue.Name)
+		} else {
+			fields["messages_publish"] = queue.MessageStats.Publish
+		}
+		if queue.MessageStats.PublishDetails == nil {
+			r.Log.Warnf("did not receive message stats publish details from /api/queues (%s)", *queue.Name)
+		} else {
+			fields["messages_publish_rate"] = queue.MessageStats.PublishDetails.Rate
+		}
+		if queue.MessageStats.Redeliver == nil {
+			r.Log.Warnf("did not receive message stats redeliver from /api/queues (%s)", *queue.Name)
+		} else {
+			fields["messages_redeliver"] = queue.MessageStats.Redeliver
+		}
+		if queue.MessageStats.RedeliverDetails == nil {
+			r.Log.Warnf("did not receive message stats redeliver details from /api/queues (%s)", *queue.Name)
+		} else {
+			fields["messages_redeliver_rate"] = queue.MessageStats.RedeliverDetails.Rate
+		}
+
+		acc.AddFields("rabbitmq_queue", fields, tags)
 	}
 }
 
@@ -628,16 +865,30 @@ func gatherExchanges(r *RabbitMQ, acc cua.Accumulator) {
 			"auto_delete": strconv.FormatBool(exchange.AutoDelete),
 		}
 
-		acc.AddFields(
-			"rabbitmq_exchange",
-			map[string]interface{}{
-				"messages_publish_in":       exchange.MessageStats.PublishIn,
-				"messages_publish_in_rate":  exchange.MessageStats.PublishInDetails.Rate,
-				"messages_publish_out":      exchange.MessageStats.PublishOut,
-				"messages_publish_out_rate": exchange.MessageStats.PublishOutDetails.Rate,
-			},
-			tags,
-		)
+		fields := make(map[string]interface{})
+
+		if exchange.MessageStats.PublishIn == nil {
+			r.Log.Warnf("did not receive message stats publish in from /api/exchanges (%s)", exchange.Name)
+		} else {
+			fields["message_publish_in"] = *exchange.MessageStats.PublishIn
+		}
+		if exchange.MessageStats.PublishInDetails == nil {
+			r.Log.Warnf("did not receive message stats publish in details rate from /api/exchanges (%s)", exchange.Name)
+		} else {
+			fields["messages_publish_in_rate"] = exchange.MessageStats.PublishInDetails.Rate
+		}
+		if exchange.MessageStats.PublishOut == nil {
+			r.Log.Warnf("did not receive message stats publish out from /api/exchanges (%s)", exchange.Name)
+		} else {
+			fields["message_publish_out"] = *exchange.MessageStats.PublishOut
+		}
+		if exchange.MessageStats.PublishOutDetails == nil {
+			r.Log.Warnf("did not receive message stats publish out details rate from /api/exchanges (%s)", exchange.Name)
+		} else {
+			fields["messages_publish_out_rate"] = exchange.MessageStats.PublishOutDetails.Rate
+		}
+
+		acc.AddFields("rabbitmq_exchange", fields, tags)
 	}
 }
 
@@ -766,6 +1017,7 @@ func init() {
 		return &RabbitMQ{
 			ResponseHeaderTimeout: internal.Duration{Duration: DefaultResponseHeaderTimeout * time.Second},
 			ClientTimeout:         internal.Duration{Duration: DefaultClientTimeout * time.Second},
+			versionLastSent:       time.Now().Add(-3 * time.Minute),
 		}
 	})
 }

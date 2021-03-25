@@ -11,3 +11,4 @@
 Vagrantfile
 .vagrant
 console.log
+test.conf

@@ -369,7 +369,12 @@ func (c *Circonus) buildNumerics(m cua.Metric) int64 {
 		if c.DebugMetrics {
 			c.Log.Infof("%s %v %v %T\n", mn, tags, field.Value, field.Value)
 		}
-		dest.AddGaugeWithTags(mn, tags, field.Value)
+		switch v := field.Value.(type) {
+		case string:
+			dest.SetTextWithTags(mn, tags, v)
+		default:
+			dest.AddGaugeWithTags(mn, tags, v)
+		}
 		numMetrics++
 	}
 

@@ -8,6 +8,19 @@ from `sysctl`, `zfs`, and `zpool` on FreeBSD.
 
 ```toml
 [[inputs.zfs]]
+  ## an instance id is required
+  instance_id  ""
+  ## By default, gather zpool stats
+  poolMetrics = true
+
+  # ATTENTION LINUX USERS:
+  # Because circonus-unified-agent normally runs as an unprivileged user, it may not be
+  # able to run "zpool {status,list}" without root privileges, due to the
+  # permissions on /dev/zfs.
+  # This was addressed in ZFSonLinux 0.7.0 and later.
+  # See https://github.com/zfsonlinux/zfs/issues/362 for a potential workaround
+  # if your distribution does not support unprivileged access to /dev/zfs.
+
   ## ZFS kstat path. Ignored on FreeBSD
   ## If not specified, then default is:
   # kstatPath = "/proc/spl/kstat/zfs"
@@ -20,9 +33,6 @@ from `sysctl`, `zfs`, and `zpool` on FreeBSD.
   # kstatMetrics = ["abdstats", "arcstats", "dnodestats", "dbufcachestats",
   #     "dmu_tx", "fm", "vdev_mirror_stats", "zfetchstats", "zil"]
 
-  ## By default, don't gather zpool stats
-  # poolMetrics = false
-
   ## By default, don't gather dataset stats
   # datasetMetrics = false
 ```
@@ -30,11 +40,10 @@ from `sysctl`, `zfs`, and `zpool` on FreeBSD.
 ### Measurements & Fields:
 
 By default this plugin collects metrics about ZFS internals, pool, and dataset.
-These metrics are either counters or measure sizes
-in bytes. These metrics will be in the `zfs` measurement with the field
-names listed bellow.
+These metrics are either counters or measure sizes in bytes. These metrics will be 
+in the `zfs` measurement with the field names listed bellow.
 
-If `poolMetrics` is enabled then additional metrics will be gathered for each pool.
+If `poolMetrics` is disabled, the additional metrics will not be gathered for each pool.
 
 If `datasetMetrics` is enabled then addtional metrics will be gathered for each dataset.
 

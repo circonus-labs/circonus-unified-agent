@@ -20,6 +20,19 @@ type Zfs struct {
 }
 
 var sampleConfig = `
+  ## an instance id is required
+  instance_id  ""
+  ## By default, gather zpool stats
+  poolMetrics = true
+
+  # ATTENTION LINUX USERS:
+  # Because circonus-unified-agent normally runs as an unprivileged user, it may not be
+  # able to run "zpool {status,list}" without root privileges, due to the
+  # permissions on /dev/zfs.
+  # This was addressed in ZFSonLinux 0.7.0 and later.
+  # See https://github.com/zfsonlinux/zfs/issues/362 for a potential workaround
+  # if your distribution does not support unprivileged access to /dev/zfs.
+
   ## ZFS kstat path. Ignored on FreeBSD
   ## If not specified, then default is:
   # kstatPath = "/proc/spl/kstat/zfs"
@@ -30,8 +43,6 @@ var sampleConfig = `
   ## For Linux, the default is:
   # kstatMetrics = ["abdstats", "arcstats", "dnodestats", "dbufcachestats",
   #   "dmu_tx", "fm", "vdev_mirror_stats", "zfetchstats", "zil"]
-  ## By default, don't gather zpool stats
-  # poolMetrics = false
   ## By default, don't gather dataset metrics
   # datasetMetrics = false
 `

@@ -44,7 +44,7 @@ for dep in $(LC_ALL=C sort -u "${tmpdir}/golist"); do
 
 	# Remove single and double digit version from path; these are generally not
 	# actual parts of the path and instead indicate a branch or tag.
-	#   example: github.com/influxdata/go-syslog/v2 -> github.com/influxdata/go-syslog
+	#   example: github.com/circonus-labs/circonus-gometrics/v3 -> github.com/circonus-labs/circonus-gometrics
 	dep="${dep%%/v[0-9]}"
 	dep="${dep%%/v[0-9][0-9]}"
 

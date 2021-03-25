@@ -1,3 +1,11 @@
+# v0.0.17
+
+* upd: changes for dashboard and support older rabbitmq vers lack of metrics
+* upd: zfs and rabbitmq
+* add: semver
+* upd: turn on pool metrics by default
+* add: support text metrics mixed with numerics
+
 # v0.0.16
 
 * add: simple installer script (rpm el7,el8 & deb u18,u20)

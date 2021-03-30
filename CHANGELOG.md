@@ -1,3 +1,9 @@
+# v0.0.18
+
+* upd: disable creating host check if no default plugins for platform
+* fix: windows archive should use zip
+* doc: update circonus plugin docs
+
 # v0.0.17
 
 * upd: changes for dashboard and support older rabbitmq vers lack of metrics

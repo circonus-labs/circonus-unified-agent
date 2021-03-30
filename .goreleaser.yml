@@ -119,14 +119,18 @@ archives:
         name_template: "{{.ProjectName}}_{{.Version}}_{{.Os}}_{{.Arch}}"
         format: tar.gz
         replacements:
-            amd64: x86_64
+          amd64: x86_64
+        format_overrides:
+          -
+            goos: windows
+            format: zip
         files:
-            - LICENSE
-            - README.md
-            - CHANGELOG.md
-            - etc/*
-            - etc/**/*
-            - scripts/circonus-unified-agent.service
+          - LICENSE
+          - README.md
+          - CHANGELOG.md
+          - etc/*
+          - etc/**/*
+          - scripts/circonus-unified-agent.service
 
 release:
     github:

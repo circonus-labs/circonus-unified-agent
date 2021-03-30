@@ -10,22 +10,32 @@ check configuration click [here][docs].
 
 ```toml
 [[outputs.circonus]]
-  ## Circonus API Configuration, this is required for automatic check creation
-  ## and automatic check lookup, and retrieving broker CA information.
-  ## An API token must be provided to use this plugin:
-  api_token = "11223344-5566-7788-9900-aabbccddeeff"
-  ## If not provided, the api URL will default to the Circonus SaaS API URL:
-  # api_url = "https://api.circonus.com/"
-  ## If not provided, the API application used will default to circonus-unified-agent:
+  ## Circonus API token must be provided to use this plugin:
+  api_token = ""
+
+  ## Circonus API application (associated with token):
+  ## example:
   # api_app = "circonus-unified-agent"
-  ## Optional API TLS Configuration:
+
+  ## Circonus API URL:
+  ## example:
+  # api_url = "https://api.circonus.com/"
+
+  ## Circonus API TLS CA file, optional, for internal deployments with private certificates: 
+  ## example:
   # api_tls_ca = "/opt/circonus/unified-agent/etc/circonus_api_ca.pem"
 
   ## Check name prefix - unique prefix to use for all checks created by this instance
-  ## default is the hostname from the OS.
+  ## default is the hostname from the OS. If set, "host" tag on metrics will be 
+  ## overridden with this value. For containers, use omit_hostname=true in agent section
+  ## and set this value, so that the plugin will be able to predictively find the check 
+  ## for this instance. Otherwise, the container's os.Hostname() will be used
+  ## (resulting in a new check being created every time the container starts).
+  ## example:
   # check_name_prefix = "example"
 
   ## One check - all metrics go to a single check vs one check per input plugin
+  ## NOTE: this effectively disables automatic dashboards for supported plugins
   # one_check = false
   
   ## Broker

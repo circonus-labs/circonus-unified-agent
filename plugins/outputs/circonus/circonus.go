@@ -114,6 +114,7 @@ var sampleConfig = `
   # check_name_prefix = "example"
 
   ## One check - all metrics go to a single check vs one check per input plugin
+  ## NOTE: this effectively disables automatic dashboards for supported plugins
   # one_check = false
   
   ## Broker

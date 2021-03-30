@@ -1776,6 +1776,7 @@ func (c *Config) addDefaultPlugins() error {
 	}
 	plugList := getDefaultPluginList()
 	if plugList == nil {
+		defaultPluginsEnabled = false // disable creating the 'host' check
 		return fmt.Errorf("no default plugin list available for GOOS %s", runtime.GOOS)
 	}
 

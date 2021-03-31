@@ -537,11 +537,11 @@ func (m *mockOutput) SampleConfig() string {
 	return ""
 }
 
-func (m *mockOutput) Write(metrics []cua.Metric) error {
+func (m *mockOutput) Write(metrics []cua.Metric) (int, error) {
 	m.Lock()
 	defer m.Unlock()
 	if m.failWrite {
-		return fmt.Errorf("failed write")
+		return 0, fmt.Errorf("failed write")
 	}
 
 	if m.metrics == nil {
@@ -549,7 +549,7 @@ func (m *mockOutput) Write(metrics []cua.Metric) error {
 	}
 
 	m.metrics = append(m.metrics, metrics...)
-	return nil
+	return len(metrics), nil
 }
 
 func (m *mockOutput) Metrics() []cua.Metric {
@@ -579,9 +579,9 @@ func (m *perfOutput) SampleConfig() string {
 	return ""
 }
 
-func (m *perfOutput) Write(metrics []cua.Metric) error {
+func (m *perfOutput) Write(metrics []cua.Metric) (int, error) {
 	if m.failWrite {
-		return fmt.Errorf("failed write")
+		return 0, fmt.Errorf("failed write")
 	}
-	return nil
+	return 0, nil
 }

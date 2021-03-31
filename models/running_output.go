@@ -244,12 +244,12 @@ func (ro *RunningOutput) write(metrics []cua.Metric) error {
 	}
 
 	start := time.Now()
-	err := ro.Output.Write(metrics)
+	totMetrics, err := ro.Output.Write(metrics)
 	elapsed := time.Since(start)
 	ro.WriteTime.Incr(elapsed.Nanoseconds())
 
 	if err == nil {
-		ro.log.Debugf("Wrote batch of %d metrics in %s", len(metrics), elapsed)
+		ro.log.Debugf("Wrote batch of %d groups (%d distinct metrics) in %s", len(metrics), totMetrics, elapsed)
 	}
 	if err != nil {
 		return fmt.Errorf("write (output %s): %w", ro.Config.Name, err)

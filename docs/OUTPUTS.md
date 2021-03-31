@@ -63,11 +63,11 @@ func (s *Simple) Close() error {
 // Write should write immediately to the output, and not buffer writes
 // (the agent manages the buffer for you). Returning an error will fail this
 // batch of writes and the entire batch will be retried automatically.
-func (s *Simple) Write(metrics []cua.Metric) error {
+func (s *Simple) Write(metrics []cua.Metric) (int, error) {
     for _, metric := range metrics {
         // write `metric` to the output sink here
     }
-    return nil
+    return 0, nil
 }
 
 func init() {

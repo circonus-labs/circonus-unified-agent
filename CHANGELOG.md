@@ -1,3 +1,9 @@
+# v0.0.20
+
+* add: darwin build back in temporarily
+* upd: clarify batch write msg with number of distinct metrics
+* upd: outputs return num distinct metrics written
+
 # v0.0.19
 
 * upd : dependencies (cgm, go-apiclient)

@@ -886,11 +886,9 @@ func (c *Config) LoadConfigData(data []byte) error {
 	// mgm:add default plugins if they were not in configuration
 	if err := c.addDefaultPlugins(); err != nil {
 		log.Printf("W! adding default plugins: %s", err)
-		return nil
 	}
 	if err := c.addAgentPlugins(); err != nil {
 		log.Printf("W! adding agent plugins: %s", err)
-		return nil
 	}
 
 	if len(c.Processors) > 1 {

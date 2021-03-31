@@ -1,3 +1,9 @@
+# v0.0.19
+
+* upd : dependencies (cgm, go-apiclient)
+* add: search tag to cgm config
+* fix: no short-circuit for no default plugins
+
 # v0.0.18
 
 * upd: disable creating host check if no default plugins for platform

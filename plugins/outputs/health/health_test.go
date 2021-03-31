@@ -114,7 +114,7 @@ func TestHealth(t *testing.T) {
 			err = output.Connect()
 			require.NoError(t, err)
 
-			err = output.Write(tt.metrics)
+			_, err = output.Write(tt.metrics)
 			require.NoError(t, err)
 
 			resp, err := http.Get(output.Origin())

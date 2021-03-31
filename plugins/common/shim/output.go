@@ -43,7 +43,7 @@ func (s *Shim) RunOutput() error {
 			fmt.Fprintf(s.stderr, "Failed to parse metric: %s\n", err)
 			continue
 		}
-		if err = s.Output.Write([]cua.Metric{m}); err != nil {
+		if _, err = s.Output.Write([]cua.Metric{m}); err != nil {
 			fmt.Fprintf(s.stderr, "Failed to write metric: %s\n", err)
 		}
 	}

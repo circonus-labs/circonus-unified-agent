@@ -11,7 +11,7 @@ type Output interface {
 	// necessary.
 	Close() error
 	// Write takes in group of points to be written to the Output
-	Write(metrics []Metric) error
+	Write(metrics []Metric) (int, error)
 }
 
 // AggregatingOutput adds aggregating functionality to an Output.  May be used

@@ -30,7 +30,7 @@ func TestFileExistingFile(t *testing.T) {
 	err := f.Connect()
 	assert.NoError(t, err)
 
-	err = f.Write(testutil.MockMetrics())
+	_, err = f.Write(testutil.MockMetrics())
 	assert.NoError(t, err)
 
 	validateFile(fh.Name(), expExistFile, t)
@@ -51,7 +51,7 @@ func TestFileNewFile(t *testing.T) {
 	err := f.Connect()
 	assert.NoError(t, err)
 
-	err = f.Write(testutil.MockMetrics())
+	_, err = f.Write(testutil.MockMetrics())
 	assert.NoError(t, err)
 
 	validateFile(fh, expNewFile, t)
@@ -77,7 +77,7 @@ func TestFileExistingFiles(t *testing.T) {
 	err := f.Connect()
 	assert.NoError(t, err)
 
-	err = f.Write(testutil.MockMetrics())
+	_, err = f.Write(testutil.MockMetrics())
 	assert.NoError(t, err)
 
 	validateFile(fh1.Name(), expExistFile, t)
@@ -104,7 +104,7 @@ func TestFileNewFiles(t *testing.T) {
 	err := f.Connect()
 	assert.NoError(t, err)
 
-	err = f.Write(testutil.MockMetrics())
+	_, err = f.Write(testutil.MockMetrics())
 	assert.NoError(t, err)
 
 	validateFile(fh1, expNewFile, t)
@@ -130,7 +130,7 @@ func TestFileBoth(t *testing.T) {
 	err := f.Connect()
 	assert.NoError(t, err)
 
-	err = f.Write(testutil.MockMetrics())
+	_, err = f.Write(testutil.MockMetrics())
 	assert.NoError(t, err)
 
 	validateFile(fh1.Name(), expExistFile, t)
@@ -155,7 +155,7 @@ func TestFileStdout(t *testing.T) {
 	err := f.Connect()
 	assert.NoError(t, err)
 
-	err = f.Write(testutil.MockMetrics())
+	_, err = f.Write(testutil.MockMetrics())
 	assert.NoError(t, err)
 
 	err = f.Close()

@@ -196,7 +196,7 @@ func (h *Health) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 }
 
 // Write runs all checks over the metric batch and adjust health state.
-func (h *Health) Write(metrics []cua.Metric) error {
+func (h *Health) Write(metrics []cua.Metric) (int, error) {
 	healthy := true
 	for _, checker := range h.checkers {
 		success := checker.Check(metrics)
@@ -206,7 +206,7 @@ func (h *Health) Write(metrics []cua.Metric) error {
 	}
 
 	h.setHealthy(healthy)
-	return nil
+	return len(metrics), nil
 }
 
 // Close shuts down the HTTP server.

@@ -59,7 +59,7 @@ func TestCirconus(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = cli.Write(testutil.MockMetrics())
+	_, err = cli.Write(testutil.MockMetrics())
 	if err != nil {
 		t.Fatal(err)
 	}

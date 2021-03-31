@@ -68,9 +68,9 @@ func (o *testOutput) Connect() error {
 func (o *testOutput) Close() error {
 	return nil
 }
-func (o *testOutput) Write(metrics []cua.Metric) error {
+func (o *testOutput) Write(metrics []cua.Metric) (int, error) {
 	o.MetricsWritten = append(o.MetricsWritten, metrics...)
-	return nil
+	return len(metrics), nil
 }
 
 func (o *testOutput) SampleConfig() string {

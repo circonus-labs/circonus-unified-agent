@@ -171,9 +171,9 @@ func (c *Circonus) emitAgentVersion() {
 }
 
 // Write is used to write metric data to Circonus checks.
-func (c *Circonus) Write(metrics []cua.Metric) error {
+func (c *Circonus) Write(metrics []cua.Metric) (int, error) {
 	if c.APIToken == "" {
-		return fmt.Errorf("Circonus API Token is required, dropping metrics")
+		return 0, fmt.Errorf("Circonus API Token is required, dropping metrics")
 	}
 
 	numMetrics := int64(0)
@@ -216,7 +216,7 @@ func (c *Circonus) Write(metrics []cua.Metric) error {
 	}
 	wg.Wait()
 
-	return nil
+	return int(numMetrics), nil
 }
 
 // SampleConfig returns the sample Circonus plugin configuration.

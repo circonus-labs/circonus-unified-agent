@@ -217,9 +217,9 @@ func (*testOutput) SampleConfig() string {
 	return ""
 }
 
-func (t *testOutput) Write(metrics []cua.Metric) error {
+func (t *testOutput) Write(metrics []cua.Metric) (int, error) {
 	if t.failWrite {
-		return fmt.Errorf("failed write")
+		return 0, fmt.Errorf("failed write")
 	}
-	return nil
+	return 0, nil
 }

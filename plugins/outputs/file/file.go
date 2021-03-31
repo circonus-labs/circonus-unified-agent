@@ -101,8 +101,10 @@ func (f *File) Description() string {
 	return "Send metrics to file(s)"
 }
 
-func (f *File) Write(metrics []cua.Metric) error {
+func (f *File) Write(metrics []cua.Metric) (int, error) {
 	var writeErr error = nil
+
+	totMetrics := 0
 
 	if f.UseBatchFormat {
 		octets, err := f.serializer.SerializeBatch(metrics)
@@ -125,10 +127,12 @@ func (f *File) Write(metrics []cua.Metric) error {
 			if err != nil {
 				writeErr = fmt.Errorf("E! [outputs.file] failed to write message: %w", err)
 			}
+
+			totMetrics += len(metric.FieldList())
 		}
 	}
 
-	return writeErr
+	return totMetrics, writeErr
 }
 
 func init() {

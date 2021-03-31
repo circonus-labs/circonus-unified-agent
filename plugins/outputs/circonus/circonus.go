@@ -6,6 +6,7 @@ import (
 	"crypto/x509"
 	"fmt"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
@@ -346,6 +347,8 @@ func (c *Circonus) initCheck(id, name string) error {
 	cfg.CheckManager.Check.TargetHost = c.CheckNamePrefix
 	cfg.CheckManager.Check.DisplayName = c.CheckNamePrefix + " " + name + " (" + runtime.GOOS + ")"
 	cfg.CheckManager.Check.Type = checkType
+	_, an := filepath.Split(os.Args[0])
+	cfg.CheckManager.Check.SearchTag = "service:" + an
 
 	m, err := cgm.New(cfg)
 	if err != nil {

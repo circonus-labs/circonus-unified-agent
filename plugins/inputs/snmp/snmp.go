@@ -268,8 +268,10 @@ func (f *Field) init() error {
 	}
 
 	// if tag and able to parse a textual convention from oid translation
-	if f.IsTag && stc.valMap != nil {
-		f.Conversion = "lookup"
+	if f.IsTag && len(stc.valMap) > 0 {
+		if f.Conversion == "" {
+			f.Conversion = "lookup"
+		}
 	}
 
 	f.initialized = true
@@ -606,13 +608,14 @@ func fieldConvert(conv string, sv gosnmp.SnmpPDU) (interface{}, error) {
 
 	if conv == "lookup" {
 		stc := TranslateOID(sv.Name)
+		key := fmt.Sprintf("%d", v)
 		if stc.valMap != nil {
-			if val, ok := (*stc.valMap)[v.(string)]; ok {
+			if val, ok := stc.valMap[key]; ok {
 				return val, nil
 			}
-			return v.(string), nil
+			return key, nil
 		}
-		return v.(string), nil
+		return key, nil
 	}
 
 	var d int
@@ -822,7 +825,7 @@ type TranslateItem struct {
 	oidNum     string
 	oidText    string
 	conversion string
-	valMap     *map[string]string
+	valMap     map[string]string
 	err        error
 }
 
@@ -952,7 +955,7 @@ func snmpTranslateCall(oid string) *TranslateItem {
 		case strings.HasPrefix(line, "  SYNTAX	INTEGER {"):
 			items := strings.TrimPrefix(line, "  SYNTAX	INTEGER {")
 			items = strings.TrimSuffix(items, "}")
-			stc.valMap = new(map[string]string)
+			stc.valMap = make(map[string]string)
 			for _, item := range strings.Split(items, ",") {
 				item = strings.TrimSpace(item)
 				if len(item) == 0 {
@@ -964,7 +967,7 @@ func snmpTranslateCall(oid string) *TranslateItem {
 					// e.g. ethernetCsmacd(6) key=6, value=ethernetCsmacd
 					itemValue := item[:lp]
 					itemKey := item[lp+1 : rp]
-					(*stc.valMap)[itemKey] = itemValue
+					stc.valMap[itemKey] = itemValue
 				}
 			}
 		case strings.HasPrefix(line, "::= { "):

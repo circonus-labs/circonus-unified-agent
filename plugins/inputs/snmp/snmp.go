@@ -243,7 +243,6 @@ type Field struct {
 	Translate bool
 
 	initialized bool
-	lookup      bool
 }
 
 // init() converts OID names to numbers, and sets the .Name attribute if unset.
@@ -252,24 +251,26 @@ func (f *Field) init() error {
 		return nil
 	}
 
-	_, oidNum, oidText, conversion, err := TranslateOID(f.Oid)
-	if err != nil {
-		return fmt.Errorf("translating: %w", err)
+	// _, oidNum, oidText, conversion, err := TranslateOID(f.Oid)
+	stc := TranslateOID(f.Oid)
+	if stc.err != nil {
+		return fmt.Errorf("translating: %w", stc.err)
 	}
 
-	f.Oid = oidNum
+	f.Oid = stc.oidNum
 
 	if f.Name == "" {
-		f.Name = oidText
+		f.Name = stc.oidText
 	}
 
 	if f.Conversion == "" {
-		f.Conversion = conversion
+		f.Conversion = stc.conversion
 	}
 
-	f.lookup = shouldLookupField(f.Oid)
-
-	// TODO use textual convention conversion from the MIB
+	// if tag and able to parse a textual convention from oid translation
+	if f.IsTag && stc.valMap != nil {
+		f.Conversion = "lookup"
+	}
 
 	f.initialized = true
 	return nil
@@ -439,19 +440,11 @@ func (t Table) Build(gs snmpConnection, walk bool) (*RTable, error) {
 				return nil, fmt.Errorf("performing get on field %s: %w", f.Name, err)
 			} else if pkt != nil && len(pkt.Variables) > 0 && pkt.Variables[0].Type != gosnmp.NoSuchObject && pkt.Variables[0].Type != gosnmp.NoSuchInstance {
 				ent := pkt.Variables[0]
-				if f.lookup {
-					fv, err := fieldLookup(f.Oid, ent)
-					if err != nil {
-						return nil, fmt.Errorf("looking up %q (OID %s) for field %s: %w", ent.Value, ent.Name, f.Name, err)
-					}
-					ifv[""] = fv
-				} else {
-					fv, err := fieldConvert(f.Conversion, ent.Value)
-					if err != nil {
-						return nil, fmt.Errorf("converting %q (OID %s) for field %s: %w", ent.Value, ent.Name, f.Name, err)
-					}
-					ifv[""] = fv
+				fv, err := fieldConvert(f.Conversion, ent)
+				if err != nil {
+					return nil, fmt.Errorf("converting %q (OID %s) for field %s: %w", ent.Value, ent.Name, f.Name, err)
 				}
+				ifv[""] = fv
 			}
 		} else {
 			err := gs.Walk(oid, func(ent gosnmp.SnmpPDU) error {
@@ -483,15 +476,16 @@ func (t Table) Build(gs snmpConnection, walk bool) (*RTable, error) {
 				// snmptranslate table field value here
 				if f.Translate {
 					if entOid, ok := ent.Value.(string); ok {
-						_, _, oidText, _, err := TranslateOID(entOid)
-						if err == nil {
+						// _, _, oidText, _, err := TranslateOID(entOid)
+						stc := TranslateOID(entOid)
+						if stc.err == nil {
 							// If no error translating, the original value for ent.Value should be replaced
-							ent.Value = oidText
+							ent.Value = stc.oidText
 						}
 					}
 				}
 
-				fv, err := fieldConvert(f.Conversion, ent.Value)
+				fv, err := fieldConvert(f.Conversion, ent)
 				if err != nil {
 					return &walkError{
 						msg: fmt.Sprintf("converting %q (OID %s) for field %s", ent.Value, ent.Name, f.Name),
@@ -499,6 +493,7 @@ func (t Table) Build(gs snmpConnection, walk bool) (*RTable, error) {
 					}
 				}
 				ifv[idx] = fv
+
 				return nil
 			})
 			if err != nil {
@@ -599,12 +594,25 @@ func (s *Snmp) getConnection(idx int) (snmpConnection, error) {
 //  "hwaddr" will convert the value into a MAC address.
 //  "ipaddr" will convert the value into into an IP address.
 //  "" will convert a byte slice into a string.
-func fieldConvert(conv string, v interface{}) (interface{}, error) {
+func fieldConvert(conv string, sv gosnmp.SnmpPDU) (interface{}, error) {
+	v := sv.Value
+
 	if conv == "" {
 		if bs, ok := v.([]byte); ok {
 			return string(bs), nil
 		}
 		return v, nil
+	}
+
+	if conv == "lookup" {
+		stc := TranslateOID(sv.Name)
+		if stc.valMap != nil {
+			if val, ok := (*stc.valMap)[v.(string)]; ok {
+				return val, nil
+			}
+			return v.(string), nil
+		}
+		return v.(string), nil
 	}
 
 	var d int
@@ -746,13 +754,18 @@ func snmpTable(oid string) (mibName string, oidNum string, oidText string, field
 }
 
 func snmpTableCall(oid string) (mibName string, oidNum string, oidText string, fields []Field, err error) {
-	mibName, oidNum, oidText, _, err = TranslateOID(oid)
-	if err != nil {
-		return "", "", "", nil, fmt.Errorf("translating: %w", err)
+	// mibName, oidNum, oidText, _, err = TranslateOID(oid)
+	stc := TranslateOID(oid)
+	if stc.err != nil {
+		return "", "", "", nil, fmt.Errorf("translating: %w", stc.err)
 	}
 
+	mibName = stc.mibName
+	oidNum = stc.oidNum
+	oidText = stc.oidText
+
 	mibPrefix := mibName + "::"
-	oidFullName := mibPrefix + oidText
+	oidFullName := mibPrefix + stc.oidText
 
 	// first attempt to get the table's tags
 	tagOids := map[string]struct{}{}
@@ -804,27 +817,29 @@ func snmpTableCall(oid string) (mibName string, oidNum string, oidText string, f
 	return mibName, oidNum, oidText, fields, err
 }
 
-type snmpTranslateCache struct {
+type TranslateItem struct {
 	mibName    string
 	oidNum     string
 	oidText    string
 	conversion string
+	valMap     *map[string]string
 	err        error
 }
 
 var snmpTranslateCachesLock sync.Mutex
-var snmpTranslateCaches map[string]snmpTranslateCache
+var snmpTranslateCache map[string]TranslateItem
 
 // snmpTranslate resolves the given OID.
-func TranslateOID(oid string) (mibName string, oidNum string, oidText string, conversion string, err error) {
+func TranslateOID(oid string) TranslateItem {
+	// (mibName string, oidNum string, oidText string, conversion string, err error) {
 	snmpTranslateCachesLock.Lock()
-	if snmpTranslateCaches == nil {
-		snmpTranslateCaches = map[string]snmpTranslateCache{}
+	if snmpTranslateCache == nil {
+		snmpTranslateCache = map[string]TranslateItem{}
 	}
 
-	var stc snmpTranslateCache
+	var stc TranslateItem
 	var ok bool
-	if stc, ok = snmpTranslateCaches[oid]; !ok {
+	if stc, ok = snmpTranslateCache[oid]; !ok {
 		// This will result in only one call to snmptranslate running at a time.
 		// We could speed it up by putting a lock in snmpTranslateCache and then
 		// returning it immediately, and multiple callers would then release the
@@ -833,38 +848,47 @@ func TranslateOID(oid string) (mibName string, oidNum string, oidText string, co
 		// is worth it. Especially when it would slam the system pretty hard if lots
 		// of lookups are being performed.
 
-		stc.mibName, stc.oidNum, stc.oidText, stc.conversion, stc.err = snmpTranslateCall(oid)
-		snmpTranslateCaches[oid] = stc
+		// stc.mibName, stc.oidNum, stc.oidText, stc.conversion, stc.err = snmpTranslateCall(oid)
+		stcp := snmpTranslateCall(oid)
+		snmpTranslateCache[oid] = *stcp
+		stc = *stcp
 	}
 
 	snmpTranslateCachesLock.Unlock()
 
-	return stc.mibName, stc.oidNum, stc.oidText, stc.conversion, stc.err
+	return stc
 }
 
 func TranslateForce(oid string, mibName string, oidNum string, oidText string, conversion string) {
 	snmpTranslateCachesLock.Lock()
 	defer snmpTranslateCachesLock.Unlock()
-	if snmpTranslateCaches == nil {
-		snmpTranslateCaches = map[string]snmpTranslateCache{}
+	if snmpTranslateCache == nil {
+		snmpTranslateCache = map[string]TranslateItem{}
 	}
 
-	var stc snmpTranslateCache
+	var stc TranslateItem
 	stc.mibName = mibName
 	stc.oidNum = oidNum
 	stc.oidText = oidText
 	stc.conversion = conversion
 	stc.err = nil
-	snmpTranslateCaches[oid] = stc
+	snmpTranslateCache[oid] = stc
 }
 
 func TranslateClear() {
 	snmpTranslateCachesLock.Lock()
 	defer snmpTranslateCachesLock.Unlock()
-	snmpTranslateCaches = map[string]snmpTranslateCache{}
+	snmpTranslateCache = map[string]TranslateItem{}
 }
 
-func snmpTranslateCall(oid string) (mibName string, oidNum string, oidText string, conversion string, err error) {
+func snmpTranslateCall(oid string) *TranslateItem {
+	// (mibName string, oidNum string, oidText string, conversion string, err error) {
+	stc := &TranslateItem{
+		oidNum:  oid,
+		oidText: oid,
+	}
+
+	var err error
 	var out []byte
 	if strings.ContainsAny(oid, ":abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ") {
 		out, err = execCmd("snmptranslate", "-Td", "-Ob", oid)
@@ -874,46 +898,76 @@ func snmpTranslateCall(oid string) (mibName string, oidNum string, oidText strin
 		if errors.As(err, &exiterr) && errors.Is(exiterr.Err, exec.ErrNotFound) {
 			// Silently discard error if snmptranslate not found and we have a numeric OID.
 			// Meaning we can get by without the lookup.
-			return "", oid, oid, "", nil
+			return stc
+			// return "", oid, oid, "", nil
 		}
 	}
 	if err != nil {
-		return "", "", "", "", err
+		return &TranslateItem{err: err}
+		// return "", "", "", "", err
 	}
 
 	scanner := bufio.NewScanner(bytes.NewBuffer(out))
 	ok := scanner.Scan()
 	if !ok && scanner.Err() != nil {
-		return "", "", "", "", fmt.Errorf("getting OID text: %w", scanner.Err())
+		return &TranslateItem{err: fmt.Errorf("getting OID text: %w", scanner.Err())}
+		// return "", "", "", "", fmt.Errorf("getting OID text: %w", scanner.Err())
 	}
 
-	oidText = scanner.Text()
+	oidText := scanner.Text()
 
 	i := strings.Index(oidText, "::")
 	if i == -1 {
 		// was not found in MIB.
 		if bytes.Contains(out, []byte("[TRUNCATED]")) {
-			return "", oid, oid, "", nil
+			return stc
+			// return "", oid, oid, "", nil
 		}
 		// not truncated, but not fully found. We still need to parse out numeric OID, so keep going
 		oidText = oid
+		stc.oidText = oid
 	} else {
-		mibName = oidText[:i]
-		oidText = oidText[i+2:]
+		// mibName = oidText[:i]
+		// oidText = oidText[i+2:]
+		stc.mibName = oidText[:i]
+		stc.oidText = oidText[i+2:]
 	}
+
+	stc.oidNum = ""
 
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		if strings.HasPrefix(line, "  -- TEXTUAL CONVENTION ") {
+		switch {
+		case strings.HasPrefix(line, "  -- TEXTUAL CONVENTION "):
 			tc := strings.TrimPrefix(line, "  -- TEXTUAL CONVENTION ")
 			switch tc {
 			case "MacAddress", "PhysAddress":
-				conversion = "hwaddr"
+				// conversion = "hwaddr"
+				stc.conversion = "hwaddr"
 			case "InetAddressIPv4", "InetAddressIPv6", "InetAddress", "IPSIpAddress":
-				conversion = "ipaddr"
+				// conversion = "ipaddr"
+				stc.conversion = "ipaddr"
 			}
-		} else if strings.HasPrefix(line, "::= { ") {
+		case strings.HasPrefix(line, "  SYNTAX	INTEGER {"):
+			items := strings.TrimPrefix(line, "  SYNTAX	INTEGER {")
+			items = strings.TrimSuffix(items, "}")
+			stc.valMap = new(map[string]string)
+			for _, item := range strings.Split(items, ",") {
+				item = strings.TrimSpace(item)
+				if len(item) == 0 {
+					continue
+				}
+				lp := strings.Index(item, "(")
+				rp := strings.Index(item, ")")
+				if lp != -1 && rp != -1 {
+					// e.g. ethernetCsmacd(6) key=6, value=ethernetCsmacd
+					itemValue := item[:lp]
+					itemKey := item[lp+1 : rp]
+					(*stc.valMap)[itemKey] = itemValue
+				}
+			}
+		case strings.HasPrefix(line, "::= { "):
 			objs := strings.TrimPrefix(line, "::= { ")
 			objs = strings.TrimSuffix(objs, " }")
 
@@ -923,14 +977,14 @@ func snmpTranslateCall(oid string) (mibName string, oidNum string, oidText strin
 				}
 				if i := strings.Index(obj, "("); i != -1 {
 					obj = obj[i+1:]
-					oidNum += "." + obj[:strings.Index(obj, ")")]
+					stc.oidNum += "." + obj[:strings.Index(obj, ")")]
 				} else {
-					oidNum += "." + obj
+					stc.oidNum += "." + obj
 				}
 			}
-			break
 		}
 	}
 
-	return mibName, oidNum, oidText, conversion, nil
+	return stc
+	// return mibName, oidNum, oidText, conversion, nil
 }

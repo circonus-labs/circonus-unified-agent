@@ -697,48 +697,48 @@ func TestGather_host(t *testing.T) {
 
 func TestFieldConvert(t *testing.T) {
 	testTable := []struct {
-		input    interface{}
+		input    gosnmp.SnmpPDU
 		conv     string
 		expected interface{}
 	}{
-		{[]byte("foo"), "", string("foo")},
-		{"0.123", "float", float64(0.123)},
-		{[]byte("0.123"), "float", float64(0.123)},
-		{float32(0.123), "float", float64(float32(0.123))},
-		{float64(0.123), "float", float64(0.123)},
-		{123, "float", float64(123)},
-		{123, "float(0)", float64(123)},
-		{123, "float(4)", float64(0.0123)},
-		{int8(123), "float(3)", float64(0.123)},
-		{int16(123), "float(3)", float64(0.123)},
-		{int32(123), "float(3)", float64(0.123)},
-		{int64(123), "float(3)", float64(0.123)},
-		{uint(123), "float(3)", float64(0.123)},
-		{uint8(123), "float(3)", float64(0.123)},
-		{uint16(123), "float(3)", float64(0.123)},
-		{uint32(123), "float(3)", float64(0.123)},
-		{uint64(123), "float(3)", float64(0.123)},
-		{"123", "int", int64(123)},
-		{[]byte("123"), "int", int64(123)},
-		{"123123123123", "int", int64(123123123123)},
-		{[]byte("123123123123"), "int", int64(123123123123)},
-		{float32(12.3), "int", int64(12)},
-		{float64(12.3), "int", int64(12)},
-		{int(123), "int", int64(123)},
-		{int8(123), "int", int64(123)},
-		{int16(123), "int", int64(123)},
-		{int32(123), "int", int64(123)},
-		{int64(123), "int", int64(123)},
-		{uint(123), "int", int64(123)},
-		{uint8(123), "int", int64(123)},
-		{uint16(123), "int", int64(123)},
-		{uint32(123), "int", int64(123)},
-		{uint64(123), "int", int64(123)},
-		{[]byte("abcdef"), "hwaddr", "61:62:63:64:65:66"},
-		{"abcdef", "hwaddr", "61:62:63:64:65:66"},
-		{[]byte("abcd"), "ipaddr", "97.98.99.100"},
-		{"abcd", "ipaddr", "97.98.99.100"},
-		{[]byte("abcdefghijklmnop"), "ipaddr", "6162:6364:6566:6768:696a:6b6c:6d6e:6f70"},
+		{gosnmp.SnmpPDU{Value: []byte("foo")}, "", string("foo")},
+		{gosnmp.SnmpPDU{Value: "0.123"}, "float", float64(0.123)},
+		{gosnmp.SnmpPDU{Value: []byte("0.123")}, "float", float64(0.123)},
+		{gosnmp.SnmpPDU{Value: float32(0.123)}, "float", float64(float32(0.123))},
+		{gosnmp.SnmpPDU{Value: float64(0.123)}, "float", float64(0.123)},
+		{gosnmp.SnmpPDU{Value: 123}, "float", float64(123)},
+		{gosnmp.SnmpPDU{Value: 123}, "float(0)", float64(123)},
+		{gosnmp.SnmpPDU{Value: 123}, "float(4)", float64(0.0123)},
+		{gosnmp.SnmpPDU{Value: int8(123)}, "float(3)", float64(0.123)},
+		{gosnmp.SnmpPDU{Value: int16(123)}, "float(3)", float64(0.123)},
+		{gosnmp.SnmpPDU{Value: int32(123)}, "float(3)", float64(0.123)},
+		{gosnmp.SnmpPDU{Value: int64(123)}, "float(3)", float64(0.123)},
+		{gosnmp.SnmpPDU{Value: uint(123)}, "float(3)", float64(0.123)},
+		{gosnmp.SnmpPDU{Value: uint8(123)}, "float(3)", float64(0.123)},
+		{gosnmp.SnmpPDU{Value: uint16(123)}, "float(3)", float64(0.123)},
+		{gosnmp.SnmpPDU{Value: uint32(123)}, "float(3)", float64(0.123)},
+		{gosnmp.SnmpPDU{Value: uint64(123)}, "float(3)", float64(0.123)},
+		{gosnmp.SnmpPDU{Value: "123"}, "int", int64(123)},
+		{gosnmp.SnmpPDU{Value: []byte("123")}, "int", int64(123)},
+		{gosnmp.SnmpPDU{Value: "123123123123"}, "int", int64(123123123123)},
+		{gosnmp.SnmpPDU{Value: []byte("123123123123")}, "int", int64(123123123123)},
+		{gosnmp.SnmpPDU{Value: float32(12.3)}, "int", int64(12)},
+		{gosnmp.SnmpPDU{Value: float64(12.3)}, "int", int64(12)},
+		{gosnmp.SnmpPDU{Value: int(123)}, "int", int64(123)},
+		{gosnmp.SnmpPDU{Value: int8(123)}, "int", int64(123)},
+		{gosnmp.SnmpPDU{Value: int16(123)}, "int", int64(123)},
+		{gosnmp.SnmpPDU{Value: int32(123)}, "int", int64(123)},
+		{gosnmp.SnmpPDU{Value: int64(123)}, "int", int64(123)},
+		{gosnmp.SnmpPDU{Value: uint(123)}, "int", int64(123)},
+		{gosnmp.SnmpPDU{Value: uint8(123)}, "int", int64(123)},
+		{gosnmp.SnmpPDU{Value: uint16(123)}, "int", int64(123)},
+		{gosnmp.SnmpPDU{Value: uint32(123)}, "int", int64(123)},
+		{gosnmp.SnmpPDU{Value: uint64(123)}, "int", int64(123)},
+		{gosnmp.SnmpPDU{Value: []byte("abcdef")}, "hwaddr", "61:62:63:64:65:66"},
+		{gosnmp.SnmpPDU{Value: "abcdef"}, "hwaddr", "61:62:63:64:65:66"},
+		{gosnmp.SnmpPDU{Value: []byte("abcd")}, "ipaddr", "97.98.99.100"},
+		{gosnmp.SnmpPDU{Value: "abcd"}, "ipaddr", "97.98.99.100"},
+		{gosnmp.SnmpPDU{Value: []byte("abcdefghijklmnop")}, "ipaddr", "6162:6364:6566:6768:696a:6b6c:6d6e:6f70"},
 	}
 
 	for _, tc := range testTable {
@@ -751,21 +751,21 @@ func TestFieldConvert(t *testing.T) {
 }
 
 func TestSnmpTranslateCache_miss(t *testing.T) {
-	snmpTranslateCaches = nil
+	snmpTranslateCache = nil
 	oid := "IF-MIB::ifPhysAddress.1"
-	mibName, oidNum, oidText, conversion, err := TranslateOID(oid)
-	assert.Len(t, snmpTranslateCaches, 1)
-	stc := snmpTranslateCaches[oid]
-	require.NotNil(t, stc)
-	assert.Equal(t, mibName, stc.mibName)
-	assert.Equal(t, oidNum, stc.oidNum)
-	assert.Equal(t, oidText, stc.oidText)
-	assert.Equal(t, conversion, stc.conversion)
-	assert.Equal(t, err, stc.err)
+	stc1 := TranslateOID(oid)
+	assert.Len(t, snmpTranslateCache, 1)
+	stc2 := snmpTranslateCache[oid]
+	require.NotNil(t, stc2)
+	assert.Equal(t, stc1.mibName, stc2.mibName)
+	assert.Equal(t, stc1.oidNum, stc2.oidNum)
+	assert.Equal(t, stc1.oidText, stc2.oidText)
+	assert.Equal(t, stc1.conversion, stc2.conversion)
+	assert.Equal(t, stc1.err, stc2.err)
 }
 
 func TestSnmpTranslateCache_hit(t *testing.T) {
-	snmpTranslateCaches = map[string]snmpTranslateCache{
+	snmpTranslateCache = map[string]TranslateItem{
 		"foo": {
 			mibName:    "a",
 			oidNum:     "b",
@@ -774,13 +774,13 @@ func TestSnmpTranslateCache_hit(t *testing.T) {
 			err:        fmt.Errorf("e"),
 		},
 	}
-	mibName, oidNum, oidText, conversion, err := TranslateOID("foo")
-	assert.Equal(t, "a", mibName)
-	assert.Equal(t, "b", oidNum)
-	assert.Equal(t, "c", oidText)
-	assert.Equal(t, "d", conversion)
-	assert.Equal(t, fmt.Errorf("e"), err)
-	snmpTranslateCaches = nil
+	stc := TranslateOID("foo")
+	assert.Equal(t, "a", stc.mibName)
+	assert.Equal(t, "b", stc.oidNum)
+	assert.Equal(t, "c", stc.oidText)
+	assert.Equal(t, "d", stc.conversion)
+	assert.Equal(t, fmt.Errorf("e"), stc.err)
+	snmpTranslateCache = nil
 }
 
 func TestSnmpTableCache_miss(t *testing.T) {

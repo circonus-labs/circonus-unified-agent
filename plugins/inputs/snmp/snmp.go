@@ -243,6 +243,7 @@ type Field struct {
 	Translate bool
 
 	initialized bool
+	lookup      bool
 }
 
 // init() converts OID names to numbers, and sets the .Name attribute if unset.
@@ -255,13 +256,18 @@ func (f *Field) init() error {
 	if err != nil {
 		return fmt.Errorf("translating: %w", err)
 	}
+
 	f.Oid = oidNum
+
 	if f.Name == "" {
 		f.Name = oidText
 	}
+
 	if f.Conversion == "" {
 		f.Conversion = conversion
 	}
+
+	f.lookup = shouldLookupField(f.Oid)
 
 	// TODO use textual convention conversion from the MIB
 
@@ -433,11 +439,19 @@ func (t Table) Build(gs snmpConnection, walk bool) (*RTable, error) {
 				return nil, fmt.Errorf("performing get on field %s: %w", f.Name, err)
 			} else if pkt != nil && len(pkt.Variables) > 0 && pkt.Variables[0].Type != gosnmp.NoSuchObject && pkt.Variables[0].Type != gosnmp.NoSuchInstance {
 				ent := pkt.Variables[0]
-				fv, err := fieldConvert(f.Conversion, ent.Value)
-				if err != nil {
-					return nil, fmt.Errorf("converting %q (OID %s) for field %s: %w", ent.Value, ent.Name, f.Name, err)
+				if f.lookup {
+					fv, err := fieldLookup(f.Oid, ent)
+					if err != nil {
+						return nil, fmt.Errorf("looking up %q (OID %s) for field %s: %w", ent.Value, ent.Name, f.Name, err)
+					}
+					ifv[""] = fv
+				} else {
+					fv, err := fieldConvert(f.Conversion, ent.Value)
+					if err != nil {
+						return nil, fmt.Errorf("converting %q (OID %s) for field %s: %w", ent.Value, ent.Name, f.Name, err)
+					}
+					ifv[""] = fv
 				}
-				ifv[""] = fv
 			}
 		} else {
 			err := gs.Walk(oid, func(ent gosnmp.SnmpPDU) error {

@@ -325,7 +325,7 @@ func (k *KinesisConsumer) Gather(acc cua.Accumulator) error {
 
 // Get wraps the checkpoint's Get function (called by consumer library)
 func (k *KinesisConsumer) Get(streamName, shardID string) (string, error) {
-	return k.checkpoint.Get(streamName, shardID)
+	return k.checkpoint.Get(streamName, shardID) //nolint:wrapcheck
 }
 
 // Set wraps the checkpoint's Set function (called by consumer library)

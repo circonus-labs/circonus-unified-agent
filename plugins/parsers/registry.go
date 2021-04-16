@@ -223,7 +223,7 @@ func NewParser(config *Config) (Parser, error) {
 			DefaultTags:       config.DefaultTags,
 		}
 
-		return csv.NewParser(config)
+		return csv.NewParser(config) //nolint:wrapcheck
 	case "logfmt":
 		parser, err = NewLogFmtParser(config.MetricName, config.DefaultTags)
 	case "form_urlencoded":
@@ -270,7 +270,7 @@ func NewGraphiteParser(
 	templates []string,
 	defaultTags map[string]string,
 ) (Parser, error) {
-	return graphite.NewGraphiteParser(separator, templates, defaultTags)
+	return graphite.NewGraphiteParser(separator, templates, defaultTags) //nolint:wrapcheck
 }
 
 func NewValueParser(
@@ -291,7 +291,7 @@ func NewCollectdParser(
 	typesDB []string,
 	split string,
 ) (Parser, error) {
-	return collectd.NewCollectdParser(authFile, securityLevel, typesDB, split)
+	return collectd.NewCollectdParser(authFile, securityLevel, typesDB, split) //nolint:wrapcheck
 }
 
 func NewDropwizardParser(

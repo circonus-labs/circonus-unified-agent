@@ -113,7 +113,7 @@ func newConn(rwc io.ReadWriteCloser) *conn {
 func (c *conn) Close() error {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
-	return c.rwc.Close()
+	return c.rwc.Close() //nolint:wrapcheck
 }
 
 type record struct {
@@ -238,7 +238,7 @@ func (w *bufWriter) Close() error {
 		w.closer.Close()
 		return fmt.Errorf("flush: %w", err)
 	}
-	return w.closer.Close()
+	return w.closer.Close() //nolint:wrapcheck
 }
 
 func newWriter(c *conn, recType recType, reqID uint16) *bufWriter {

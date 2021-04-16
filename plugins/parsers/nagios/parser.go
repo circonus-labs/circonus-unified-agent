@@ -107,7 +107,7 @@ func (p *Parser) Parse(buf []byte) ([]cua.Metric, error) {
 
 	// Scan the first line.
 	if !s.Scan() && s.Err() != nil {
-		return nil, s.Err()
+		return nil, s.Err() //nolint:wrapcheck
 	}
 	parts := bytes.Split(s.Bytes(), []byte{'|'})
 	switch len(parts) {

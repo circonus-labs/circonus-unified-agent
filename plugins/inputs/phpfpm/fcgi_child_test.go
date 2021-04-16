@@ -87,7 +87,7 @@ func (r *response) Write(data []byte) (int, error) {
 	if !r.wroteHeader {
 		r.WriteHeader(http.StatusOK)
 	}
-	return r.w.Write(data)
+	return r.w.Write(data) //nolint:wrapcheck
 }
 
 func (r *response) WriteHeader(code int) {

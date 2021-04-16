@@ -265,7 +265,7 @@ func (e *EventHub) onMessage(ctx context.Context, event *eventhub.Event) error {
 
 	select {
 	case <-ctx.Done():
-		return ctx.Err()
+		return ctx.Err() //nolint:wrapcheck
 	case e.in <- metrics:
 		return nil
 	}

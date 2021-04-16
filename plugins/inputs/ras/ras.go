@@ -202,7 +202,7 @@ func validateDbPath(dbPath string) error {
 }
 
 func connectToDB(dbPath string) (*sql.DB, error) {
-	return sql.Open("sqlite", dbPath)
+	return sql.Open("sqlite", dbPath) //nolint:wrapcheck
 }
 
 func (r *Ras) initializeCPUMetricDataIfRequired(socketID int) {

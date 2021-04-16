@@ -1,5 +1,4 @@
 //nolint
-
 package influx
 
 import (

@@ -71,9 +71,9 @@ func (z *Zookeeper) dial(ctx context.Context, addr string) (net.Conn, error) {
 		if ok {
 			dialer.Deadline = deadline
 		}
-		return tls.DialWithDialer(&dialer, "tcp", addr, z.tlsConfig)
+		return tls.DialWithDialer(&dialer, "tcp", addr, z.tlsConfig) //nolint:wrapcheck
 	}
-	return dialer.DialContext(ctx, "tcp", addr)
+	return dialer.DialContext(ctx, "tcp", addr) // nolint:wrapcheck
 }
 
 // Gather reads stats from all configured servers accumulates stats

@@ -39,7 +39,7 @@ func (c *CredentialConfig) rootCredentials() (client.ConfigProvider, error) {
 		config.Credentials = credentials.NewSharedCredentials(c.Filename, c.Profile)
 	}
 
-	return session.NewSession(config)
+	return session.NewSession(config) //nolint:wrapcheck
 }
 
 func (c *CredentialConfig) assumeCredentials() (client.ConfigProvider, error) {
@@ -52,5 +52,5 @@ func (c *CredentialConfig) assumeCredentials() (client.ConfigProvider, error) {
 		Endpoint: &c.EndpointURL,
 	}
 	config.Credentials = stscreds.NewCredentials(rootCredentials, c.RoleARN)
-	return session.NewSession(config)
+	return session.NewSession(config) //nolint:wrapcheck
 }

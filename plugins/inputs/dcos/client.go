@@ -283,7 +283,7 @@ func (c *ClusterClient) doGet(ctx context.Context, url string, v interface{}) er
 	case c.semaphore <- struct{}{}:
 		break
 	case <-ctx.Done():
-		return ctx.Err()
+		return ctx.Err() //nolint:wrapcheck
 	}
 
 	resp, err := c.httpClient.Do(req.WithContext(ctx))
@@ -334,5 +334,5 @@ func (c *ClusterClient) createLoginToken(sa *ServiceAccount) (string, error) {
 			ExpiresAt: jwt.At(time.Now().Add(5 * time.Minute)),
 		},
 	})
-	return token.SignedString(sa.PrivateKey)
+	return token.SignedString(sa.PrivateKey) //nolint:wrapcheck
 }

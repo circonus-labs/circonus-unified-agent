@@ -24,10 +24,9 @@ require (
 	github.com/aws/aws-sdk-go v1.34.34
 	github.com/benbjohnson/clock v1.0.3
 	github.com/bitly/go-hostpool v0.1.0 // indirect
-	github.com/blang/semver/v4 v4.0.0
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869
 	github.com/cenkalti/backoff v2.0.0+incompatible // indirect
-	github.com/circonus-labs/circonus-gometrics/v3 v3.4.0
+	github.com/circonus-labs/circonus-gometrics/v3 v3.4.1
 	github.com/circonus-labs/go-apiclient v0.7.13
 	github.com/cisco-ie/nx-telemetry-proto v0.0.0-20190531143454-82441e232cf6
 	github.com/cockroachdb/apd v1.1.0 // indirect
@@ -67,6 +66,7 @@ require (
 	github.com/hashicorp/consul v1.2.1
 	github.com/hashicorp/go-msgpack v0.5.5 // indirect
 	github.com/hashicorp/go-rootcerts v0.0.0-20160503143440-6bb64b370b90 // indirect
+	github.com/hashicorp/go-version v1.3.0
 	github.com/hashicorp/memberlist v0.1.5 // indirect
 	github.com/hashicorp/serf v0.8.1 // indirect
 	github.com/influxdata/go-syslog/v2 v2.0.1

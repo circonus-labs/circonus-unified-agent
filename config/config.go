@@ -51,6 +51,8 @@ var (
 	)
 
 	defaultPluginsEnabled = true
+	defaultPluginsLoaded  = false
+	agentPluginsLoaded    = false
 )
 
 func init() {
@@ -687,7 +689,7 @@ func (c *Config) LoadDirectory(path string) error {
 		}
 		return nil
 	}
-	return filepath.Walk(path, walkfn)
+	return filepath.Walk(path, walkfn) //nolint:wrapcheck
 }
 
 // Try to find a default config file at these locations (in order):
@@ -921,7 +923,7 @@ func loadConfig(config string) ([]byte, error) {
 	default:
 		// If it isn't a https scheme, try it as a file.
 	}
-	return os.ReadFile(config)
+	return os.ReadFile(config) //nolint:wrapcheck
 
 }
 
@@ -946,7 +948,7 @@ func fetchConfig(u fmt.Stringer) ([]byte, error) {
 	}
 
 	defer resp.Body.Close()
-	return io.ReadAll(resp.Body)
+	return io.ReadAll(resp.Body) //nolint:wrapcheck
 }
 
 // parseConfig loads a TOML configuration from a provided path and
@@ -978,7 +980,7 @@ func parseConfig(contents []byte) (*ast.Table, error) {
 		}
 	}
 
-	return toml.Parse(contents)
+	return toml.Parse(contents) //nolint:wrapcheck
 }
 
 func (c *Config) addAggregator(name string, table *ast.Table) error {
@@ -1118,7 +1120,7 @@ func (c *Config) addInput(name string, table *ast.Table) error {
 			return err
 		}
 		t.SetParserFunc(func() (parsers.Parser, error) {
-			return parsers.NewParser(config)
+			return parsers.NewParser(config) //nolint:wrapcheck
 		})
 	}
 
@@ -1281,7 +1283,7 @@ func (c *Config) buildParser(name string, tbl *ast.Table) (parsers.Parser, error
 	if err != nil {
 		return nil, err
 	}
-	return parsers.NewParser(config)
+	return parsers.NewParser(config) //nolint:wrapcheck
 }
 
 func (c *Config) getParserConfig(name string, tbl *ast.Table) (*parsers.Config, error) {
@@ -1396,7 +1398,7 @@ func (c *Config) buildSerializer(name string, tbl *ast.Table) (serializers.Seria
 		return nil, c.firstErr()
 	}
 
-	return serializers.NewSerializer(sc)
+	return serializers.NewSerializer(sc) //nolint:wrapcheck
 }
 
 // buildOutput parses output specific items from the ast.Table,
@@ -1662,6 +1664,129 @@ collect_memstats = true`),
 	},
 }
 
+var defaultWindowsPluginList = map[string]circonusPlugin{
+	"win_perf_counters": {
+		Enabled: true,
+		Data: []byte(`
+instance_id = "` + defaultInstanceID + `"
+[[inputs.win_perf_counters.object]]
+  # Processor usage, alternative to native, reports on a per core.
+  ObjectName = "Processor"
+  Instances = ["*"]
+  Counters = [
+    "% Idle Time",
+    "% Interrupt Time",
+    "% Privileged Time",
+    "% User Time",
+    "% Processor Time",
+    "% DPC Time",
+  ]
+  Measurement = "win_cpu"
+  # Set to true to include _Total instance when querying for all (*).
+  IncludeTotal=true
+
+[[inputs.win_perf_counters.object]]
+  # Disk times and queues
+  ObjectName = "LogicalDisk"
+  Instances = ["*"]
+  Counters = [
+    "% Idle Time",
+    "% Disk Time",
+    "% Disk Read Time",
+    "% Disk Write Time",
+    "% Free Space",
+    "Current Disk Queue Length",
+    "Free Megabytes",
+  ]
+  Measurement = "win_disk"
+  # Set to true to include _Total instance when querying for all (*).
+  #IncludeTotal=false
+
+[[inputs.win_perf_counters.object]]
+  ObjectName = "PhysicalDisk"
+  Instances = ["*"]
+  Counters = [
+    "Disk Read Bytes/sec",
+    "Disk Write Bytes/sec",
+    "Current Disk Queue Length",
+    "Disk Reads/sec",
+    "Disk Writes/sec",
+    "% Disk Time",
+    "% Disk Read Time",
+    "% Disk Write Time",
+  ]
+  Measurement = "win_diskio"
+
+[[inputs.win_perf_counters.object]]
+  ObjectName = "Network Interface"
+  Instances = ["*"]
+  Counters = [
+    "Bytes Received/sec",
+    "Bytes Sent/sec",
+    "Packets Received/sec",
+    "Packets Sent/sec",
+    "Packets Received Discarded",
+    "Packets Outbound Discarded",
+    "Packets Received Errors",
+    "Packets Outbound Errors",
+  ]
+  Measurement = "win_net"
+
+[[inputs.win_perf_counters.object]]
+  ObjectName = "System"
+  Counters = [
+    "Context Switches/sec",
+    "System Calls/sec",
+    "Processor Queue Length",
+    "System Up Time",
+    "Processes",
+    "Threads",
+    "File Data Operations/sec",
+    "File Control Operations/sec",
+    "Registry Quota In Use",
+  ]
+  Instances = ["------"]
+  Measurement = "win_system"
+  # Set to true to include _Total instance when querying for all (*).
+  #IncludeTotal=false
+
+[[inputs.win_perf_counters.object]]
+  # Example query where the Instance portion must be removed to get data back,
+  # such as from the Memory object.
+  ObjectName = "Memory"
+  Counters = [
+    "Available Bytes",
+    "Committed Bytes",
+    "Cache Faults/sec",
+    "Demand Zero Faults/sec",
+    "Page Faults/sec",
+    "Pages/sec",
+    "Transition Faults/sec",
+    "Pool Nonpaged Bytes",
+    "Pool Paged Bytes",
+    "Standby Cache Reserve Bytes",
+    "Standby Cache Normal Priority Bytes",
+    "Standby Cache Core Bytes",
+  ]
+  # Use 6 x - to remove the Instance bit from the query.
+  Instances = ["------"]
+  Measurement = "win_mem"
+  # Set to true to include _Total instance when querying for all (*).
+  #IncludeTotal=false
+
+[[inputs.win_perf_counters.object]]
+  # Example query where the Instance portion must be removed to get data back,
+  # such as from the Paging File object.
+  ObjectName = "Paging File"
+  Counters = [
+    "% Usage",
+  ]
+  Instances = ["_Total"]
+  Measurement = "win_swap"
+`),
+	},
+}
+
 // default plugins are applicable to instances of the agent
 // running directly on the host itself, but are useless
 // for containerized agent instances. (they can be controlled
@@ -1721,6 +1846,8 @@ func getDefaultPluginList() *map[string]circonusPlugin {
 	switch runtime.GOOS {
 	case "linux":
 		return &defaultPluginList
+	case "windows":
+		return &defaultWindowsPluginList
 	default:
 		return nil
 	}
@@ -1772,6 +1899,9 @@ func (c *Config) addDefaultPlugins() error {
 	if !defaultPluginsEnabled {
 		return nil
 	}
+	if defaultPluginsLoaded {
+		return nil
+	}
 	plugList := getDefaultPluginList()
 	if plugList == nil {
 		defaultPluginsEnabled = false // disable creating the 'host' check
@@ -1790,6 +1920,9 @@ func (c *Config) addDefaultPlugins() error {
 			return fmt.Errorf("error parsing %s: %w", pluginName, err)
 		}
 	}
+
+	defaultPluginsLoaded = true
+
 	return nil
 }
 
@@ -1845,6 +1978,9 @@ func (c *Config) addAgentPlugins() error {
 	if plugList == nil {
 		return fmt.Errorf("no agent plugin list available for GOOS %s", runtime.GOOS)
 	}
+	if agentPluginsLoaded {
+		return nil
+	}
 
 	for pluginName, pluginConfig := range *plugList {
 		if !pluginConfig.Enabled {
@@ -1858,5 +1994,8 @@ func (c *Config) addAgentPlugins() error {
 			return fmt.Errorf("error parsing %s: %w", pluginName, err)
 		}
 	}
+
+	agentPluginsLoaded = true
+
 	return nil
 }

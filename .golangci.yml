@@ -1,7 +1,7 @@
 run:
   timeout: 5m
-  skip-dirs:
-    - plugins/parsers/influx
+  # skip-dirs:
+  #   - plugins/parsers/influx
   skip-files:
     - "plugins/parsers/influx/*"
 
@@ -26,12 +26,13 @@ linters:
     - misspell
     - unparam
     - prealloc
-    - scopelint
+    # - scopelint -- deprecated
+    - exportloopref
     - gocritic
     - asciicheck
     - errorlint
     - unconvert
-    - wrapcheck
+    # - wrapcheck
     # - goconst
     # - nolintlint # different linters with different GOOS fire issues GOOS=linux 'structcheck' unused, under GOOS=darwin it's required
     # - ifshort # doesn't really work... (x := someFunc(); if x ... then x used later, linter complains var isn't used)

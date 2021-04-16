@@ -9,12 +9,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/blang/semver/v4"
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/filter"
 	"github.com/circonus-labs/circonus-unified-agent/internal"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/common/tls"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
+	"github.com/hashicorp/go-version"
 )
 
 // DefaultUsername will set a default value that corresponds to the default
@@ -433,14 +433,14 @@ func gatherOverview(r *RabbitMQ, acc cua.Accumulator) {
 		// quick version check to emit a message of the right version is not found
 		// based on mgmt api link in README.md, looks like plugin was written against v3.6.9+
 		targetVersion := "3.6.9"
-		target, err := semver.Make(targetVersion)
+		target, err := version.NewVersion(targetVersion)
 		if err != nil {
 			r.Log.Errorf("parsing (%s): %s", targetVersion, err)
 		} else {
-			currVer, err := semver.Make(*overview.ManagementVersion)
+			currVer, err := version.NewVersion(*overview.ManagementVersion)
 			if err != nil {
 				r.Log.Errorf("parsing (%s): %s", *overview.ManagementVersion, err)
-			} else if currVer.LT(target) {
+			} else if currVer.LessThan(target) {
 				r.Log.Warnf("some metrics may be absent, old version of management api found (want:%s+ found:%s)", target.String(), currVer.String())
 			}
 		}

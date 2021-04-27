@@ -139,6 +139,12 @@ func runAgent(ctx context.Context,
 			return fmt.Errorf("loaddir (%s): %w", *fConfigDirectory, err)
 		}
 	}
+
+	// mgm: add default plugins and agent plugins
+	if err := c.LoadDefaultPlugins(); err != nil {
+		return fmt.Errorf("loading defaults: %w", err)
+	}
+
 	if !*fTest && len(c.Outputs) == 0 {
 		return fmt.Errorf("Error: no outputs found, did you provide a valid config file?")
 	}

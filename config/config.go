@@ -885,14 +885,6 @@ func (c *Config) LoadConfigData(data []byte) error {
 		}
 	}
 
-	// mgm:add default plugins if they were not in configuration
-	if err := c.addDefaultPlugins(); err != nil {
-		log.Printf("W! adding default plugins: %s", err)
-	}
-	if err := c.addAgentPlugins(); err != nil {
-		log.Printf("W! adding agent plugins: %s", err)
-	}
-
 	if len(c.Processors) > 1 {
 		sort.Sort(c.Processors)
 	}
@@ -1645,10 +1637,12 @@ func DefaultPluginsEnabled() bool {
 
 var defaultInstanceID = "host"
 
+// IsDefaultInstanceID checks if an id is the default
 func IsDefaultInstanceID(id string) bool {
 	return id == defaultInstanceID
 }
 
+// DefaultInstanceID returns the default instance id
 func DefaultInstanceID() string {
 	return defaultInstanceID
 }
@@ -1853,6 +1847,7 @@ func getDefaultPluginList() *map[string]circonusPlugin {
 	}
 }
 
+// IsDefaultPlugin checks if a plugin with a given name is a default plugin
 func IsDefaultPlugin(name string) bool {
 	if !defaultPluginsEnabled {
 		return false
@@ -1934,6 +1929,7 @@ func getAgentPluginList() *map[string]circonusPlugin {
 	return &agentPluginList
 }
 
+// IsAgentPlugin checks if a plugin with a given name is an agent plugin
 func IsAgentPlugin(name string) bool {
 	if name == "" {
 		return false
@@ -1997,5 +1993,17 @@ func (c *Config) addAgentPlugins() error {
 
 	agentPluginsLoaded = true
 
+	return nil
+}
+
+// LoadDefaultPlugins adds default (for os) and agent plugins to inputs
+func (c *Config) LoadDefaultPlugins() error {
+	// mgm:add default plugins if they were not in configuration
+	if err := c.addDefaultPlugins(); err != nil {
+		log.Printf("W! adding default plugins: %s", err)
+	}
+	if err := c.addAgentPlugins(); err != nil {
+		log.Printf("W! adding agent plugins: %s", err)
+	}
 	return nil
 }

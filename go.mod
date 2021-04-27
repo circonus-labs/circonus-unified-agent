@@ -2,8 +2,6 @@ module github.com/circonus-labs/circonus-unified-agent
 
 go 1.16
 
-replace github.com/circonus-labs/circonus-gometrics/v3 v3.4.1 => /Users/mgm/src/circonus/circonus-gometrics
-
 require (
 	cloud.google.com/go v0.53.0
 	cloud.google.com/go/datastore v1.1.0 // indirect

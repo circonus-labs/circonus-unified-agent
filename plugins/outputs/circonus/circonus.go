@@ -3,27 +3,38 @@
 package circonus
 
 import (
+	"crypto/tls"
 	"crypto/x509"
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	cgm "github.com/circonus-labs/circonus-gometrics/v3"
-	circonusgometrics "github.com/circonus-labs/circonus-gometrics/v3"
 	"github.com/circonus-labs/circonus-unified-agent/config"
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	inter "github.com/circonus-labs/circonus-unified-agent/internal"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/outputs"
 	apiclient "github.com/circonus-labs/go-apiclient"
+	apiclicfg "github.com/circonus-labs/go-apiclient/config"
 )
 
 const (
 	metricVolume = "cua_metrics_sent"
+)
+
+var (
+	defaultCheck *cgm.CirconusMetrics
+	agentCheck   *cgm.CirconusMetrics
+	hostCheck    *cgm.CirconusMetrics
+	brokerTLS    *tls.Config
+	checkmu      sync.Mutex
 )
 
 // Circonus values are used to output data to the Circonus platform.
@@ -35,15 +46,48 @@ type Circonus struct {
 	APITLSCA        string `toml:"api_tls_ca"`
 	OneCheck        bool   `toml:"one_check"`
 	CheckNamePrefix string `toml:"check_name_prefix"`
-	DebugCGM        bool   `toml:"debug_cgm"`
-	DebugMetrics    bool   `toml:"debug_metrics"`
+	CacheConfigs    bool   `toml:"cache_configs"` // cache check bundle configurations - efficient for large number of inputs
+	CacheDir        string `toml:"cache_dir"`     // where to cache the check bundle configurations - must be read/write for user running cua
+	PoolSize        int    `toml:"pool_size"`     // size of the processor pool for a given output instance - default 2
+	// hidden troubleshooting/tuning parameters
+	DebugCGM        bool   `toml:"debug_cgm"`        // debug cgm interactions with api and broker
+	DumpCGMMetrics  bool   `toml:"dump_cgm_metrics"` // dump the actual JSON being sent to the broker by cgm
+	DebugMetrics    bool   `toml:"debug_metrics"`    // output the metrics as they are being sent to cgm, use to verify proper parsing/tags/etc.
+	SubOutput       bool   `toml:"sub_output"`       // a dedicated, special purpose, output, don't send internal cua version, etc.
+	DynamicSubmit   bool   `toml:"dynamic_submit"`   // control cgm auto-submissions, or manually at end of batch processing
+	DynamicInterval string `toml:"dynamic_interval"` // on what interval should the dynamic cgm instances submit, default 10s
 	apicfg          apiclient.Config
 	checks          map[string]*cgm.CirconusMetrics
+	brokerTLS       *tls.Config
 	Log             cua.Logger
+	processors      processors
+	sync.RWMutex
+}
+
+// processors handle incoming batches
+type processors struct {
+	metrics chan []cua.Metric
+	wg      sync.WaitGroup
 }
 
 // Init performs initialization of a Circonus client.
 func (c *Circonus) Init() error {
+
+	if c.CacheConfigs && c.CacheDir == "" {
+		c.Log.Warn("cache_configs on, cache_dir not set, disabling configuration caching")
+		c.CacheConfigs = false
+	}
+	if c.CacheConfigs && c.CacheDir != "" {
+		info, err := os.Stat(c.CacheDir)
+		if err != nil {
+			c.Log.Warnf("cache_dir (%s): %s, disabling configuration caching", c.CacheDir, err)
+			c.CacheConfigs = false
+			if !info.IsDir() {
+				c.Log.Warnf("cache_dir (%s): not a directory, disabling configuration caching", c.CacheDir, err)
+				c.CacheConfigs = false
+			}
+		}
+	}
 
 	if c.APIToken == "" {
 		return fmt.Errorf("circonus api token is required")
@@ -86,7 +130,34 @@ func (c *Circonus) Init() error {
 		c.CheckNamePrefix = hn
 	}
 
+	if c.PoolSize == 0 {
+		c.PoolSize = 2 // runtime.NumCPU()
+	}
+	c.processors = processors{metrics: make(chan []cua.Metric)}
+	c.Log.Debugf("starting %d metric processors", c.PoolSize)
+	c.processors.wg.Add(c.PoolSize)
+	for i := 0; i < c.PoolSize; i++ {
+		i := i
+		go func(id int) {
+			for m := range c.processors.metrics {
+				start := time.Now()
+				nm := c.metricProcessor(id, m)
+				c.Log.Debugf("processor %d, processed %d metrics in %s", id, nm, time.Since(start).String())
+			}
+			c.processors.wg.Done()
+		}(i)
+	}
+
 	return nil
+}
+
+func (p *processors) run(m []cua.Metric) {
+	p.metrics <- m
+}
+
+func (p *processors) shutdown() {
+	close(p.metrics)
+	p.wg.Wait()
 }
 
 var sampleConfig = `
@@ -122,6 +193,17 @@ var sampleConfig = `
   ## Optional: explicit broker id or blank (default blank, auto select)
   ## example:
   # broker = "/broker/35"
+
+  ## Performance optimization with lots of plugins (or instances of plugins)
+  ## Optional: cache the check configurations
+  ## example:
+  # cache_configs = true
+  ## Note: cache_dir must be read/write for the user running the cua process
+  # cache_dir = "/opt/circonus/etc/cache.d"
+
+  ## Pool size controls the number of batch processors
+  ## Optional: mostly applicable to large number of inputs or inputs producing lots (100K+) of metrics
+  # pool_size = 2
 `
 
 var description = "Configuration for Circonus output plugin."
@@ -133,49 +215,79 @@ func (c *Circonus) Connect() error {
 		return nil
 	}
 
+	checkmu.Lock()
+	defer checkmu.Unlock()
+
 	if c.checks == nil {
+		c.Lock()
 		c.checks = make(map[string]*cgm.CirconusMetrics)
+		c.Unlock()
 	}
 
-	if err := c.initCheck("*", ""); err != nil {
-		c.Log.Errorf("unable to initialize circonus check (%s)", err)
-		return err
-	}
-	if config.DefaultPluginsEnabled() {
-		if err := c.initCheck("host", "host"); err != nil {
+	if defaultCheck == nil {
+		if err := c.initCheck("*", "", ""); err != nil {
 			c.Log.Errorf("unable to initialize circonus check (%s)", err)
 			return err
 		}
-	}
-	if err := c.initCheck("agent", "agent"); err != nil {
-		c.Log.Errorf("unable to initialize circonus check (%s)", err)
-		return err
-	}
 
-	c.emitAgentVersion()
-
-	go func() {
-		for range time.NewTicker(5 * time.Minute).C {
-			c.emitAgentVersion()
+		if d, ok := c.checks["*"]; ok {
+			defaultCheck = d
+			if brokerTLS == nil {
+				brokerTLS = d.GetBrokerTLSConfig()
+			}
 		}
-	}()
+	}
+
+	if brokerTLS != nil {
+		c.brokerTLS = brokerTLS
+	}
+
+	if agentCheck == nil {
+		if err := c.initCheck("agent", "agent", ""); err != nil {
+			c.Log.Errorf("unable to initialize circonus check (%s)", err)
+			return err
+		}
+
+		if d, ok := c.checks["agent"]; ok {
+			agentCheck = d
+		}
+	}
+
+	if !c.SubOutput {
+		if config.DefaultPluginsEnabled() {
+			if hostCheck == nil {
+				if err := c.initCheck("host", "host", ""); err != nil {
+					c.Log.Errorf("unable to initialize circonus check (%s)", err)
+					return err
+				}
+
+				if d, ok := c.checks["host"]; ok {
+					hostCheck = d
+				}
+			}
+		}
+		c.emitAgentVersion()
+		go func() {
+			for range time.NewTicker(5 * time.Minute).C {
+				debug.FreeOSMemory()
+				c.emitAgentVersion()
+			}
+		}()
+	}
 
 	return nil
 }
 
 func (c *Circonus) emitAgentVersion() {
-	if d, ok := c.checks["agent"]; ok {
+	if agentCheck != nil {
 		agentVersion := inter.Version()
-		d.SetText("cua_version", agentVersion)
+		agentCheck.SetText("cua_version", agentVersion)
 	}
 }
 
-// Write is used to write metric data to Circonus checks.
-func (c *Circonus) Write(metrics []cua.Metric) (int, error) {
-	if c.APIToken == "" {
-		return 0, fmt.Errorf("Circonus API Token is required, dropping metrics")
-	}
-
+func (c *Circonus) metricProcessor(id int, metrics []cua.Metric) int64 {
+	c.Log.Debugf("processor %d, received %d batches", id, len(metrics))
+	start := time.Now()
 	numMetrics := int64(0)
 	for _, m := range metrics {
 		switch m.Type() {
@@ -197,25 +309,46 @@ func (c *Circonus) Write(metrics []cua.Metric) (int, error) {
 		case cua.CumulativeHistogram:
 			numMetrics += c.buildCumulativeHistogram(m)
 		default:
+			c.Log.Warnf("processor %d, unknown type %T, ignoring", id, m)
 		}
 	}
-	if d, ok := c.checks["agent"]; ok {
-		d.AddGauge(metricVolume+"_batch", numMetrics)
-		d.RecordValue(metricVolume, float64(numMetrics))
-		numMetrics += 2
+	if agentCheck != nil {
+		agentCheck.RecordValue(metricVolume, float64(numMetrics))
+		numMetrics++
+		if !c.SubOutput {
+			agentCheck.AddGauge(metricVolume+"_batch", numMetrics)
+			numMetrics++
+		}
 	}
-	c.Log.Debugf("queued %d metrics for submission", numMetrics)
+	c.Log.Debugf("processor %d, queued %d metrics for submission in %s", id, numMetrics, time.Since(start).String())
 
-	var wg sync.WaitGroup
-	wg.Add(len(c.checks))
-	for _, dest := range c.checks {
-		go func(d *circonusgometrics.CirconusMetrics) {
-			defer wg.Done()
-			d.Flush()
-		}(dest)
+	if !c.DynamicSubmit {
+		sendStart := time.Now()
+		var wg sync.WaitGroup
+		c.RLock()
+		wg.Add(len(c.checks))
+		for _, dest := range c.checks {
+			go func(d *cgm.CirconusMetrics) {
+				defer wg.Done()
+				d.Flush()
+			}(dest)
+		}
+		wg.Wait()
+		c.RUnlock()
+		c.Log.Debugf("processor %d, non-dynamic submit: sent metrics in %s", id, time.Since(sendStart))
 	}
-	wg.Wait()
 
+	return numMetrics
+}
+
+// Write is used to write metric data to Circonus checks.
+func (c *Circonus) Write(metrics []cua.Metric) (int, error) {
+	if c.APIToken == "" {
+		return 0, fmt.Errorf("Circonus API Token is required, dropping metrics")
+	}
+
+	numMetrics := int64(-1)
+	c.processors.run(metrics)
 	return int(numMetrics), nil
 }
 
@@ -231,6 +364,7 @@ func (c *Circonus) Description() string {
 
 // Close will close the Circonus client connection.
 func (c *Circonus) Close() error {
+	c.processors.shutdown()
 	return nil
 }
 
@@ -253,35 +387,33 @@ func (c *Circonus) getMetricDest(m cua.Metric) *cgm.CirconusMetrics {
 	// 1. plugin cannot be identified
 	// 2. user as enabled one_check
 	var defaultDest *cgm.CirconusMetrics
-	if d, ok := c.checks["*"]; ok {
-		defaultDest = d
+	if defaultCheck != nil {
+		defaultDest = defaultCheck
 	}
 
 	if c.OneCheck || plugin == "" {
 		return defaultDest
 	}
 
-	// host metrics - the "default" plugins which are enabled by default
-	// but can be controlled via the (ENABLE_DEFAULT_PLUGINS env var
-	// any value other than "false" will enable the default plugins)
-	hostDest := defaultDest
-	if config.DefaultPluginsEnabled() {
-		if d, ok := c.checks["host"]; ok {
-			hostDest = d
-		}
-	}
-
-	// agent metrics - metrics the agent emits about itself - always enabled
-	var agentDest *cgm.CirconusMetrics
-	if d, ok := c.checks["agent"]; ok {
-		agentDest = d
-	}
-
 	if config.IsDefaultInstanceID(instanceID) {
+		// host metrics - the "default" plugins which are enabled by default
+		// but can be controlled via the (ENABLE_DEFAULT_PLUGINS env var
+		// any value other than "false" will enable the default plugins)
 		if config.IsDefaultPlugin(plugin) {
+			hostDest := defaultDest
+			if config.DefaultPluginsEnabled() {
+				if hostCheck != nil {
+					hostDest = hostCheck
+				}
+			}
 			return hostDest
 		}
+		// agent metrics - metrics the agent emits about itself - always enabled
 		if config.IsAgentPlugin(plugin) {
+			agentDest := defaultDest
+			if agentCheck != nil {
+				agentDest = agentCheck
+			}
 			return agentDest
 		}
 	}
@@ -292,14 +424,22 @@ func (c *Circonus) getMetricDest(m cua.Metric) *cgm.CirconusMetrics {
 	}
 
 	// otherwise - find (or create) a check for the specific plugin
-	if d, ok := c.checks[id]; ok {
+
+	c.RLock()
+	d, found := c.checks[id]
+	c.RUnlock()
+
+	if found {
 		return d
 	}
 
-	if err := c.initCheck(id, plugin+" "+instanceID); err == nil {
+	if err := c.initCheck(id, plugin+" "+instanceID, instanceID); err == nil {
 		if d, ok := c.checks[id]; ok {
 			return d
 		}
+	} else {
+		c.Log.Errorf("error initializing check: %s", err)
+		os.Exit(1) //nolint:gocritic
 	}
 
 	return defaultDest
@@ -321,38 +461,104 @@ func (l logshim) Printf(fmt string, args ...interface{}) {
 }
 
 // initCheck initializes cgm instance for the plugin identified by id
-func (c *Circonus) initCheck(id, name string) error {
+func (c *Circonus) initCheck(id, name, instanceID string) error {
+	c.Lock()
+	defer c.Unlock()
+
 	plugID := id
 	if id == "*" {
 		plugID = "default"
 		name = "default"
 	}
 
+	checkConfigFile := ""
+	submissionURL := ""
+	saveConfig := false
+
+	if c.CacheConfigs && instanceID != "" {
+		path := c.CacheDir
+		if path != "" {
+			checkConfigFile = filepath.Join(path, instanceID+".json")
+			data, err := os.ReadFile(checkConfigFile)
+			if err != nil {
+				if !os.IsNotExist(err) {
+					c.Log.Warnf("unable to read %s: %s", checkConfigFile, err)
+					checkConfigFile = ""
+				}
+			} else {
+				var b apiclient.CheckBundle
+				if err := json.Unmarshal(data, &b); err != nil {
+					c.Log.Warnf("parsing check config %s: %s", checkConfigFile, err)
+					checkConfigFile = ""
+				}
+				submissionURL = b.Config[apiclicfg.SubmissionURL]
+				c.Log.Debugf("using cached config: %s - %s", checkConfigFile, submissionURL)
+			}
+		}
+	}
+
 	checkType := "httptrap:cua:" + plugID + ":" + runtime.GOOS
 
 	cfg := &cgm.Config{}
 	cfg.Debug = c.DebugCGM
-	if c.DebugCGM {
+	cfg.DumpMetrics = c.DumpCGMMetrics
+	if c.DebugCGM || c.DumpCGMMetrics {
 		cfg.Log = logshim{
 			logh:   c.Log,
 			prefix: plugID,
 		}
 	}
-	cfg.Interval = "0"
-	cfg.CheckManager.API = c.apicfg
-	if c.Broker != "" {
-		cfg.CheckManager.Broker.ID = c.Broker
+	if !c.DynamicSubmit {
+		cfg.Interval = "0" // submit on completion of batch to Write
+	} else if c.DynamicInterval != "" {
+		c.Log.Debugf("setting dynamic submit interval to %q", c.DynamicInterval)
+		cfg.Interval = c.DynamicInterval
 	}
-	cfg.CheckManager.Check.InstanceID = strings.Replace(checkType, "httptrap", c.CheckNamePrefix, 1)
-	cfg.CheckManager.Check.TargetHost = c.CheckNamePrefix
-	cfg.CheckManager.Check.DisplayName = c.CheckNamePrefix + " " + name + " (" + runtime.GOOS + ")"
-	cfg.CheckManager.Check.Type = checkType
-	_, an := filepath.Split(os.Args[0])
-	cfg.CheckManager.Check.SearchTag = "service:" + an
+	cfg.CheckManager.SerialInit = true
+	if brokerTLS != nil {
+		cfg.CheckManager.Broker.TLSConfig = brokerTLS
+	}
+	if submissionURL != "" {
+		cfg.CheckManager.Check.SubmissionURL = submissionURL
+	} else {
+		saveConfig = true
+		cfg.CheckManager.API = c.apicfg
+		if c.Broker != "" {
+			cfg.CheckManager.Broker.ID = c.Broker
+		}
+		cfg.CheckManager.Check.InstanceID = strings.Replace(checkType, "httptrap", c.CheckNamePrefix, 1)
+		cfg.CheckManager.Check.TargetHost = c.CheckNamePrefix
+		cfg.CheckManager.Check.DisplayName = c.CheckNamePrefix + " " + name + " (" + runtime.GOOS + ")"
+		cfg.CheckManager.Check.Type = checkType
+		_, an := filepath.Split(os.Args[0])
+		cfg.CheckManager.Check.SearchTag = "service:" + an
+	}
 
 	m, err := cgm.New(cfg)
 	if err != nil {
 		return fmt.Errorf("initializing cgm instance for %s (%w)", id, err)
+	}
+
+	if !m.Ready() {
+		ticker := time.NewTicker(250 * time.Millisecond)
+		for range ticker.C {
+			if m.Ready() {
+				ticker.Stop()
+				break
+			}
+		}
+	}
+
+	if c.CacheConfigs && saveConfig {
+		bundle := m.GetCheckBundle()
+		if checkConfigFile != "" && bundle != nil {
+			data, err := json.Marshal(bundle)
+			if err != nil {
+				c.Log.Warnf("marshal check conf: %s", err)
+			} else if err := os.WriteFile(checkConfigFile, data, 0644); err != nil { //nolint:gosec
+				c.Log.Warnf("save check conf %s: %s", checkConfigFile, err)
+			}
+		}
 	}
 
 	c.checks[id] = m
@@ -377,7 +583,9 @@ func (c *Circonus) buildNumerics(m cua.Metric) int64 {
 		case string:
 			dest.SetTextWithTags(mn, tags, v)
 		default:
-			dest.AddGaugeWithTags(mn, tags, v)
+			// don't aggregate - throws of stuff
+			// dest.AddGaugeWithTags(mn, tags, v)
+			dest.SetGaugeWithTags(mn, tags, v)
 		}
 		numMetrics++
 	}
@@ -404,7 +612,9 @@ func (c *Circonus) buildTexts(m cua.Metric) int64 {
 		case string:
 			dest.SetTextWithTags(mn, tags, v)
 		default:
-			dest.AddGaugeWithTags(mn, tags, v)
+			// don't aggregate - throws of stuff
+			// dest.AddGaugeWithTags(mn, tags, v)
+			dest.SetGaugeWithTags(mn, tags, v)
 		}
 		numMetrics++
 	}
@@ -494,15 +704,7 @@ func (c *Circonus) convertTags(m cua.Metric) cgm.Tags { //nolint:unparam
 
 	if len(tags) > 0 {
 		for _, t := range tags {
-			if t.Key == "alias" {
-				continue
-			}
-			//
-			// confused a user who was trying to add host tag on a specific
-			// plugin will comment out for time being and see what happens
-			//
-			// if t.Key == "host" && c.CheckNamePrefix != "" {
-			// 	ctags = append(ctags, cgm.Tag{Category: t.Key, Value: c.CheckNamePrefix})
+			// if t.Key == "alias" {
 			// 	continue
 			// }
 			ctags = append(ctags, cgm.Tag{Category: t.Key, Value: t.Value})

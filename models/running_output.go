@@ -239,17 +239,17 @@ func (ro *RunningOutput) Close() {
 func (ro *RunningOutput) write(metrics []cua.Metric) error {
 	dropped := atomic.LoadInt64(&ro.droppedMetrics)
 	if dropped > 0 {
-		ro.log.Warnf("Metric buffer overflow; %d metrics have been dropped", dropped)
+		ro.log.Warnf("Metric buffer overflow; %d batches have been dropped", dropped)
 		atomic.StoreInt64(&ro.droppedMetrics, 0)
 	}
 
 	start := time.Now()
-	totMetrics, err := ro.Output.Write(metrics)
+	_, err := ro.Output.Write(metrics)
 	elapsed := time.Since(start)
 	ro.WriteTime.Incr(elapsed.Nanoseconds())
 
 	if err == nil {
-		ro.log.Debugf("Wrote batch of %d groups (%d distinct metrics) in %s", len(metrics), totMetrics, elapsed)
+		ro.log.Debugf("Wrote %d batches in %s", len(metrics), elapsed)
 	}
 	if err != nil {
 		return fmt.Errorf("write (output %s): %w", ro.Config.Name, err)
@@ -259,7 +259,7 @@ func (ro *RunningOutput) write(metrics []cua.Metric) error {
 
 func (ro *RunningOutput) LogBufferStatus() {
 	nBuffer := ro.buffer.Len()
-	ro.log.Debugf("Buffer fullness: %d / %d metrics", nBuffer, ro.MetricBufferLimit)
+	ro.log.Debugf("Buffer fullness: %d / %d batches", nBuffer, ro.MetricBufferLimit)
 }
 
 func (ro *RunningOutput) Log() cua.Logger {

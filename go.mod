@@ -2,6 +2,8 @@ module github.com/circonus-labs/circonus-unified-agent
 
 go 1.16
 
+replace github.com/circonus-labs/circonus-gometrics/v3 v3.4.1 => /Users/mgm/src/circonus/circonus-gometrics
+
 require (
 	cloud.google.com/go v0.53.0
 	cloud.google.com/go/datastore v1.1.0 // indirect
@@ -26,8 +28,8 @@ require (
 	github.com/bitly/go-hostpool v0.1.0 // indirect
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869
 	github.com/cenkalti/backoff v2.0.0+incompatible // indirect
-	github.com/circonus-labs/circonus-gometrics/v3 v3.4.1
-	github.com/circonus-labs/go-apiclient v0.7.13
+	github.com/circonus-labs/circonus-gometrics/v3 v3.4.2
+	github.com/circonus-labs/go-apiclient v0.7.14
 	github.com/cisco-ie/nx-telemetry-proto v0.0.0-20190531143454-82441e232cf6
 	github.com/cockroachdb/apd v1.1.0 // indirect
 	github.com/containerd/containerd v1.4.1 // indirect

@@ -11,6 +11,9 @@ ExecReload=/bin/kill -HUP $MAINPID
 Restart=on-failure
 RestartForceExitStatus=SIGPIPE
 KillMode=control-group
+## if doing 1000s of checks, and seeing 'too many open files'
+## issues, uncomment and adjust the following setting accordingly
+#LimitNOFILE=4096
 
 [Install]
 WantedBy=multi-user.target

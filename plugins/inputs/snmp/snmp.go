@@ -251,7 +251,6 @@ func (f *Field) init() error {
 		return nil
 	}
 
-	// _, oidNum, oidText, conversion, err := TranslateOID(f.Oid)
 	stc := TranslateOID(f.Oid)
 	if stc.err != nil {
 		return fmt.Errorf("translating: %w", stc.err)
@@ -478,7 +477,6 @@ func (t Table) Build(gs snmpConnection, walk bool) (*RTable, error) {
 				// snmptranslate table field value here
 				if f.Translate {
 					if entOid, ok := ent.Value.(string); ok {
-						// _, _, oidText, _, err := TranslateOID(entOid)
 						stc := TranslateOID(entOid)
 						if stc.err == nil {
 							// If no error translating, the original value for ent.Value should be replaced
@@ -757,7 +755,6 @@ func snmpTable(oid string) (mibName string, oidNum string, oidText string, field
 }
 
 func snmpTableCall(oid string) (mibName string, oidNum string, oidText string, fields []Field, err error) {
-	// mibName, oidNum, oidText, _, err = TranslateOID(oid)
 	stc := TranslateOID(oid)
 	if stc.err != nil {
 		return "", "", "", nil, fmt.Errorf("translating: %w", stc.err)
@@ -832,9 +829,8 @@ type TranslateItem struct {
 var snmpTranslateCachesLock sync.Mutex
 var snmpTranslateCache map[string]TranslateItem
 
-// snmpTranslate resolves the given OID.
+// TranslateOID resolves the given OID.
 func TranslateOID(oid string) TranslateItem {
-	// (mibName string, oidNum string, oidText string, conversion string, err error) {
 	snmpTranslateCachesLock.Lock()
 	if snmpTranslateCache == nil {
 		snmpTranslateCache = map[string]TranslateItem{}
@@ -851,7 +847,6 @@ func TranslateOID(oid string) TranslateItem {
 		// is worth it. Especially when it would slam the system pretty hard if lots
 		// of lookups are being performed.
 
-		// stc.mibName, stc.oidNum, stc.oidText, stc.conversion, stc.err = snmpTranslateCall(oid)
 		stcp := snmpTranslateCall(oid)
 		snmpTranslateCache[oid] = *stcp
 		stc = *stcp
@@ -885,7 +880,6 @@ func TranslateClear() {
 }
 
 func snmpTranslateCall(oid string) *TranslateItem {
-	// (mibName string, oidNum string, oidText string, conversion string, err error) {
 	stc := &TranslateItem{
 		oidNum:  oid,
 		oidText: oid,
@@ -902,19 +896,16 @@ func snmpTranslateCall(oid string) *TranslateItem {
 			// Silently discard error if snmptranslate not found and we have a numeric OID.
 			// Meaning we can get by without the lookup.
 			return stc
-			// return "", oid, oid, "", nil
 		}
 	}
 	if err != nil {
 		return &TranslateItem{err: err}
-		// return "", "", "", "", err
 	}
 
 	scanner := bufio.NewScanner(bytes.NewBuffer(out))
 	ok := scanner.Scan()
 	if !ok && scanner.Err() != nil {
 		return &TranslateItem{err: fmt.Errorf("getting OID text: %w", scanner.Err())}
-		// return "", "", "", "", fmt.Errorf("getting OID text: %w", scanner.Err())
 	}
 
 	oidText := scanner.Text()
@@ -924,14 +915,11 @@ func snmpTranslateCall(oid string) *TranslateItem {
 		// was not found in MIB.
 		if bytes.Contains(out, []byte("[TRUNCATED]")) {
 			return stc
-			// return "", oid, oid, "", nil
 		}
 		// not truncated, but not fully found. We still need to parse out numeric OID, so keep going
 		oidText = oid
 		stc.oidText = oid
 	} else {
-		// mibName = oidText[:i]
-		// oidText = oidText[i+2:]
 		stc.mibName = oidText[:i]
 		stc.oidText = oidText[i+2:]
 	}
@@ -946,10 +934,8 @@ func snmpTranslateCall(oid string) *TranslateItem {
 			tc := strings.TrimPrefix(line, "  -- TEXTUAL CONVENTION ")
 			switch tc {
 			case "MacAddress", "PhysAddress":
-				// conversion = "hwaddr"
 				stc.conversion = "hwaddr"
 			case "InetAddressIPv4", "InetAddressIPv6", "InetAddress", "IPSIpAddress":
-				// conversion = "ipaddr"
 				stc.conversion = "ipaddr"
 			}
 		case strings.HasPrefix(line, "  SYNTAX	INTEGER {"):
@@ -989,5 +975,4 @@ func snmpTranslateCall(oid string) *TranslateItem {
 	}
 
 	return stc
-	// return mibName, oidNum, oidText, conversion, nil
 }

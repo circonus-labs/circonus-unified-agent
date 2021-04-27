@@ -98,8 +98,11 @@ func (c *Circonus) Init() error {
 	}
 
 	c.apicfg = apiclient.Config{
-		TokenKey: c.APIToken,
-		TokenApp: c.APIApp,
+		TokenKey:      c.APIToken,
+		TokenApp:      c.APIApp,
+		MaxRetries:    4,
+		MinRetryDelay: "10s",
+		MaxRetryDelay: "20s",
 	}
 
 	if c.APIURL != "" {

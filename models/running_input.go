@@ -29,14 +29,23 @@ func NewRunningInput(input cua.Input, config *InputConfig) *RunningInput {
 	if config.Alias != "" {
 		tags["alias"] = config.Alias
 	}
+	if config.InstanceID != "" {
+		tags["instance_id"] = config.InstanceID
+	}
+
+	alias := config.Alias
+	if alias == "" && config.InstanceID != "" {
+		alias = config.InstanceID
+	}
 
 	inputErrorsRegister := selfstat.Register("gather", "errors", tags)
-	logger := NewLogger("inputs", config.Name, config.Alias)
+	logger := NewLogger("inputs", config.Name, alias)
 	logger.OnErr(func() {
 		inputErrorsRegister.Incr(1)
 		GlobalGatherErrors.Incr(1)
 	})
 	SetLoggerOnPlugin(input, logger)
+	// add for high performance (hp) plugins SetInstanceIDOnPlugin(input,config.InstanceID)
 
 	return &RunningInput{
 		Input:  input,

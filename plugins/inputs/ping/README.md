@@ -116,7 +116,7 @@ $ systemctl restart circonus-unified-agent
 
 Without systemd:
 ```sh
-$ setcap cap_net_raw=eip /usr/bin/circonus-unified-agent
+$ setcap cap_net_raw=eip /opt/circonus/unified-agent/sbin/circonus-unified-agentd
 ```
 
 Reference [`man 7 capabilities`][man 7 capabilities] for more information about

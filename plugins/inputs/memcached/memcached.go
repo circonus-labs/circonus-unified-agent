@@ -16,6 +16,7 @@ import (
 type Memcached struct {
 	Servers     []string
 	UnixSockets []string
+	lastVerSend *time.Time
 }
 
 var sampleConfig = `
@@ -28,47 +29,86 @@ var sampleConfig = `
 var defaultTimeout = 5 * time.Second
 
 // The list of metrics that should be sent
+// https://github.com/memcached/memcached/blob/master/doc/protocol.txt#L1325 (the "Settings statistics" section)
 var sendMetrics = []string{
-	"accepting_conns",
-	"auth_cmds",
-	"auth_errors",
+	"uptime",
+	"version",
+	"curr_items",
+	"total_items",
 	"bytes",
-	"bytes_read",
-	"bytes_written",
-	"cas_badval",
-	"cas_hits",
-	"cas_misses",
-	"cmd_flush",
+	"max_connections",
+	"curr_connections",
+	"total_connections",
+	"rejected_connecctions",
+	"connection_structures",
+	"response_obj_oom",
+	"response_obj_count",
+	"response_obj_bytes",
+	"read_buf_count",
+	"read_buf_bytes",
+	"read_buf_bytes_free",
+	"read_buf_oom",
 	"cmd_get",
 	"cmd_set",
+	"cmd_flush",
 	"cmd_touch",
-	"conn_yields",
-	"connection_structures",
-	"curr_connections",
-	"curr_items",
-	"decr_hits",
-	"decr_misses",
-	"delete_hits",
-	"delete_misses",
-	"evicted_unfetched",
-	"evictions",
-	"expired_unfetched",
 	"get_hits",
 	"get_misses",
-	"hash_bytes",
-	"hash_is_expanding",
-	"hash_power_level",
-	"incr_hits",
+	"get_expired",
+	"get_flushed",
+	"delete_misses",
+	"delete_hits",
 	"incr_misses",
-	"limit_maxbytes",
-	"listen_disabled_num",
-	"reclaimed",
-	"threads",
-	"total_connections",
-	"total_items",
+	"incr_hits",
+	"decr_misses",
+	"decr_hits",
+	"cas_hits",
+	"cas_misses",
+	"cas_badval",
 	"touch_hits",
 	"touch_misses",
-	"uptime",
+	"auth_cmds",
+	"auth_errors",
+	"idle_kicks",
+	"evictions",
+	"reclaimed",
+	"bytes_read",
+	"bytes_written",
+	"limit_maxbytes",
+	"accepting_conns",
+	"listen_disabled_num",
+	"time_in_listen_disabled",
+	"threads",
+	"conn_yields",
+	"hash_power_level",
+	"hash_bytes",
+	"hash_is_expanding",
+	"expired_unfetched",
+	"evicted_unfetched",
+	"evicted_active",
+	"slabs_reassign_running",
+	"slabs_moved",
+	"crawler_reclaimed",
+	"crawler_items_checked",
+	"lrutail_reflocked",
+	"moves_to_cold",
+	"moves_to_warm",
+	"moves_within_lru",
+	"direct_reclaims",
+	"lru_crawler_starts",
+	"lru_maintainer_juggles",
+	"slab_global_page_pool",
+	"slab_reassign_rescues",
+	"slab_reassign_evictions_nomem",
+	"slab_reassign_chunk_rescues",
+	"slab_reassign_inline_reclaim",
+	"slab_reassign_busy_deletes",
+	"log_worker_dropped",
+	"log_worker_written",
+	"log_watcher_skipped",
+	"log_watcher_sent",
+	"unexpected_napi_ids",
+	"round_robin_fallback",
 }
 
 // SampleConfig returns sample configuration message
@@ -154,6 +194,13 @@ func (m *Memcached) gatherServer(
 	fields := make(map[string]interface{})
 	for _, key := range sendMetrics {
 		if value, ok := values[key]; ok {
+			if key == "version" {
+				if m.lastVerSend == nil || time.Since(*m.lastVerSend) > 5*time.Minute {
+					fields[key] = value
+					t := time.Now().UTC()
+					m.lastVerSend = &t
+				}
+			}
 			// Mostly it is the number
 			if iValue, errParse := strconv.ParseInt(value, 10, 64); errParse == nil {
 				fields[key] = iValue

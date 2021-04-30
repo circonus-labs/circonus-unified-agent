@@ -323,9 +323,13 @@ func (c *Circonus) metricProcessor(id int, metrics []cua.Metric) int64 {
 	}
 	if agentCheck != nil {
 		agentCheck.metrics.RecordValue(metricVolume, float64(numMetrics))
-		numMetrics++
+		if !c.SubOutput {
+			numMetrics++
+		}
 		agentCheck.metrics.AddGauge(metricVolume+"_batch", numMetrics)
-		numMetrics++
+		if !c.SubOutput {
+			numMetrics++
+		}
 	}
 	c.Log.Debugf("processor %d, queued %d metrics for submission in %s", id, numMetrics, time.Since(start).String())
 

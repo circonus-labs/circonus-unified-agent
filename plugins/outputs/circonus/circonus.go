@@ -30,12 +30,18 @@ const (
 )
 
 var (
-	defaultCheck *cgm.CirconusMetrics
-	agentCheck   *cgm.CirconusMetrics
-	hostCheck    *cgm.CirconusMetrics
+	defaultCheck *cgmInstance
+	agentCheck   *cgmInstance
+	hostCheck    *cgmInstance
 	brokerTLS    *tls.Config
 	checkmu      sync.Mutex
 )
+
+type cgmInstance struct {
+	metrics         *cgm.CirconusMetrics
+	submitTimestamp *time.Time
+	id              string
+}
 
 // Circonus values are used to output data to the Circonus platform.
 type Circonus struct {
@@ -50,14 +56,15 @@ type Circonus struct {
 	CacheDir        string `toml:"cache_dir"`     // where to cache the check bundle configurations - must be read/write for user running cua
 	PoolSize        int    `toml:"pool_size"`     // size of the processor pool for a given output instance - default 2
 	// hidden troubleshooting/tuning parameters
-	DebugCGM        bool   `toml:"debug_cgm"`        // debug cgm interactions with api and broker
-	DumpCGMMetrics  bool   `toml:"dump_cgm_metrics"` // dump the actual JSON being sent to the broker by cgm
-	DebugMetrics    bool   `toml:"debug_metrics"`    // output the metrics as they are being sent to cgm, use to verify proper parsing/tags/etc.
-	SubOutput       bool   `toml:"sub_output"`       // a dedicated, special purpose, output, don't send internal cua version, etc.
-	DynamicSubmit   bool   `toml:"dynamic_submit"`   // control cgm auto-submissions, or manually at end of batch processing
-	DynamicInterval string `toml:"dynamic_interval"` // on what interval should the dynamic cgm instances submit, default 10s
+	DebugCGM        bool              `toml:"debug_cgm"`        // debug cgm interactions with api and broker
+	DumpCGMMetrics  bool              `toml:"dump_cgm_metrics"` // dump the actual JSON being sent to the broker by cgm
+	DebugMetrics    bool              `toml:"debug_metrics"`    // output the metrics as they are being sent to cgm, use to verify proper parsing/tags/etc.
+	SubOutput       bool              `toml:"sub_output"`       // a dedicated, special purpose, output, don't send internal cua version, etc.
+	DynamicSubmit   bool              `toml:"dynamic_submit"`   // control cgm auto-submissions, or manually at end of batch processing
+	DynamicInterval string            `toml:"dynamic_interval"` // on what interval should the dynamic cgm instances submit, default 10s
+	DebugCGMCheck   map[string]string `toml:"debug_cgm_check"`  // circonus use only
 	apicfg          apiclient.Config
-	checks          map[string]*cgm.CirconusMetrics
+	checks          map[string]*cgmInstance
 	brokerTLS       *tls.Config
 	Log             cua.Logger
 	processors      processors
@@ -82,10 +89,9 @@ func (c *Circonus) Init() error {
 		if err != nil {
 			c.Log.Warnf("cache_dir (%s): %s, disabling configuration caching", c.CacheDir, err)
 			c.CacheConfigs = false
-			if !info.IsDir() {
-				c.Log.Warnf("cache_dir (%s): not a directory, disabling configuration caching", c.CacheDir, err)
-				c.CacheConfigs = false
-			}
+		} else if !info.IsDir() {
+			c.Log.Warnf("cache_dir (%s): not a directory, disabling configuration caching", c.CacheDir, err)
+			c.CacheConfigs = false
 		}
 	}
 
@@ -223,7 +229,7 @@ func (c *Circonus) Connect() error {
 
 	if c.checks == nil {
 		c.Lock()
-		c.checks = make(map[string]*cgm.CirconusMetrics)
+		c.checks = make(map[string]*cgmInstance)
 		c.Unlock()
 	}
 
@@ -236,7 +242,7 @@ func (c *Circonus) Connect() error {
 		if d, ok := c.checks["*"]; ok {
 			defaultCheck = d
 			if brokerTLS == nil {
-				brokerTLS = d.GetBrokerTLSConfig()
+				brokerTLS = d.metrics.GetBrokerTLSConfig()
 			}
 		}
 	}
@@ -284,7 +290,7 @@ func (c *Circonus) Connect() error {
 func (c *Circonus) emitAgentVersion() {
 	if agentCheck != nil {
 		agentVersion := inter.Version()
-		agentCheck.SetText("cua_version", agentVersion)
+		agentCheck.metrics.SetText("cua_version", agentVersion)
 	}
 }
 
@@ -316,12 +322,10 @@ func (c *Circonus) metricProcessor(id int, metrics []cua.Metric) int64 {
 		}
 	}
 	if agentCheck != nil {
-		agentCheck.RecordValue(metricVolume, float64(numMetrics))
+		agentCheck.metrics.RecordValue(metricVolume, float64(numMetrics))
 		numMetrics++
-		if !c.SubOutput {
-			agentCheck.AddGauge(metricVolume+"_batch", numMetrics)
-			numMetrics++
-		}
+		agentCheck.metrics.AddGauge(metricVolume+"_batch", numMetrics)
+		numMetrics++
 	}
 	c.Log.Debugf("processor %d, queued %d metrics for submission in %s", id, numMetrics, time.Since(start).String())
 
@@ -331,13 +335,23 @@ func (c *Circonus) metricProcessor(id int, metrics []cua.Metric) int64 {
 		c.RLock()
 		wg.Add(len(c.checks))
 		for _, dest := range c.checks {
-			go func(d *cgm.CirconusMetrics) {
+			go func(d *cgmInstance) {
 				defer wg.Done()
-				d.Flush()
+				if d.submitTimestamp == nil {
+					// c.Log.Debugf("%s: skipping, no submitTimestamp == no metrics collected for check", d.id)
+					return
+				}
+				// c.Log.Debugf("%s: setting submit timestamp to %v", d.id, d.submitTimestamp.UTC())
+				d.metrics.SetSubmitTimestamp(*d.submitTimestamp)
+				subStart := time.Now()
+				d.metrics.Flush()
+				d.submitTimestamp = nil
+				agentCheck.metrics.RecordValue("cua_submit_latency", float64(time.Since(subStart).Milliseconds()))
 			}(dest)
 		}
 		wg.Wait()
 		c.RUnlock()
+		agentCheck.metrics.RecordValue("cua_send_latency", float64(time.Since(sendStart).Milliseconds()))
 		c.Log.Debugf("processor %d, non-dynamic submit: sent metrics in %s", id, time.Since(sendStart))
 	}
 
@@ -382,14 +396,14 @@ func init() {
 //
 
 // getMetricDest returns cgm instance for the plugin identified by a plugin and plugin instance id
-func (c *Circonus) getMetricDest(m cua.Metric) *cgm.CirconusMetrics {
+func (c *Circonus) getMetricDest(m cua.Metric) *cgmInstance {
 	plugin := m.Origin()
 	instanceID := m.OriginInstance()
 
 	// default - used in two cases:
 	// 1. plugin cannot be identified
 	// 2. user as enabled one_check
-	var defaultDest *cgm.CirconusMetrics
+	var defaultDest *cgmInstance
 	if defaultCheck != nil {
 		defaultDest = defaultCheck
 	}
@@ -477,6 +491,7 @@ func (c *Circonus) initCheck(id, name, instanceID string) error {
 	checkConfigFile := ""
 	submissionURL := ""
 	saveConfig := false
+	var bundle *apiclient.CheckBundle
 
 	if c.CacheConfigs && instanceID != "" {
 		path := c.CacheDir
@@ -494,6 +509,7 @@ func (c *Circonus) initCheck(id, name, instanceID string) error {
 					c.Log.Warnf("parsing check config %s: %s", checkConfigFile, err)
 					checkConfigFile = ""
 				}
+				bundle = &b
 				submissionURL = b.Config[apiclicfg.SubmissionURL]
 				c.Log.Debugf("using cached config: %s - %s", checkConfigFile, submissionURL)
 			}
@@ -552,8 +568,39 @@ func (c *Circonus) initCheck(id, name, instanceID string) error {
 		}
 	}
 
+	if bundle == nil { // it wasn't loaded from cache
+		bundle = m.GetCheckBundle()
+	}
+	if bundle != nil {
+		checkUUID := bundle.CheckUUIDs[0]
+		if settings, found := c.DebugCGMCheck[checkUUID]; found {
+			options := strings.Split(settings, ",")
+			if len(options) != 2 {
+				c.Log.Warnf("debug_cgm_check invalid settings (%s): %s", checkUUID, settings)
+			}
+			debugCGM, err := strconv.ParseBool(options[0])
+			if err != nil {
+				c.Log.Warnf("debug_cgm_check invalid setting (%s) (debugcgm:%s): %s", checkUUID, options[0], err)
+			} else {
+				m.Debug = debugCGM
+			}
+			dumpMetrics, err := strconv.ParseBool(options[1])
+			if err != nil {
+				c.Log.Warnf("debug_cgm_check invalid setting (%s) (dumpmetrics:%s): %s", checkUUID, options[1], err)
+			} else {
+				m.DumpMetrics = dumpMetrics
+			}
+			c.Log.Infof("set debug:%t dump:%t on check %s", debugCGM, dumpMetrics, checkUUID)
+			if debugCGM || dumpMetrics {
+				m.Log = logshim{
+					logh:   c.Log,
+					prefix: plugID,
+				}
+			}
+		}
+	}
+
 	if c.CacheConfigs && saveConfig {
-		bundle := m.GetCheckBundle()
 		if checkConfigFile != "" && bundle != nil {
 			data, err := json.Marshal(bundle)
 			if err != nil {
@@ -564,7 +611,7 @@ func (c *Circonus) initCheck(id, name, instanceID string) error {
 		}
 	}
 
-	c.checks[id] = m
+	c.checks[id] = &cgmInstance{id: plugID, metrics: m}
 	return nil
 }
 
@@ -577,6 +624,10 @@ func (c *Circonus) buildNumerics(m cua.Metric) int64 {
 	}
 	numMetrics := int64(0)
 	tags := c.convertTags(m)
+	if dest.submitTimestamp == nil {
+		batchTS := m.Time()
+		dest.submitTimestamp = &batchTS
+	}
 	for _, field := range m.FieldList() {
 		mn := strings.TrimSuffix(field.Key, "__value")
 		if c.DebugMetrics {
@@ -584,11 +635,11 @@ func (c *Circonus) buildNumerics(m cua.Metric) int64 {
 		}
 		switch v := field.Value.(type) {
 		case string:
-			dest.SetTextWithTags(mn, tags, v)
+			dest.metrics.SetTextWithTags(mn, tags, v)
 		default:
 			// don't aggregate - throws of stuff
 			// dest.AddGaugeWithTags(mn, tags, v)
-			dest.SetGaugeWithTags(mn, tags, v)
+			dest.metrics.SetGaugeWithTags(mn, tags, v)
 		}
 		numMetrics++
 	}
@@ -606,6 +657,10 @@ func (c *Circonus) buildTexts(m cua.Metric) int64 {
 	numMetrics := int64(0)
 	tags := c.convertTags(m)
 
+	if dest.submitTimestamp == nil {
+		batchTS := m.Time()
+		dest.submitTimestamp = &batchTS
+	}
 	for _, field := range m.FieldList() {
 		mn := strings.TrimSuffix(field.Key, "__value")
 		if c.DebugMetrics {
@@ -613,11 +668,11 @@ func (c *Circonus) buildTexts(m cua.Metric) int64 {
 		}
 		switch v := field.Value.(type) {
 		case string:
-			dest.SetTextWithTags(mn, tags, v)
+			dest.metrics.SetTextWithTags(mn, tags, v)
 		default:
 			// don't aggregate - throws of stuff
 			// dest.AddGaugeWithTags(mn, tags, v)
-			dest.SetGaugeWithTags(mn, tags, v)
+			dest.metrics.SetGaugeWithTags(mn, tags, v)
 		}
 		numMetrics++
 	}
@@ -637,6 +692,10 @@ func (c *Circonus) buildHistogram(m cua.Metric) int64 {
 	mn := strings.TrimSuffix(m.Name(), "__value")
 	tags := c.convertTags(m)
 
+	if dest.submitTimestamp == nil {
+		batchTS := m.Time()
+		dest.submitTimestamp = &batchTS
+	}
 	for _, field := range m.FieldList() {
 		v, err := strconv.ParseFloat(field.Key, 64)
 		if err != nil {
@@ -647,7 +706,7 @@ func (c *Circonus) buildHistogram(m cua.Metric) int64 {
 			c.Log.Infof("%s %v v:%v vt%T n:%v nT:%T\n", mn, tags, v, v, field.Value, field.Value)
 		}
 
-		dest.RecordCountForValueWithTags(mn, tags, v, field.Value.(int64))
+		dest.metrics.RecordCountForValueWithTags(mn, tags, v, field.Value.(int64))
 		numMetrics++
 	}
 
@@ -669,6 +728,10 @@ func (c *Circonus) buildCumulativeHistogram(m cua.Metric) int64 {
 	buckets := make([]string, 0)
 
 	for _, field := range m.FieldList() {
+		if dest.submitTimestamp == nil {
+			batchTS := m.Time()
+			dest.submitTimestamp = &batchTS
+		}
 		v, err := strconv.ParseFloat(field.Key, 64)
 		if err != nil {
 			c.Log.Errorf("cannot parse histogram (%s) field.key (%s) as float: %s\n", mn, field.Key, err)
@@ -682,7 +745,8 @@ func (c *Circonus) buildCumulativeHistogram(m cua.Metric) int64 {
 		numMetrics++
 	}
 
-	_ = dest.Custom(dest.MetricNameWithStreamTags(mn, tags), cgm.Metric{
+	// TODO: cumulative histogram support with SerializeB64 to support timestamps
+	_ = dest.metrics.Custom(dest.metrics.MetricNameWithStreamTags(mn, tags), cgm.Metric{
 		Type:  cgm.MetricTypeCumulativeHistogram,
 		Value: buckets, // buckets are submitted as a string array
 	})

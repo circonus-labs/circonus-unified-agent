@@ -1,3 +1,36 @@
+# v0.0.21
+
+* upd: only update metric counter for tracking metrics for non-sub output
+* add: latency metrics for metric processing
+* add: submit timestamp based on metric timestamp
+* add: circonus debugging specific cgm check
+* fix: cache dir check
+* upd: testing cache directory
+* add: new memcached metrics
+* add: apiclient max retries, min delay, max delay settings to address duplicate checks
+* upd: dependency (cgm, go-apiclient)
+* add: batch processing pool
+* add: `pool_size` config option
+* add: check config caching
+* add: `cache_configs` and `cache_dir` options
+* add: `dump_cgm_metrics` option for debugging
+* add: `sub_output` option to tell 2-n instances of circonus output to not initialize default checks
+* add: `dynamic_submit` option to let cgm submit metrics on its internal cadence
+* add: `dynamic_interval` option to set the cgm interval
+* fix: overwrite existing numeric rather than add - duplicate metrics in same batch
+* add: back alias tag for multiple instances
+* add: comment on limitnofile for 'too many open files' errors with large number of inputs
+* fix: load defaults once per agent run, not on config reload
+* upd: use instance_id for alias on inputs if alias not set (for logging)
+* upd: lint config
+* upd: add `input_id` to all inputs in sample config
+* upd: debug messages
+* upd: remove commented code
+* upd: switch version parser
+* upd: snmp dynamic textual conversion for tags
+* add: snmp automatic tag lookups
+* add: additional counters to the windows_perf_counters input plugin for Windows host monitoring service dashboard
+
 # v0.0.20
 
 * add: darwin build back in temporarily

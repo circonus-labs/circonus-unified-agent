@@ -102,8 +102,8 @@ func (opts MountOptions) exists(opt string) bool {
 	return false
 }
 
-func parseOptions(opts string) MountOptions {
-	return strings.Split(opts, ",")
+func parseOptions(opts []string) MountOptions {
+	return opts
 }
 
 func init() {

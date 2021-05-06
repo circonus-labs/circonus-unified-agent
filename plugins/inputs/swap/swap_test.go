@@ -5,7 +5,7 @@ import (
 
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs/system"
 	"github.com/circonus-labs/circonus-unified-agent/testutil"
-	"github.com/shirou/gopsutil/mem"
+	"github.com/shirou/gopsutil/v3/mem"
 	"github.com/stretchr/testify/require"
 )
 

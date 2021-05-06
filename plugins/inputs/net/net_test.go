@@ -6,7 +6,7 @@ import (
 
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs/system"
 	"github.com/circonus-labs/circonus-unified-agent/testutil"
-	"github.com/shirou/gopsutil/net"
+	"github.com/shirou/gopsutil/v3/net"
 	"github.com/stretchr/testify/require"
 )
 

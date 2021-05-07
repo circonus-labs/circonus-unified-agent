@@ -11,7 +11,7 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/internal"
 	"github.com/circonus-labs/circonus-unified-agent/testutil"
-	"github.com/soniah/gosnmp"
+	"github.com/gosnmp/gosnmp"
 	"github.com/stretchr/testify/require"
 )
 
@@ -1263,7 +1263,7 @@ func TestReceiveTrap(t *testing.T) {
 			// Hook into the trap handler so the test knows when the
 			// trap has been received
 			received := make(chan int)
-			wrap := func(f handler) handler {
+			wrap := func(f gosnmp.TrapHandlerFunc) gosnmp.TrapHandlerFunc {
 				return func(p *gosnmp.SnmpPacket, a *net.UDPAddr) {
 					f(p, a)
 					received <- 0

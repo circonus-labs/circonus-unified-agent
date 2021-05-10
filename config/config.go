@@ -196,6 +196,20 @@ type AgentConfig struct {
 
 	Hostname     string
 	OmitHostname bool
+
+	Circonus CirconusConfig
+}
+
+type CirconusConfig struct {
+	Broker       string `toml:"broker"`        // optional: broker ID - numeric portion of _cid from broker api object (default is selected: enterprise or public httptrap broker)
+	APIURL       string `toml:"api_url"`       // optional: api url (default: https://api.circonus.com/v2)
+	APIToken     string `toml:"api_token"`     // api token (REQUIRED)
+	APIApp       string `toml:"api_app"`       // optional: api app (default: circonus-unified-agent)
+	APITLSCA     string `toml:"api_tls_ca"`    // optional: api ca cert file
+	CacheConfigs bool   `toml:"cache_configs"` // optional: cache check bundle configurations - efficient for large number of inputs
+	CacheDir     string `toml:"cache_dir"`     // optional: where to cache the check bundle configurations - must be read/write for user running cua
+	Debug        bool   `toml:"debug"`         // optional: debug api and submits
+	Dump         bool   `toml:"dump"`          // optional: dump raw metrics in JSON, as they are being sent to broker
 }
 
 // InputNames returns a list of strings of the configured inputs.
@@ -2006,4 +2020,11 @@ func (c *Config) LoadDefaultPlugins() error {
 		log.Printf("W! adding agent plugins: %s", err)
 	}
 	return nil
+}
+
+func (c *Config) GetGlobalCirconusConfig() (*CirconusConfig, error) {
+	if c.Agent.Circonus.APIToken == "" {
+		return nil, fmt.Errorf("agent circonus config invalid, missing API token")
+	}
+	return &c.Agent.Circonus, nil
 }

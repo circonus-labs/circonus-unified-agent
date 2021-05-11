@@ -18,8 +18,8 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/internal"
 	"github.com/circonus-labs/circonus-unified-agent/internal/snmp"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
+	"github.com/gosnmp/gosnmp"
 	"github.com/influxdata/wlog"
-	"github.com/soniah/gosnmp"
 )
 
 const description = `Retrieves SNMP values from remote agents`

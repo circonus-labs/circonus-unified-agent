@@ -145,7 +145,7 @@ __get_cua_package() {
 }
 
 __configure_agent() {
-    log "Updating configuraiton: ${cua_conf_file}"
+    log "Updating configuration: ${cua_conf_file}"
 
     [[ -f $cua_conf_file ]] || fail "config file (${cua_conf_file}) not found"
 

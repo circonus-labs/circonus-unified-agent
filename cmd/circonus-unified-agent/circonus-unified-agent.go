@@ -150,7 +150,7 @@ func runAgent(ctx context.Context,
 	// and DO NOT go through the normal agent pipeline (no aggregators, processors,
 	// parsers, outputs, etc.)
 	if err := circonus.Initialize(c.GetGlobalCirconusConfig()); err != nil {
-		log.Printf("E! initializing agent circonus configuration: %s", err)
+		log.Printf("E! CMDM %s", err)
 	}
 
 	if !*fTest && len(c.Outputs) == 0 {

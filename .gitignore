@@ -13,3 +13,4 @@ Vagrantfile
 console.log
 test.conf
 /cache.d
+/trace.d

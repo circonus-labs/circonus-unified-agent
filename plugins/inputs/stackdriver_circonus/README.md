@@ -1,4 +1,6 @@
-# Stackdriver Google Cloud Monitoring Input Plugin
+# Circonus Stackdriver Google Cloud Monitoring Input Plugin
+
+Uses predefined metric prefixes to support the Circonus Stackdriver Dashboard(s).
 
 Query data from Google Cloud Monitoring (formerly Stackdriver) using the
 [Cloud Monitoring API v3][stackdriver].
@@ -6,20 +8,15 @@ Query data from Google Cloud Monitoring (formerly Stackdriver) using the
 This plugin accesses APIs which are [chargeable][pricing]; you might incur
 costs.
 
-### Configuration
+## Configuration
 
 ```toml
 [[inputs.stackdriver]]
+  ## Instance ID is required
+  instance_id = "gcp"
+
   ## GCP Project
   project = "erudite-bloom-151019"
-
-  ## Include timeseries that start with the given metric type.
-  metric_type_prefix_include = [
-    "compute.googleapis.com/",
-  ]
-
-  ## Exclude timeseries that start with the given metric type.
-  # metric_type_prefix_exclude = []
 
   ## Most metrics are updated no more than once per minute; it is recommended
   ## to override the agent level interval with a value of 1m or greater.
@@ -58,9 +55,9 @@ costs.
   ## For a list of aligner strings see:
   ##   https://cloud.google.com/monitoring/api/ref_v3/rpc/google.monitoring.v3#aligner
   # distribution_aggregation_aligners = [
-  # 	"ALIGN_PERCENTILE_99",
-  # 	"ALIGN_PERCENTILE_95",
-  # 	"ALIGN_PERCENTILE_50",
+  #   "ALIGN_PERCENTILE_99",
+  #   "ALIGN_PERCENTILE_95",
+  #   "ALIGN_PERCENTILE_50",
   # ]
 
   ## Filters can be added to reduce the number of time series matched.  All
@@ -84,23 +81,24 @@ costs.
   ## Metric labels refine the time series selection with the following expression:
   ##   metric.labels.<key> = <value>
   #  [[inputs.stackdriver.filter.metric_labels]]
-  #  	 key = "device_name"
-  #  	 value = 'one_of("sda", "sdb")'
+  #    key = "device_name"
+  #    value = 'one_of("sda", "sdb")'
 ```
 
-#### Authentication
+### Authentication
 
 It is recommended to use a service account to authenticate with the
 Stackdriver Monitoring API.  [Getting Started with Authentication][auth].
 
-### Metrics
+## Metrics
 
 Metrics are created using one of there patterns depending on if the value type
 is a scalar value, raw distribution buckets, or aligned bucket values.
 
 In all cases, the Stackdriver metric type is split on the last component into
 the measurement and field:
-```
+
+```plain
 compute.googleapis.com/instance/disk/read_bytes_count
 └──────────  measurement  ─────────┘ └──  field  ───┘
 ```
@@ -113,7 +111,6 @@ compute.googleapis.com/instance/disk/read_bytes_count
     - metric_labels
   - fields:
     - field
-
 
 **Distributions:**
 
@@ -132,7 +129,7 @@ represents the total number of items less than the `lt` tag.
     - field_range_min
     - field_range_max
 
-+ measurement
+- measurement
   - tags:
     - resource_labels
     - metric_labels
@@ -155,8 +152,9 @@ When agent is ran with `--debug`, detailed information about the performed
 queries will be logged.
 
 ### Example Output
-```
-```
+
+```plain
 [stackdriver]: https://cloud.google.com/monitoring/api/v3/
 [auth]: https://cloud.google.com/docs/authentication/getting-started
 [pricing]: https://cloud.google.com/stackdriver/pricing#stackdriver_monitoring_services
+```

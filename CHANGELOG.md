@@ -1,3 +1,7 @@
+# v0.0.23
+
+* add: `stackdriver_circonus` input plugin to support Stackdriver dashboards in UI
+
 # v0.0.22
 
 * upd: deps (go-trapcheck, go-trapmetrics)

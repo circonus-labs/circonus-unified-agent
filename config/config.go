@@ -196,6 +196,23 @@ type AgentConfig struct {
 
 	Hostname     string
 	OmitHostname bool
+
+	Circonus CirconusConfig `toml:"circonus"`
+}
+
+type CirconusConfig struct {
+	Broker          string            `toml:"broker"`            // optional: broker ID - numeric portion of _cid from broker api object (default is selected: enterprise or public httptrap broker)
+	APIURL          string            `toml:"api_url"`           // optional: api url (default: https://api.circonus.com/v2)
+	APIToken        string            `toml:"api_token"`         // api token (REQUIRED)
+	APIApp          string            `toml:"api_app"`           // optional: api app (default: circonus-unified-agent)
+	APITLSCA        string            `toml:"api_tls_ca"`        // optional: api ca cert file
+	CacheConfigs    bool              `toml:"cache_configs"`     // optional: cache check bundle configurations - efficient for large number of inputs
+	CacheDir        string            `toml:"cache_dir"`         // optional: where to cache the check bundle configurations - must be read/write for user running cua
+	DebugAPI        bool              `toml:"debug_api"`         // optional: debug circonus api calls
+	TraceMetrics    string            `toml:"trace_metrics"`     // optional: output json sent to broker (path to write files to or `-` for logger)
+	DebugChecks     map[string]string `toml:"debug_checks"`      // optional: use when instructed by circonus support
+	CheckSearchTags []string          `toml:"check_search_tags"` // optional: set of tags to use when searching for checks (default: service:circonus-unified-agentd)
+	CheckNamePrefix string            `toml:"check_name_prefix"` // optional: used in check display name and check target (default: OS hostname, use with containers)
 }
 
 // InputNames returns a list of strings of the configured inputs.
@@ -367,6 +384,58 @@ var agentConfig = `
   ## If set to true, do no set the "host" tag in the circonus-unified-agent.
   omit_hostname = false
 
+  [agent.circonus]
+    ## Circonus API token must be provided to use this plugin
+    ## REQUIRED
+    api_token = ""
+
+    ## Circonus API application (associated with token)
+    ## Optional
+    # api_app = "circonus-unified-agent"
+
+    ## Circonus API URL
+    ## Optional
+    # api_url = "https://api.circonus.com/"
+
+    ## Circonus API TLS CA file
+    ## Optional
+    ## Use for internal deployments with private certificates
+    # api_tls_ca = "/opt/circonus/unified-agent/etc/circonus_api_ca.pem"
+
+    ## Check name prefix
+    ## Optional
+    ## Unique prefix to use for all checks created by this instance.
+    ## Default is the hostname from the OS. If set, "host" tag on metrics will be 
+    ## overridden with this value. For containers, use omit_hostname=true in agent section
+    ## and set this value, so that the plugin will be able to predictively find the check 
+    ## for this instance. Otherwise, the container's os.Hostname() will be used
+    ## (resulting in a new check being created every time the container starts).
+    # check_name_prefix = "example"
+
+    ## Broker
+    ## Optional
+    ## Explicit broker id or blank (default blank, auto select)
+    # broker = "/broker/35"
+
+    ## Cache check configurations
+    ## Optional
+    ## Performance optimization with lots of plugins (or instances of plugins)
+    # cache_configs = true
+    ##
+    ## Cache directory
+    ## Optional (required if cache_configs is true)
+    ## Note: cache_dir must be read/write for the user running the cua process
+    # cache_dir = "/opt/circonus/etc/cache.d"
+
+    ## Debug circonus api calls and trap submissions
+    ## Optional 
+    # debug_api = true
+
+    ## Trace metric submissions
+    ## Optional
+    ## Note: directory to write metrics sent to broker (must be writeable by user running cua process)
+    ##       output json sent to broker (path to write files to or '-' for logger)
+    # trace_metrics = "/opt/circonus/trace.d"
 `
 
 var outputHeader = `
@@ -2006,4 +2075,11 @@ func (c *Config) LoadDefaultPlugins() error {
 		log.Printf("W! adding agent plugins: %s", err)
 	}
 	return nil
+}
+
+func (c *Config) GetGlobalCirconusConfig() (*CirconusConfig, error) {
+	if c.Agent.Circonus.APIToken == "" {
+		return nil, fmt.Errorf("invalid, missing API token")
+	}
+	return &c.Agent.Circonus, nil
 }

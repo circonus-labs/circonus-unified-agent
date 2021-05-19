@@ -34,9 +34,9 @@ func TestCirconus(t *testing.T) {
 	defer ts.Close()
 
 	cli := &Circonus{
-		APIURL:   "http://test.com",
-		APIToken: "11223344-5566-7788-9900-aabbccddeeff",
-		APIApp:   "circonus-unified-agent",
+		// APIURL:   "http://test.com",
+		// APIToken: "11223344-5566-7788-9900-aabbccddeeff",
+		// APIApp:   "circonus-unified-agent",
 	}
 
 	err := cli.Init()

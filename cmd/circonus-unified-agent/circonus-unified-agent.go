@@ -20,6 +20,7 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/agent"
 	"github.com/circonus-labs/circonus-unified-agent/config"
 	"github.com/circonus-labs/circonus-unified-agent/internal"
+	"github.com/circonus-labs/circonus-unified-agent/internal/circonus"
 	"github.com/circonus-labs/circonus-unified-agent/internal/goplugin"
 	"github.com/circonus-labs/circonus-unified-agent/logger"
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/aggregators/all"
@@ -143,6 +144,13 @@ func runAgent(ctx context.Context,
 	// mgm: add default plugins and agent plugins
 	if err := c.LoadDefaultPlugins(); err != nil {
 		return fmt.Errorf("loading defaults: %w", err)
+	}
+	// mgm: initialize the internal circonus cgm instance creator used by high-perf
+	// input plugins (ending in "_hp"). these input plugins send directly to circonus
+	// and DO NOT go through the normal agent pipeline (no aggregators, processors,
+	// parsers, outputs, etc.)
+	if err := circonus.Initialize(c.GetGlobalCirconusConfig()); err != nil {
+		log.Printf("E! CMDM %s", err)
 	}
 
 	if !*fTest && len(c.Outputs) == 0 {

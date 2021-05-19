@@ -1,6 +1,7 @@
 package mailchimp
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -35,7 +36,7 @@ func (m *MailChimp) Description() string {
 	return "Gathers metrics from the /3.0/reports MailChimp API"
 }
 
-func (m *MailChimp) Gather(acc cua.Accumulator) error {
+func (m *MailChimp) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if m.api == nil {
 		m.api = NewChimpAPI(m.APIKey)
 	}

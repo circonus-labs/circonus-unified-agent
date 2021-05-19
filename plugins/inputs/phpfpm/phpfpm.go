@@ -3,6 +3,7 @@ package phpfpm
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -103,7 +104,7 @@ func (p *phpfpm) Init() error {
 
 // Reads stats from all configured servers accumulates stats.
 // Returns one of the errors encountered while gather stats (if any).
-func (p *phpfpm) Gather(acc cua.Accumulator) error {
+func (p *phpfpm) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if len(p.Urls) == 0 {
 		return p.gatherServer("http://127.0.0.1/status", acc)
 	}

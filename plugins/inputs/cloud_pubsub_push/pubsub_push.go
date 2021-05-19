@@ -121,7 +121,7 @@ func (p *PubSubPush) Description() string {
 	return "Google Cloud Pub/Sub Push HTTP listener"
 }
 
-func (p *PubSubPush) Gather(_ cua.Accumulator) error {
+func (p *PubSubPush) Gather(_ context.Context, _ cua.Accumulator) error {
 	return nil
 }
 

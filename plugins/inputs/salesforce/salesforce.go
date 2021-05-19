@@ -1,6 +1,7 @@
 package salesforce
 
 import (
+	"context"
 	"encoding/json"
 	"encoding/xml"
 	"errors"
@@ -82,7 +83,7 @@ func (s *Salesforce) Description() string {
 }
 
 // Reads limits values from Salesforce API
-func (s *Salesforce) Gather(acc cua.Accumulator) error {
+func (s *Salesforce) Gather(ctx context.Context, acc cua.Accumulator) error {
 	limits, err := s.fetchLimits()
 	if err != nil {
 		return err

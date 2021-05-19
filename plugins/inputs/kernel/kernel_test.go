@@ -22,7 +22,7 @@ func TestFullProcFile(t *testing.T) {
 	}
 
 	acc := testutil.Accumulator{}
-	err := k.Gather(&acc)
+	err := k.Gather(context.Background(), &acc)
 	assert.NoError(t, err)
 
 	fields := map[string]interface{}{
@@ -49,7 +49,7 @@ func TestPartialProcFile(t *testing.T) {
 	}
 
 	acc := testutil.Accumulator{}
-	err := k.Gather(&acc)
+	err := k.Gather(context.Background(), &acc)
 	assert.NoError(t, err)
 
 	fields := map[string]interface{}{
@@ -75,7 +75,7 @@ func TestInvalidProcFile1(t *testing.T) {
 	}
 
 	acc := testutil.Accumulator{}
-	err := k.Gather(&acc)
+	err := k.Gather(context.Background(), &acc)
 	assert.Error(t, err)
 }
 
@@ -88,7 +88,7 @@ func TestInvalidProcFile2(t *testing.T) {
 	}
 
 	acc := testutil.Accumulator{}
-	err := k.Gather(&acc)
+	err := k.Gather(context.Background(), &acc)
 	assert.Error(t, err)
 }
 
@@ -101,7 +101,7 @@ func TestNoProcFile(t *testing.T) {
 	}
 
 	acc := testutil.Accumulator{}
-	err := k.Gather(&acc)
+	err := k.Gather(context.Background(), &acc)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "does not exist")
 }

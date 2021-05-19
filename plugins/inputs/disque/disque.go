@@ -2,6 +2,7 @@ package disque
 
 import (
 	"bufio"
+	"context"
 	"errors"
 	"fmt"
 	"net"
@@ -64,7 +65,7 @@ var ErrProtocolError = errors.New("disque protocol error")
 
 // Reads stats from all configured servers accumulates stats.
 // Returns one of the errors encountered while gather stats (if any).
-func (r *Disque) Gather(acc cua.Accumulator) error {
+func (r *Disque) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if len(r.Servers) == 0 {
 		url := &url.URL{
 			Host: ":7711",

@@ -19,7 +19,7 @@ func TestFullVmStatProcFile(t *testing.T) {
 	}
 
 	acc := testutil.Accumulator{}
-	err := k.Gather(&acc)
+	err := k.Gather(context.Background(), &acc)
 	assert.NoError(t, err)
 
 	fields := map[string]interface{}{
@@ -127,7 +127,7 @@ func TestPartialVmStatProcFile(t *testing.T) {
 	}
 
 	acc := testutil.Accumulator{}
-	err := k.Gather(&acc)
+	err := k.Gather(context.Background(), &acc)
 	assert.NoError(t, err)
 
 	fields := map[string]interface{}{
@@ -157,7 +157,7 @@ func TestInvalidVmStatProcFile1(t *testing.T) {
 	}
 
 	acc := testutil.Accumulator{}
-	err := k.Gather(&acc)
+	err := k.Gather(context.Background(), &acc)
 	assert.Error(t, err)
 }
 
@@ -170,7 +170,7 @@ func TestNoVmStatProcFile(t *testing.T) {
 	}
 
 	acc := testutil.Accumulator{}
-	err := k.Gather(&acc)
+	err := k.Gather(context.Background(), &acc)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "does not exist")
 }

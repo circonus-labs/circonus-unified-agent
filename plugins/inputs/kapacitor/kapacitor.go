@@ -1,6 +1,7 @@
 package kapacitor
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -49,7 +50,7 @@ func (*Kapacitor) SampleConfig() string {
 `
 }
 
-func (k *Kapacitor) Gather(acc cua.Accumulator) error {
+func (k *Kapacitor) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if k.client == nil {
 		client, err := k.createHTTPClient()
 		if err != nil {

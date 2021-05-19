@@ -28,7 +28,7 @@ func TestPerDeviceGoodOutput(t *testing.T) {
 		},
 	}
 
-	err := plugin.Gather(&acc)
+	err := plugin.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	tags1 := map[string]string{
@@ -105,7 +105,7 @@ func TestNotPerDeviceGoodOutput(t *testing.T) {
 		},
 	}
 
-	err := plugin.Gather(&acc)
+	err := plugin.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	tags := map[string]string{
@@ -140,7 +140,7 @@ func TestNoDevicesOutput(t *testing.T) {
 		},
 	}
 
-	err := plugin.Gather(&acc)
+	err := plugin.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 }
 
@@ -153,7 +153,7 @@ func TestErrorDuringGettingStatus(t *testing.T) {
 		},
 	}
 
-	err := plugin.Gather(&acc)
+	err := plugin.Gather(context.Background(), &acc)
 	require.Error(t, err)
 }
 
@@ -166,6 +166,6 @@ func TestBadFormatOfStatus(t *testing.T) {
 		},
 	}
 
-	err := plugin.Gather(&acc)
+	err := plugin.Gather(context.Background(), &acc)
 	require.Error(t, err)
 }

@@ -2,6 +2,7 @@ package influxdb
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -75,7 +76,7 @@ func (*InfluxDB) SampleConfig() string {
 `
 }
 
-func (i *InfluxDB) Gather(acc cua.Accumulator) error {
+func (i *InfluxDB) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if len(i.URLs) == 0 {
 		i.URLs = []string{"http://localhost:8086/debug/vars"}
 	}

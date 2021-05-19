@@ -134,14 +134,14 @@ func TestMgrErrors(t *testing.T) {
 	// mgr.connect error
 	winServices := &WinServices{testutil.Logger{}, nil, &FakeMgProvider{testErrors[0]}}
 	var acc1 testutil.Accumulator
-	err := winServices.Gather(&acc1)
+	err := winServices.Gather(context.Background(), &acc1)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), testErrors[0].mgrConnectError.Error())
 
 	// mgr.listServices error
 	winServices = &WinServices{testutil.Logger{}, nil, &FakeMgProvider{testErrors[1]}}
 	var acc2 testutil.Accumulator
-	err = winServices.Gather(&acc2)
+	err = winServices.Gather(context.Background(), &acc2)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), testErrors[1].mgrListServicesError.Error())
 
@@ -151,7 +151,7 @@ func TestMgrErrors(t *testing.T) {
 
 	buf := &bytes.Buffer{}
 	log.SetOutput(buf)
-	require.NoError(t, winServices.Gather(&acc3))
+	require.NoError(t, winServices.Gather(context.Background(), &acc3))
 
 	require.Contains(t, buf.String(), testErrors[2].services[0].serviceOpenError.Error())
 }
@@ -162,7 +162,7 @@ func TestServiceErrors(t *testing.T) {
 
 	buf := &bytes.Buffer{}
 	log.SetOutput(buf)
-	require.NoError(t, winServices.Gather(&acc1))
+	require.NoError(t, winServices.Gather(context.Background(), &acc1))
 
 	// open service error
 	require.Contains(t, buf.String(), testErrors[2].services[0].serviceOpenError.Error())
@@ -182,7 +182,7 @@ var testSimpleData = []testData{
 func TestGather2(t *testing.T) {
 	winServices := &WinServices{testutil.Logger{}, nil, &FakeMgProvider{testSimpleData[0]}}
 	var acc1 testutil.Accumulator
-	require.NoError(t, winServices.Gather(&acc1))
+	require.NoError(t, winServices.Gather(context.Background(), &acc1))
 	assert.Len(t, acc1.Errors, 0, "There should be no errors after gather")
 
 	for _, s := range testSimpleData[0].services {

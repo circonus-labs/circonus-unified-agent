@@ -1,6 +1,7 @@
 package activemq
 
 import (
+	"context"
 	"encoding/xml"
 	"fmt"
 	"io"
@@ -247,7 +248,7 @@ func (a *ActiveMQ) GatherSubscribersMetrics(acc cua.Accumulator, subscribers Sub
 	}
 }
 
-func (a *ActiveMQ) Gather(acc cua.Accumulator) error {
+func (a *ActiveMQ) Gather(ctx context.Context, acc cua.Accumulator) error {
 	dataQueues, err := a.GetMetrics(a.QueuesURL())
 	if err != nil {
 		return err

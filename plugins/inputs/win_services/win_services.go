@@ -111,7 +111,7 @@ func (m *WinServices) SampleConfig() string {
 	return sampleConfig
 }
 
-func (m *WinServices) Gather(acc cua.Accumulator) error {
+func (m *WinServices) Gather(ctx context.Context, acc cua.Accumulator) error {
 	scmgr, err := m.mgrProvider.Connect()
 	if err != nil {
 		return fmt.Errorf("could not open service manager: %w", err)

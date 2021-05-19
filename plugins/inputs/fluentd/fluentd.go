@@ -1,6 +1,7 @@
 package fluentd
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -78,7 +79,7 @@ func (h *Fluentd) Description() string { return description }
 func (h *Fluentd) SampleConfig() string { return sampleConfig }
 
 // Gather - Main code responsible for gathering, processing and creating metrics
-func (h *Fluentd) Gather(acc cua.Accumulator) error {
+func (h *Fluentd) Gather(ctx context.Context, acc cua.Accumulator) error {
 
 	_, err := url.Parse(h.Endpoint)
 	if err != nil {

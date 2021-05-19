@@ -87,7 +87,7 @@ func (a *Aurora) Description() string {
 	return "Gather metrics from Apache Aurora schedulers"
 }
 
-func (a *Aurora) Gather(acc cua.Accumulator) error {
+func (a *Aurora) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if a.client == nil {
 		err := a.initialize()
 		if err != nil {

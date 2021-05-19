@@ -33,7 +33,7 @@ func (k *Kernel) Description() string {
 
 func (k *Kernel) SampleConfig() string { return "" }
 
-func (k *Kernel) Gather(acc cua.Accumulator) error {
+func (k *Kernel) Gather(ctx context.Context, acc cua.Accumulator) error {
 
 	data, err := k.getProcStat()
 	if err != nil {

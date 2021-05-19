@@ -63,7 +63,7 @@ type processMeasurement struct {
 }
 
 // All gathering is done in the Start function
-func (*IntelRDT) Gather(_ cua.Accumulator) error {
+func (*IntelRDT) Gather(_ context.Context, _ cua.Accumulator) error {
 	return nil
 }
 

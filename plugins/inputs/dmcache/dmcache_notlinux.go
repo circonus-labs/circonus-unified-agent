@@ -2,9 +2,13 @@
 
 package dmcache
 
-import "github.com/circonus-labs/circonus-unified-agent/cua"
+import (
+	"context"
 
-func (c *DMCache) Gather(acc cua.Accumulator) error {
+	"github.com/circonus-labs/circonus-unified-agent/cua"
+)
+
+func (c *DMCache) Gather(_ context.Context, _ cua.Accumulator) error {
 	return nil
 }
 

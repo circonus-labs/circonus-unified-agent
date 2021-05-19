@@ -1,6 +1,7 @@
 package mqttconsumer
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -114,7 +115,7 @@ func TestLifecycleSanity(t *testing.T) {
 	err = plugin.Start(&acc)
 	require.NoError(t, err)
 
-	err = plugin.Gather(&acc)
+	err = plugin.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	plugin.Stop()

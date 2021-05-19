@@ -1,6 +1,7 @@
 package swap
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
@@ -18,7 +19,7 @@ func (*Stats) Description() string {
 
 func (*Stats) SampleConfig() string { return "" }
 
-func (s *Stats) Gather(acc cua.Accumulator) error {
+func (s *Stats) Gather(ctx context.Context, acc cua.Accumulator) error {
 	swap, err := s.ps.SwapStat()
 	if err != nil {
 		return fmt.Errorf("error getting swap memory info: %w", err)

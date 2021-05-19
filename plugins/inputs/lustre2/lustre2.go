@@ -11,6 +11,7 @@ for HPC environments. It stores statistics about its activity in
 package lustre2
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -443,7 +444,7 @@ func (l *Lustre2) Description() string {
 }
 
 // Gather reads stats from all lustre targets
-func (l *Lustre2) Gather(acc cua.Accumulator) error {
+func (l *Lustre2) Gather(ctx context.Context, acc cua.Accumulator) error {
 	// l.allFields = make(map[string]map[string]interface{})
 	l.allFields = make(map[tags]map[string]interface{})
 

@@ -11,7 +11,7 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 )
 
-func (e *Execd) Gather(acc cua.Accumulator) error {
+func (e *Execd) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if e.process == nil {
 		return nil
 	}

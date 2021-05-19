@@ -1,6 +1,7 @@
 package trig
 
 import (
+	"context"
 	"math"
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
@@ -25,7 +26,7 @@ func (s *Trig) Description() string {
 	return "Inserts sine and cosine waves for demonstration purposes"
 }
 
-func (s *Trig) Gather(acc cua.Accumulator) error {
+func (s *Trig) Gather(ctx context.Context, acc cua.Accumulator) error {
 	sinner := math.Sin((s.x*math.Pi)/5.0) * s.Amplitude
 	cosinner := math.Cos((s.x*math.Pi)/5.0) * s.Amplitude
 

@@ -177,7 +177,7 @@ func (a *AMQPConsumer) SetParser(parser parsers.Parser) {
 }
 
 // All gathering is done in the Start function
-func (a *AMQPConsumer) Gather(_ cua.Accumulator) error {
+func (a *AMQPConsumer) Gather(_ context.Context, _ cua.Accumulator) error {
 	return nil
 }
 

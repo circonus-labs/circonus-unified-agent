@@ -1,6 +1,7 @@
 package mailchimp
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -33,7 +34,7 @@ func TestMailChimpGatherReports(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err = m.Gather(&acc)
+	err = m.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	tags := make(map[string]string)
@@ -97,7 +98,7 @@ func TestMailChimpGatherReport(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err = m.Gather(&acc)
+	err = m.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	tags := make(map[string]string)
@@ -162,7 +163,7 @@ func TestMailChimpGatherError(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err = m.Gather(&acc)
+	err = m.Gather(context.Background(), &acc)
 	require.Error(t, err)
 }
 

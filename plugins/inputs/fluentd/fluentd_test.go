@@ -1,6 +1,7 @@
 package fluentd
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"net/http"
@@ -139,7 +140,7 @@ func Test_Gather(t *testing.T) {
 
 	var acc testutil.Accumulator
 
-	err := fluentdTest.Gather(&acc)
+	err := fluentdTest.Gather(context.Background(), &acc)
 	if err != nil {
 		t.Error(err)
 	}

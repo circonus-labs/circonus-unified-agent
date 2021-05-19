@@ -2,6 +2,7 @@ package postgresqlextensible
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -140,7 +141,7 @@ func ReadQueryFromFile(filePath string) (string, error) {
 	return string(query), nil
 }
 
-func (p *Postgresql) Gather(acc cua.Accumulator) error {
+func (p *Postgresql) Gather(ctx context.Context, acc cua.Accumulator) error {
 	var (
 		err        error
 		sqlQuery   string

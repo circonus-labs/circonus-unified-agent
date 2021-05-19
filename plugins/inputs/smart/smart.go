@@ -2,6 +2,7 @@ package smart
 
 import (
 	"bufio"
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -382,7 +383,7 @@ func (m *Smart) Init() error {
 }
 
 // Gather takes in an accumulator and adds the metrics that the SMART tools gather.
-func (m *Smart) Gather(acc cua.Accumulator) error {
+func (m *Smart) Gather(ctx context.Context, acc cua.Accumulator) error {
 	var err error
 	var scannedNVMeDevices []string
 	var scannedNonNVMeDevices []string

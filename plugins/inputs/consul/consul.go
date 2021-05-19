@@ -1,6 +1,7 @@
 package consul
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -164,7 +165,7 @@ func (c *Consul) GatherHealthCheck(acc cua.Accumulator, checks []*api.HealthChec
 	}
 }
 
-func (c *Consul) Gather(acc cua.Accumulator) error {
+func (c *Consul) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if c.client == nil {
 		newClient, err := c.createAPIClient()
 

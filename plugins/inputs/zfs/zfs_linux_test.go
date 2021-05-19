@@ -262,14 +262,14 @@ func TestZfsPoolMetrics(t *testing.T) {
 	var acc testutil.Accumulator
 
 	z := &Zfs{KstatPath: testKstatPath, KstatMetrics: []string{"arcstats"}}
-	err = z.Gather(&acc)
+	err = z.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	require.False(t, acc.HasMeasurement("zfs_pool"))
 	acc.Metrics = nil
 
 	z = &Zfs{KstatPath: testKstatPath, KstatMetrics: []string{"arcstats"}, PoolMetrics: true}
-	err = z.Gather(&acc)
+	err = z.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	// one pool, all metrics
@@ -321,7 +321,7 @@ func TestZfsGeneratesMetrics(t *testing.T) {
 	}
 
 	z := &Zfs{KstatPath: testKstatPath}
-	err = z.Gather(&acc)
+	err = z.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	acc.AssertContainsTaggedFields(t, "zfs", intMetrics, tags)
@@ -340,7 +340,7 @@ func TestZfsGeneratesMetrics(t *testing.T) {
 
 	z = &Zfs{KstatPath: testKstatPath}
 	acc2 := testutil.Accumulator{}
-	err = z.Gather(&acc2)
+	err = z.Gather(context.Background(), &acc2)
 	require.NoError(t, err)
 
 	acc2.AssertContainsTaggedFields(t, "zfs", intMetrics, tags)
@@ -351,7 +351,7 @@ func TestZfsGeneratesMetrics(t *testing.T) {
 	// two pools, one metric
 	z = &Zfs{KstatPath: testKstatPath, KstatMetrics: []string{"arcstats"}}
 	acc3 := testutil.Accumulator{}
-	err = z.Gather(&acc3)
+	err = z.Gather(context.Background(), &acc3)
 	require.NoError(t, err)
 
 	acc3.AssertContainsTaggedFields(t, "zfs", intMetrics, tags)

@@ -23,6 +23,7 @@
 package nsq
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -78,7 +79,7 @@ func (n *NSQ) Description() string {
 	return "Read NSQ topic and channel statistics."
 }
 
-func (n *NSQ) Gather(acc cua.Accumulator) error {
+func (n *NSQ) Gather(ctx context.Context, acc cua.Accumulator) error {
 	var err error
 
 	if n.httpClient == nil {

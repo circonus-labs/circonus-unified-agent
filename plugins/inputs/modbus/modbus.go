@@ -1,6 +1,7 @@
 package modbus
 
 import (
+	"context"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -682,7 +683,7 @@ func scaleInt64(s float64, v int64) int64 {
 }
 
 // Gather implements the plugin interface method for data accumulation
-func (m *Modbus) Gather(acc cua.Accumulator) error {
+func (m *Modbus) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if !m.isConnected {
 		err := connect(m)
 		if err != nil {

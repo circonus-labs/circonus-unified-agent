@@ -1,6 +1,7 @@
 package minecraft
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -116,7 +117,7 @@ func TestGather(t *testing.T) {
 			var acc testutil.Accumulator
 			acc.TimeFunc = func() time.Time { return now }
 
-			err := plugin.Gather(&acc)
+			err := plugin.Gather(context.Background(), &acc)
 
 			require.Equal(t, tt.err, err)
 			testutil.RequireMetricsEqual(t, tt.metrics, acc.GetCUAMetrics())

@@ -1,6 +1,7 @@
 package mongodb
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
@@ -77,7 +78,7 @@ var localhost = &url.URL{Host: "mongodb://127.0.0.1:27017"}
 
 // Reads stats from all configured servers accumulates stats.
 // Returns one of the errors encountered while gather stats (if any).
-func (m *MongoDB) Gather(acc cua.Accumulator) error {
+func (m *MongoDB) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if len(m.Servers) == 0 {
 		_ = m.gatherServer(m.getMongoServer(localhost), acc)
 		return nil

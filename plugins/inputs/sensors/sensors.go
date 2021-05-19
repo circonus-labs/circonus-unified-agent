@@ -44,7 +44,7 @@ func (*Sensors) SampleConfig() string {
 
 }
 
-func (s *Sensors) Gather(acc cua.Accumulator) error {
+func (s *Sensors) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if len(s.path) == 0 {
 		return errors.New("sensors not found: verify that lm-sensors package is installed and that sensors is in your PATH")
 	}

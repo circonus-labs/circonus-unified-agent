@@ -2,6 +2,7 @@ package powerdns
 
 import (
 	"bufio"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -35,7 +36,7 @@ func (p *Powerdns) Description() string {
 	return "Read metrics from one or many PowerDNS servers"
 }
 
-func (p *Powerdns) Gather(acc cua.Accumulator) error {
+func (p *Powerdns) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if len(p.UnixSockets) == 0 {
 		return p.gatherServer("/var/run/pdns.controlsocket", acc)
 	}

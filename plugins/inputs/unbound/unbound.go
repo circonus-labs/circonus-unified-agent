@@ -125,7 +125,7 @@ func unboundRunner(cmdName string, timeout internal.Duration, useSudo bool, serv
 // Gather collects stats from unbound-control and adds them to the Accumulator
 //
 // All the dots in stat name will replaced by underscores. Histogram statistics will not be collected.
-func (s *Unbound) Gather(acc cua.Accumulator) error {
+func (s *Unbound) Gather(ctx context.Context, acc cua.Accumulator) error {
 
 	// Always exclude histogram statistics
 	statExcluded := []string{"histogram.*"}

@@ -1,6 +1,7 @@
 package modbus
 
 import (
+	"context"
 	"testing"
 
 	m "github.com/goburrow/modbus"
@@ -108,7 +109,7 @@ func TestCoils(t *testing.T) {
 			err = modbus.Init()
 			assert.NoError(t, err)
 			var acc testutil.Accumulator
-			err = modbus.Gather(&acc)
+			err = modbus.Gather(context.Background(), &acc)
 			assert.NoError(t, err)
 			assert.NotEmpty(t, modbus.registers)
 
@@ -647,7 +648,7 @@ func TestHoldingRegisters(t *testing.T) {
 			err = modbus.Init()
 			assert.NoError(t, err)
 			var acc testutil.Accumulator
-			_ = modbus.Gather(&acc)
+			_ = modbus.Gather(context.Background(), &acc)
 			assert.NotEmpty(t, modbus.registers)
 
 			for _, coil := range modbus.registers {
@@ -701,7 +702,7 @@ func TestRetrySuccessful(t *testing.T) {
 		err = modbus.Init()
 		assert.NoError(t, err)
 		var acc testutil.Accumulator
-		err = modbus.Gather(&acc)
+		err = modbus.Gather(context.Background(), &acc)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, modbus.registers)
 
@@ -746,7 +747,7 @@ func TestRetryFail(t *testing.T) {
 		err = modbus.Init()
 		assert.NoError(t, err)
 		var acc testutil.Accumulator
-		err = modbus.Gather(&acc)
+		err = modbus.Gather(context.Background(), &acc)
 		assert.Error(t, err)
 	})
 
@@ -779,7 +780,7 @@ func TestRetryFail(t *testing.T) {
 		err = modbus.Init()
 		assert.NoError(t, err)
 		var acc testutil.Accumulator
-		err = modbus.Gather(&acc)
+		err = modbus.Gather(context.Background(), &acc)
 		assert.Error(t, err)
 		assert.Equal(t, counter, 1)
 	})

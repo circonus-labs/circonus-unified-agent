@@ -2,6 +2,7 @@ package graylog
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -120,7 +121,7 @@ func (h *GrayLog) Description() string {
 }
 
 // Gathers data for all servers.
-func (h *GrayLog) Gather(acc cua.Accumulator) error {
+func (h *GrayLog) Gather(ctx context.Context, acc cua.Accumulator) error {
 	var wg sync.WaitGroup
 
 	if h.client.HTTPClient() == nil {

@@ -77,7 +77,7 @@ func gatherPoolStats(pool poolInfo, acc cua.Accumulator) error {
 	return nil
 }
 
-func (z *Zfs) Gather(acc cua.Accumulator) error {
+func (z *Zfs) Gather(ctx context.Context, acc cua.Accumulator) error {
 	kstatMetrics := z.KstatMetrics
 	if len(kstatMetrics) == 0 {
 		// vdev_cache_stats is deprecated

@@ -122,13 +122,11 @@ func (d *DCOS) SampleConfig() string {
 	return sampleConfig
 }
 
-func (d *DCOS) Gather(acc cua.Accumulator) error {
+func (d *DCOS) Gather(ctx context.Context, acc cua.Accumulator) error {
 	err := d.init()
 	if err != nil {
 		return err
 	}
-
-	ctx := context.Background()
 
 	token, err := d.creds.Token(ctx, d.client)
 	if err != nil {

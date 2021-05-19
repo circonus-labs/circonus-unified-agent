@@ -133,7 +133,7 @@ func (w *WinEventLog) SampleConfig() string {
 }
 
 // Gather Windows Event Log entries
-func (w *WinEventLog) Gather(acc cua.Accumulator) error {
+func (w *WinEventLog) Gather(ctx context.Context, acc cua.Accumulator) error {
 
 	var err error
 	if w.subscription == 0 {

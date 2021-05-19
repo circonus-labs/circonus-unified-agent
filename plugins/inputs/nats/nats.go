@@ -3,6 +3,7 @@
 package nats
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -40,7 +41,7 @@ func (n *Nats) Description() string {
 	return "Provides metrics about the state of a NATS server"
 }
 
-func (n *Nats) Gather(acc cua.Accumulator) error {
+func (n *Nats) Gather(ctx context.Context, acc cua.Accumulator) error {
 	rurl, err := url.Parse(n.Server)
 	if err != nil {
 		return fmt.Errorf("url parse (%s): %w", n.Server, err)

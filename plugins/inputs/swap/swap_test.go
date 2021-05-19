@@ -1,6 +1,7 @@
 package swap
 
 import (
+	"context"
 	"testing"
 
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs/system"
@@ -26,7 +27,7 @@ func TestSwapStats(t *testing.T) {
 
 	mps.On("SwapStat").Return(sms, nil)
 
-	err = (&Stats{&mps}).Gather(&acc)
+	err = (&Stats{&mps}).Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	swapfields := map[string]interface{}{

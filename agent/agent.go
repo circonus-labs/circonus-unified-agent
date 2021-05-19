@@ -410,7 +410,7 @@ func (a *Agent) testRunInputs(
 			case "cpu", "mongodb", "procstat":
 				nulAcc := NewAccumulator(input, nul)
 				nulAcc.SetPrecision(getPrecision(precision, interval))
-				if err := input.Input.Gather(nulAcc); err != nil {
+				if err := input.Input.Gather(ctx, nulAcc); err != nil {
 					nulAcc.AddError(err)
 				}
 
@@ -420,7 +420,7 @@ func (a *Agent) testRunInputs(
 			acc := NewAccumulator(input, unit.dst)
 			acc.SetPrecision(getPrecision(precision, interval))
 
-			if err := input.Input.Gather(acc); err != nil {
+			if err := input.Input.Gather(ctx, acc); err != nil {
 				acc.AddError(err)
 			}
 		}(input)
@@ -479,7 +479,7 @@ func (a *Agent) gatherOnce(
 ) error {
 	done := make(chan error)
 	go func() {
-		done <- input.Gather(acc)
+		done <- input.Gather(context.Background(), acc)
 	}()
 
 	// Only warn after interval seconds, even if the interval is started late.

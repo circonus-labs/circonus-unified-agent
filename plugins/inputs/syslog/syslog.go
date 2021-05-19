@@ -1,6 +1,7 @@
 package syslog
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"io"
@@ -123,7 +124,7 @@ func (s *Syslog) Description() string {
 }
 
 // Gather ...
-func (s *Syslog) Gather(_ cua.Accumulator) error {
+func (s *Syslog) Gather(_ context.Context, _ cua.Accumulator) error {
 	return nil
 }
 

@@ -1,6 +1,7 @@
 package openweathermap
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -427,7 +428,7 @@ func TestForecastGeneratesMetrics(t *testing.T) {
 
 	var acc testutil.Accumulator
 
-	err := n.Gather(&acc)
+	err := n.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expected := []cua.Metric{
@@ -512,7 +513,7 @@ func TestWeatherGeneratesMetrics(t *testing.T) {
 
 	var acc testutil.Accumulator
 
-	err := n.Gather(&acc)
+	err := n.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expected := []cua.Metric{
@@ -572,7 +573,7 @@ func TestRainMetrics(t *testing.T) {
 
 	var acc testutil.Accumulator
 
-	err := n.Gather(&acc)
+	err := n.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expected := []cua.Metric{
@@ -716,7 +717,7 @@ func TestBatchWeatherGeneratesMetrics(t *testing.T) {
 
 	var acc testutil.Accumulator
 
-	err := n.Gather(&acc)
+	err := n.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expected := []cua.Metric{

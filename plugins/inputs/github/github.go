@@ -93,8 +93,7 @@ func (g *GitHub) newGithubClient(httpClient *http.Client) (*github.Client, error
 }
 
 // Gather GitHub Metrics
-func (g *GitHub) Gather(acc cua.Accumulator) error {
-	ctx := context.Background()
+func (g *GitHub) Gather(ctx context.Context, acc cua.Accumulator) error {
 
 	if g.githubClient == nil {
 		githubClient, err := g.createGitHubClient(ctx)

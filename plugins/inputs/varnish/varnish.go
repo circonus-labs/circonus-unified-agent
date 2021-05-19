@@ -5,6 +5,7 @@ package varnish
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"fmt"
 	"os/exec"
 	"strconv"
@@ -98,7 +99,7 @@ func varnishRunner(cmdName string, useSudo bool, instanceName string, timeout in
 // The prefix of each stat (eg MAIN, MEMPOOL, LCK, etc) will be used as a
 // 'section' tag and all stats that share that prefix will be reported as fields
 // with that tag
-func (s *Varnish) Gather(acc cua.Accumulator) error {
+func (s *Varnish) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if s.filter == nil {
 		var err error
 		if len(s.Stats) == 0 {

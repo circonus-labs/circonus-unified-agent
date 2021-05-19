@@ -2,6 +2,7 @@ package netresponse
 
 import (
 	"bufio"
+	"context"
 	"errors"
 	"fmt"
 	"net"
@@ -190,7 +191,7 @@ func (n *NetResponse) UDPGather() (tags map[string]string, fields map[string]int
 // Gather is called by agent when the plugin is executed on its interval.
 // It will call either UDPGather or TCPGather based on the configuration and
 // also fill an Accumulator that is supplied.
-func (n *NetResponse) Gather(acc cua.Accumulator) error {
+func (n *NetResponse) Gather(ctx context.Context, acc cua.Accumulator) error {
 	const (
 		udp = "udp"
 		tcp = "tcp"

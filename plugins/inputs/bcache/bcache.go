@@ -5,6 +5,7 @@ package bcache
 // bcache doesn't aim for Windows
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -112,7 +113,7 @@ func (b *Bcache) gatherBcache(bdev string, acc cua.Accumulator) error {
 	return nil
 }
 
-func (b *Bcache) Gather(acc cua.Accumulator) error {
+func (b *Bcache) Gather(ctx context.Context, acc cua.Accumulator) error {
 	bcacheDevsChecked := make(map[string]bool)
 	var restrictDevs bool
 	if len(b.BcacheDevs) != 0 {

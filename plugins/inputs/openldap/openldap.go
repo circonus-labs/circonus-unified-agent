@@ -1,6 +1,7 @@
 package openldap
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
@@ -89,7 +90,7 @@ func NewOpenldap() *Openldap {
 }
 
 // gather metrics
-func (o *Openldap) Gather(acc cua.Accumulator) error {
+func (o *Openldap) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if o.TLS == "" {
 		o.TLS = o.SSL
 	}

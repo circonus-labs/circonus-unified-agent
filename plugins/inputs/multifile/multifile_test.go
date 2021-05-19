@@ -1,6 +1,7 @@
 package multifile
 
 import (
+	"context"
 	"os"
 	"path"
 	"testing"
@@ -29,7 +30,7 @@ func TestFileTypes(t *testing.T) {
 
 	var acc testutil.Accumulator
 
-	err := m.Gather(&acc)
+	err := m.Gather(context.Background(), &acc)
 
 	require.NoError(t, err)
 	assert.Equal(t, map[string]string{"exampletag": "test"}, acc.Metrics[0].Tags)
@@ -57,7 +58,7 @@ func FailEarly(failEarly bool, t *testing.T) error {
 
 	var acc testutil.Accumulator
 
-	err := m.Gather(&acc)
+	err := m.Gather(context.Background(), &acc)
 
 	if err == nil {
 		assert.Equal(t, map[string]interface{}{

@@ -1,6 +1,7 @@
 package disk
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"testing"
@@ -67,7 +68,7 @@ func TestDiskUsage(t *testing.T) {
 	mps.On("PSDiskUsage", "/").Return(&duAll[0], nil)
 	mps.On("PSDiskUsage", "/home").Return(&duAll[1], nil)
 
-	err = (&Stats{ps: mps}).Gather(&acc)
+	err = (&Stats{ps: mps}).Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	numDiskMetrics := acc.NFields()
@@ -110,12 +111,12 @@ func TestDiskUsage(t *testing.T) {
 
 	// We expect 6 more DiskMetrics to show up with an explicit match on "/"
 	// and /home not matching the /dev in MountPoints
-	_ = (&Stats{ps: &mps, MountPoints: []string{"/", "/dev"}}).Gather(&acc)
+	_ = (&Stats{ps: &mps, MountPoints: []string{"/", "/dev"}}).Gather(context.Background(), &acc)
 	assert.Equal(t, expectedAllDiskMetrics+7, acc.NFields())
 
 	// We should see all the diskpoints as MountPoints includes both
 	// / and /home
-	_ = (&Stats{ps: &mps, MountPoints: []string{"/", "/home"}}).Gather(&acc)
+	_ = (&Stats{ps: &mps, MountPoints: []string{"/", "/home"}}).Gather(context.Background(), &acc)
 	assert.Equal(t, 2*expectedAllDiskMetrics+7, acc.NFields())
 }
 
@@ -246,7 +247,7 @@ func TestDiskUsageHostMountPrefix(t *testing.T) {
 
 			mps.On("OSGetenv", "HOST_MOUNT_PREFIX").Return(tt.hostMountPrefix)
 
-			err = (&Stats{ps: mps}).Gather(&acc)
+			err = (&Stats{ps: mps}).Gather(context.Background(), &acc)
 			require.NoError(t, err)
 
 			acc.AssertContainsTaggedFields(t, "disk", tt.expectedFields, tt.expectedTags)
@@ -323,7 +324,7 @@ func TestDiskStats(t *testing.T) {
 	mps.On("DiskUsage", []string{"/", "/dev"}, []string(nil)).Return(duFiltered, psFiltered, nil)
 	mps.On("DiskUsage", []string{"/", "/home"}, []string(nil)).Return(duAll, psAll, nil)
 
-	err = (&Stats{ps: &mps}).Gather(&acc)
+	err = (&Stats{ps: &mps}).Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	numDiskMetrics := acc.NFields()
@@ -366,11 +367,11 @@ func TestDiskStats(t *testing.T) {
 
 	// We expect 6 more DiskMetrics to show up with an explicit match on "/"
 	// and /home not matching the /dev in MountPoints
-	_ = (&Stats{ps: &mps, MountPoints: []string{"/", "/dev"}}).Gather(&acc)
+	_ = (&Stats{ps: &mps, MountPoints: []string{"/", "/dev"}}).Gather(context.Background(), &acc)
 	assert.Equal(t, expectedAllDiskMetrics+7, acc.NFields())
 
 	// We should see all the diskpoints as MountPoints includes both
 	// / and /home
-	_ = (&Stats{ps: &mps, MountPoints: []string{"/", "/home"}}).Gather(&acc)
+	_ = (&Stats{ps: &mps, MountPoints: []string{"/", "/home"}}).Gather(context.Background(), &acc)
 	assert.Equal(t, 2*expectedAllDiskMetrics+7, acc.NFields())
 }

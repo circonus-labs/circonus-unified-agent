@@ -2,6 +2,7 @@ package teamspeak
 
 import (
 	"bufio"
+	"context"
 	"net"
 	"strings"
 	"testing"
@@ -38,7 +39,7 @@ func TestGather(t *testing.T) {
 		Password:       "test",
 		VirtualServers: []int{1},
 	}
-	err = testConfig.Gather(&acc)
+	err = testConfig.Gather(context.Background(), &acc)
 
 	if err != nil {
 		t.Fatalf("Gather returned error. Error: %s\n", err)

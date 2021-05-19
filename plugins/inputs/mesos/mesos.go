@@ -1,6 +1,7 @@
 package mesos
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -170,7 +171,7 @@ func (m *Mesos) initialize() error {
 }
 
 // Gather() metrics from given list of Mesos Masters
-func (m *Mesos) Gather(acc cua.Accumulator) error {
+func (m *Mesos) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if !m.initialized {
 		err := m.initialize()
 		if err != nil {

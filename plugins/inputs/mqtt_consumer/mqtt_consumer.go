@@ -300,7 +300,7 @@ func (m *MQTTConsumer) Stop() {
 	m.cancel()
 }
 
-func (m *MQTTConsumer) Gather(acc cua.Accumulator) error {
+func (m *MQTTConsumer) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if m.state == Disconnected {
 		m.state = Connecting
 		m.Log.Debugf("Connecting %v", m.Servers)

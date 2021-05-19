@@ -3,6 +3,8 @@
 package ethtool
 
 import (
+	"context"
+
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
 )
@@ -12,7 +14,7 @@ func (e *Ethtool) Init() error {
 	return nil
 }
 
-func (e *Ethtool) Gather(acc cua.Accumulator) error {
+func (e *Ethtool) Gather(_ context.Context, _ cua.Accumulator) error {
 	return nil
 }
 

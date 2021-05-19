@@ -2,6 +2,7 @@ package interrupts
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -108,7 +109,7 @@ func gatherTagsFields(irq IRQ) (map[string]string, map[string]interface{}) {
 	return tags, fields
 }
 
-func (s *Interrupts) Gather(acc cua.Accumulator) error {
+func (s *Interrupts) Gather(ctx context.Context, acc cua.Accumulator) error {
 	for measurement, file := range map[string]string{"interrupts": "/proc/interrupts", "soft_interrupts": "/proc/softirqs"} {
 		f, err := os.Open(file)
 		if err != nil {

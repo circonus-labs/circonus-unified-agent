@@ -1,6 +1,7 @@
 package tomcat
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -50,7 +51,7 @@ func TestHTTPTomcat8(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err := tc.Gather(&acc)
+	err := tc.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	// tomcat_jvm_memory
@@ -122,7 +123,7 @@ func TestHTTPTomcat6(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err := tc.Gather(&acc)
+	err := tc.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	// tomcat_jvm_memory

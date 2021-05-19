@@ -1,6 +1,7 @@
 package redfish
 
 import (
+	"context"
 	"errors"
 	"net"
 	"net/http"
@@ -473,7 +474,7 @@ func TestDellApis(t *testing.T) {
 	_ = plugin.Init()
 	var acc testutil.Accumulator
 
-	err = plugin.Gather(&acc)
+	err = plugin.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 	require.True(t, acc.HasMeasurement("redfish_thermal_temperatures"))
 	testutil.RequireMetricsEqual(t, expectedMetrics, acc.GetCUAMetrics(),
@@ -628,7 +629,7 @@ func TestHPApis(t *testing.T) {
 	_ = hpPlugin.Init()
 	var hpAcc testutil.Accumulator
 
-	err = hpPlugin.Gather(&hpAcc)
+	err = hpPlugin.Gather(context.Background(), &hpAcc)
 	require.NoError(t, err)
 	require.True(t, hpAcc.HasMeasurement("redfish_thermal_temperatures"))
 	testutil.RequireMetricsEqual(t, expectedMetricsHp, hpAcc.GetCUAMetrics(),
@@ -654,7 +655,7 @@ func TestConnection(t *testing.T) {
 
 	var acc testutil.Accumulator
 	_ = r.Init()
-	err := r.Gather(&acc)
+	err := r.Gather(context.Background(), &acc)
 
 	var uerr *url.Error
 	if !errors.As(err, &uerr) {
@@ -689,7 +690,7 @@ func TestInvalidUsernameorPassword(t *testing.T) {
 
 	var acc testutil.Accumulator
 	_ = r.Init()
-	err := r.Gather(&acc)
+	err := r.Gather(context.Background(), &acc)
 	require.Error(t, err)
 	require.EqualError(t, err, "received status code 401 (Unauthorized), expected 200")
 }
@@ -793,7 +794,7 @@ func TestInvalidDellJSON(t *testing.T) {
 		_ = plugin.Init()
 
 		var acc testutil.Accumulator
-		err := plugin.Gather(&acc)
+		err := plugin.Gather(context.Background(), &acc)
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "error parsing input:")
 	}
@@ -865,7 +866,7 @@ func TestInvalidHPJSON(t *testing.T) {
 			_ = plugin.Init()
 
 			var acc testutil.Accumulator
-			err := plugin.Gather(&acc)
+			err := plugin.Gather(context.Background(), &acc)
 			require.Error(t, err)
 			require.Contains(t, err.Error(), "error parsing input:")
 		})

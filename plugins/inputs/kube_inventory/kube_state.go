@@ -118,7 +118,7 @@ func (ki *KubernetesInventory) Init() error {
 }
 
 // Gather collects kubernetes metrics from a given URL.
-func (ki *KubernetesInventory) Gather(acc cua.Accumulator) (err error) {
+func (ki *KubernetesInventory) Gather(ctx context.Context, acc cua.Accumulator) (err error) {
 	resourceFilter, err := filter.NewIncludeExcludeFilter(ki.ResourceInclude, ki.ResourceExclude)
 	if err != nil {
 		return fmt.Errorf("resource filters: %w", err)
@@ -130,7 +130,6 @@ func (ki *KubernetesInventory) Gather(acc cua.Accumulator) (err error) {
 	}
 
 	wg := sync.WaitGroup{}
-	ctx := context.Background()
 
 	for collector, f := range availableCollectors {
 		if resourceFilter.Match(collector) {

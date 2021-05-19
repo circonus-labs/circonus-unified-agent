@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -288,6 +289,6 @@ func TestMetricErrorCounters(t *testing.T) {
 
 type testInput struct{}
 
-func (t *testInput) Description() string              { return "" }
-func (t *testInput) SampleConfig() string             { return "" }
-func (t *testInput) Gather(acc cua.Accumulator) error { return nil }
+func (t *testInput) Description() string                                   { return "" }
+func (t *testInput) SampleConfig() string                                  { return "" }
+func (t *testInput) Gather(ctx context.Context, acc cua.Accumulator) error { return nil }

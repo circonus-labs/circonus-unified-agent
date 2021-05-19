@@ -550,7 +550,7 @@ func (c *GNMI) Description() string {
 }
 
 // Gather plugin measurements (unused)
-func (c *GNMI) Gather(_ cua.Accumulator) error {
+func (c *GNMI) Gather(_ context.Context, _ cua.Accumulator) error {
 	return nil
 }
 

@@ -175,7 +175,7 @@ func Test(t *testing.T) {
 			err := plugin.Init()
 			require.NoError(t, err)
 
-			err = plugin.Gather(&acc)
+			err = plugin.Gather(context.Background(), &acc)
 			require.NoError(t, err)
 
 			acc.Wait(len(tt.expected))

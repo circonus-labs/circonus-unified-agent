@@ -5,6 +5,7 @@ package file
 // TODO: Windows - should be enabled for Windows when super asterisk is fixed on Windows
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -49,7 +50,7 @@ func TestFileTag(t *testing.T) {
 	assert.NoError(t, err)
 	r.parser = nParser
 
-	err = r.Gather(&acc)
+	err = r.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	for _, m := range acc.Metrics {
@@ -76,7 +77,7 @@ func TestJSONParserCompile(t *testing.T) {
 	assert.NoError(t, err)
 	r.parser = nParser
 
-	_ = r.Gather(&acc)
+	_ = r.Gather(context.Background(), &acc)
 	assert.Equal(t, map[string]string{"parent_ignored_child": "hi"}, acc.Metrics[0].Tags)
 	assert.Equal(t, 5, len(acc.Metrics[0].Fields))
 }
@@ -99,7 +100,7 @@ func TestGrokParser(t *testing.T) {
 	r.parser = nParser
 	assert.NoError(t, err)
 
-	_ = r.Gather(&acc)
+	_ = r.Gather(context.Background(), &acc)
 	assert.Equal(t, len(acc.Metrics), 2)
 }
 
@@ -245,7 +246,7 @@ func TestCharacterEncoding(t *testing.T) {
 			tt.plugin.SetParser(parser)
 
 			var acc testutil.Accumulator
-			err = tt.plugin.Gather(&acc)
+			err = tt.plugin.Gather(context.Background(), &acc)
 			require.NoError(t, err)
 
 			testutil.RequireMetricsEqual(t, expected, acc.GetCUAMetrics(), testutil.IgnoreTime())

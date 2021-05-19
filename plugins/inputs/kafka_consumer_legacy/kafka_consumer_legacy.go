@@ -1,6 +1,7 @@
 package kafkaconsumerlegacy
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"sync"
@@ -174,7 +175,7 @@ func (k *Kafka) Stop() {
 	}
 }
 
-func (k *Kafka) Gather(acc cua.Accumulator) error {
+func (k *Kafka) Gather(_ context.Context, _ cua.Accumulator) error {
 	return nil
 }
 

@@ -1,6 +1,7 @@
 package aerospike
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"math"
@@ -88,7 +89,7 @@ func (a *Aerospike) Description() string {
 	return "Read stats from aerospike server(s)"
 }
 
-func (a *Aerospike) Gather(acc cua.Accumulator) error {
+func (a *Aerospike) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if !a.initialized {
 		tlsConfig, err := a.ClientConfig.TLSConfig()
 		if err != nil {

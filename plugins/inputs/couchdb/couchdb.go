@@ -1,6 +1,7 @@
 package couchdb
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -104,7 +105,7 @@ func (*CouchDB) SampleConfig() string {
 `
 }
 
-func (c *CouchDB) Gather(accumulator cua.Accumulator) error {
+func (c *CouchDB) Gather(ctx context.Context, accumulator cua.Accumulator) error {
 	var wg sync.WaitGroup
 	for _, u := range c.Hosts {
 		wg.Add(1)

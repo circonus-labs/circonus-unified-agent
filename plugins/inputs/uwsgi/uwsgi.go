@@ -3,6 +3,7 @@
 package uwsgi
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -48,7 +49,7 @@ func (u *Uwsgi) SampleConfig() string {
 }
 
 // Gather collect data from uWSGI Server
-func (u *Uwsgi) Gather(acc cua.Accumulator) error {
+func (u *Uwsgi) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if u.client == nil {
 		u.client = &http.Client{
 			Timeout: u.Timeout.Duration,

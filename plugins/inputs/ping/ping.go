@@ -125,7 +125,7 @@ func (*Ping) SampleConfig() string {
 	return sampleConfig
 }
 
-func (p *Ping) Gather(acc cua.Accumulator) error {
+func (p *Ping) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if p.Interface != "" && p.listenAddr == "" {
 		p.listenAddr = getAddr(p.Interface)
 	}

@@ -3,6 +3,7 @@ package nsd
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"fmt"
 	"net"
 	"os/exec"
@@ -95,7 +96,7 @@ func nsdRunner(cmdName string, timeout internal.Duration, useSudo bool, server s
 }
 
 // Gather collects stats from nsd-control and adds them to the Accumulator
-func (s *NSD) Gather(acc cua.Accumulator) error {
+func (s *NSD) Gather(ctx context.Context, acc cua.Accumulator) error {
 	out, err := s.run(s.Binary, s.Timeout, s.UseSudo, s.Server, s.ConfigFile)
 	if err != nil {
 		return fmt.Errorf("error gathering metrics: %w", err)

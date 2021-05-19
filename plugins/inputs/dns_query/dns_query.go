@@ -1,6 +1,7 @@
 package dnsquery
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net"
@@ -69,7 +70,7 @@ func (d *DNSQuery) SampleConfig() string {
 func (d *DNSQuery) Description() string {
 	return "Query given DNS server and gives statistics"
 }
-func (d *DNSQuery) Gather(acc cua.Accumulator) error {
+func (d *DNSQuery) Gather(ctx context.Context, acc cua.Accumulator) error {
 	var wg sync.WaitGroup
 	d.setDefaultValues()
 

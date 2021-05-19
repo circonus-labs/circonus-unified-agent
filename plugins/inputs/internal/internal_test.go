@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"testing"
 
 	"github.com/circonus-labs/circonus-unified-agent/selfstat"
@@ -13,14 +14,14 @@ func TestSelfPlugin(t *testing.T) {
 	s := NewSelf()
 	acc := &testutil.Accumulator{}
 
-	_ = s.Gather(acc)
+	_ = s.Gather(context.Background(), acc)
 	assert.True(t, acc.HasMeasurement("internal_memstats"))
 
 	// test that a registered stat is incremented
 	stat := selfstat.Register("mytest", "test", map[string]string{"test": "foo"})
 	stat.Incr(1)
 	stat.Incr(2)
-	_ = s.Gather(acc)
+	_ = s.Gather(context.Background(), acc)
 	acc.AssertContainsTaggedFields(t, "internal_mytest",
 		map[string]interface{}{
 			"test": int64(3),
@@ -34,7 +35,7 @@ func TestSelfPlugin(t *testing.T) {
 
 	// test that a registered stat is set properly
 	stat.Set(101)
-	_ = s.Gather(acc)
+	_ = s.Gather(context.Background(), acc)
 	acc.AssertContainsTaggedFields(t, "internal_mytest",
 		map[string]interface{}{
 			"test": int64(101),
@@ -51,7 +52,7 @@ func TestSelfPlugin(t *testing.T) {
 	timing := selfstat.RegisterTiming("mytest", "test_ns", map[string]string{"test": "foo"})
 	timing.Incr(100)
 	timing.Incr(200)
-	_ = s.Gather(acc)
+	_ = s.Gather(context.Background(), acc)
 	acc.AssertContainsTaggedFields(t, "internal_mytest",
 		map[string]interface{}{
 			"test":    int64(101),

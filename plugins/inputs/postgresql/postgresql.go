@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"strings"
 
@@ -66,7 +67,7 @@ func (p *Postgresql) IgnoredColumns() map[string]bool {
 	return ignoredColumns
 }
 
-func (p *Postgresql) Gather(acc cua.Accumulator) error {
+func (p *Postgresql) Gather(ctx context.Context, acc cua.Accumulator) error {
 	var (
 		err     error
 		query   string

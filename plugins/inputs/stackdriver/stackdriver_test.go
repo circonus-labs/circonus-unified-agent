@@ -672,7 +672,7 @@ func TestGather(t *testing.T) {
 				},
 			}
 
-			err := s.Gather(&acc)
+			err := s.Gather(context.Background(), &acc)
 			require.NoError(t, err)
 
 			actual := []cua.Metric{}
@@ -797,7 +797,7 @@ func TestGatherAlign(t *testing.T) {
 				client: client,
 			}
 
-			err := s.Gather(&acc)
+			err := s.Gather(context.Background(), &acc)
 			require.NoError(t, err)
 
 			actual := []cua.Metric{}
@@ -1109,7 +1109,7 @@ func TestListMetricDescriptorFilter(t *testing.T) {
 			s := tt.stackdriver
 			s.client = client
 
-			err := s.Gather(&acc)
+			err := s.Gather(context.Background(), &acc)
 			require.NoError(t, err)
 
 			require.Equal(t, len(client.calls), len(tt.calls))

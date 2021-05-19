@@ -3,6 +3,7 @@ package system
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -30,7 +31,7 @@ func (*Stats) SampleConfig() string {
 `
 }
 
-func (s *Stats) Gather(acc cua.Accumulator) error {
+func (s *Stats) Gather(ctx context.Context, acc cua.Accumulator) error {
 	loadavg, err := load.Avg()
 	if err != nil && !strings.Contains(err.Error(), "not implemented") {
 		return fmt.Errorf("load avg: %w", err)

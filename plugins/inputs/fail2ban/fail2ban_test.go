@@ -1,6 +1,7 @@
 package fail2ban
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -50,7 +51,7 @@ func TestGather(t *testing.T) {
 	execCommand = fakeExecCommand
 	defer func() { execCommand = exec.Command }()
 	var acc testutil.Accumulator
-	err := f.Gather(&acc)
+	err := f.Gather(context.Background(), &acc)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -1,6 +1,7 @@
 package jolokia2
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -79,7 +80,7 @@ func TestJolokia2_ScalarValues(t *testing.T) {
 	plugin := setupPlugin(t, fmt.Sprintf(config, server.URL))
 
 	var acc testutil.Accumulator
-	assert.NoError(t, plugin.Gather(&acc))
+	assert.NoError(t, plugin.Gather(context.Background(), &acc))
 
 	acc.AssertContainsTaggedFields(t, "scalar_without_attribute", map[string]interface{}{
 		"value": 123.0,
@@ -239,7 +240,7 @@ func TestJolokia2_ObjectValues(t *testing.T) {
 	plugin := setupPlugin(t, fmt.Sprintf(config, server.URL))
 
 	var acc testutil.Accumulator
-	assert.NoError(t, plugin.Gather(&acc))
+	assert.NoError(t, plugin.Gather(context.Background(), &acc))
 
 	acc.AssertContainsTaggedFields(t, "object_without_attribute", map[string]interface{}{
 		"biz": 123.0,
@@ -327,7 +328,7 @@ func TestJolokia2_StatusCodes(t *testing.T) {
 	plugin := setupPlugin(t, fmt.Sprintf(config, server.URL))
 
 	var acc testutil.Accumulator
-	assert.NoError(t, plugin.Gather(&acc))
+	assert.NoError(t, plugin.Gather(context.Background(), &acc))
 
 	acc.AssertContainsTaggedFields(t, "ok", map[string]interface{}{
 		"value": 1.0,
@@ -377,7 +378,7 @@ func TestJolokia2_TagRenaming(t *testing.T) {
 	plugin := setupPlugin(t, fmt.Sprintf(config, server.URL))
 
 	var acc testutil.Accumulator
-	assert.NoError(t, plugin.Gather(&acc))
+	assert.NoError(t, plugin.Gather(context.Background(), &acc))
 
 	acc.AssertContainsTaggedFields(t, "default_tag_prefix", map[string]interface{}{
 		"value": 123.0,
@@ -470,7 +471,7 @@ func TestJolokia2_FieldRenaming(t *testing.T) {
 	plugin := setupPlugin(t, fmt.Sprintf(config, server.URL))
 
 	var acc testutil.Accumulator
-	assert.NoError(t, plugin.Gather(&acc))
+	assert.NoError(t, plugin.Gather(context.Background(), &acc))
 
 	acc.AssertContainsTaggedFields(t, "default_field_modifiers", map[string]interface{}{
 		"DEFAULT_PREFIX_hello_DEFAULT_SEPARATOR_world": 123.0,
@@ -578,7 +579,7 @@ func TestJolokia2_MetricMbeanMatching(t *testing.T) {
 	plugin := setupPlugin(t, fmt.Sprintf(config, server.URL))
 
 	var acc testutil.Accumulator
-	assert.NoError(t, plugin.Gather(&acc))
+	assert.NoError(t, plugin.Gather(context.Background(), &acc))
 
 	acc.AssertContainsTaggedFields(t, "mbean_name_and_object_keys", map[string]interface{}{
 		"value": 123.0,
@@ -671,7 +672,7 @@ func TestJolokia2_MetricCompaction(t *testing.T) {
 	plugin := setupPlugin(t, fmt.Sprintf(config, server.URL))
 
 	var acc testutil.Accumulator
-	assert.NoError(t, plugin.Gather(&acc))
+	assert.NoError(t, plugin.Gather(context.Background(), &acc))
 
 	acc.AssertContainsTaggedFields(t, "compact_metric", map[string]interface{}{
 		"value": 123.0,
@@ -732,7 +733,7 @@ func TestJolokia2_ProxyTargets(t *testing.T) {
 	plugin := setupPlugin(t, fmt.Sprintf(config, server.URL))
 
 	var acc testutil.Accumulator
-	assert.NoError(t, plugin.Gather(&acc))
+	assert.NoError(t, plugin.Gather(context.Background(), &acc))
 
 	acc.AssertContainsTaggedFields(t, "hello", map[string]interface{}{
 		"value": 123.0,

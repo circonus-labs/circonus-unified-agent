@@ -2,6 +2,7 @@ package apache
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"net"
 	"net/http"
@@ -56,7 +57,7 @@ func (n *Apache) Description() string {
 	return "Read Apache status information (mod_status)"
 }
 
-func (n *Apache) Gather(acc cua.Accumulator) error {
+func (n *Apache) Gather(ctx context.Context, acc cua.Accumulator) error {
 	var wg sync.WaitGroup
 
 	if len(n.Urls) == 0 {

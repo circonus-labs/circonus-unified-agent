@@ -1,6 +1,7 @@
 package kapacitor_test
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -25,7 +26,7 @@ func TestKapacitor(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	require.NoError(t, plugin.Gather(&acc))
+	require.NoError(t, plugin.Gather(context.Background(), &acc))
 
 	require.Len(t, acc.Metrics, 63)
 
@@ -83,7 +84,7 @@ func TestMissingStats(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	_ = plugin.Gather(&acc)
+	_ = plugin.Gather(context.Background(), &acc)
 
 	require.False(t, acc.HasField("kapacitor_memstats", "alloc_bytes"))
 	require.True(t, acc.HasField("kapacitor", "num_tasks"))
@@ -104,7 +105,7 @@ func TestErrorHandling(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	_ = plugin.Gather(&acc)
+	_ = plugin.Gather(context.Background(), &acc)
 	acc.WaitError(1)
 	require.Equal(t, uint64(0), acc.NMetrics())
 }
@@ -120,7 +121,7 @@ func TestErrorHandling404(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	_ = plugin.Gather(&acc)
+	_ = plugin.Gather(context.Background(), &acc)
 	acc.WaitError(1)
 	require.Equal(t, uint64(0), acc.NMetrics())
 }

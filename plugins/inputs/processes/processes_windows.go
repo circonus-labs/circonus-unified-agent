@@ -16,7 +16,7 @@ func (e *Processes) Init() error {
 	return nil
 }
 
-func (e *Processes) Gather(acc cua.Accumulator) error {
+func (e *Processes) Gather(_ context.Context, _ cua.Accumulator) error {
 	return nil
 }
 

@@ -3,6 +3,7 @@ package ipmisensor
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"fmt"
 	"log"
 	"os/exec"
@@ -78,7 +79,7 @@ func (m *Ipmi) Description() string {
 }
 
 // Gather is the main execution function for the plugin
-func (m *Ipmi) Gather(acc cua.Accumulator) error {
+func (m *Ipmi) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if len(m.Path) == 0 {
 		return fmt.Errorf("ipmitool not found: verify that ipmitool is installed and that ipmitool is in your PATH")
 	}

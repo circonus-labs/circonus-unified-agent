@@ -2,6 +2,7 @@
 package snmp
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"os/exec"
@@ -641,7 +642,7 @@ func TestGather(t *testing.T) {
 	acc := &testutil.Accumulator{}
 
 	tstart := time.Now()
-	_ = s.Gather(acc)
+	_ = s.Gather(context.Background(), acc)
 	tstop := time.Now()
 
 	require.Len(t, acc.Metrics, 2)
@@ -688,7 +689,7 @@ func TestGather_host(t *testing.T) {
 
 	acc := &testutil.Accumulator{}
 
-	_ = s.Gather(acc)
+	_ = s.Gather(context.Background(), acc)
 
 	require.Len(t, acc.Metrics, 1)
 	m := acc.Metrics[0]

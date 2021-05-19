@@ -22,7 +22,7 @@ func TestGatherDefault(t *testing.T) {
 	defer func() { execCommand = exec.Command }()
 	var acc testutil.Accumulator
 
-	err := s.Gather(&acc)
+	err := s.Gather(context.Background(), &acc)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -163,7 +163,7 @@ func TestGatherNotRemoveNumbers(t *testing.T) {
 	defer func() { execCommand = exec.Command }()
 	var acc testutil.Accumulator
 
-	err := s.Gather(&acc)
+	err := s.Gather(context.Background(), &acc)
 	if err != nil {
 		t.Fatal(err)
 	}

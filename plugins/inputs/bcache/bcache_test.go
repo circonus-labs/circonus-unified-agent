@@ -3,6 +3,7 @@
 package bcache
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -97,14 +98,14 @@ func TestBcacheGeneratesMetrics(t *testing.T) {
 	// all devs
 	b := &Bcache{BcachePath: testBcachePath}
 
-	err = b.Gather(&acc)
+	err = b.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 	acc.AssertContainsTaggedFields(t, "bcache", fields, tags)
 
 	// one exist dev
 	b = &Bcache{BcachePath: testBcachePath, BcacheDevs: []string{"bcache0"}}
 
-	err = b.Gather(&acc)
+	err = b.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 	acc.AssertContainsTaggedFields(t, "bcache", fields, tags)
 

@@ -1,6 +1,7 @@
 package influxdb_test
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -193,7 +194,7 @@ func TestErrorResponse(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err := plugin.Gather(&acc)
+	err := plugin.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expected := []error{

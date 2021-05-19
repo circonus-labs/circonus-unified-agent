@@ -2,6 +2,7 @@ package tail
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -293,7 +294,7 @@ cpu,42
 	err = plugin.Start(&acc)
 	require.NoError(t, err)
 	defer plugin.Stop()
-	err = plugin.Gather(&acc)
+	err = plugin.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 	acc.Wait(2)
 	plugin.Stop()
@@ -349,7 +350,7 @@ func TestMultipleMetricsOnFirstLine(t *testing.T) {
 	err = plugin.Start(&acc)
 	require.NoError(t, err)
 	defer plugin.Stop()
-	err = plugin.Gather(&acc)
+	err = plugin.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 	acc.Wait(2)
 	plugin.Stop()

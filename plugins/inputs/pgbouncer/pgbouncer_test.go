@@ -1,6 +1,7 @@
 package pgbouncer
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -27,7 +28,7 @@ func TestPgBouncerGeneratesMetrics(t *testing.T) {
 
 	var acc testutil.Accumulator
 	require.NoError(t, p.Start(&acc))
-	require.NoError(t, p.Gather(&acc))
+	require.NoError(t, p.Gather(context.Background(), &acc))
 
 	intMetrics := []string{
 		"total_requests",

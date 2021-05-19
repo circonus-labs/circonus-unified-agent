@@ -201,8 +201,7 @@ func (d *DockerLogs) matchedContainerName(names []string) string {
 	return ""
 }
 
-func (d *DockerLogs) Gather(acc cua.Accumulator) error {
-	ctx := context.Background()
+func (d *DockerLogs) Gather(ctx context.Context, acc cua.Accumulator) error {
 	acc.SetPrecision(time.Nanosecond)
 
 	ctx, cancel := context.WithTimeout(ctx, d.Timeout.Duration)

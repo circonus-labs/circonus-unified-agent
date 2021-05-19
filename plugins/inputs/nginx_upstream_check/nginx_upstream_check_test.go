@@ -1,6 +1,7 @@
 package nginxupstreamcheck
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -61,7 +62,7 @@ func TestNginxUpstreamCheckData(test *testing.T) {
 
 	var accumulator testutil.Accumulator
 
-	checkError := check.Gather(&accumulator)
+	checkError := check.Gather(context.Background(), &accumulator)
 	require.NoError(test, checkError)
 
 	accumulator.AssertContainsTaggedFields(
@@ -130,6 +131,6 @@ func TestNginxUpstreamCheckRequest(test *testing.T) {
 
 	var accumulator testutil.Accumulator
 
-	checkError := check.Gather(&accumulator)
+	checkError := check.Gather(context.Background(), &accumulator)
 	require.NoError(test, checkError)
 }

@@ -3,9 +3,9 @@ package snmp
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
-	"log"
 	"math"
 	"net"
 	"os/exec"
@@ -16,10 +16,11 @@ import (
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/internal"
+	circmgr "github.com/circonus-labs/circonus-unified-agent/internal/circonus"
 	"github.com/circonus-labs/circonus-unified-agent/internal/snmp"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
 	"github.com/gosnmp/gosnmp"
-	"github.com/influxdata/wlog"
+	"github.com/maier/go-trapmetrics"
 )
 
 const description = `Retrieves SNMP values from remote agents`
@@ -75,13 +76,13 @@ var execCommand = exec.Command
 // execCmd executes the specified command, returning the STDOUT content.
 // If command exits with error status, the output is captured into the returned error.
 func execCmd(arg0 string, args ...string) ([]byte, error) {
-	if wlog.LogLevel() == wlog.DEBUG {
-		quoted := make([]string, 0, len(args))
-		for _, arg := range args {
-			quoted = append(quoted, fmt.Sprintf("%q", arg))
-		}
-		log.Printf("D! [inputs.snmp] executing %q %s", arg0, strings.Join(quoted, " "))
-	}
+	// if wlog.LogLevel() == wlog.DEBUG {
+	// 	quoted := make([]string, 0, len(args))
+	// 	for _, arg := range args {
+	// 		quoted = append(quoted, fmt.Sprintf("%q", arg))
+	// 	}
+	// 	log.Printf("D! [inputs.snmp] executing %q %s", arg0, strings.Join(quoted, " "))
+	// }
 
 	out, err := execCommand(arg0, args...).Output()
 	if err != nil {
@@ -96,6 +97,9 @@ func execCmd(arg0 string, args ...string) ([]byte, error) {
 
 // Snmp holds the configuration for the plugin.
 type Snmp struct {
+	InstanceID string `toml:"instance_id"`
+	FlushDelay string `toml:"flush_delay"`
+
 	// The SNMP agent to query. Format is [SCHEME://]ADDR[:PORT] (e.g.
 	// udp://1.2.3.4:161).  If the scheme is not specified then "udp" is used.
 	Agents []string `toml:"agents"`
@@ -113,13 +117,31 @@ type Snmp struct {
 	Name   string  // deprecated in 1.14; use name_override
 	Fields []Field `toml:"field"`
 
-	connectionCache []snmpConnection
-	initialized     bool
+	flushDelay        time.Duration
+	Log               cua.Logger
+	connectionCache   []snmpConnection
+	initialized       bool
+	metricDestination *trapmetrics.TrapMetrics
 }
 
 func (s *Snmp) init() error {
 	if s.initialized {
 		return nil
+	}
+
+	dest, err := circmgr.NewMetricDestination("snmp_dm", "snmp_dm", s.InstanceID, "", s.Log)
+	if err != nil {
+		return fmt.Errorf("new metric destination: %w", err)
+	}
+
+	s.metricDestination = dest
+
+	if s.FlushDelay != "" {
+		fd, err := time.ParseDuration(s.FlushDelay)
+		if err != nil {
+			return fmt.Errorf("parsing flush_delay (%s): %w", s.FlushDelay, err)
+		}
+		s.flushDelay = fd
 	}
 
 	s.connectionCache = make([]snmpConnection, len(s.Agents))
@@ -310,9 +332,9 @@ func (e *walkError) Unwrap() error {
 }
 
 func init() {
-	inputs.Add("snmp", func() cua.Input {
+	inputs.Add("snmp_dm", func() cua.Input {
 		return &Snmp{
-			Name: "snmp",
+			Name: "snmp_dm",
 			ClientConfig: snmp.ClientConfig{
 				Retries:        3,
 				MaxRepetitions: 10,
@@ -337,7 +359,7 @@ func (s *Snmp) Description() string {
 // Gather retrieves all the configured fields and tables.
 // Any error encountered does not halt the process. The errors are accumulated
 // and returned at the end.
-func (s *Snmp) Gather(acc cua.Accumulator) error {
+func (s *Snmp) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if err := s.init(); err != nil {
 		return err
 	}
@@ -359,13 +381,13 @@ func (s *Snmp) Gather(acc cua.Accumulator) error {
 				Fields: s.Fields,
 			}
 			topTags := map[string]string{}
-			if err := s.gatherTable(acc, gs, t, topTags, false); err != nil {
+			if err := s.gatherTable(gs, t, topTags, false); err != nil {
 				acc.AddError(fmt.Errorf("agent %s: %w", agent, err))
 			}
 
 			// Now is the real tables.
 			for _, t := range s.Tables {
-				if err := s.gatherTable(acc, gs, t, topTags, true); err != nil {
+				if err := s.gatherTable(gs, t, topTags, true); err != nil {
 					acc.AddError(fmt.Errorf("agent %s: gathering table %s: %w", agent, t.Name, err))
 				}
 			}
@@ -373,10 +395,22 @@ func (s *Snmp) Gather(acc cua.Accumulator) error {
 	}
 	wg.Wait()
 
+	if s.flushDelay > time.Duration(0) {
+		fd := internal.RandomDuration(s.flushDelay)
+		s.Log.Debugf("flush delay: %s", fd)
+		select {
+		case <-ctx.Done():
+		case <-time.After(fd):
+		}
+	}
+	if _, err := s.metricDestination.Flush(context.Background()); err != nil {
+		s.Log.Warnf("submitting metrics: %s", err)
+	}
+
 	return nil
 }
 
-func (s *Snmp) gatherTable(acc cua.Accumulator, gs snmpConnection, t Table, topTags map[string]string, walk bool) error {
+func (s *Snmp) gatherTable(gs snmpConnection, t Table, topTags map[string]string, walk bool) error {
 	rt, err := t.Build(gs, walk)
 	if err != nil {
 		return err
@@ -399,7 +433,13 @@ func (s *Snmp) gatherTable(acc cua.Accumulator, gs snmpConnection, t Table, topT
 		if _, ok := tr.Tags[s.AgentHostTag]; !ok {
 			tr.Tags[s.AgentHostTag] = gs.Host()
 		}
-		acc.AddFields(rt.Name, tr.Fields, tr.Tags, rt.Time)
+
+		for metricName, val := range tr.Fields {
+			if err := circmgr.AddMetricToDest(s.metricDestination, "snmp_dm", rt.Name, metricName, tr.Tags, val, rt.Time); err != nil {
+				s.Log.Warnf("adding %s: %s", metricName, err)
+			}
+		}
+		// acc.AddFields(rt.Name, tr.Fields, tr.Tags, rt.Time)
 	}
 
 	return nil

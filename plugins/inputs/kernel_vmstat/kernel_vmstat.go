@@ -24,7 +24,7 @@ func (k *KernelVmstat) SampleConfig() string {
 	return ""
 }
 
-func (k *KernelVmstat) Gather(acc cua.Accumulator) error {
+func (k *KernelVmstat) Gather(ctx context.Context, acc cua.Accumulator) error {
 	data, err := k.getProcVmstat()
 	if err != nil {
 		return err

@@ -1,6 +1,7 @@
 package x509cert
 
 import (
+	"context"
 	"crypto/tls"
 	"encoding/base64"
 	"fmt"
@@ -118,7 +119,7 @@ func TestGatherRemote(t *testing.T) {
 			testErr := false
 
 			acc := testutil.Accumulator{}
-			err = sc.Gather(&acc)
+			err = sc.Gather(context.Background(), &acc)
 			if len(acc.Errors) > 0 {
 				testErr = true
 			}
@@ -190,7 +191,7 @@ func TestGatherLocal(t *testing.T) {
 			error := false
 
 			acc := testutil.Accumulator{}
-			err = sc.Gather(&acc)
+			err = sc.Gather(context.Background(), &acc)
 			if len(acc.Errors) > 0 {
 				error = true
 			}
@@ -228,7 +229,7 @@ func TestTags(t *testing.T) {
 	_ = sc.Init()
 
 	acc := testutil.Accumulator{}
-	err = sc.Gather(&acc)
+	err = sc.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	assert.True(t, acc.HasMeasurement("x509_cert"))
@@ -296,7 +297,7 @@ func TestGatherChain(t *testing.T) {
 			error := false
 
 			acc := testutil.Accumulator{}
-			err = sc.Gather(&acc)
+			err = sc.Gather(context.Background(), &acc)
 			if err != nil {
 				error = true
 			}
@@ -344,7 +345,7 @@ func TestGatherCert(t *testing.T) {
 	_ = m.Init()
 
 	var acc testutil.Accumulator
-	err := m.Gather(&acc)
+	err := m.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	assert.True(t, acc.HasMeasurement("x509_cert"))

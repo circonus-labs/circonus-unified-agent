@@ -1,6 +1,7 @@
 package hddtemp
 
 import (
+	"context"
 	"fmt"
 	"net"
 
@@ -41,7 +42,7 @@ func (*HDDTemp) SampleConfig() string {
 	return hddtempSampleConfig
 }
 
-func (h *HDDTemp) Gather(acc cua.Accumulator) error {
+func (h *HDDTemp) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if h.fetcher == nil {
 		h.fetcher = gohddtemp.New()
 	}

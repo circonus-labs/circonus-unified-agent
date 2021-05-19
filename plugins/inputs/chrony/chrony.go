@@ -1,6 +1,7 @@
 package chrony
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os/exec"
@@ -42,7 +43,7 @@ func (c *Chrony) Init() error {
 	return nil
 }
 
-func (c *Chrony) Gather(acc cua.Accumulator) error {
+func (c *Chrony) Gather(ctx context.Context, acc cua.Accumulator) error {
 	flags := []string{}
 	if !c.DNSLookup {
 		flags = append(flags, "-n")

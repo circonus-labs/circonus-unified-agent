@@ -1,6 +1,7 @@
 package nvidiasmi
 
 import (
+	"context"
 	"encoding/xml"
 	"fmt"
 	"os"
@@ -39,7 +40,7 @@ func (smi *NvidiaSMI) SampleConfig() string {
 }
 
 // Gather implements the Input interface
-func (smi *NvidiaSMI) Gather(acc cua.Accumulator) error {
+func (smi *NvidiaSMI) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if _, err := os.Stat(smi.BinPath); os.IsNotExist(err) {
 		return fmt.Errorf("nvidia-smi binary not at path %s, cannot gather GPU data", smi.BinPath)
 	}

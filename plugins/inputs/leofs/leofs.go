@@ -2,6 +2,7 @@ package leofs
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os/exec"
 	"strconv"
@@ -160,7 +161,7 @@ func (l *LeoFS) Description() string {
 	return "Read metrics from a LeoFS Server via SNMP"
 }
 
-func (l *LeoFS) Gather(acc cua.Accumulator) error {
+func (l *LeoFS) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if len(l.Servers) == 0 {
 		_ = l.gatherServer(defaultEndpoint, ServerTypeManagerMaster, acc)
 		return nil

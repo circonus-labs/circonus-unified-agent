@@ -2,6 +2,7 @@ package ciscotelemetrymdt
 
 import (
 	"bytes"
+	"context"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -547,7 +548,7 @@ func (c *CiscoTelemetryMDT) Description() string {
 }
 
 // Gather plugin measurements (unused)
-func (c *CiscoTelemetryMDT) Gather(_ cua.Accumulator) error {
+func (c *CiscoTelemetryMDT) Gather(_ context.Context, _ cua.Accumulator) error {
 	return nil
 }
 

@@ -67,7 +67,7 @@ func (ps *PubSub) SampleConfig() string {
 }
 
 // Gather does nothing for this service input.
-func (ps *PubSub) Gather(acc cua.Accumulator) error {
+func (ps *PubSub) Gather(_ context.Context, _ cua.Accumulator) error {
 	return nil
 }
 

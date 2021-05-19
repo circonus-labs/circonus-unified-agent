@@ -4,6 +4,7 @@ package processes
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -28,7 +29,7 @@ type Processes struct {
 	forceProc bool
 }
 
-func (p *Processes) Gather(acc cua.Accumulator) error {
+func (p *Processes) Gather(ctx context.Context, acc cua.Accumulator) error {
 	// Get an empty map of metric fields
 	fields := getEmptyFields()
 

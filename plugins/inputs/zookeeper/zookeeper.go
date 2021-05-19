@@ -77,8 +77,7 @@ func (z *Zookeeper) dial(ctx context.Context, addr string) (net.Conn, error) {
 }
 
 // Gather reads stats from all configured servers accumulates stats
-func (z *Zookeeper) Gather(acc cua.Accumulator) error {
-	ctx := context.Background()
+func (z *Zookeeper) Gather(ctx context.Context, acc cua.Accumulator) error {
 
 	if !z.initialized {
 		tlsConfig, err := z.ClientConfig.TLSConfig()

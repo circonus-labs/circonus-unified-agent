@@ -1,6 +1,8 @@
 package jolokia2
 
 import (
+	"context"
+
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/internal"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/common/tls"
@@ -70,7 +72,7 @@ func (jp *JolokiaProxy) Description() string {
 	return "Read JMX metrics from a Jolokia REST proxy endpoint"
 }
 
-func (jp *JolokiaProxy) Gather(acc cua.Accumulator) error {
+func (jp *JolokiaProxy) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if jp.gatherer == nil {
 		jp.gatherer = NewGatherer(jp.createMetrics())
 	}

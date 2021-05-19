@@ -216,7 +216,7 @@ func (s *Suricata) parse(acc cua.Accumulator, sjson []byte) {
 
 // Gather measures and submits one full set of telemetry.
 // Not used here, submission is completely input-driven.
-func (s *Suricata) Gather(acc cua.Accumulator) error {
+func (s *Suricata) Gather(_ context.Context, _ cua.Accumulator) error {
 	return nil
 }
 

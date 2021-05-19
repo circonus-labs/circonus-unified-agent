@@ -2,6 +2,7 @@ package powerdnsrecursor
 
 import (
 	"bufio"
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -58,7 +59,7 @@ func (p *PowerdnsRecursor) Init() error {
 	return nil
 }
 
-func (p *PowerdnsRecursor) Gather(acc cua.Accumulator) error {
+func (p *PowerdnsRecursor) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if len(p.UnixSockets) == 0 {
 		return p.gatherServer("/var/run/pdns_recursor.controlsocket", acc)
 	}

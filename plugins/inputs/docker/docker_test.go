@@ -280,7 +280,7 @@ func TestDocker_WindowsMemoryContainerStats(t *testing.T) {
 			}, nil
 		},
 	}
-	err := d.Gather(&acc)
+	err := d.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 }
 
@@ -399,7 +399,7 @@ func TestContainerLabels(t *testing.T) {
 				LabelExclude: tt.exclude,
 			}
 
-			err := d.Gather(&acc)
+			err := d.Gather(context.Background(), &acc)
 			require.NoError(t, err)
 
 			// Grab tags from a container metric
@@ -522,7 +522,7 @@ func TestContainerNames(t *testing.T) {
 				ContainerExclude: tt.exclude,
 			}
 
-			err := d.Gather(&acc)
+			err := d.Gather(context.Background(), &acc)
 			require.NoError(t, err)
 
 			// Set of expected names
@@ -736,7 +736,7 @@ func TestContainerStatus(t *testing.T) {
 				now = time.Now
 			}()
 
-			err := d.Gather(&acc)
+			err := d.Gather(context.Background(), &acc)
 			require.NoError(t, err)
 
 			actual := FilterMetrics(acc.GetCUAMetrics(), func(m cua.Metric) bool {
@@ -907,7 +907,7 @@ func TestDockerGatherSwarmInfo(t *testing.T) {
 	err := acc.GatherError(d.Gather)
 	require.NoError(t, err)
 
-	_ = d.gatherSwarmInfo(&acc)
+	_ = d.gatherSwarmInfo(context.Background(), &acc)
 
 	// test docker_container_net measurement
 	acc.AssertContainsTaggedFields(t,
@@ -1015,7 +1015,7 @@ func TestContainerStateFilter(t *testing.T) {
 				ContainerStateExclude: tt.exclude,
 			}
 
-			err := d.Gather(&acc)
+			err := d.Gather(context.Background(), &acc)
 			require.NoError(t, err)
 		})
 	}
@@ -1076,7 +1076,7 @@ func TestContainerName(t *testing.T) {
 				newClient: tt.clientFunc,
 			}
 			var acc testutil.Accumulator
-			err := d.Gather(&acc)
+			err := d.Gather(context.Background(), &acc)
 			require.NoError(t, err)
 
 			for _, metric := range acc.Metrics {

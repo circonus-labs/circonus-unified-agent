@@ -35,7 +35,7 @@ func TestSynproxyFileHeaderMismatch(t *testing.T) {
 	}
 
 	acc := testutil.Accumulator{}
-	err := k.Gather(&acc)
+	err := k.Gather(context.Background(), &acc)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "invalid number of columns in data")
 }
@@ -49,7 +49,7 @@ func TestSynproxyFileInvalidHex(t *testing.T) {
 	}
 
 	acc := testutil.Accumulator{}
-	err := k.Gather(&acc)
+	err := k.Gather(context.Background(), &acc)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "invalid value")
 }
@@ -64,7 +64,7 @@ func TestNoSynproxyFile(t *testing.T) {
 	}
 
 	acc := testutil.Accumulator{}
-	err := k.Gather(&acc)
+	err := k.Gather(context.Background(), &acc)
 	assert.Error(t, err)
 }
 
@@ -144,7 +144,7 @@ func testSynproxyFileData(t *testing.T, fileData string, cuaData map[string]inte
 	}
 
 	acc := testutil.Accumulator{}
-	err := k.Gather(&acc)
+	err := k.Gather(context.Background(), &acc)
 	assert.NoError(t, err)
 
 	acc.AssertContainsFields(t, "synproxy", cuaData)

@@ -2,6 +2,7 @@ package tengine
 
 import (
 	"bufio"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -50,7 +51,7 @@ func (n *Tengine) Description() string {
 	return "Read Tengine's basic status information (ngx_http_reqstat_module)"
 }
 
-func (n *Tengine) Gather(acc cua.Accumulator) error {
+func (n *Tengine) Gather(ctx context.Context, acc cua.Accumulator) error {
 	var wg sync.WaitGroup
 
 	// Create an HTTP client that is re-used for each

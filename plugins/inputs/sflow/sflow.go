@@ -2,6 +2,7 @@ package sflow
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"net"
@@ -100,7 +101,7 @@ func (s *SFlow) Start(acc cua.Accumulator) error {
 }
 
 // Gather is a NOOP for sFlow as it receives, asynchronously, sFlow network packets
-func (s *SFlow) Gather(_ cua.Accumulator) error {
+func (s *SFlow) Gather(_ context.Context, _ cua.Accumulator) error {
 	return nil
 }
 

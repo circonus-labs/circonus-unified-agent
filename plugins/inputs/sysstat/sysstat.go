@@ -135,7 +135,7 @@ func (*Sysstat) SampleConfig() string {
 	return sampleConfig
 }
 
-func (s *Sysstat) Gather(acc cua.Accumulator) error {
+func (s *Sysstat) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if s.SadcInterval.Duration != 0 {
 		// Collect interval is calculated as interval - parseInterval
 		s.interval = int(s.SadcInterval.Duration.Seconds()) + parseInterval

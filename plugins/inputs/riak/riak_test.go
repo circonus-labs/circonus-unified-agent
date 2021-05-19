@@ -1,6 +1,7 @@
 package riak
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -31,7 +32,7 @@ func TestRiak(t *testing.T) {
 	acc := &testutil.Accumulator{}
 
 	// Gather data from the test server
-	err = riak.Gather(acc)
+	err = riak.Gather(context.Background(), acc)
 	require.NoError(t, err)
 
 	// Expect the correct values for all known keys

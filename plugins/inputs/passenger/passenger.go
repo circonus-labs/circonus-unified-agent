@@ -2,6 +2,7 @@ package passenger
 
 import (
 	"bytes"
+	"context"
 	"encoding/xml"
 	"fmt"
 	"os/exec"
@@ -145,7 +146,7 @@ func (*passenger) Description() string {
 	return "Read metrics of passenger using passenger-status"
 }
 
-func (p *passenger) Gather(acc cua.Accumulator) error {
+func (p *passenger) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if p.Command == "" {
 		p.Command = "passenger-status -v --show=xml"
 	}

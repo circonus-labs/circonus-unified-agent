@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -126,9 +127,9 @@ func (r *RunningInput) MakeMetric(metric cua.Metric) cua.Metric {
 	return m
 }
 
-func (r *RunningInput) Gather(acc cua.Accumulator) error {
+func (r *RunningInput) Gather(ctx context.Context, acc cua.Accumulator) error {
 	start := time.Now()
-	err := r.Input.Gather(acc)
+	err := r.Input.Gather(ctx, acc)
 	elapsed := time.Since(start)
 	r.GatherTime.Incr(elapsed.Nanoseconds())
 	if err != nil {

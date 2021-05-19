@@ -1,6 +1,7 @@
 package kubernetes
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -112,7 +113,7 @@ func (k *Kubernetes) Init() error {
 }
 
 // Gather collects kubernetes metrics from a given URL
-func (k *Kubernetes) Gather(acc cua.Accumulator) error {
+func (k *Kubernetes) Gather(ctx context.Context, acc cua.Accumulator) error {
 	acc.AddError(k.gatherSummary(k.URL, acc))
 	return nil
 }

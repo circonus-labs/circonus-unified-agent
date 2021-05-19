@@ -33,7 +33,7 @@ type cacheStatus struct {
 	dirty             int64
 }
 
-func (c *DMCache) Gather(acc cua.Accumulator) error {
+func (c *DMCache) Gather(ctx context.Context, acc cua.Accumulator) error {
 	outputLines, err := c.getCurrentStatus()
 	if err != nil {
 		return err

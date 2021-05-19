@@ -2,6 +2,7 @@ package raindrops
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"net"
 	"net/http"
@@ -33,7 +34,7 @@ func (r *Raindrops) Description() string {
 	return "Read raindrops stats (raindrops - real-time stats for preforking Rack servers)"
 }
 
-func (r *Raindrops) Gather(acc cua.Accumulator) error {
+func (r *Raindrops) Gather(ctx context.Context, acc cua.Accumulator) error {
 	var wg sync.WaitGroup
 
 	for _, u := range r.URLs {

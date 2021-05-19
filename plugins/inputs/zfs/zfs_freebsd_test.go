@@ -77,7 +77,7 @@ func TestZfsPoolMetrics(t *testing.T) {
 		sysctl:       mock_sysctl,
 		zpool:        mock_zpool,
 	}
-	err := z.Gather(&acc)
+	err := z.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	require.False(t, acc.HasMeasurement("zfs_pool"))
@@ -89,7 +89,7 @@ func TestZfsPoolMetrics(t *testing.T) {
 		sysctl:       mock_sysctl,
 		zpool:        mock_zpool,
 	}
-	err = z.Gather(&acc)
+	err = z.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	//one pool, all metrics
@@ -112,7 +112,7 @@ func TestZfsPoolMetrics_unavail(t *testing.T) {
 		sysctl:       mock_sysctl,
 		zpool:        mock_zpool_unavail,
 	}
-	err := z.Gather(&acc)
+	err := z.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	require.False(t, acc.HasMeasurement("zfs_pool"))
@@ -124,7 +124,7 @@ func TestZfsPoolMetrics_unavail(t *testing.T) {
 		sysctl:       mock_sysctl,
 		zpool:        mock_zpool_unavail,
 	}
-	err = z.Gather(&acc)
+	err = z.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	//one pool, UNAVAIL
@@ -146,7 +146,7 @@ func TestZfsDatasetMetrics(t *testing.T) {
 		sysctl:       mock_sysctl,
 		zdataset:     mock_zdataset,
 	}
-	err := z.Gather(&acc)
+	err := z.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	require.False(t, acc.HasMeasurement("zfs_dataset"))
@@ -158,7 +158,7 @@ func TestZfsDatasetMetrics(t *testing.T) {
 		sysctl:         mock_sysctl,
 		zdataset:       mock_zdataset,
 	}
-	err = z.Gather(&acc)
+	err = z.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	//one pool, all metrics
@@ -179,7 +179,7 @@ func TestZfsGeneratesMetrics(t *testing.T) {
 		sysctl:       mock_sysctl,
 		zpool:        mock_zpool,
 	}
-	err := z.Gather(&acc)
+	err := z.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	//four pool, vdev_cache_stats metrics
@@ -197,7 +197,7 @@ func TestZfsGeneratesMetrics(t *testing.T) {
 		sysctl:       mock_sysctl,
 		zpool:        mock_zpool,
 	}
-	err = z.Gather(&acc)
+	err = z.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	//four pool, vdev_cache_stats and zfetchstats metrics

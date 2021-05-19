@@ -1,6 +1,7 @@
 package cloudwatch
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"net/http"
@@ -177,7 +178,7 @@ func (c *CloudWatch) Description() string {
 
 // Gather takes in an accumulator and adds the metrics that the Input
 // gathers. This is called every "interval".
-func (c *CloudWatch) Gather(acc cua.Accumulator) error {
+func (c *CloudWatch) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if c.statFilter == nil {
 		var err error
 		// Set config level filter (won't change throughout life of plugin).

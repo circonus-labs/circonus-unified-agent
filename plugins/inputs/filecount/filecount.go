@@ -1,6 +1,7 @@
 package filecount
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -245,7 +246,7 @@ func (fc *FileCount) filter(file os.FileInfo) (bool, error) {
 	return true, nil
 }
 
-func (fc *FileCount) Gather(acc cua.Accumulator) error {
+func (fc *FileCount) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if fc.globPaths == nil {
 		fc.initGlobPaths(acc)
 	}

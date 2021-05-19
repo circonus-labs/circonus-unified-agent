@@ -1,6 +1,7 @@
 package haproxy
 
 import (
+	"context"
 	"encoding/csv"
 	"errors"
 	"fmt"
@@ -72,7 +73,7 @@ func (*haproxy) Description() string {
 
 // Reads stats from all configured servers accumulates stats.
 // Returns one of the errors encountered while gather stats (if any).
-func (h *haproxy) Gather(acc cua.Accumulator) error {
+func (h *haproxy) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if len(h.Servers) == 0 {
 		return h.gatherServer("http://127.0.0.1:1936/haproxy?stats", acc)
 	}

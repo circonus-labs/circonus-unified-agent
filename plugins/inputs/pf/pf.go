@@ -2,6 +2,7 @@ package pf
 
 import (
 	"bufio"
+	"context"
 	"errors"
 	"fmt"
 	"os/exec"
@@ -39,7 +40,7 @@ func (pf *PF) SampleConfig() string {
 }
 
 // Gather is the entrypoint for the plugin.
-func (pf *PF) Gather(acc cua.Accumulator) error {
+func (pf *PF) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if pf.PfctlCommand == "" {
 		var err error
 		if pf.PfctlCommand, pf.PfctlArgs, err = pf.buildPfctlCmd(); err != nil {

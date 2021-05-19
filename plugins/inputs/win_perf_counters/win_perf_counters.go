@@ -339,7 +339,7 @@ func (m *WinPerfCounters) ParseConfig() error {
 	return err
 }
 
-func (m *WinPerfCounters) Gather(acc cua.Accumulator) error {
+func (m *WinPerfCounters) Gather(ctx context.Context, acc cua.Accumulator) error {
 	// Parse the config once
 	var err error
 

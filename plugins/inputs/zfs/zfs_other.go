@@ -3,11 +3,13 @@
 package zfs
 
 import (
+	"context"
+
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
 )
 
-func (z *Zfs) Gather(acc cua.Accumulator) error {
+func (z *Zfs) Gather(_ context.Context, _ cua.Accumulator) error {
 	return nil
 }
 

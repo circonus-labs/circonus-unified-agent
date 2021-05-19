@@ -154,7 +154,7 @@ func (e *EventHub) SetParser(parser parsers.Parser) {
 }
 
 // Gather function is unused
-func (*EventHub) Gather(cua.Accumulator) error {
+func (*EventHub) Gather(_ context.Context, _ cua.Accumulator) error {
 	return nil
 }
 

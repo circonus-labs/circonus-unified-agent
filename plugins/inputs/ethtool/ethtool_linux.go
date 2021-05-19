@@ -18,7 +18,7 @@ type CommandEthtool struct {
 	ethtool *ethtool.Ethtool
 }
 
-func (e *Ethtool) Gather(acc cua.Accumulator) error {
+func (e *Ethtool) Gather(ctx context.Context, acc cua.Accumulator) error {
 
 	// Get the list of interfaces
 	interfaces, err := e.command.Interfaces()

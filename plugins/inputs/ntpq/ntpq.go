@@ -3,6 +3,7 @@ package ntpq
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"fmt"
 	"os/exec"
 	"regexp"
@@ -41,7 +42,7 @@ func (n *NTPQ) SampleConfig() string {
 `
 }
 
-func (n *NTPQ) Gather(acc cua.Accumulator) error {
+func (n *NTPQ) Gather(ctx context.Context, acc cua.Accumulator) error {
 	out, err := n.runQ()
 	if err != nil {
 		return err

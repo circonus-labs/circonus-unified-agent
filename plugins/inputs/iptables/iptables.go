@@ -52,7 +52,7 @@ func (ipt *Iptables) SampleConfig() string {
 }
 
 // Gather gathers iptables packets and bytes throughput from the configured tables and chains.
-func (ipt *Iptables) Gather(acc cua.Accumulator) error {
+func (ipt *Iptables) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if ipt.Table == "" || len(ipt.Chains) == 0 {
 		return nil
 	}

@@ -2,6 +2,7 @@ package nginxvts
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -49,7 +50,7 @@ func (n *NginxVTS) Description() string {
 	return "Read Nginx virtual host traffic status module information (nginx-module-vts)"
 }
 
-func (n *NginxVTS) Gather(acc cua.Accumulator) error {
+func (n *NginxVTS) Gather(ctx context.Context, acc cua.Accumulator) error {
 	var wg sync.WaitGroup
 
 	// Create an HTTP client that is re-used for each

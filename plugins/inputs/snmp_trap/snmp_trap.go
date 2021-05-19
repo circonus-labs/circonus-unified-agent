@@ -3,6 +3,7 @@ package snmptrap
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"fmt"
 	"net"
 	"os/exec"
@@ -94,7 +95,7 @@ func (s *SnmpTrap) Description() string {
 	return "Receive SNMP traps"
 }
 
-func (s *SnmpTrap) Gather(_ cua.Accumulator) error {
+func (s *SnmpTrap) Gather(_ context.Context, _ cua.Accumulator) error {
 	return nil
 }
 

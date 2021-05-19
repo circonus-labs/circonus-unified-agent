@@ -1,6 +1,7 @@
 package clickhouse
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -294,7 +295,7 @@ func TestGather(t *testing.T) {
 		acc = &testutil.Accumulator{}
 	)
 	defer ts.Close()
-	_ = ch.Gather(acc)
+	_ = ch.Gather(context.Background(), acc)
 
 	acc.AssertContainsTaggedFields(t, "clickhouse_tables",
 		map[string]interface{}{
@@ -467,7 +468,7 @@ func TestGatherWithSomeTablesNotExists(t *testing.T) {
 		acc = &testutil.Accumulator{}
 	)
 	defer ts.Close()
-	_ = ch.Gather(acc)
+	_ = ch.Gather(context.Background(), acc)
 
 	acc.AssertDoesNotContainMeasurement(t, "clickhouse_zookeeper")
 	acc.AssertDoesNotContainMeasurement(t, "clickhouse_replication_queue")
@@ -495,7 +496,7 @@ func TestWrongJSONMarshalling(t *testing.T) {
 		acc = &testutil.Accumulator{}
 	)
 	defer ts.Close()
-	_ = ch.Gather(acc)
+	_ = ch.Gather(context.Background(), acc)
 
 	assert.Equal(t, 0, len(acc.Metrics))
 	allMeasurements := []string{
@@ -528,7 +529,7 @@ func TestOfflineServer(t *testing.T) {
 			},
 		}
 	)
-	_ = ch.Gather(acc)
+	_ = ch.Gather(context.Background(), acc)
 
 	assert.Equal(t, 0, len(acc.Metrics))
 	allMeasurements := []string{
@@ -580,7 +581,7 @@ func TestAutoDiscovery(t *testing.T) {
 	acc := &testutil.Accumulator{}
 
 	defer ts.Close()
-	if err := ch.Gather(acc); err != nil {
+	if err := ch.Gather(context.Background(), acc); err != nil {
 		assert.NoError(t, err, "gather error")
 	}
 }

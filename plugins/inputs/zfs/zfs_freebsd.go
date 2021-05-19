@@ -128,7 +128,7 @@ func (z *Zfs) gatherDatasetStats(acc cua.Accumulator) (string, error) {
 	return strings.Join(datasets, "::"), nil
 }
 
-func (z *Zfs) Gather(acc cua.Accumulator) error {
+func (z *Zfs) Gather(ctx context.Context, acc cua.Accumulator) error {
 	kstatMetrics := z.KstatMetrics
 	if len(kstatMetrics) == 0 {
 		kstatMetrics = []string{"arcstats", "zfetchstats", "vdev_cache_stats"}

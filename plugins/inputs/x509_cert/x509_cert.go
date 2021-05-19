@@ -3,6 +3,7 @@ package x509cert
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
@@ -192,7 +193,7 @@ func getTags(cert *x509.Certificate, location string) map[string]string {
 }
 
 // Gather adds metrics into the accumulator.
-func (c *X509Cert) Gather(acc cua.Accumulator) error {
+func (c *X509Cert) Gather(ctx context.Context, acc cua.Accumulator) error {
 	now := time.Now()
 
 	for _, location := range c.Sources {

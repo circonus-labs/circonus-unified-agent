@@ -12,7 +12,7 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 )
 
-func (k *Synproxy) Gather(acc cua.Accumulator) error {
+func (k *Synproxy) Gather(ctx context.Context, acc cua.Accumulator) error {
 	data, err := k.getSynproxyStat()
 	if err != nil {
 		return err

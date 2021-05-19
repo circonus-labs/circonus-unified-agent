@@ -46,7 +46,7 @@ func TestGather(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			var acc testutil.Accumulator
 			n.Servers = test.servers
-			_ = n.Gather(&acc)
+			_ = n.Gather(context.Background(), &acc)
 			if len(acc.Errors) != len(test.servers) {
 				t.Errorf("Number of servers mismatch. got=%d, want=%d",
 					len(acc.Errors), len(test.servers))

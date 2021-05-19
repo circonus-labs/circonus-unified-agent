@@ -68,7 +68,7 @@ func (c *Conntrack) SampleConfig() string {
 	return sampleConfig
 }
 
-func (c *Conntrack) Gather(acc cua.Accumulator) error {
+func (c *Conntrack) Gather(ctx context.Context, acc cua.Accumulator) error {
 	c.setDefaults()
 
 	var metricKey string

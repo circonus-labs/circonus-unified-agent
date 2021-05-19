@@ -1,6 +1,7 @@
 package fireboard
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -87,7 +88,7 @@ func (r *Fireboard) Init() error {
 }
 
 // Gather Reads stats from all configured servers.
-func (r *Fireboard) Gather(acc cua.Accumulator) error {
+func (r *Fireboard) Gather(ctx context.Context, acc cua.Accumulator) error {
 
 	// Perform the GET request to the fireboard servers
 	req, err := http.NewRequest("GET", r.URL, nil)

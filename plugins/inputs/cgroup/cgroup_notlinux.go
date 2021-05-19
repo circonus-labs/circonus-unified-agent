@@ -2,8 +2,12 @@
 
 package cgroup
 
-import "github.com/circonus-labs/circonus-unified-agent/cua"
+import (
+	"context"
 
-func (g *CGroup) Gather(acc cua.Accumulator) error {
+	"github.com/circonus-labs/circonus-unified-agent/cua"
+)
+
+func (g *CGroup) Gather(_ context.Context, _ cua.Accumulator) error {
 	return nil
 }

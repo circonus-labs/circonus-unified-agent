@@ -1,6 +1,7 @@
 package sqlserver
 
 import (
+	"context"
 	"strconv"
 	"strings"
 	"testing"
@@ -129,12 +130,12 @@ func TestSqlServer_MultipleInstance(t *testing.T) {
 	}
 
 	var acc, acc2 testutil.Accumulator
-	err := s.Gather(&acc)
+	err := s.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 	assert.Equal(t, s.isInitialized, true)
 	assert.Equal(t, s2.isInitialized, false)
 
-	err = s2.Gather(&acc2)
+	err = s2.Gather(context.Background(), &acc2)
 	require.NoError(t, err)
 	assert.Equal(t, s.isInitialized, true)
 	assert.Equal(t, s2.isInitialized, true)

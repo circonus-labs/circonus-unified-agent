@@ -3,6 +3,7 @@
 package httpresponse
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -172,7 +173,7 @@ func TestHeaders(t *testing.T) {
 		},
 	}
 	var acc testutil.Accumulator
-	err := h.Gather(&acc)
+	err := h.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expectedFields := map[string]interface{}{
@@ -210,7 +211,7 @@ func TestFields(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err := h.Gather(&acc)
+	err := h.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expectedFields := map[string]interface{}{
@@ -249,7 +250,7 @@ func TestResponseBodyField(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err := h.Gather(&acc)
+	err := h.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expectedFields := map[string]interface{}{
@@ -284,7 +285,7 @@ func TestResponseBodyField(t *testing.T) {
 	}
 
 	acc = testutil.Accumulator{}
-	err = h.Gather(&acc)
+	err = h.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expectedFields = map[string]interface{}{
@@ -318,7 +319,7 @@ func TestResponseBodyMaxSize(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err := h.Gather(&acc)
+	err := h.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expectedFields := map[string]interface{}{
@@ -352,7 +353,7 @@ func TestHTTPHeaderTags(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err := h.Gather(&acc)
+	err := h.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expectedFields := map[string]interface{}{
@@ -387,7 +388,7 @@ func TestHTTPHeaderTags(t *testing.T) {
 	}
 
 	acc = testutil.Accumulator{}
-	err = h.Gather(&acc)
+	err = h.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expectedTags = map[string]interface{}{
@@ -410,7 +411,7 @@ func TestHTTPHeaderTags(t *testing.T) {
 	}
 
 	acc = testutil.Accumulator{}
-	err = h.Gather(&acc)
+	err = h.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expectedFields = map[string]interface{}{
@@ -469,7 +470,7 @@ func TestInterface(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err = h.Gather(&acc)
+	err = h.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expectedFields := map[string]interface{}{
@@ -506,7 +507,7 @@ func TestRedirects(t *testing.T) {
 		FollowRedirects: true,
 	}
 	var acc testutil.Accumulator
-	err := h.Gather(&acc)
+	err := h.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expectedFields := map[string]interface{}{
@@ -537,7 +538,7 @@ func TestRedirects(t *testing.T) {
 		FollowRedirects: true,
 	}
 	acc = testutil.Accumulator{}
-	err = h.Gather(&acc)
+	err = h.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expectedFields = map[string]interface{}{
@@ -574,7 +575,7 @@ func TestMethod(t *testing.T) {
 		FollowRedirects: true,
 	}
 	var acc testutil.Accumulator
-	err := h.Gather(&acc)
+	err := h.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expectedFields := map[string]interface{}{
@@ -605,7 +606,7 @@ func TestMethod(t *testing.T) {
 		FollowRedirects: true,
 	}
 	acc = testutil.Accumulator{}
-	err = h.Gather(&acc)
+	err = h.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expectedFields = map[string]interface{}{
@@ -637,7 +638,7 @@ func TestMethod(t *testing.T) {
 		FollowRedirects: true,
 	}
 	acc = testutil.Accumulator{}
-	err = h.Gather(&acc)
+	err = h.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expectedFields = map[string]interface{}{
@@ -674,7 +675,7 @@ func TestBody(t *testing.T) {
 		FollowRedirects: true,
 	}
 	var acc testutil.Accumulator
-	err := h.Gather(&acc)
+	err := h.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expectedFields := map[string]interface{}{
@@ -704,7 +705,7 @@ func TestBody(t *testing.T) {
 		FollowRedirects: true,
 	}
 	acc = testutil.Accumulator{}
-	err = h.Gather(&acc)
+	err = h.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expectedFields = map[string]interface{}{
@@ -740,7 +741,7 @@ func TestStringMatch(t *testing.T) {
 		FollowRedirects: true,
 	}
 	var acc testutil.Accumulator
-	err := h.Gather(&acc)
+	err := h.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expectedFields := map[string]interface{}{
@@ -778,7 +779,7 @@ func TestStringMatchJson(t *testing.T) {
 		FollowRedirects: true,
 	}
 	var acc testutil.Accumulator
-	err := h.Gather(&acc)
+	err := h.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expectedFields := map[string]interface{}{
@@ -817,7 +818,7 @@ func TestStringMatchFail(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err := h.Gather(&acc)
+	err := h.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expectedFields := map[string]interface{}{
@@ -858,7 +859,7 @@ func TestTimeout(t *testing.T) {
 		FollowRedirects: true,
 	}
 	var acc testutil.Accumulator
-	err := h.Gather(&acc)
+	err := h.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expectedFields := map[string]interface{}{
@@ -894,7 +895,7 @@ func TestBadRegex(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err := h.Gather(&acc)
+	err := h.Gather(context.Background(), &acc)
 	require.Error(t, err)
 
 	absentFields := []string{"http_response_code", "response_time", "content_length", "response_string_match", "result_type", "result_code"}
@@ -914,7 +915,7 @@ func TestNetworkErrors(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err := h.Gather(&acc)
+	err := h.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expectedFields := map[string]interface{}{
@@ -941,7 +942,7 @@ func TestNetworkErrors(t *testing.T) {
 	}
 
 	acc = testutil.Accumulator{}
-	err = h.Gather(&acc)
+	err = h.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expectedFields = map[string]interface{}{
@@ -975,7 +976,7 @@ func TestContentLength(t *testing.T) {
 		FollowRedirects: true,
 	}
 	var acc testutil.Accumulator
-	err := h.Gather(&acc)
+	err := h.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expectedFields := map[string]interface{}{
@@ -1006,7 +1007,7 @@ func TestContentLength(t *testing.T) {
 		FollowRedirects: true,
 	}
 	acc = testutil.Accumulator{}
-	err = h.Gather(&acc)
+	err = h.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expectedFields = map[string]interface{}{
@@ -1042,7 +1043,7 @@ func TestRedirect(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err := plugin.Gather(&acc)
+	err := plugin.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expected := []cua.Metric{
@@ -1095,7 +1096,7 @@ func TestBasicAuth(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err := h.Gather(&acc)
+	err := h.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expectedFields := map[string]interface{}{
@@ -1128,7 +1129,7 @@ func TestStatusCodeMatchFail(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err := h.Gather(&acc)
+	err := h.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expectedFields := map[string]interface{}{
@@ -1161,7 +1162,7 @@ func TestStatusCodeMatch(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err := h.Gather(&acc)
+	err := h.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expectedFields := map[string]interface{}{
@@ -1195,7 +1196,7 @@ func TestStatusCodeAndStringMatch(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err := h.Gather(&acc)
+	err := h.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expectedFields := map[string]interface{}{
@@ -1230,7 +1231,7 @@ func TestStatusCodeAndStringMatchFail(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err := h.Gather(&acc)
+	err := h.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expectedFields := map[string]interface{}{

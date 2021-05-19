@@ -2,6 +2,7 @@ package httplistenerv2
 
 import (
 	"compress/gzip"
+	"context"
 	"crypto/subtle"
 	"crypto/tls"
 	"fmt"
@@ -115,7 +116,7 @@ func (h *HTTPListenerV2) Description() string {
 	return "Generic HTTP write listener"
 }
 
-func (h *HTTPListenerV2) Gather(_ cua.Accumulator) error {
+func (h *HTTPListenerV2) Gather(_ context.Context, _ cua.Accumulator) error {
 	return nil
 }
 

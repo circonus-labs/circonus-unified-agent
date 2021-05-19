@@ -1,6 +1,7 @@
 package netresponse
 
 import (
+	"context"
 	"net"
 	"sync"
 	"testing"
@@ -35,7 +36,7 @@ func TestBadProtocol(t *testing.T) {
 		Address:  ":9999",
 	}
 	// Error
-	err1 := c.Gather(&acc)
+	err1 := c.Gather(context.Background(), &acc)
 	require.Error(t, err1)
 	assert.Equal(t, "Bad protocol", err1.Error())
 }
@@ -46,7 +47,7 @@ func TestNoPort(t *testing.T) {
 		Protocol: "tcp",
 		Address:  ":",
 	}
-	err1 := c.Gather(&acc)
+	err1 := c.Gather(context.Background(), &acc)
 	require.Error(t, err1)
 	assert.Equal(t, "Bad port", err1.Error())
 }
@@ -57,7 +58,7 @@ func TestAddressOnly(t *testing.T) {
 		Protocol: "tcp",
 		Address:  "127.0.0.1",
 	}
-	err1 := c.Gather(&acc)
+	err1 := c.Gather(context.Background(), &acc)
 	require.Error(t, err1)
 	assert.Equal(t, "address 127.0.0.1: missing port in address", err1.Error())
 }
@@ -76,10 +77,10 @@ func TestSendExpectStrings(t *testing.T) {
 		Send:     "toast",
 		Expect:   "",
 	}
-	err1 := tc.Gather(&acc)
+	err1 := tc.Gather(context.Background(), &acc)
 	require.Error(t, err1)
 	assert.Equal(t, "Send string cannot be empty", err1.Error())
-	err2 := uc.Gather(&acc)
+	err2 := uc.Gather(context.Background(), &acc)
 	require.Error(t, err2)
 	assert.Equal(t, "Expected string cannot be empty", err2.Error())
 }
@@ -93,7 +94,7 @@ func TestTCPError(t *testing.T) {
 		Timeout:  internal.Duration{Duration: time.Second * 30},
 	}
 	// Error
-	err1 := c.Gather(&acc)
+	err1 := c.Gather(context.Background(), &acc)
 	require.NoError(t, err1)
 	acc.AssertContainsTaggedFields(t,
 		"net_response",
@@ -128,7 +129,7 @@ func TestTCPOK1(t *testing.T) {
 	wg.Wait()
 	// Connect
 	wg.Add(1)
-	err1 := c.Gather(&acc)
+	err1 := c.Gather(context.Background(), &acc)
 	wg.Wait()
 	// Override response time
 	for _, p := range acc.Metrics {
@@ -172,7 +173,7 @@ func TestTCPOK2(t *testing.T) {
 	wg.Wait()
 	// Connect
 	wg.Add(1)
-	err1 := c.Gather(&acc)
+	err1 := c.Gather(context.Background(), &acc)
 	wg.Wait()
 	// Override response time
 	for _, p := range acc.Metrics {
@@ -208,7 +209,7 @@ func TestUDPError(t *testing.T) {
 		Protocol: "udp",
 	}
 	// Gather
-	err1 := c.Gather(&acc)
+	err1 := c.Gather(context.Background(), &acc)
 	// Override response time
 	for _, p := range acc.Metrics {
 		p.Fields["response_time"] = 1.0
@@ -250,7 +251,7 @@ func TestUDPOK1(t *testing.T) {
 	wg.Wait()
 	// Connect
 	wg.Add(1)
-	err1 := c.Gather(&acc)
+	err1 := c.Gather(context.Background(), &acc)
 	wg.Wait()
 	// Override response time
 	for _, p := range acc.Metrics {

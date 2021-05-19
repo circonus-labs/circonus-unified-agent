@@ -1,3 +1,26 @@
+# v0.0.22
+
+* upd: deps (go-trapcheck, go-trapmetrics)
+* doc: update readme
+* upd: circonus output to use internal cdmd package
+* add: circonus metric destination mgmt package to internal
+* add: agent.circonus example
+* add: agent.circonus config
+* upd: error msg on cmdm init
+* add: ignore test tracing dir
+* fix: minor typo in install.sh
+* doc: ping plugin readme, reflect default cua install path
+* upd: upgrading snmp from `soniah/gosnmp` to `gosnmp/gosnmp`
+* upd: modify the snmp_trap receiver functionality to better suit metrics 2.0 style ingestion
+* add: initialize internal circonus module
+* add: internal circonus module
+* add: global circonus config
+* upd: removing soniah/gosnmp and replacing with gosnmp/gosnmp
+* upd: replace gosnmp
+* upd: changing the way that snmp_trap handles traps to better suit circonus ingestion
+* upd: updating snmp_trap from soniah/gosnmp to gosnmp/gosnmp
+* upd: dep psutil v3
+
 # v0.0.21
 
 * upd: only update metric counter for tracking metrics for non-sub output

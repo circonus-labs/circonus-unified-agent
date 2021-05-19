@@ -14,12 +14,11 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/internal"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
-	"github.com/soniah/gosnmp"
+	"github.com/gosnmp/gosnmp"
 )
 
 var defaultTimeout = internal.Duration{Duration: time.Second * 5}
 
-type handler func(*gosnmp.SnmpPacket, *net.UDPAddr)
 type execer func(internal.Duration, string, ...string) ([]byte, error)
 
 type mibEntry struct {
@@ -48,7 +47,7 @@ type SnmpTrap struct {
 	timeFunc func() time.Time
 	errCh    chan error
 
-	makeHandlerWrapper func(handler) handler
+	makeHandlerWrapper func(gosnmp.TrapHandlerFunc) gosnmp.TrapHandlerFunc
 
 	Log cua.Logger `toml:"-"`
 
@@ -260,7 +259,7 @@ func setTrapOid(tags map[string]string, oid string, e mibEntry) {
 	tags["mib"] = e.mibName
 }
 
-func makeTrapHandler(s *SnmpTrap) handler {
+func makeTrapHandler(s *SnmpTrap) gosnmp.TrapHandlerFunc {
 	return func(packet *gosnmp.SnmpPacket, addr *net.UDPAddr) {
 		tm := s.timeFunc()
 		fields := map[string]interface{}{}
@@ -296,70 +295,67 @@ func makeTrapHandler(s *SnmpTrap) handler {
 			fields["sysUpTimeInstance"] = packet.Timestamp
 		}
 
+		// ok.. i think this will handle a packet with multiple variables.
+		// i'm not clear on whether it is always 3 or if other variables can
+		// be added to a trap with additional meta information
+		metricName := ""
 		for _, v := range packet.Variables {
-			// Use system mibs to resolve oids.  Don't fall back to
-			// numeric oid because it's not useful enough to the end
-			// user and can be difficult to translate or remove from
-			// the database later.
-
-			var value interface{}
-
-			// todo: format the pdu value based on its snmp type and
-			// the mib's textual convention.  The snmp input plugin
-			// only handles textual convention for ip and mac
-			// addresses
+			if v.Name == ".1.3.6.1.2.1.1.3.0" { // sysUptime, skipping it for now
+				continue
+			}
 
 			switch v.Type {
 			case gosnmp.ObjectIdentifier:
 				val, ok := v.Value.(string)
 				if !ok {
-					s.Log.Errorf("Error getting value OID")
+					s.Log.Errorf("getting value OID")
 					return
 				}
 
-				var e mibEntry
-				var err error
-				e, err = s.lookup(val)
-				if nil != err {
-					s.Log.Errorf("Error resolving value OID: %v", err)
+				e, err := s.lookup(val)
+				if err != nil {
+					s.Log.Errorf("resolving value OID: %s", err)
 					return
 				}
 
-				value = e.oidText
-
-				// 1.3.6.1.6.3.1.1.4.1.0 is SNMPv2-MIB::snmpTrapOID.0.
-				// If v.Name is this oid, set a tag of the trap name.
-				if v.Name == ".1.3.6.1.6.3.1.1.4.1.0" {
-					setTrapOid(tags, val, e)
-					continue
+				// i think we should only get one snmpTrapOID in a "packet"
+				// any other variables should be meta. otherwise, there doesn't
+				// seem that there would be a way to distinguish "what" the trap
+				// was regarding...
+				if v.Name == ".1.3.6.1.6.3.1.1.4.1.0" && metricName == "" {
+					metricName = e.oidText
+					tags["oid"] = val
+					tags["mib"] = e.mibName
+				} else {
+					// otherwise, just add it as a set of tags, so we can figure
+					// out where to go from here
+					tags["oid"] = val
+					tags["name"] = e.oidText
+					tags["mib"] = e.mibName
 				}
+			case gosnmp.OctetString:
+				e, err := s.lookup(v.Name)
+				if err != nil {
+					s.Log.Errorf("resolving OID: %s", err)
+					return
+				}
+				bytes := v.Value.([]byte)
+				tags[e.oidText] = string(bytes)
 			default:
-				value = v.Value
+				e, err := s.lookup(v.Name)
+				if err != nil {
+					s.Log.Errorf("resolving OID: %s", err)
+					return
+				}
+				tags[e.oidText] = fmt.Sprintf("%v", v.Value)
 			}
-
-			e, err := s.lookup(v.Name)
-			if nil != err {
-				s.Log.Errorf("Error resolving OID: %v", err)
-				return
-			}
-
-			name := e.oidText
-
-			fields[name] = value
 		}
 
-		if packet.Version == gosnmp.Version3 {
-			if packet.ContextName != "" {
-				tags["context_name"] = packet.ContextName
-			}
-			if packet.ContextEngineID != "" {
-				// SNMP RFCs like 3411 and 5343 show engine ID as a hex string
-				tags["engine_id"] = fmt.Sprintf("%x", packet.ContextEngineID)
-			}
-		} else if packet.Community != "" {
-			tags["community"] = packet.Community
+		if metricName == "" {
+			s.Log.Errorf("parsing packet: %+v", packet)
+			return
 		}
-
+		fields[metricName] = 1
 		s.acc.AddFields("snmp_trap", fields, tags, tm)
 	}
 }

@@ -51,4 +51,3 @@ There are many ways to contribute:
 - [Improve documentation](https://github.com/circonus-labs/circonus-unified-agent/issues?q=is%3Aopen+label%3Adocumentation)
 - [Review code and feature proposals](https://github.com/circonus-labs/circonus-unified-agent/pulls)
 - Answer questions and discuss here on github and on the [Circonus Lab's Slack](http://slack.s.circonus.com/)
-- [Contribute plugins](CONTRIBUTING.md)

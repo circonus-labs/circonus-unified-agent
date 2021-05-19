@@ -28,6 +28,9 @@ const (
 	defaultRateLimit = 14
 	description      = "Gather timeseries from Google Cloud Platform v3 monitoring API"
 	sampleConfig     = `
+  # Instance ID is required
+  instance_id = ""
+  
   ## GCP Project
   project = "erudite-bloom-151019"
 
@@ -785,6 +788,7 @@ func init() {
 				"firebasehosting.googleapis.com/",
 				"redis.googleapis.com/",
 			},
+			MetricTypePrefixExclude:         []string{},
 			GatherRawDistributionBuckets:    true,
 			DistributionAggregationAligners: []string{},
 		}

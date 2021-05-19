@@ -152,6 +152,7 @@ import (
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/solr"
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/sqlserver"
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/stackdriver"
+	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/stackdriver_circonus"
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/statsd"
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/suricata"
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/swap"

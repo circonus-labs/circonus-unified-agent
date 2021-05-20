@@ -3,6 +3,7 @@
 package synproxy
 
 import (
+	"context"
 	"os"
 	"testing"
 

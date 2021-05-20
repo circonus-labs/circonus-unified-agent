@@ -3,6 +3,7 @@
 package zfs
 
 import (
+	"context"
 	"fmt"
 	"path/filepath"
 	"strconv"

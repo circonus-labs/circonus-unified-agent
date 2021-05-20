@@ -3,6 +3,7 @@
 package conntrack
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"

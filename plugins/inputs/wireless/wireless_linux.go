@@ -4,6 +4,7 @@ package wireless
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"log"
 	"os"

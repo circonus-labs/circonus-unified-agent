@@ -4,6 +4,7 @@ package kernel
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"os"
 	"strconv"

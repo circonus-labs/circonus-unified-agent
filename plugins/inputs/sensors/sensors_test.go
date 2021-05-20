@@ -3,6 +3,7 @@
 package sensors
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"

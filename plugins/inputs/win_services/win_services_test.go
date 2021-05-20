@@ -4,6 +4,7 @@ package winservices
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"log"

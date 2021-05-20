@@ -3,6 +3,7 @@
 package zfs
 
 import (
+	"context"
 	"os"
 	"testing"
 

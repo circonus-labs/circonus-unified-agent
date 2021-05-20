@@ -4,6 +4,7 @@ package kernelvmstat
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"os"
 	"strconv"

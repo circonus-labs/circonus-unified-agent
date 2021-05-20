@@ -3,6 +3,7 @@
 package kernelvmstat
 
 import (
+	"context"
 	"os"
 	"testing"
 

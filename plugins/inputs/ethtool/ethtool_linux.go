@@ -3,6 +3,7 @@
 package ethtool
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"sync"

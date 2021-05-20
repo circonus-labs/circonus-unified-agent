@@ -7,6 +7,7 @@ package wineventlog
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/xml"
 	"errors"
 	"fmt"

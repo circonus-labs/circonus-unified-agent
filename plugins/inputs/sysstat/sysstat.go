@@ -4,6 +4,7 @@ package sysstat
 
 import (
 	"bufio"
+	"context"
 	"encoding/csv"
 	"errors"
 	"fmt"

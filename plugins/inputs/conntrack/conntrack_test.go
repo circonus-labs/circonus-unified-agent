@@ -3,6 +3,7 @@
 package conntrack
 
 import (
+	"context"
 	"os"
 	"path"
 	"strconv"

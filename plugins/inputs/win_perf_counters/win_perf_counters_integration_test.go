@@ -3,6 +3,7 @@
 package winperfcounters
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -476,7 +477,7 @@ func TestWinPerfcountersConfigError2(t *testing.T) {
 
 	_ = m.ParseConfig()
 	var acc testutil.Accumulator
-	err := m.Gather(&acc)
+	err := m.Gather(context.Background(), &acc)
 	require.Error(t, err)
 }
 
@@ -544,11 +545,11 @@ func TestWinPerfcountersCollect1(t *testing.T) {
 
 	m := WinPerfCounters{PrintValid: false, Object: perfobjects, query: &PerformanceQueryImpl{}}
 	var acc testutil.Accumulator
-	err := m.Gather(&acc)
+	err := m.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	time.Sleep(2000 * time.Millisecond)
-	err = m.Gather(&acc)
+	err = m.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 	assert.Len(t, acc.Metrics, 2)
 
@@ -590,11 +591,11 @@ func TestWinPerfcountersCollect2(t *testing.T) {
 
 	m := WinPerfCounters{PrintValid: false, UsePerfCounterTime: true, Object: perfobjects, query: &PerformanceQueryImpl{}, UseWildcardsExpansion: true}
 	var acc testutil.Accumulator
-	err := m.Gather(&acc)
+	err := m.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	time.Sleep(2000 * time.Millisecond)
-	err = m.Gather(&acc)
+	err = m.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	assert.Len(t, acc.Metrics, 4)

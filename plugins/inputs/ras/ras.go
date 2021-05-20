@@ -4,6 +4,7 @@
 package ras
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"os"

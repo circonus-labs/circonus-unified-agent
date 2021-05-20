@@ -3,6 +3,7 @@
 package winperfcounters
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"

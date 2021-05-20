@@ -3,6 +3,7 @@
 package winservices
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"

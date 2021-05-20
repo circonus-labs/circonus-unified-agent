@@ -4,6 +4,7 @@ package synproxy
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os"
 	"strconv"

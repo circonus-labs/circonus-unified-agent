@@ -3,6 +3,7 @@
 package execd
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"

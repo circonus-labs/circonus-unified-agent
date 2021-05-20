@@ -1907,7 +1907,7 @@ ignore_fs = ["tmpfs", "devtmpfs", "devfs", "iso9660", "overlay", "aufs", "squash
 
 func getDefaultPluginList() *map[string]circonusPlugin {
 	switch runtime.GOOS {
-	case "linux":
+	case "linux", "darwin", "freebsd":
 		return &defaultPluginList
 	case "windows":
 		return &defaultWindowsPluginList

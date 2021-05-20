@@ -1,3 +1,7 @@
+# v0.0.25
+
+* upd: enable default linux plugins for darwin and freebsd
+
 # v0.0.24
 
 * add: `snmp_dm` snmp input plugin with direct metrics (sends directly to circonus) for large number of plugin instances

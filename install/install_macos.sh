@@ -13,10 +13,17 @@ NORMAL=$(tput sgr0)
 BOLD=$(tput bold)
 set -e
 
+log()  { printf "%b\n" "$*"; }
+fail() { printf "${RED}" >&2; log "\nERROR: $*\n" >&2; printf "${NORMAL}" >&2; exit 1; }
+pass() { printf "${GREEN}"; log "$*"; printf "${NORMAL}"; }
+
+os=$(uname -s | tr '[:upper:]' '[:lower:]')
+hw=$(uname -m | tr '[:upper:]' '[:lower:]')
+
 cua_version=""
-pkg_arch="darwin_x86_64" # currently: only x86_64
-pkg_ext=".tar.gz"       # currently: .tar.gz
-pkg_cmd="tar"       # currently: yum or dpkg
+pkg_arch="${os}_${hw}"
+pkg_ext=".tar.gz"
+pkg_cmd="tar"
 pkg_args="xf"
 pkg_file=""
 pkg_url=""
@@ -42,10 +49,6 @@ Note: Provide an authorized app for the key or ensure api
       key/token has adequate privileges (default app state:allow)
 "
 }
-
-log()  { printf "%b\n" "$*"; }
-fail() { printf "${RED}" >&2; log "\nERROR: $*\n" >&2; printf "${NORMAL}" >&2; exit 1; }
-pass() { printf "${GREEN}"; log "$*"; printf "${NORMAL}"; }
 
 __parse_parameters() {
     local token=""

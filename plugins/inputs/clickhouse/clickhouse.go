@@ -2,6 +2,7 @@ package clickhouse
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -151,7 +152,7 @@ func (ch *ClickHouse) Start(cua.Accumulator) error {
 }
 
 // Gather collect data from ClickHouse server
-func (ch *ClickHouse) Gather(acc cua.Accumulator) (err error) {
+func (ch *ClickHouse) Gather(ctx context.Context, acc cua.Accumulator) (err error) {
 	var (
 		connects []connect
 		exists   = func(host string) bool {

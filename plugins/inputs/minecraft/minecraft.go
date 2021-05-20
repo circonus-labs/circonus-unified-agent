@@ -1,6 +1,7 @@
 package minecraft
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
@@ -50,7 +51,7 @@ func (s *Minecraft) SampleConfig() string {
 	return sampleConfig
 }
 
-func (s *Minecraft) Gather(acc cua.Accumulator) error {
+func (s *Minecraft) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if s.client == nil {
 		connector := newConnector(s.Server, s.Port, s.Password)
 		client := newClient(connector)

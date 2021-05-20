@@ -3,6 +3,7 @@ package opensmtpd
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"fmt"
 	"os/exec"
 	"strconv"
@@ -75,7 +76,7 @@ func opensmtpdRunner(cmdName string, timeout internal.Duration, useSudo bool) (*
 // Accumulator
 //
 // All the dots in stat name will replaced by underscores. Histogram statistics will not be collected.
-func (s *Opensmtpd) Gather(acc cua.Accumulator) error {
+func (s *Opensmtpd) Gather(ctx context.Context, acc cua.Accumulator) error {
 	// Always exclude uptime.human statistics
 	statExcluded := []string{"uptime.human"}
 	filterExcluded, err := filter.Compile(statExcluded)

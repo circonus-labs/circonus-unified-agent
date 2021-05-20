@@ -1,6 +1,7 @@
 package jolokia2
 
 import (
+	"context"
 	"fmt"
 	"sync"
 
@@ -56,7 +57,7 @@ func (ja *JolokiaAgent) Description() string {
 	return "Read JMX metrics from a Jolokia REST agent endpoint"
 }
 
-func (ja *JolokiaAgent) Gather(acc cua.Accumulator) error {
+func (ja *JolokiaAgent) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if ja.gatherer == nil {
 		ja.gatherer = NewGatherer(ja.createMetrics())
 	}

@@ -2,6 +2,7 @@ package unbound
 
 import (
 	"bytes"
+	"context"
 	"testing"
 	"time"
 
@@ -23,7 +24,7 @@ func TestParseFullOutput(t *testing.T) {
 	v := &Unbound{
 		run: UnboundControl(fullOutput, TestTimeout, true, "", false, ""),
 	}
-	err := v.Gather(acc)
+	err := v.Gather(context.Background(), acc)
 
 	assert.NoError(t, err)
 
@@ -41,7 +42,7 @@ func TestParseFullOutputThreadAsTag(t *testing.T) {
 		run:         UnboundControl(fullOutput, TestTimeout, true, "", true, ""),
 		ThreadAsTag: true,
 	}
-	err := v.Gather(acc)
+	err := v.Gather(context.Background(), acc)
 
 	assert.NoError(t, err)
 

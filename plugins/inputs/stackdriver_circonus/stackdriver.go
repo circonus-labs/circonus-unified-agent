@@ -269,8 +269,7 @@ func (s *Stackdriver) SampleConfig() string {
 }
 
 // Gather implements cua.Input interface
-func (s *Stackdriver) Gather(acc cua.Accumulator) error {
-	ctx := context.Background()
+func (s *Stackdriver) Gather(ctx context.Context, acc cua.Accumulator) error {
 
 	if s.RateLimit == 0 {
 		s.RateLimit = defaultRateLimit

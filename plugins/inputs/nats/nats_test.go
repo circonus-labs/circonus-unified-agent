@@ -3,6 +3,7 @@
 package nats
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -73,7 +74,7 @@ func TestMetricsCorrect(t *testing.T) {
 	defer srv.Close()
 
 	n := &Nats{Server: srv.URL}
-	err := n.Gather(&acc)
+	err := n.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	fields := map[string]interface{}{

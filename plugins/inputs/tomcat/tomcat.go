@@ -1,6 +1,7 @@
 package tomcat
 
 import (
+	"context"
 	"encoding/xml"
 	"fmt"
 	"net/http"
@@ -97,7 +98,7 @@ func (s *Tomcat) SampleConfig() string {
 	return sampleconfig
 }
 
-func (s *Tomcat) Gather(acc cua.Accumulator) error {
+func (s *Tomcat) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if s.client == nil {
 		client, err := s.createHTTPClient()
 		if err != nil {

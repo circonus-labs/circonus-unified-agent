@@ -180,7 +180,7 @@ func (n *NSQConsumer) Stop() {
 }
 
 // Gather is a noop
-func (n *NSQConsumer) Gather(acc cua.Accumulator) error {
+func (n *NSQConsumer) Gather(ctx context.Context, acc cua.Accumulator) error {
 	return nil
 }
 

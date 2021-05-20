@@ -2,6 +2,7 @@ package execd
 
 import (
 	"bufio"
+	"context"
 	"flag"
 	"fmt"
 	"os"
@@ -58,7 +59,7 @@ func TestExternalInputWorks(t *testing.T) {
 	acc := agent.NewAccumulator(&TestMetricMaker{}, metrics)
 
 	require.NoError(t, e.Start(acc))
-	require.NoError(t, e.Gather(acc))
+	require.NoError(t, e.Gather(context.Background(), acc))
 
 	// grab a metric and make sure it's a thing
 	m := readChanWithTimeout(t, metrics, 10*time.Second)

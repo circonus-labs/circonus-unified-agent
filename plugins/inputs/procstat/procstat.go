@@ -2,6 +2,7 @@ package procstat
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -92,7 +93,7 @@ func (*Procstat) Description() string {
 	return "Monitor process cpu and memory usage"
 }
 
-func (p *Procstat) Gather(acc cua.Accumulator) error {
+func (p *Procstat) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if p.createPIDFinder == nil {
 		switch p.PidFinder {
 		case "native":

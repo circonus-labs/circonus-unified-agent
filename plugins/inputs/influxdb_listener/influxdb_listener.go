@@ -106,7 +106,7 @@ func (h *InfluxDBListener) Description() string {
 	return "Accept metrics over InfluxDB 1.x HTTP API"
 }
 
-func (h *InfluxDBListener) Gather(_ cua.Accumulator) error {
+func (h *InfluxDBListener) Gather(_ context.Context, _ cua.Accumulator) error {
 	return nil
 }
 

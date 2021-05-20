@@ -1,6 +1,7 @@
 package httpresponse
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -405,7 +406,7 @@ func (h *HTTPResponse) setBodyReadError(errorMsg string, bodyBytes []byte, field
 }
 
 // Gather gets all metric fields and tags and returns any errors it encounters
-func (h *HTTPResponse) Gather(acc cua.Accumulator) error {
+func (h *HTTPResponse) Gather(ctx context.Context, acc cua.Accumulator) error {
 	// Compile the body regex if it exist
 	if h.compiledStringMatch == nil {
 		var err error

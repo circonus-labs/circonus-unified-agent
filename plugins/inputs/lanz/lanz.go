@@ -1,6 +1,7 @@
 package lanz
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"strconv"
@@ -44,7 +45,7 @@ func (l *Lanz) Description() string {
 	return "Read metrics off Arista LANZ, via socket"
 }
 
-func (l *Lanz) Gather(acc cua.Accumulator) error {
+func (l *Lanz) Gather(_ context.Context, _ cua.Accumulator) error {
 	return nil
 }
 

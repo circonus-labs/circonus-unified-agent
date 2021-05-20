@@ -314,7 +314,7 @@ func (k *KinesisConsumer) Stop() {
 	k.wg.Wait()
 }
 
-func (k *KinesisConsumer) Gather(acc cua.Accumulator) error {
+func (k *KinesisConsumer) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if k.cons == nil {
 		return k.connect(acc)
 	}

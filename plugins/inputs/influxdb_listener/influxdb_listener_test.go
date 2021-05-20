@@ -2,6 +2,7 @@ package influxdblistener
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"net/http"
@@ -458,7 +459,7 @@ func TestWriteHighTraffic(t *testing.T) {
 	}
 
 	wg.Wait()
-	_ = listener.Gather(acc)
+	_ = listener.Gather(context.Background(), acc)
 
 	acc.Wait(25000)
 	require.Equal(t, int64(25000), int64(acc.NMetrics()))

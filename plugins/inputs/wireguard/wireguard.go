@@ -1,6 +1,7 @@
 package wireguard
 
 import (
+	"context"
 	"fmt"
 	"log"
 
@@ -54,7 +55,7 @@ func (wg *Wireguard) Init() error {
 	return nil
 }
 
-func (wg *Wireguard) Gather(acc cua.Accumulator) error {
+func (wg *Wireguard) Gather(ctx context.Context, acc cua.Accumulator) error {
 	devices, err := wg.enumerateDevices()
 	if err != nil {
 		return fmt.Errorf("error enumerating Wireguard devices: %w", err)

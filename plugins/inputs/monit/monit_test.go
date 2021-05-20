@@ -1,6 +1,7 @@
 package monit
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -341,7 +342,7 @@ func TestServiceType(t *testing.T) {
 			_ = plugin.Init()
 
 			var acc testutil.Accumulator
-			err := plugin.Gather(&acc)
+			err := plugin.Gather(context.Background(), &acc)
 			require.NoError(t, err)
 
 			testutil.RequireMetricsEqual(t, tt.expected, acc.GetCUAMetrics(),
@@ -541,7 +542,7 @@ func TestMonitFailure(t *testing.T) {
 			_ = plugin.Init()
 
 			var acc testutil.Accumulator
-			err := plugin.Gather(&acc)
+			err := plugin.Gather(context.Background(), &acc)
 			require.NoError(t, err)
 
 			testutil.RequireMetricsEqual(t, tt.expected, acc.GetCUAMetrics(),
@@ -570,7 +571,7 @@ func TestAllowHosts(t *testing.T) {
 
 	r.client.Transport = &transportMock{}
 
-	err := r.Gather(&acc)
+	err := r.Gather(context.Background(), &acc)
 
 	if assert.Error(t, err) {
 		assert.Contains(t, err.Error(), "read: connection reset by peer")
@@ -587,7 +588,7 @@ func TestConnection(t *testing.T) {
 	_ = r.Init()
 
 	var acc testutil.Accumulator
-	err := r.Gather(&acc)
+	err := r.Gather(context.Background(), &acc)
 
 	var uerr *url.Error
 	if !errors.As(err, &uerr) {
@@ -624,7 +625,7 @@ func TestInvalidUsernameOrPassword(t *testing.T) {
 
 	_ = r.Init()
 
-	err := r.Gather(&acc)
+	err := r.Gather(context.Background(), &acc)
 
 	assert.EqualError(t, err, "received status code 401 (Unauthorized), expected 200")
 }
@@ -656,7 +657,7 @@ func TestNoUsernameOrPasswordConfiguration(t *testing.T) {
 
 	_ = r.Init()
 
-	err := r.Gather(&acc)
+	err := r.Gather(context.Background(), &acc)
 
 	assert.EqualError(t, err, "received status code 401 (Unauthorized), expected 200")
 }
@@ -700,7 +701,7 @@ func TestInvalidXMLAndInvalidTypes(t *testing.T) {
 			_ = plugin.Init()
 
 			var acc testutil.Accumulator
-			err := plugin.Gather(&acc)
+			err := plugin.Gather(context.Background(), &acc)
 
 			if assert.Error(t, err) {
 				assert.Contains(t, err.Error(), "error parsing input:")

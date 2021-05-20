@@ -3,6 +3,7 @@
 package winperfcounters
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -524,7 +525,7 @@ func TestSimpleGather(t *testing.T) {
 			vistaAndNewer: false,
 		}}
 	var acc1 testutil.Accumulator
-	err = m.Gather(&acc1)
+	err = m.Gather(context.Background(), &acc1)
 	require.NoError(t, err)
 
 	fields1 := map[string]interface{}{
@@ -542,7 +543,7 @@ func TestSimpleGather(t *testing.T) {
 
 	var acc2 testutil.Accumulator
 
-	err = m.Gather(&acc2)
+	err = m.Gather(context.Background(), &acc2)
 	require.NoError(t, err)
 	acc1.AssertContainsTaggedFields(t, measurement, fields1, tags1)
 }
@@ -567,7 +568,7 @@ func TestSimpleGatherNoData(t *testing.T) {
 			vistaAndNewer: false,
 		}}
 	var acc1 testutil.Accumulator
-	err = m.Gather(&acc1)
+	err = m.Gather(context.Background(), &acc1)
 	// this "PDH_NO_DATA" error should not be returned to caller, but checked, and handled
 	require.NoError(t, err)
 
@@ -588,7 +589,7 @@ func TestSimpleGatherNoData(t *testing.T) {
 
 	var acc2 testutil.Accumulator
 
-	err = m.Gather(&acc2)
+	err = m.Gather(context.Background(), &acc2)
 	require.NoError(t, err)
 	acc1.AssertDoesNotContainsTaggedFields(t, measurement, fields1, tags1)
 }
@@ -614,7 +615,7 @@ func TestSimpleGatherWithTimestamp(t *testing.T) {
 			vistaAndNewer: true,
 		}}
 	var acc1 testutil.Accumulator
-	err = m.Gather(&acc1)
+	err = m.Gather(context.Background(), &acc1)
 	require.NoError(t, err)
 
 	fields1 := map[string]interface{}{
@@ -649,7 +650,7 @@ func TestGatherError(t *testing.T) {
 			vistaAndNewer: false,
 		}}
 	var acc1 testutil.Accumulator
-	err = m.Gather(&acc1)
+	err = m.Gather(context.Background(), &acc1)
 	require.Error(t, err)
 	require.Equal(t, expectedError, err.Error())
 
@@ -659,7 +660,7 @@ func TestGatherError(t *testing.T) {
 
 	var acc2 testutil.Accumulator
 
-	err = m.Gather(&acc2)
+	err = m.Gather(context.Background(), &acc2)
 	require.Error(t, err)
 	require.Equal(t, expectedError, err.Error())
 }
@@ -686,7 +687,7 @@ func TestGatherInvalidDataIgnore(t *testing.T) {
 			vistaAndNewer: false,
 		}}
 	var acc1 testutil.Accumulator
-	err = m.Gather(&acc1)
+	err = m.Gather(context.Background(), &acc1)
 	require.NoError(t, err)
 
 	fields1 := map[string]interface{}{
@@ -704,7 +705,7 @@ func TestGatherInvalidDataIgnore(t *testing.T) {
 	m.lastRefreshed = time.Time{}
 
 	var acc2 testutil.Accumulator
-	err = m.Gather(&acc2)
+	err = m.Gather(context.Background(), &acc2)
 	require.NoError(t, err)
 	acc1.AssertContainsTaggedFields(t, measurement, fields1, tags1)
 }
@@ -734,7 +735,7 @@ func TestGatherRefreshingWithExpansion(t *testing.T) {
 		CountersRefreshInterval: internal.Duration{Duration: time.Second * 10},
 	}
 	var acc1 testutil.Accumulator
-	err = m.Gather(&acc1)
+	err = m.Gather(context.Background(), &acc1)
 	assert.Len(t, m.counters, 4)
 	require.NoError(t, err)
 	assert.Len(t, acc1.Metrics, 2)
@@ -780,7 +781,7 @@ func TestGatherRefreshingWithExpansion(t *testing.T) {
 	}
 
 	// test before elapsing CounterRefreshRate counters are not refreshed
-	err = m.Gather(&acc2)
+	err = m.Gather(context.Background(), &acc2)
 	require.NoError(t, err)
 	assert.Len(t, m.counters, 4)
 	assert.Len(t, acc2.Metrics, 2)
@@ -791,7 +792,7 @@ func TestGatherRefreshingWithExpansion(t *testing.T) {
 	time.Sleep(m.CountersRefreshInterval.Duration)
 
 	var acc3 testutil.Accumulator
-	err = m.Gather(&acc3)
+	err = m.Gather(context.Background(), &acc3)
 	require.NoError(t, err)
 	assert.Len(t, acc3.Metrics, 3)
 
@@ -826,7 +827,7 @@ func TestGatherRefreshingWithoutExpansion(t *testing.T) {
 		query:                   fpm,
 		CountersRefreshInterval: internal.Duration{Duration: time.Second * 10}}
 	var acc1 testutil.Accumulator
-	err = m.Gather(&acc1)
+	err = m.Gather(context.Background(), &acc1)
 	assert.Len(t, m.counters, 2)
 	require.NoError(t, err)
 	assert.Len(t, acc1.Metrics, 2)
@@ -874,7 +875,7 @@ func TestGatherRefreshingWithoutExpansion(t *testing.T) {
 	}
 
 	// test before elapsing CounterRefreshRate counters are not refreshed
-	err = m.Gather(&acc2)
+	err = m.Gather(context.Background(), &acc2)
 	require.NoError(t, err)
 	assert.Len(t, m.counters, 2)
 	assert.Len(t, acc2.Metrics, 3)
@@ -902,7 +903,7 @@ func TestGatherRefreshingWithoutExpansion(t *testing.T) {
 	time.Sleep(m.CountersRefreshInterval.Duration)
 
 	var acc3 testutil.Accumulator
-	err = m.Gather(&acc3)
+	err = m.Gather(context.Background(), &acc3)
 	require.NoError(t, err)
 	assert.Len(t, acc3.Metrics, 2)
 	fields4 := map[string]interface{}{
@@ -948,7 +949,7 @@ func TestGatherTotalNoExpansion(t *testing.T) {
 			vistaAndNewer: true,
 		}}
 	var acc1 testutil.Accumulator
-	err = m.Gather(&acc1)
+	err = m.Gather(context.Background(), &acc1)
 	require.NoError(t, err)
 	assert.Len(t, m.counters, 2)
 	assert.Len(t, acc1.Metrics, 2)
@@ -978,7 +979,7 @@ func TestGatherTotalNoExpansion(t *testing.T) {
 	m.lastRefreshed = time.Time{}
 
 	var acc2 testutil.Accumulator
-	err = m.Gather(&acc2)
+	err = m.Gather(context.Background(), &acc2)
 	require.NoError(t, err)
 	assert.Len(t, m.counters, 2)
 	assert.Len(t, acc2.Metrics, 1)

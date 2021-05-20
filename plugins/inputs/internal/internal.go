@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"runtime"
 	"strings"
 
@@ -32,7 +33,7 @@ func (s *Self) SampleConfig() string {
 	return sampleConfig
 }
 
-func (s *Self) Gather(acc cua.Accumulator) error {
+func (s *Self) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if s.CollectMemstats {
 		m := &runtime.MemStats{}
 		runtime.ReadMemStats(m)

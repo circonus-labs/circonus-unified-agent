@@ -3,6 +3,7 @@ package memcached
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"fmt"
 	"net"
 	"strconv"
@@ -122,7 +123,7 @@ func (m *Memcached) Description() string {
 }
 
 // Gather reads stats from all configured servers accumulates stats
-func (m *Memcached) Gather(acc cua.Accumulator) error {
+func (m *Memcached) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if len(m.Servers) == 0 && len(m.UnixSockets) == 0 {
 		return m.gatherServer(":11211", false, acc)
 	}

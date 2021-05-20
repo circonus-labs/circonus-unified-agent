@@ -2,6 +2,7 @@ package nginx
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"net"
 	"net/http"
@@ -49,7 +50,7 @@ func (n *Nginx) Description() string {
 	return "Read Nginx's basic status information (ngx_http_stub_status_module)"
 }
 
-func (n *Nginx) Gather(acc cua.Accumulator) error {
+func (n *Nginx) Gather(ctx context.Context, acc cua.Accumulator) error {
 	var wg sync.WaitGroup
 
 	// Create an HTTP client that is re-used for each

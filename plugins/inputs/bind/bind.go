@@ -1,6 +1,7 @@
 package bind
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -42,7 +43,7 @@ func (b *Bind) SampleConfig() string {
 	return sampleConfig
 }
 
-func (b *Bind) Gather(acc cua.Accumulator) error {
+func (b *Bind) Gather(ctx context.Context, acc cua.Accumulator) error {
 	var wg sync.WaitGroup
 
 	if len(b.Urls) == 0 {

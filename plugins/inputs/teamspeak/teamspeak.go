@@ -1,6 +1,7 @@
 package teamspeak
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 
@@ -38,7 +39,7 @@ func (ts *Teamspeak) SampleConfig() string {
 	return sampleConfig
 }
 
-func (ts *Teamspeak) Gather(acc cua.Accumulator) error {
+func (ts *Teamspeak) Gather(ctx context.Context, acc cua.Accumulator) error {
 	var err error
 
 	if !ts.connected {

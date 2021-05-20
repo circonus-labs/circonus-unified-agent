@@ -1,6 +1,7 @@
 package icinga2
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -133,7 +134,7 @@ func (i *Icinga2) createHTTPClient() (*http.Client, error) {
 	return client, nil
 }
 
-func (i *Icinga2) Gather(acc cua.Accumulator) error {
+func (i *Icinga2) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if i.ResponseTimeout.Duration < time.Second {
 		i.ResponseTimeout.Duration = time.Second * 5
 	}

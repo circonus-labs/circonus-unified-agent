@@ -254,7 +254,7 @@ func (k *KafkaConsumer) Start(acc cua.Accumulator) error {
 	return nil
 }
 
-func (k *KafkaConsumer) Gather(acc cua.Accumulator) error {
+func (k *KafkaConsumer) Gather(_ context.Context, _ cua.Accumulator) error {
 	return nil
 }
 

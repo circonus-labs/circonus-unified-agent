@@ -1,6 +1,7 @@
 package solr
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -16,7 +17,7 @@ func TestGatherStats(t *testing.T) {
 	solr := NewSolr()
 	solr.Servers = []string{ts.URL}
 	var acc testutil.Accumulator
-	require.NoError(t, solr.Gather(&acc))
+	require.NoError(t, solr.Gather(context.Background(), &acc))
 
 	acc.AssertContainsTaggedFields(t, "solr_admin",
 		solrAdminMainCoreStatusExpected,
@@ -48,7 +49,7 @@ func TestSolr7MbeansStats(t *testing.T) {
 	solr := NewSolr()
 	solr.Servers = []string{ts.URL}
 	var acc testutil.Accumulator
-	require.NoError(t, solr.Gather(&acc))
+	require.NoError(t, solr.Gather(context.Background(), &acc))
 	acc.AssertContainsTaggedFields(t, "solr_cache",
 		solr7CacheExpected,
 		map[string]string{"core": "main", "handler": "documentCache"})
@@ -59,7 +60,7 @@ func TestSolr3GatherStats(t *testing.T) {
 	solr := NewSolr()
 	solr.Servers = []string{ts.URL}
 	var acc testutil.Accumulator
-	require.NoError(t, solr.Gather(&acc))
+	require.NoError(t, solr.Gather(context.Background(), &acc))
 
 	acc.AssertContainsTaggedFields(t, "solr_admin",
 		solrAdminMainCoreStatusExpected,
@@ -90,7 +91,7 @@ func TestNoCoreDataHandling(t *testing.T) {
 	solr := NewSolr()
 	solr.Servers = []string{ts.URL}
 	var acc testutil.Accumulator
-	require.NoError(t, solr.Gather(&acc))
+	require.NoError(t, solr.Gather(context.Background(), &acc))
 
 	acc.AssertContainsTaggedFields(t, "solr_admin",
 		solrAdminMainCoreStatusExpected,

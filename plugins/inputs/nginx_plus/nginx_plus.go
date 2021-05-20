@@ -2,6 +2,7 @@ package nginxplus
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -50,7 +51,7 @@ func (n *NginxPlus) Description() string {
 	return "Read Nginx Plus' full status information (ngx_http_status_module)"
 }
 
-func (n *NginxPlus) Gather(acc cua.Accumulator) error {
+func (n *NginxPlus) Gather(ctx context.Context, acc cua.Accumulator) error {
 	var wg sync.WaitGroup
 
 	// Create an HTTP client that is re-used for each

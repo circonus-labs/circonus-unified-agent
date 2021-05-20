@@ -1,6 +1,7 @@
 package nginxplusapi
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -69,7 +70,7 @@ func (n *NginxPlusAPI) Description() string {
 	return "Read Nginx Plus Api documentation"
 }
 
-func (n *NginxPlusAPI) Gather(acc cua.Accumulator) error {
+func (n *NginxPlusAPI) Gather(ctx context.Context, acc cua.Accumulator) error {
 	var wg sync.WaitGroup
 
 	// Create an HTTP client that is re-used for each

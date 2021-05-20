@@ -1,6 +1,7 @@
 package sqlserver
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log"
@@ -216,7 +217,7 @@ func initQueries(s *SQLServer) error {
 }
 
 // Gather collect data from SQL Server
-func (s *SQLServer) Gather(acc cua.Accumulator) error {
+func (s *SQLServer) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if !s.isInitialized {
 		if err := initQueries(s); err != nil {
 			acc.AddError(err)

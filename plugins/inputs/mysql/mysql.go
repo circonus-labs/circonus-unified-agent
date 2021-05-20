@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"bytes"
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -160,7 +161,7 @@ func (m *Mysql) InitMysql() {
 	m.initDone = true
 }
 
-func (m *Mysql) Gather(acc cua.Accumulator) error {
+func (m *Mysql) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if len(m.Servers) == 0 {
 		// default to localhost if nothing specified.
 		return m.gatherServer(localhost, acc)

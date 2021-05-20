@@ -3,6 +3,7 @@ package ipset
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"fmt"
 	"os/exec"
 	"strconv"
@@ -46,7 +47,7 @@ func (ipset *Ipset) SampleConfig() string {
 `
 }
 
-func (ipset *Ipset) Gather(acc cua.Accumulator) error {
+func (ipset *Ipset) Gather(ctx context.Context, acc cua.Accumulator) error {
 	out, e := ipset.lister(ipset.Timeout, ipset.UseSudo)
 	if e != nil {
 		acc.AddError(e)

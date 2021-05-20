@@ -376,7 +376,7 @@ func disconnect(o *OpcUA) error {
 }
 
 // Gather defines what data the plugin will gather.
-func (o *OpcUA) Gather(acc cua.Accumulator) error {
+func (o *OpcUA) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if o.state == Disconnected {
 		o.state = Connecting
 		err := Connect(o)

@@ -102,7 +102,7 @@ func (m *OpenConfigTelemetry) Description() string {
 	return "Read JTI OpenConfig Telemetry from listed sensors"
 }
 
-func (m *OpenConfigTelemetry) Gather(acc cua.Accumulator) error {
+func (m *OpenConfigTelemetry) Gather(_ context.Context, _ cua.Accumulator) error {
 	return nil
 }
 

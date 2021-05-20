@@ -1,6 +1,7 @@
 package solr
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -141,7 +142,7 @@ func (s *Solr) Description() string {
 
 // Gather reads the stats from Solr and writes it to the
 // Accumulator.
-func (s *Solr) Gather(acc cua.Accumulator) error {
+func (s *Solr) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if s.client == nil {
 		client := s.createHTTPClient()
 		s.client = client

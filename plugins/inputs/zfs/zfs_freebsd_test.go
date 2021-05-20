@@ -3,6 +3,7 @@
 package zfs
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -11,60 +12,60 @@ import (
 )
 
 // $ zpool list -Hp -o name,health,size,alloc,free,fragmentation,capacity,dedupratio
-var zpool_output = []string{
+var zpoolOutput = []string{
 	"freenas-boot	ONLINE	30601641984	2022177280	28579464704	-	6	1.00x",
 	"red1	ONLINE	8933531975680	1126164848640	7807367127040	8%	12	1.83x",
 	"temp1	ONLINE	2989297238016	1626309320704	1362987917312	38%	54	1.28x",
 	"temp2	ONLINE	2989297238016	626958278656	2362338959360	12%	20	1.00x",
 }
 
-func mock_zpool() ([]string, error) {
-	return zpool_output, nil
+func mockZpool() ([]string, error) {
+	return zpoolOutput, nil
 }
 
 // $ zpool list -Hp -o name,health,size,alloc,free,fragmentation,capacity,dedupratio
-var zpool_output_unavail = []string{
+var zpoolOutputUnavail = []string{
 	"temp2	UNAVAIL	-	-	-	-	-	-",
 }
 
-func mock_zpool_unavail() ([]string, error) {
-	return zpool_output_unavail, nil
+func mockZpoolUnavail() ([]string, error) {
+	return zpoolOutputUnavail, nil
 }
 
 // $ zfs list -Hp -o name,avail,used,usedsnap,usedds
-var zdataset_output = []string{
+var zdatasetOutput = []string{
 	"zata    10741741326336  8564135526400   0       90112",
 	"zata/home       10741741326336  2498560 212992  2285568",
 	"zata/import     10741741326336  196608  81920   114688",
 	"zata/storage    10741741326336  8556084379648   3601138999296   4954945380352",
 }
 
-func mock_zdataset() ([]string, error) {
-	return zdataset_output, nil
+func mockZdataset(properties []string) ([]string, error) {
+	return zdatasetOutput, nil
 }
 
 // sysctl -q kstat.zfs.misc.arcstats
 
 // sysctl -q kstat.zfs.misc.vdev_cache_stats
-var kstat_vdev_cache_stats_output = []string{
+var kstatVdevCacheStatsOutput = []string{
 	"kstat.zfs.misc.vdev_cache_stats.misses: 87789",
 	"kstat.zfs.misc.vdev_cache_stats.hits: 465583",
 	"kstat.zfs.misc.vdev_cache_stats.delegations: 6952",
 }
 
 // sysctl -q kstat.zfs.misc.zfetchstats
-var kstat_zfetchstats_output = []string{
+var kstatZfetchstatsOutput = []string{
 	"kstat.zfs.misc.zfetchstats.max_streams: 0",
 	"kstat.zfs.misc.zfetchstats.misses: 0",
 	"kstat.zfs.misc.zfetchstats.hits: 0",
 }
 
-func mock_sysctl(metric string) ([]string, error) {
+func mockSysctl(metric string) ([]string, error) {
 	if metric == "vdev_cache_stats" {
-		return kstat_vdev_cache_stats_output, nil
+		return kstatVdevCacheStatsOutput, nil
 	}
 	if metric == "zfetchstats" {
-		return kstat_zfetchstats_output, nil
+		return kstatZfetchstatsOutput, nil
 	}
 	return []string{}, fmt.Errorf("Invalid arg")
 }
@@ -74,10 +75,10 @@ func TestZfsPoolMetrics(t *testing.T) {
 
 	z := &Zfs{
 		KstatMetrics: []string{"vdev_cache_stats"},
-		sysctl:       mock_sysctl,
-		zpool:        mock_zpool,
+		sysctl:       mockSysctl,
+		zpool:        mockZpool,
 	}
-	err := z.Gather(&acc)
+	err := z.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	require.False(t, acc.HasMeasurement("zfs_pool"))
@@ -86,13 +87,13 @@ func TestZfsPoolMetrics(t *testing.T) {
 	z = &Zfs{
 		KstatMetrics: []string{"vdev_cache_stats"},
 		PoolMetrics:  true,
-		sysctl:       mock_sysctl,
-		zpool:        mock_zpool,
+		sysctl:       mockSysctl,
+		zpool:        mockZpool,
 	}
-	err = z.Gather(&acc)
+	err = z.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
-	//one pool, all metrics
+	// one pool, all metrics
 	tags := map[string]string{
 		"pool":   "freenas-boot",
 		"health": "ONLINE",
@@ -109,10 +110,10 @@ func TestZfsPoolMetrics_unavail(t *testing.T) {
 
 	z := &Zfs{
 		KstatMetrics: []string{"vdev_cache_stats"},
-		sysctl:       mock_sysctl,
-		zpool:        mock_zpool_unavail,
+		sysctl:       mockSysctl,
+		zpool:        mockZpoolUnavail,
 	}
-	err := z.Gather(&acc)
+	err := z.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	require.False(t, acc.HasMeasurement("zfs_pool"))
@@ -121,13 +122,13 @@ func TestZfsPoolMetrics_unavail(t *testing.T) {
 	z = &Zfs{
 		KstatMetrics: []string{"vdev_cache_stats"},
 		PoolMetrics:  true,
-		sysctl:       mock_sysctl,
-		zpool:        mock_zpool_unavail,
+		sysctl:       mockSysctl,
+		zpool:        mockZpoolUnavail,
 	}
-	err = z.Gather(&acc)
+	err = z.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
-	//one pool, UNAVAIL
+	// one pool, UNAVAIL
 	tags := map[string]string{
 		"pool":   "temp2",
 		"health": "UNAVAIL",
@@ -143,10 +144,10 @@ func TestZfsDatasetMetrics(t *testing.T) {
 
 	z := &Zfs{
 		KstatMetrics: []string{"vdev_cache_stats"},
-		sysctl:       mock_sysctl,
-		zdataset:     mock_zdataset,
+		sysctl:       mockSysctl,
+		zdataset:     mockZdataset,
 	}
-	err := z.Gather(&acc)
+	err := z.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	require.False(t, acc.HasMeasurement("zfs_dataset"))
@@ -155,13 +156,13 @@ func TestZfsDatasetMetrics(t *testing.T) {
 	z = &Zfs{
 		KstatMetrics:   []string{"vdev_cache_stats"},
 		DatasetMetrics: true,
-		sysctl:         mock_sysctl,
-		zdataset:       mock_zdataset,
+		sysctl:         mockSysctl,
+		zdataset:       mockZdataset,
 	}
-	err = z.Gather(&acc)
+	err = z.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
-	//one pool, all metrics
+	// one pool, all metrics
 	tags := map[string]string{
 		"dataset": "zata",
 	}
@@ -176,13 +177,13 @@ func TestZfsGeneratesMetrics(t *testing.T) {
 
 	z := &Zfs{
 		KstatMetrics: []string{"vdev_cache_stats"},
-		sysctl:       mock_sysctl,
-		zpool:        mock_zpool,
+		sysctl:       mockSysctl,
+		zpool:        mockZpool,
 	}
-	err := z.Gather(&acc)
+	err := z.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
-	//four pool, vdev_cache_stats metrics
+	// four pool, vdev_cache_stats metrics
 	tags := map[string]string{
 		"pools": "freenas-boot::red1::temp1::temp2",
 	}
@@ -194,13 +195,13 @@ func TestZfsGeneratesMetrics(t *testing.T) {
 
 	z = &Zfs{
 		KstatMetrics: []string{"zfetchstats", "vdev_cache_stats"},
-		sysctl:       mock_sysctl,
-		zpool:        mock_zpool,
+		sysctl:       mockSysctl,
+		zpool:        mockZpool,
 	}
-	err = z.Gather(&acc)
+	err = z.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
-	//four pool, vdev_cache_stats and zfetchstats metrics
+	// four pool, vdev_cache_stats and zfetchstats metrics
 	intMetrics = getKstatMetricsVdevAndZfetch()
 
 	acc.AssertContainsTaggedFields(t, "zfs", intMetrics, tags)

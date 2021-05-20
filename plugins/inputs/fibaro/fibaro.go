@@ -1,6 +1,7 @@
 package fibaro
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -117,7 +118,7 @@ func (f *Fibaro) getJSON(path string, dataStruct interface{}) error {
 }
 
 // Gather fetches all required information to output metrics
-func (f *Fibaro) Gather(acc cua.Accumulator) error {
+func (f *Fibaro) Gather(ctx context.Context, acc cua.Accumulator) error {
 
 	if f.client == nil {
 		f.client = &http.Client{

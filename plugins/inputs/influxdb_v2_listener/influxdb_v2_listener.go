@@ -102,7 +102,7 @@ func (h *InfluxDBV2Listener) Description() string {
 	return "Accept metrics over InfluxDB 2.x HTTP API"
 }
 
-func (h *InfluxDBV2Listener) Gather(_ cua.Accumulator) error {
+func (h *InfluxDBV2Listener) Gather(_ context.Context, _ cua.Accumulator) error {
 	return nil
 }
 

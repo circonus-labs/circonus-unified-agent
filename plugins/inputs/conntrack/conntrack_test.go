@@ -3,6 +3,7 @@
 package conntrack
 
 import (
+	"context"
 	"os"
 	"path"
 	"strconv"
@@ -25,7 +26,7 @@ func TestNoFilesFound(t *testing.T) {
 	dfltDirs = []string{"./foo/bar"}
 	c := &Conntrack{}
 	acc := &testutil.Accumulator{}
-	err := c.Gather(acc)
+	err := c.Gather(context.Background(), acc)
 
 	assert.EqualError(t, err, "Conntrack input failed to collect metrics. "+
 		"Is the conntrack kernel module loaded?")
@@ -50,7 +51,7 @@ func TestDefaultsUsed(t *testing.T) {
 	c := &Conntrack{}
 	acc := &testutil.Accumulator{}
 
-	_ = c.Gather(acc)
+	_ = c.Gather(context.Background(), acc)
 	acc.AssertContainsFields(t, inputName, map[string]interface{}{
 		fname: float64(count)})
 }
@@ -79,7 +80,7 @@ func TestConfigsUsed(t *testing.T) {
 	c := &Conntrack{}
 	acc := &testutil.Accumulator{}
 
-	_ = c.Gather(acc)
+	_ = c.Gather(context.Background(), acc)
 
 	fix := func(s string) string {
 		return strings.Replace(s, "nf_", "ip_", 1)

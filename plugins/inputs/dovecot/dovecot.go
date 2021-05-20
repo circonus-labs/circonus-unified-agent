@@ -2,6 +2,7 @@ package dovecot
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"net"
@@ -51,7 +52,7 @@ func (d *Dovecot) SampleConfig() string { return sampleConfig }
 // const defaultPort = "24242"
 
 // Reads stats from all configured servers.
-func (d *Dovecot) Gather(acc cua.Accumulator) error {
+func (d *Dovecot) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if !validQuery[d.Type] {
 		return fmt.Errorf("%s is not a valid query type", d.Type)
 	}

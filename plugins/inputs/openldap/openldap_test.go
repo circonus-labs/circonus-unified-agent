@@ -1,6 +1,7 @@
 package openldap
 
 import (
+	"context"
 	"strconv"
 	"testing"
 
@@ -44,7 +45,7 @@ func TestOpenldapNoConnection(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err := o.Gather(&acc)
+	err := o.Gather(context.Background(), &acc)
 	require.NoError(t, err)        // test that we didn't return an error
 	assert.Zero(t, acc.NFields())  // test that we didn't return any fields
 	assert.NotEmpty(t, acc.Errors) // test that we set an error
@@ -61,7 +62,7 @@ func TestOpenldapGeneratesMetrics(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err := o.Gather(&acc)
+	err := o.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 	commonTests(t, o, &acc)
 }
@@ -79,7 +80,7 @@ func TestOpenldapStartTLS(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err := o.Gather(&acc)
+	err := o.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 	commonTests(t, o, &acc)
 }
@@ -97,7 +98,7 @@ func TestOpenldapLDAPS(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err := o.Gather(&acc)
+	err := o.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 	commonTests(t, o, &acc)
 }
@@ -115,7 +116,7 @@ func TestOpenldapInvalidSSL(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err := o.Gather(&acc)
+	err := o.Gather(context.Background(), &acc)
 	require.NoError(t, err)        // test that we didn't return an error
 	assert.Zero(t, acc.NFields())  // test that we didn't return any fields
 	assert.NotEmpty(t, acc.Errors) // test that we set an error
@@ -136,7 +137,7 @@ func TestOpenldapBind(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err := o.Gather(&acc)
+	err := o.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 	commonTests(t, o, &acc)
 }
@@ -165,7 +166,7 @@ func TestOpenldapReverseMetrics(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err := o.Gather(&acc)
+	err := o.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 	assert.True(t, acc.HasInt64Field("openldap", "connections_total"), "Has an integer field called connections_total")
 }

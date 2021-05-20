@@ -1,6 +1,7 @@
 package smart
 
 import (
+	"context"
 	"errors"
 	"sync"
 	"testing"
@@ -50,7 +51,7 @@ func TestGatherAttributes(t *testing.T) {
 			s.Devices = []string{"/dev/ada0"}
 			var acc testutil.Accumulator
 
-			err := s.Gather(&acc)
+			err := s.Gather(context.Background(), &acc)
 
 			require.NoError(t, err)
 			assert.Equal(t, 65, acc.NFields(), "Wrong number of fields gathered")
@@ -67,7 +68,7 @@ func TestGatherAttributes(t *testing.T) {
 			s.Devices = []string{"/dev/nvme0"}
 			var acc testutil.Accumulator
 
-			err := s.Gather(&acc)
+			err := s.Gather(context.Background(), &acc)
 
 			require.NoError(t, err)
 			assert.Equal(t, 32, acc.NFields(), "Wrong number of fields gathered")
@@ -104,7 +105,7 @@ func TestGatherNoAttributes(t *testing.T) {
 		var acc testutil.Accumulator
 		s.PathSmartctl = "smartctl"
 
-		err := s.Gather(&acc)
+		err := s.Gather(context.Background(), &acc)
 
 		require.NoError(t, err)
 		assert.Equal(t, 8, acc.NFields(), "Wrong number of fields gathered")

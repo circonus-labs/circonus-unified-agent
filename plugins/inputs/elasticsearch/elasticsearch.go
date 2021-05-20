@@ -1,6 +1,7 @@
 package elasticsearch
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -219,7 +220,7 @@ func (e *Elasticsearch) Description() string {
 
 // Gather reads the stats from Elasticsearch and writes it to the
 // Accumulator.
-func (e *Elasticsearch) Gather(acc cua.Accumulator) error {
+func (e *Elasticsearch) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if e.client == nil {
 		client, err := e.createHTTPClient()
 

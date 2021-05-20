@@ -1,6 +1,7 @@
 package ceph
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -103,7 +104,7 @@ func TestGather(t *testing.T) {
 
 	acc := &testutil.Accumulator{}
 	c := &Ceph{}
-	_ = c.Gather(acc)
+	_ = c.Gather(context.Background(), acc)
 
 }
 

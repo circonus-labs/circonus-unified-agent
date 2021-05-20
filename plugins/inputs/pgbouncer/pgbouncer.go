@@ -2,6 +2,7 @@ package pgbouncer
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"strconv"
 
@@ -40,7 +41,7 @@ func (p *PgBouncer) Description() string {
 	return "Read metrics from one or many pgbouncer servers"
 }
 
-func (p *PgBouncer) Gather(acc cua.Accumulator) error {
+func (p *PgBouncer) Gather(ctx context.Context, acc cua.Accumulator) error {
 	var (
 		err     error
 		query   string

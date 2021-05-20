@@ -495,7 +495,7 @@ func testCollection(t *testing.T, excludeClusters bool) {
 
 	require.NoError(t, v.Start(&acc))
 	defer v.Stop()
-	require.NoError(t, v.Gather(&acc))
+	require.NoError(t, v.Gather(context.Background(), &acc))
 	require.Equal(t, 0, len(acc.Errors), fmt.Sprintf("Errors found: %s", acc.Errors))
 	require.True(t, len(acc.Metrics) > 0, "No metrics were collected")
 	cache := make(map[string]string)

@@ -3,6 +3,7 @@ package openntpd
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"fmt"
 	"os/exec"
 	"strconv"
@@ -92,7 +93,7 @@ func openntpdRunner(cmdName string, timeout internal.Duration, useSudo bool) (*b
 	return &out, nil
 }
 
-func (n *Openntpd) Gather(acc cua.Accumulator) error {
+func (n *Openntpd) Gather(ctx context.Context, acc cua.Accumulator) error {
 	out, err := n.run(n.Binary, n.Timeout, n.UseSudo)
 	if err != nil {
 		return fmt.Errorf("error gathering metrics: %w", err)

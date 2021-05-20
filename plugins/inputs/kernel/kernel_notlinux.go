@@ -3,6 +3,8 @@
 package kernel
 
 import (
+	"context"
+
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
 )
@@ -16,7 +18,7 @@ func (k *Kernel) Description() string {
 
 func (k *Kernel) SampleConfig() string { return "" }
 
-func (k *Kernel) Gather(acc cua.Accumulator) error {
+func (k *Kernel) Gather(_ context.Context, _ cua.Accumulator) error {
 	return nil
 }
 

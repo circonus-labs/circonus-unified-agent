@@ -3,6 +3,7 @@
 package filecount
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -144,7 +145,7 @@ func TestDirectoryWithTrailingSlash(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err := plugin.Gather(&acc)
+	err := plugin.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expected := []cua.Metric{

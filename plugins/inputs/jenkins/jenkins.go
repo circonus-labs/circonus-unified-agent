@@ -106,7 +106,7 @@ func (j *Jenkins) Description() string {
 }
 
 // Gather implements Input interface
-func (j *Jenkins) Gather(acc cua.Accumulator) error {
+func (j *Jenkins) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if j.client == nil {
 		client, err := j.newHTTPClient()
 		if err != nil {

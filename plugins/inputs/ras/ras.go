@@ -4,6 +4,7 @@
 package ras
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"os"
@@ -107,7 +108,7 @@ func (r *Ras) Stop() {
 }
 
 // Gather reads the stats provided by RASDaemon and writes it to the Accumulator.
-func (r *Ras) Gather(acc cua.Accumulator) error {
+func (r *Ras) Gather(ctx context.Context, acc cua.Accumulator) error {
 	rows, err := r.db.Query(mceQuery, r.latestTimestamp)
 	if err != nil {
 		return fmt.Errorf("ras db query: %w", err)

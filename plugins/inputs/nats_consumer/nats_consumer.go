@@ -261,7 +261,7 @@ func (n *natsConsumer) Stop() {
 	n.clean()
 }
 
-func (n *natsConsumer) Gather(acc cua.Accumulator) error {
+func (n *natsConsumer) Gather(_ context.Context, _ cua.Accumulator) error {
 	return nil
 }
 

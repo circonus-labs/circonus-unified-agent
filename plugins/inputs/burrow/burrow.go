@@ -1,6 +1,7 @@
 package burrow
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -141,7 +142,7 @@ func (b *burrow) Description() string {
 	return "Collect Kafka topics and consumers status from Burrow HTTP API."
 }
 
-func (b *burrow) Gather(acc cua.Accumulator) error {
+func (b *burrow) Gather(ctx context.Context, acc cua.Accumulator) error {
 	var wg sync.WaitGroup
 
 	if len(b.Servers) == 0 {

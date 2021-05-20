@@ -1,6 +1,7 @@
 package beanstalkd
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/textproto"
@@ -33,7 +34,7 @@ func (b *Beanstalkd) SampleConfig() string {
 	return sampleConfig
 }
 
-func (b *Beanstalkd) Gather(acc cua.Accumulator) error {
+func (b *Beanstalkd) Gather(ctx context.Context, acc cua.Accumulator) error {
 	connection, err := textproto.Dial("tcp", b.Server)
 	if err != nil {
 		return fmt.Errorf("dial: %w", err)

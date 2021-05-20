@@ -3,6 +3,7 @@ package statsd
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"net"
@@ -249,7 +250,7 @@ func (*Statsd) SampleConfig() string {
 	return sampleConfig
 }
 
-func (s *Statsd) Gather(acc cua.Accumulator) error {
+func (s *Statsd) Gather(ctx context.Context, acc cua.Accumulator) error {
 	s.Lock()
 	defer s.Unlock()
 	now := time.Now()

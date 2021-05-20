@@ -1,6 +1,7 @@
 package passenger
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -44,7 +45,7 @@ func Test_Invalid_Passenger_Status_Cli(t *testing.T) {
 
 	var acc testutil.Accumulator
 
-	err := r.Gather(&acc)
+	err := r.Gather(context.Background(), &acc)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), `exec: "an-invalid-command": executable file not found in `)
 }
@@ -59,7 +60,7 @@ func Test_Invalid_Xml(t *testing.T) {
 
 	var acc testutil.Accumulator
 
-	err := r.Gather(&acc)
+	err := r.Gather(context.Background(), &acc)
 	require.Error(t, err)
 	assert.Equal(t, "Cannot parse input with error: EOF", err.Error())
 }
@@ -73,7 +74,7 @@ func Test_Default_Config_Load_Default_Command(t *testing.T) {
 
 	var acc testutil.Accumulator
 
-	err := r.Gather(&acc)
+	err := r.Gather(context.Background(), &acc)
 	require.Error(t, err)
 	assert.Equal(t, err.Error(), "exec: \"passenger-status\": executable file not found in $PATH")
 }
@@ -89,7 +90,7 @@ func TestPassengerGenerateMetric(t *testing.T) {
 
 	var acc testutil.Accumulator
 
-	err := r.Gather(&acc)
+	err := r.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	tags := map[string]string{

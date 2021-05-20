@@ -1,6 +1,7 @@
 package net
 
 import (
+	"context"
 	"syscall"
 	"testing"
 
@@ -58,7 +59,7 @@ func TestNetStats(t *testing.T) {
 
 	mps.On("NetConnections").Return(netstats, nil)
 
-	err = (&IOStats{ps: &mps, skipChecks: true}).Gather(&acc)
+	err = (&IOStats{ps: &mps, skipChecks: true}).Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	ntags := map[string]string{
@@ -88,7 +89,7 @@ func TestNetStats(t *testing.T) {
 
 	acc.Metrics = nil
 
-	err = (&Stats{&mps}).Gather(&acc)
+	err = (&Stats{&mps}).Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	fields3 := map[string]interface{}{
@@ -109,7 +110,7 @@ func TestNetStats(t *testing.T) {
 	acc.AssertContainsTaggedFields(t, "netstat", fields3, make(map[string]string))
 
 	acc.Metrics = nil
-	err = (&IOStats{ps: &mps, IgnoreProtocolStats: true}).Gather(&acc)
+	err = (&IOStats{ps: &mps, IgnoreProtocolStats: true}).Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	acc.AssertDoesNotContainsTaggedFields(t, "netstat", fields3, make(map[string]string))

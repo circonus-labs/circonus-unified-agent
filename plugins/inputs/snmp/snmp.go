@@ -3,6 +3,7 @@ package snmp
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -337,7 +338,7 @@ func (s *Snmp) Description() string {
 // Gather retrieves all the configured fields and tables.
 // Any error encountered does not halt the process. The errors are accumulated
 // and returned at the end.
-func (s *Snmp) Gather(acc cua.Accumulator) error {
+func (s *Snmp) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if err := s.init(); err != nil {
 		return err
 	}

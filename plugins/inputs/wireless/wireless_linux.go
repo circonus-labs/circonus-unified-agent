@@ -4,6 +4,7 @@ package wireless
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -41,7 +42,7 @@ type wirelessInterface struct {
 }
 
 // Gather collects the wireless information.
-func (w *Wireless) Gather(acc cua.Accumulator) error {
+func (w *Wireless) Gather(ctx context.Context, acc cua.Accumulator) error {
 	// load proc path, get default value if config value and env variable are empty
 	w.loadPath()
 

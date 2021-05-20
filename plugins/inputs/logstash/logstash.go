@@ -1,6 +1,7 @@
 package logstash
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -419,7 +420,7 @@ func (logstash *Logstash) gatherPipelinesStats(url string, accumulator cua.Accum
 }
 
 // Gather ask this plugin to start gathering metrics
-func (logstash *Logstash) Gather(accumulator cua.Accumulator) error {
+func (logstash *Logstash) Gather(ctx context.Context, accumulator cua.Accumulator) error {
 	if logstash.client == nil {
 		client, err := logstash.createHTTPClient()
 

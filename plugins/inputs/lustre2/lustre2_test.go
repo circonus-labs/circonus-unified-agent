@@ -3,6 +3,7 @@
 package lustre2
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -165,7 +166,7 @@ func TestLustre2GeneratesMetrics(t *testing.T) {
 
 	var acc testutil.Accumulator
 
-	err = m.Gather(&acc)
+	err = m.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	tags := map[string]string{
@@ -232,7 +233,7 @@ func TestLustre2GeneratesJobstatsMetrics(t *testing.T) {
 
 	var acc testutil.Accumulator
 
-	err = m.Gather(&acc)
+	err = m.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	// make this two tags

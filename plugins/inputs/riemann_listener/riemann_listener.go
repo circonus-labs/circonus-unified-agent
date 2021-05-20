@@ -307,7 +307,7 @@ func (rsl *RiemannSocketListener) SampleConfig() string {
 `
 }
 
-func (rsl *RiemannSocketListener) Gather(_ cua.Accumulator) error {
+func (rsl *RiemannSocketListener) Gather(_ context.Context, _ cua.Accumulator) error {
 	return nil
 }
 

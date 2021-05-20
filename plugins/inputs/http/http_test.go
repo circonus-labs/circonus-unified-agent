@@ -247,8 +247,7 @@ func TestBodyAndContentEncoding(t *testing.T) {
 
 			var acc testutil.Accumulator
 			_ = tt.plugin.Init()
-			err = tt.plugin.Gather(&acc)
-			require.NoError(t, err)
+			require.NoError(t, acc.GatherError(tt.plugin.Gather))
 		})
 	}
 }

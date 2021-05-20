@@ -1,6 +1,7 @@
 package couchbase
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"sync"
@@ -39,7 +40,7 @@ func (r *Couchbase) Description() string {
 
 // Reads stats from all configured clusters. Accumulates stats.
 // Returns one of the errors encountered while gathering stats (if any).
-func (r *Couchbase) Gather(acc cua.Accumulator) error {
+func (r *Couchbase) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if len(r.Servers) == 0 {
 		_ = r.gatherServer("http://localhost:8091/", acc, nil)
 		return nil

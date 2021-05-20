@@ -147,6 +147,7 @@ import (
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/sflow"
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/smart"
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/snmp"
+	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/snmp_dm"
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/snmp_trap"
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/socket_listener"
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/solr"

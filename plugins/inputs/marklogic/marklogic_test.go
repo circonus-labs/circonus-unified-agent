@@ -1,6 +1,7 @@
 package marklogic
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -39,7 +40,7 @@ func TestMarklogic(t *testing.T) {
 	require.NoError(t, err)
 
 	// Gather data from the test server
-	err = ml.Gather(acc)
+	err = ml.Gather(context.Background(), acc)
 	require.NoError(t, err)
 
 	// Expect the correct values for all known keys

@@ -1,6 +1,7 @@
 package disk
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -36,7 +37,7 @@ func (*Stats) SampleConfig() string {
 	return diskSampleConfig
 }
 
-func (s *Stats) Gather(acc cua.Accumulator) error {
+func (s *Stats) Gather(ctx context.Context, acc cua.Accumulator) error {
 	// Legacy support:
 	if len(s.Mountpoints) != 0 {
 		s.MountPoints = s.Mountpoints

@@ -1,6 +1,7 @@
 package linuxsysctlfs
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -24,7 +25,7 @@ func TestSysctlFSGather(t *testing.T) {
 		path: td,
 	}
 	var acc testutil.Accumulator
-	require.NoError(t, sfs.Gather(&acc))
+	require.NoError(t, sfs.Gather(context.Background(), &acc))
 
 	acc.AssertContainsFields(t, "linux_sysctl_fs", map[string]interface{}{
 		"aio-nr":             uint64(100),

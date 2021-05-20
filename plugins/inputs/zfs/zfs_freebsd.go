@@ -4,6 +4,8 @@ package zfs
 
 import (
 	"bytes"
+	"context"
+	"errors"
 	"fmt"
 	"os/exec"
 	"strconv"
@@ -45,19 +47,19 @@ func (z *Zfs) gatherPoolStats(acc cua.Accumulator) (string, error) {
 
 				size, err := strconv.ParseInt(col[2], 10, 64)
 				if err != nil {
-					return "", fmt.Errorf("Error parsing size: %s", err)
+					return "", fmt.Errorf("Error parsing size: %w", err)
 				}
 				fields["size"] = size
 
 				alloc, err := strconv.ParseInt(col[3], 10, 64)
 				if err != nil {
-					return "", fmt.Errorf("Error parsing allocation: %s", err)
+					return "", fmt.Errorf("Error parsing allocation: %w", err)
 				}
 				fields["allocated"] = alloc
 
 				free, err := strconv.ParseInt(col[4], 10, 64)
 				if err != nil {
-					return "", fmt.Errorf("Error parsing free: %s", err)
+					return "", fmt.Errorf("Error parsing free: %w", err)
 				}
 				fields["free"] = free
 
@@ -69,13 +71,13 @@ func (z *Zfs) gatherPoolStats(acc cua.Accumulator) (string, error) {
 
 				capval, err := strconv.ParseInt(col[6], 10, 0)
 				if err != nil {
-					return "", fmt.Errorf("Error parsing capacity: %s", err)
+					return "", fmt.Errorf("Error parsing capacity: %w", err)
 				}
 				fields["capacity"] = capval
 
 				dedup, err := strconv.ParseFloat(strings.TrimSuffix(col[7], "x"), 32)
 				if err != nil {
-					return "", fmt.Errorf("Error parsing dedupratio: %s", err)
+					return "", fmt.Errorf("Error parsing dedupratio: %w", err)
 				}
 				fields["dedupratio"] = dedup
 			}
@@ -116,7 +118,7 @@ func (z *Zfs) gatherDatasetStats(acc cua.Accumulator) (string, error) {
 			for i, key := range properties[1:] {
 				value, err := strconv.ParseInt(col[i+1], 10, 64)
 				if err != nil {
-					return "", fmt.Errorf("Error parsing %s %q: %s", key, col[i+1], err)
+					return "", fmt.Errorf("Error parsing %s %q: %w", key, col[i+1], err)
 				}
 				fields[key] = value
 			}
@@ -128,7 +130,7 @@ func (z *Zfs) gatherDatasetStats(acc cua.Accumulator) (string, error) {
 	return strings.Join(datasets, "::"), nil
 }
 
-func (z *Zfs) Gather(acc cua.Accumulator) error {
+func (z *Zfs) Gather(ctx context.Context, acc cua.Accumulator) error {
 	kstatMetrics := z.KstatMetrics
 	if len(kstatMetrics) == 0 {
 		kstatMetrics = []string{"arcstats", "zfetchstats", "vdev_cache_stats"}
@@ -174,9 +176,13 @@ func run(command string, args ...string) ([]string, error) {
 	stdout := strings.TrimSpace(outbuf.String())
 	stderr := strings.TrimSpace(errbuf.String())
 
-	if _, ok := err.(*exec.ExitError); ok {
+	var exitErr *exec.ExitError
+	if errors.As(err, &exitErr) {
 		return nil, fmt.Errorf("%s error: %s", command, stderr)
 	}
+	// if _, ok := err.(*exec.ExitError); ok {
+	// 	return nil, fmt.Errorf("%s error: %s", command, stderr)
+	// }
 	return strings.Split(stdout, "\n"), nil
 }
 

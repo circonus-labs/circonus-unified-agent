@@ -3,6 +3,7 @@
 package processes
 
 import (
+	"context"
 	"fmt"
 	"runtime"
 	"testing"
@@ -23,7 +24,7 @@ func TestProcesses(t *testing.T) {
 	}
 	var acc testutil.Accumulator
 
-	err := processes.Gather(&acc)
+	err := processes.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	assert.True(t, acc.HasInt64Field("processes", "running"))
@@ -43,7 +44,7 @@ func TestFromPS(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err := processes.Gather(&acc)
+	err := processes.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	fields := getEmptyFields()
@@ -65,7 +66,7 @@ func TestFromPSError(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err := processes.Gather(&acc)
+	err := processes.Gather(context.Background(), &acc)
 	require.Error(t, err)
 }
 
@@ -81,7 +82,7 @@ func TestFromProcFiles(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err := processes.Gather(&acc)
+	err := processes.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	fields := getEmptyFields()
@@ -104,7 +105,7 @@ func TestFromProcFilesWithSpaceInCmd(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err := processes.Gather(&acc)
+	err := processes.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	fields := getEmptyFields()
@@ -137,7 +138,7 @@ func TestParkedProcess(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err := plugin.Gather(&acc)
+	err := plugin.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expected := []cua.Metric{

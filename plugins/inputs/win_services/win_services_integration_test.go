@@ -4,6 +4,7 @@
 package winservices
 
 import (
+	"context"
 	"testing"
 
 	"github.com/circonus-labs/circonus-unified-agent/testutil"
@@ -54,6 +55,6 @@ func TestGatherErrors(t *testing.T) {
 	}
 	require.Len(t, ws.ServiceNames, 3, "Different number of services")
 	var acc testutil.Accumulator
-	require.NoError(t, ws.Gather(&acc))
+	require.NoError(t, ws.Gather(context.Background(), &acc))
 	require.Len(t, acc.Errors, 3, "There should be 3 errors after gather")
 }

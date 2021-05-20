@@ -1,6 +1,7 @@
 package kibana
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -138,7 +139,7 @@ func (k *Kibana) Description() string {
 	return "Read status information from one or more Kibana servers"
 }
 
-func (k *Kibana) Gather(acc cua.Accumulator) error {
+func (k *Kibana) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if k.client == nil {
 		client, err := k.createHTTPClient()
 

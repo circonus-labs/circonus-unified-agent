@@ -2,6 +2,7 @@ package bond
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -42,7 +43,7 @@ func (bond *Bond) SampleConfig() string {
 	return sampleConfig
 }
 
-func (bond *Bond) Gather(acc cua.Accumulator) error {
+func (bond *Bond) Gather(ctx context.Context, acc cua.Accumulator) error {
 	// load proc path, get default value if config value and env variable are empty
 	bond.loadPath()
 	// list bond interfaces from bonding directory or gather all interfaces.

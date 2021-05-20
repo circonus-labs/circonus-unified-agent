@@ -2,6 +2,7 @@ package openntpd
 
 import (
 	"bytes"
+	"context"
 	"testing"
 	"time"
 
@@ -23,7 +24,7 @@ func TestParseSimpleOutput(t *testing.T) {
 	v := &Openntpd{
 		run: OpenntpdCTL(simpleOutput, TestTimeout, false),
 	}
-	err := v.Gather(acc)
+	err := v.Gather(context.Background(), acc)
 
 	assert.NoError(t, err)
 	assert.True(t, acc.HasMeasurement("openntpd"))
@@ -54,7 +55,7 @@ func TestParseSimpleOutputwithStatePrefix(t *testing.T) {
 	v := &Openntpd{
 		run: OpenntpdCTL(simpleOutputwithStatePrefix, TestTimeout, false),
 	}
-	err := v.Gather(acc)
+	err := v.Gather(context.Background(), acc)
 
 	assert.NoError(t, err)
 	assert.True(t, acc.HasMeasurement("openntpd"))
@@ -86,7 +87,7 @@ func TestParseSimpleOutputInvalidPeer(t *testing.T) {
 	v := &Openntpd{
 		run: OpenntpdCTL(simpleOutputInvalidPeer, TestTimeout, false),
 	}
-	err := v.Gather(acc)
+	err := v.Gather(context.Background(), acc)
 
 	assert.NoError(t, err)
 	assert.True(t, acc.HasMeasurement("openntpd"))
@@ -114,7 +115,7 @@ func TestParseSimpleOutputServersDNSError(t *testing.T) {
 	v := &Openntpd{
 		run: OpenntpdCTL(simpleOutputServersDNSError, TestTimeout, false),
 	}
-	err := v.Gather(acc)
+	err := v.Gather(context.Background(), acc)
 
 	assert.NoError(t, err)
 	assert.True(t, acc.HasMeasurement("openntpd"))
@@ -156,7 +157,7 @@ func TestParseSimpleOutputServerDNSError(t *testing.T) {
 	v := &Openntpd{
 		run: OpenntpdCTL(simpleOutputServerDNSError, TestTimeout, false),
 	}
-	err := v.Gather(acc)
+	err := v.Gather(context.Background(), acc)
 
 	assert.NoError(t, err)
 	assert.True(t, acc.HasMeasurement("openntpd"))
@@ -184,7 +185,7 @@ func TestParseFullOutput(t *testing.T) {
 	v := &Openntpd{
 		run: OpenntpdCTL(fullOutput, TestTimeout, false),
 	}
-	err := v.Gather(acc)
+	err := v.Gather(context.Background(), acc)
 
 	assert.NoError(t, err)
 	assert.True(t, acc.HasMeasurement("openntpd"))

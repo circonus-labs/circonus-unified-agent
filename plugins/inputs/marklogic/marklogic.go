@@ -1,6 +1,7 @@
 package marklogic
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -135,7 +136,7 @@ func (c *Marklogic) SampleConfig() string {
 }
 
 // Gather metrics from HTTP Server.
-func (c *Marklogic) Gather(accumulator cua.Accumulator) error {
+func (c *Marklogic) Gather(ctx context.Context, accumulator cua.Accumulator) error {
 	var wg sync.WaitGroup
 
 	if c.client == nil {

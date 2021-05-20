@@ -4,6 +4,7 @@ package varnish
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"strings"
 	"testing"
@@ -26,7 +27,7 @@ func TestGather(t *testing.T) {
 		run:   fakeVarnishStat(smOutput, false, "", internal.Duration{Duration: time.Second}),
 		Stats: []string{"*"},
 	}
-	_ = v.Gather(acc)
+	_ = v.Gather(context.Background(), acc)
 
 	acc.HasMeasurement("varnish")
 	for tag, fields := range parsedSmOutput {
@@ -42,7 +43,7 @@ func TestParseFullOutput(t *testing.T) {
 		run:   fakeVarnishStat(fullOutput, true, "", internal.Duration{Duration: time.Second}),
 		Stats: []string{"*"},
 	}
-	err := v.Gather(acc)
+	err := v.Gather(context.Background(), acc)
 
 	assert.NoError(t, err)
 	acc.HasMeasurement("varnish")
@@ -57,7 +58,7 @@ func TestFilterSomeStats(t *testing.T) {
 		run:   fakeVarnishStat(fullOutput, false, "", internal.Duration{Duration: time.Second}),
 		Stats: []string{"MGT.*", "VBE.*"},
 	}
-	err := v.Gather(acc)
+	err := v.Gather(context.Background(), acc)
 
 	assert.NoError(t, err)
 	acc.HasMeasurement("varnish")
@@ -80,7 +81,7 @@ func TestFieldConfig(t *testing.T) {
 			run:   fakeVarnishStat(fullOutput, true, "", internal.Duration{Duration: time.Second}),
 			Stats: strings.Split(fieldCfg, ","),
 		}
-		err := v.Gather(acc)
+		err := v.Gather(context.Background(), acc)
 
 		assert.NoError(t, err)
 		acc.HasMeasurement("varnish")

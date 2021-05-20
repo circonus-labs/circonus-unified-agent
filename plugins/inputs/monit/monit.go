@@ -1,6 +1,7 @@
 package monit
 
 import (
+	"context"
 	"encoding/xml"
 	"fmt"
 	"net/http"
@@ -229,7 +230,7 @@ func (m *Monit) Init() error {
 	return nil
 }
 
-func (m *Monit) Gather(acc cua.Accumulator) error {
+func (m *Monit) Gather(ctx context.Context, acc cua.Accumulator) error {
 
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s/_status?format=xml", m.Address), nil)
 	if err != nil {

@@ -1,6 +1,7 @@
 package nginxvts
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"net/http"
@@ -220,7 +221,7 @@ func TestNginxPlusGeneratesMetrics(t *testing.T) {
 
 	var acc testutil.Accumulator
 
-	err := n.Gather(&acc)
+	err := n.Gather(context.Background(), &acc)
 
 	require.NoError(t, err)
 

@@ -1,6 +1,7 @@
 package fail2ban
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os/exec"
@@ -47,7 +48,7 @@ func (f *Fail2ban) SampleConfig() string {
 	return sampleConfig
 }
 
-func (f *Fail2ban) Gather(acc cua.Accumulator) error {
+func (f *Fail2ban) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if len(f.path) == 0 {
 		return errors.New("fail2ban-client not found: verify that fail2ban is installed and that fail2ban-client is in your PATH")
 	}

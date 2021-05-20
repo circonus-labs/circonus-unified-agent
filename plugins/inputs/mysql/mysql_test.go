@@ -1,6 +1,7 @@
 package mysql
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"testing"
@@ -20,7 +21,7 @@ func TestMysqlDefaultsToLocal(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err := m.Gather(&acc)
+	err := m.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	assert.True(t, acc.HasMeasurement("mysql"))
@@ -39,7 +40,7 @@ func TestMysqlMultipleInstances(t *testing.T) {
 	}
 
 	var acc, acc2 testutil.Accumulator
-	err := m.Gather(&acc)
+	err := m.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 	assert.True(t, acc.HasMeasurement("mysql"))
 	// acc should have global variables
@@ -48,7 +49,7 @@ func TestMysqlMultipleInstances(t *testing.T) {
 	m2 := &Mysql{
 		Servers: []string{testServer},
 	}
-	err = m2.Gather(&acc2)
+	err = m2.Gather(context.Background(), &acc2)
 	require.NoError(t, err)
 	assert.True(t, acc2.HasMeasurement("mysql"))
 	// acc2 should not have global variables

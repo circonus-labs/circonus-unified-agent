@@ -2,6 +2,7 @@ package opensmtpd
 
 import (
 	"bytes"
+	"context"
 	"testing"
 	"time"
 
@@ -23,7 +24,7 @@ func TestFilterSomeStats(t *testing.T) {
 	v := &Opensmtpd{
 		run: SMTPCtl(fullOutput, TestTimeout, false),
 	}
-	err := v.Gather(acc)
+	err := v.Gather(context.Background(), acc)
 
 	assert.NoError(t, err)
 	assert.True(t, acc.HasMeasurement("opensmtpd"))

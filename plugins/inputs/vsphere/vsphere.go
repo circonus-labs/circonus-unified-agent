@@ -308,7 +308,7 @@ func (v *VSphere) Stop() {
 
 // Gather is the main data collection function called by the agent core. It performs all
 // the data collection and writes all metrics into the Accumulator passed as an argument.
-func (v *VSphere) Gather(acc cua.Accumulator) error {
+func (v *VSphere) Gather(ctx context.Context, acc cua.Accumulator) error {
 	var wg sync.WaitGroup
 	for _, ep := range v.endpoints {
 		wg.Add(1)

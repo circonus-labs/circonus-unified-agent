@@ -3,6 +3,7 @@
 package ethtool
 
 import (
+	"context"
 	"net"
 	"testing"
 
@@ -305,7 +306,7 @@ func TestGather(t *testing.T) {
 	setup()
 	var acc testutil.Accumulator
 
-	err := command.Gather(&acc)
+	err := command.Gather(context.Background(), &acc)
 	assert.NoError(t, err)
 	assert.Len(t, acc.Metrics, 2)
 
@@ -330,7 +331,7 @@ func TestGatherIncludeInterfaces(t *testing.T) {
 
 	command.InterfaceInclude = append(command.InterfaceInclude, "eth1")
 
-	err := command.Gather(&acc)
+	err := command.Gather(context.Background(), &acc)
 	assert.NoError(t, err)
 	assert.Len(t, acc.Metrics, 1)
 
@@ -358,7 +359,7 @@ func TestGatherIgnoreInterfaces(t *testing.T) {
 
 	command.InterfaceExclude = append(command.InterfaceExclude, "eth1")
 
-	err := command.Gather(&acc)
+	err := command.Gather(context.Background(), &acc)
 	assert.NoError(t, err)
 	assert.Len(t, acc.Metrics, 1)
 

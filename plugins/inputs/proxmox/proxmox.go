@@ -1,6 +1,7 @@
 package proxmox
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -39,7 +40,7 @@ func (px *Proxmox) Description() string {
 	return "Provides metrics from Proxmox nodes (Proxmox Virtual Environment > 6.2)."
 }
 
-func (px *Proxmox) Gather(acc cua.Accumulator) error {
+func (px *Proxmox) Gather(ctx context.Context, acc cua.Accumulator) error {
 	err := getNodeSearchDomain(px)
 	if err != nil {
 		return err

@@ -14,3 +14,4 @@ console.log
 test.conf
 /cache.d
 /trace.d
+install/README_backup.md

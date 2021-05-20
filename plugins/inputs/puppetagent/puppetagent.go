@@ -1,6 +1,7 @@
 package puppetagent
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"reflect"
@@ -82,7 +83,7 @@ func (pa *PuppetAgent) Description() string {
 }
 
 // Gather reads stats from all configured servers accumulates stats
-func (pa *PuppetAgent) Gather(acc cua.Accumulator) error {
+func (pa *PuppetAgent) Gather(ctx context.Context, acc cua.Accumulator) error {
 
 	if len(pa.Location) == 0 {
 		pa.Location = "/var/lib/puppet/state/last_run_summary.yaml"

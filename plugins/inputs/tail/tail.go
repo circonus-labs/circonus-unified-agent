@@ -160,7 +160,7 @@ func (t *Tail) Init() error {
 	return fmt.Errorf("new decoder: %w", err)
 }
 
-func (t *Tail) Gather(acc cua.Accumulator) error {
+func (t *Tail) Gather(ctx context.Context, acc cua.Accumulator) error {
 	return t.tailNewFiles(true)
 }
 

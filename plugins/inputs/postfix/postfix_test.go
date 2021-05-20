@@ -3,6 +3,7 @@
 package postfix
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -33,7 +34,7 @@ func TestGather(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	require.NoError(t, p.Gather(&acc))
+	require.NoError(t, p.Gather(context.Background(), &acc))
 
 	metrics := map[string]*testutil.Metric{}
 	for _, m := range acc.Metrics {

@@ -1,6 +1,7 @@
 package nginxupstreamcheck
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -165,7 +166,7 @@ func (check *UpstreamCheck) gatherJSONData(rurl string, value interface{}) error
 	return nil
 }
 
-func (check *UpstreamCheck) Gather(accumulator cua.Accumulator) error {
+func (check *UpstreamCheck) Gather(ctx context.Context, accumulator cua.Accumulator) error {
 	if check.client == nil {
 		client, err := check.createHTTPClient()
 

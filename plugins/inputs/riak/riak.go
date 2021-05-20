@@ -1,6 +1,7 @@
 package riak
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -96,7 +97,7 @@ func (r *Riak) Description() string {
 }
 
 // Reads stats from all configured servers.
-func (r *Riak) Gather(acc cua.Accumulator) error {
+func (r *Riak) Gather(ctx context.Context, acc cua.Accumulator) error {
 	// Default to a single server at localhost (default port) if none specified
 	if len(r.Servers) == 0 {
 		r.Servers = []string{"http://127.0.0.1:8098"}

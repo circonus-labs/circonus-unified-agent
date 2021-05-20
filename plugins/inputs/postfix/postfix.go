@@ -5,6 +5,7 @@
 package postfix
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -73,7 +74,7 @@ type Postfix struct {
 	QueueDirectory string
 }
 
-func (p *Postfix) Gather(acc cua.Accumulator) error {
+func (p *Postfix) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if p.QueueDirectory == "" {
 		var err error
 		p.QueueDirectory, err = getQueueDirectory()

@@ -1,6 +1,7 @@
 package rabbitmq
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -335,7 +336,7 @@ func (r *RabbitMQ) Description() string {
 }
 
 // Gather ...
-func (r *RabbitMQ) Gather(acc cua.Accumulator) error {
+func (r *RabbitMQ) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if r.Client == nil {
 		tlsCfg, err := r.ClientConfig.TLSConfig()
 		if err != nil {

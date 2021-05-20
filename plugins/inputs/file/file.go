@@ -1,6 +1,7 @@
 package file
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -64,7 +65,7 @@ func (f *File) Init() error {
 	return fmt.Errorf("new decoder: %w", err)
 }
 
-func (f *File) Gather(acc cua.Accumulator) error {
+func (f *File) Gather(ctx context.Context, acc cua.Accumulator) error {
 	err := f.refreshFilePaths()
 	if err != nil {
 		return err

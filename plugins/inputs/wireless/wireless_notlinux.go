@@ -3,6 +3,8 @@
 package wireless
 
 import (
+	"context"
+
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
 )
@@ -12,7 +14,7 @@ func (w *Wireless) Init() error {
 	return nil
 }
 
-func (w *Wireless) Gather(acc cua.Accumulator) error {
+func (w *Wireless) Gather(_ context.Context, _ cua.Accumulator) error {
 	return nil
 }
 

@@ -146,7 +146,7 @@ func (d *Docker) Description() string {
 }
 
 // Gather metrics from the docker server.
-func (d *Docker) Gather(acc cua.Accumulator) error {
+func (d *Docker) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if d.client == nil {
 		c, err := d.getNewClient()
 		if err != nil {
@@ -173,13 +173,13 @@ func (d *Docker) Gather(acc cua.Accumulator) error {
 	}
 
 	// Get daemon info
-	err := d.gatherInfo(acc)
+	err := d.gatherInfo(ctx, acc)
 	if err != nil {
 		acc.AddError(err)
 	}
 
 	if d.GatherServices {
-		err := d.gatherSwarmInfo(acc)
+		err := d.gatherSwarmInfo(ctx, acc)
 		if err != nil {
 			acc.AddError(err)
 		}
@@ -201,10 +201,10 @@ func (d *Docker) Gather(acc cua.Accumulator) error {
 	opts := types.ContainerListOptions{
 		Filters: filterArgs,
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout.Duration)
+	gctx, cancel := context.WithTimeout(ctx, d.Timeout.Duration)
 	defer cancel()
 
-	containers, err := d.client.ContainerList(ctx, opts)
+	containers, err := d.client.ContainerList(gctx, opts)
 	if errors.Is(err, context.DeadlineExceeded) {
 		return errListTimeout
 	}
@@ -218,7 +218,7 @@ func (d *Docker) Gather(acc cua.Accumulator) error {
 	for _, container := range containers {
 		go func(c types.Container) {
 			defer wg.Done()
-			if err := d.gatherContainer(c, acc); err != nil {
+			if err := d.gatherContainer(gctx, c, acc); err != nil {
 				acc.AddError(err)
 			}
 		}(container)
@@ -228,11 +228,11 @@ func (d *Docker) Gather(acc cua.Accumulator) error {
 	return nil
 }
 
-func (d *Docker) gatherSwarmInfo(acc cua.Accumulator) error {
-	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout.Duration)
+func (d *Docker) gatherSwarmInfo(ctx context.Context, acc cua.Accumulator) error {
+	gctx, cancel := context.WithTimeout(ctx, d.Timeout.Duration)
 	defer cancel()
 
-	services, err := d.client.ServiceList(ctx, types.ServiceListOptions{})
+	services, err := d.client.ServiceList(gctx, types.ServiceListOptions{})
 	if errors.Is(err, context.DeadlineExceeded) {
 		return errServiceTimeout
 	}
@@ -241,12 +241,12 @@ func (d *Docker) gatherSwarmInfo(acc cua.Accumulator) error {
 	}
 
 	if len(services) > 0 {
-		tasks, err := d.client.TaskList(ctx, types.TaskListOptions{})
+		tasks, err := d.client.TaskList(gctx, types.TaskListOptions{})
 		if err != nil {
 			return fmt.Errorf("task list: %w", err)
 		}
 
-		nodes, err := d.client.NodeList(ctx, types.NodeListOptions{})
+		nodes, err := d.client.NodeList(gctx, types.NodeListOptions{})
 		if err != nil {
 			return fmt.Errorf("node list: %w", err)
 		}
@@ -300,17 +300,17 @@ func (d *Docker) gatherSwarmInfo(acc cua.Accumulator) error {
 	return nil
 }
 
-func (d *Docker) gatherInfo(acc cua.Accumulator) error {
+func (d *Docker) gatherInfo(ctx context.Context, acc cua.Accumulator) error {
 	// Init vars
 	dataFields := make(map[string]interface{})
 	metadataFields := make(map[string]interface{})
 	now := time.Now()
 
 	// Get info from docker daemon
-	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout.Duration)
+	gctx, cancel := context.WithTimeout(ctx, d.Timeout.Duration)
 	defer cancel()
 
-	info, err := d.client.Info(ctx)
+	info, err := d.client.Info(gctx)
 	if errors.Is(err, context.DeadlineExceeded) {
 		return errInfoTimeout
 	}
@@ -431,6 +431,7 @@ func hostnameFromID(id string) string {
 }
 
 func (d *Docker) gatherContainer(
+	ctx context.Context,
 	container types.Container,
 	acc cua.Accumulator,
 ) error {
@@ -465,10 +466,10 @@ func (d *Docker) gatherContainer(
 		tags["source"] = hostnameFromID(container.ID)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout.Duration)
+	gctx, cancel := context.WithTimeout(ctx, d.Timeout.Duration)
 	defer cancel()
 
-	r, err := d.client.ContainerStats(ctx, container.ID, false)
+	r, err := d.client.ContainerStats(gctx, container.ID, false)
 	if errors.Is(err, context.DeadlineExceeded) {
 		return errStatsTimeout
 	}
@@ -498,20 +499,21 @@ func (d *Docker) gatherContainer(
 		}
 	}
 
-	return d.gatherContainerInspect(container, acc, tags, daemonOSType, v)
+	return d.gatherContainerInspect(gctx, container, acc, tags, daemonOSType, v)
 }
 
 func (d *Docker) gatherContainerInspect(
+	ctx context.Context,
 	container types.Container,
 	acc cua.Accumulator,
 	tags map[string]string,
 	daemonOSType string,
 	v *types.StatsJSON,
 ) error {
-	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout.Duration)
+	gctx, cancel := context.WithTimeout(ctx, d.Timeout.Duration)
 	defer cancel()
 
-	info, err := d.client.ContainerInspect(ctx, container.ID)
+	info, err := d.client.ContainerInspect(gctx, container.ID)
 	if errors.Is(err, context.DeadlineExceeded) {
 		return errInspectTimeout
 	}

@@ -3,6 +3,7 @@
 package ipvs
 
 import (
+	"context"
 	"fmt"
 	"math/bits"
 	"strconv"
@@ -31,7 +32,7 @@ func (i *IPVS) SampleConfig() string {
 }
 
 // Gather gathers the stats
-func (i *IPVS) Gather(acc cua.Accumulator) error {
+func (i *IPVS) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if i.handle == nil {
 		h, err := ipvs.New("") // TODO: make the namespace configurable
 		if err != nil {

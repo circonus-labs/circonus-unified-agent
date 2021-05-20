@@ -2,6 +2,7 @@ package exec
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"os/exec"
 	"path/filepath"
@@ -185,7 +186,7 @@ func (e *Exec) SetParser(parser parsers.Parser) {
 	e.parser = parser
 }
 
-func (e *Exec) Gather(acc cua.Accumulator) error {
+func (e *Exec) Gather(ctx context.Context, acc cua.Accumulator) error {
 	var wg sync.WaitGroup
 	// Legacy single command support
 	if e.Command != "" {

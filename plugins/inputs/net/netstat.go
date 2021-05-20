@@ -1,6 +1,7 @@
 package net
 
 import (
+	"context"
 	"fmt"
 	"syscall"
 
@@ -23,7 +24,7 @@ func (*Stats) SampleConfig() string {
 	return tcpstatSampleConfig
 }
 
-func (s *Stats) Gather(acc cua.Accumulator) error {
+func (s *Stats) Gather(ctx context.Context, acc cua.Accumulator) error {
 	netconns, err := s.ps.NetConnections()
 	if err != nil {
 		return fmt.Errorf("error getting net connections info: %w", err)

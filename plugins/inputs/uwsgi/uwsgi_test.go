@@ -1,6 +1,7 @@
 package uwsgi_test
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -122,7 +123,7 @@ func TestBasic(t *testing.T) {
 		Servers: []string{fakeServer.URL + "/"},
 	}
 	var acc testutil.Accumulator
-	_ = plugin.Gather(&acc)
+	_ = plugin.Gather(context.Background(), &acc)
 	require.Equal(t, 0, len(acc.Errors))
 }
 
@@ -153,7 +154,7 @@ func TestInvalidJSON(t *testing.T) {
 		Servers: []string{fakeServer.URL + "/"},
 	}
 	var acc testutil.Accumulator
-	_ = plugin.Gather(&acc)
+	_ = plugin.Gather(context.Background(), &acc)
 	require.Equal(t, 1, len(acc.Errors))
 }
 
@@ -162,7 +163,7 @@ func TestHttpError(t *testing.T) {
 		Servers: []string{"http://novalidurladress/"},
 	}
 	var acc testutil.Accumulator
-	_ = plugin.Gather(&acc)
+	_ = plugin.Gather(context.Background(), &acc)
 	require.Equal(t, 1, len(acc.Errors))
 }
 
@@ -171,7 +172,7 @@ func TestTcpError(t *testing.T) {
 		Servers: []string{"tcp://novalidtcpadress/"},
 	}
 	var acc testutil.Accumulator
-	_ = plugin.Gather(&acc)
+	_ = plugin.Gather(context.Background(), &acc)
 	require.Equal(t, 1, len(acc.Errors))
 }
 
@@ -180,6 +181,6 @@ func TestUnixSocketError(t *testing.T) {
 		Servers: []string{"unix:///novalidunixsocket"},
 	}
 	var acc testutil.Accumulator
-	_ = plugin.Gather(&acc)
+	_ = plugin.Gather(context.Background(), &acc)
 	require.Equal(t, 1, len(acc.Errors))
 }

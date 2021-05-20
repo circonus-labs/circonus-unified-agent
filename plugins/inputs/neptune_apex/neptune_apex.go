@@ -3,6 +3,7 @@
 package neptuneapex
 
 import (
+	"context"
 	"encoding/xml"
 	"fmt"
 	"io"
@@ -78,7 +79,7 @@ func (*NeptuneApex) SampleConfig() string {
 }
 
 // Gather implements Input.Gather
-func (n *NeptuneApex) Gather(acc cua.Accumulator) error {
+func (n *NeptuneApex) Gather(ctx context.Context, acc cua.Accumulator) error {
 	var wg sync.WaitGroup
 	for _, server := range n.Servers {
 		wg.Add(1)

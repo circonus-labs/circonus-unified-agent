@@ -2,6 +2,7 @@ package nsd
 
 import (
 	"bytes"
+	"context"
 	"testing"
 	"time"
 
@@ -23,7 +24,7 @@ func TestParseFullOutput(t *testing.T) {
 	v := &NSD{
 		run: NSDControl(fullOutput, TestTimeout, true, "", ""),
 	}
-	err := v.Gather(acc)
+	err := v.Gather(context.Background(), acc)
 
 	assert.NoError(t, err)
 

@@ -1,6 +1,7 @@
 package shim
 
 import (
+	"context"
 	"os"
 	"testing"
 	"time"
@@ -81,7 +82,7 @@ func (i *testDurationInput) SampleConfig() string {
 func (i *testDurationInput) Description() string {
 	return ""
 }
-func (i *testDurationInput) Gather(acc cua.Accumulator) error {
+func (i *testDurationInput) Gather(ctx context.Context, acc cua.Accumulator) error {
 	return nil
 }
 

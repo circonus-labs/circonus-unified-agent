@@ -1,6 +1,7 @@
 package filestat
 
 import (
+	"context"
 	"crypto/sha256"
 	"fmt"
 	"io"
@@ -49,7 +50,7 @@ func (*FileStat) Description() string {
 
 func (*FileStat) SampleConfig() string { return sampleConfig }
 
-func (f *FileStat) Gather(acc cua.Accumulator) error {
+func (f *FileStat) Gather(ctx context.Context, acc cua.Accumulator) error {
 	var err error
 
 	for _, filepath := range f.Files {

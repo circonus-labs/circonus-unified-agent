@@ -1,6 +1,7 @@
 package openweathermap
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -81,7 +82,7 @@ func (n *OpenWeatherMap) Description() string {
 	return "Read current weather and forecasts data from openweathermap.org"
 }
 
-func (n *OpenWeatherMap) Gather(acc cua.Accumulator) error {
+func (n *OpenWeatherMap) Gather(ctx context.Context, acc cua.Accumulator) error {
 	var wg sync.WaitGroup
 	var strs []string
 

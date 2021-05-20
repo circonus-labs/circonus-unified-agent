@@ -1,6 +1,7 @@
 package net
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"strings"
@@ -42,7 +43,7 @@ func (*IOStats) SampleConfig() string {
 	return netSampleConfig
 }
 
-func (s *IOStats) Gather(acc cua.Accumulator) error {
+func (s *IOStats) Gather(ctx context.Context, acc cua.Accumulator) error {
 	netio, err := s.ps.NetIO()
 	if err != nil {
 		return fmt.Errorf("error getting net io info: %w", err)

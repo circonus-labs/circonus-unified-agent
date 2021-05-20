@@ -2,6 +2,7 @@ package multifile
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"math"
 	"os"
@@ -77,7 +78,7 @@ func (m *MultiFile) init() {
 	m.initialized = true
 }
 
-func (m *MultiFile) Gather(acc cua.Accumulator) error {
+func (m *MultiFile) Gather(ctx context.Context, acc cua.Accumulator) error {
 	m.init()
 	now := time.Now()
 	fields := make(map[string]interface{})

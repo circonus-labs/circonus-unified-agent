@@ -2,6 +2,7 @@ package shim
 
 import (
 	"bufio"
+	"context"
 	"errors"
 	"io"
 	"log"
@@ -66,7 +67,7 @@ func (i *erroringInput) Description() string {
 	return ""
 }
 
-func (i *erroringInput) Gather(acc cua.Accumulator) error {
+func (i *erroringInput) Gather(ctx context.Context, acc cua.Accumulator) error {
 	acc.AddError(errors.New("intentional"))
 	return nil
 }

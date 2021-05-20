@@ -124,8 +124,7 @@ func (m *Mcrouter) Description() string {
 }
 
 // Gather reads stats from all configured servers accumulates stats
-func (m *Mcrouter) Gather(acc cua.Accumulator) error {
-	ctx := context.Background()
+func (m *Mcrouter) Gather(ctx context.Context, acc cua.Accumulator) error {
 
 	if m.Timeout.Duration < 1*time.Second {
 		m.Timeout.Duration = defaultTimeout

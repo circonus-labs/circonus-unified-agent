@@ -2,6 +2,7 @@ package nstat
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"os"
 	"strconv"
@@ -58,7 +59,7 @@ func (ns *Nstat) SampleConfig() string {
 	return sampleConfig
 }
 
-func (ns *Nstat) Gather(acc cua.Accumulator) error {
+func (ns *Nstat) Gather(ctx context.Context, acc cua.Accumulator) error {
 	// load paths, get from env if config values are empty
 	ns.loadPaths()
 

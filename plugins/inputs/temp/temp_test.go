@@ -1,6 +1,7 @@
 package temp
 
 import (
+	"context"
 	"testing"
 
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs/system"
@@ -22,7 +23,7 @@ func TestTemperature(t *testing.T) {
 
 	mps.On("Temperature").Return([]host.TemperatureStat{ts}, nil)
 
-	err = (&Temperature{ps: &mps}).Gather(&acc)
+	err = (&Temperature{ps: &mps}).Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expectedFields := map[string]interface{}{

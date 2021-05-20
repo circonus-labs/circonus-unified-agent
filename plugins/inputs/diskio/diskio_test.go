@@ -1,6 +1,7 @@
 package diskio
 
 import (
+	"context"
 	"testing"
 
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs/system"
@@ -112,7 +113,7 @@ func TestDiskIO(t *testing.T) {
 				ps:      &mps,
 				Devices: tt.devices,
 			}
-			err := diskio.Gather(&acc)
+			err := diskio.Gather(context.Background(), &acc)
 			require.Equal(t, tt.err, err)
 
 			for _, metric := range tt.metrics {

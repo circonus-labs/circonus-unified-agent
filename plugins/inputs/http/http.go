@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -136,7 +137,7 @@ func (h *HTTP) Init() error {
 
 // Gather takes in an accumulator and adds the metrics that the Input
 // gathers. This is called every "interval"
-func (h *HTTP) Gather(acc cua.Accumulator) error {
+func (h *HTTP) Gather(ctx context.Context, acc cua.Accumulator) error {
 	var wg sync.WaitGroup
 	for _, u := range h.URLs {
 		wg.Add(1)

@@ -1,6 +1,7 @@
 package puppetagent
 
 import (
+	"context"
 	"testing"
 
 	"github.com/circonus-labs/circonus-unified-agent/testutil"
@@ -12,7 +13,7 @@ func TestGather(t *testing.T) {
 	pa := PuppetAgent{
 		Location: "last_run_summary.yaml",
 	}
-	_ = pa.Gather(&acc)
+	_ = pa.Gather(context.Background(), &acc)
 
 	tags := map[string]string{"location": "last_run_summary.yaml"}
 	fields := map[string]interface{}{

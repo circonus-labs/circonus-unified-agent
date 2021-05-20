@@ -41,9 +41,7 @@ func TestFetch(t *testing.T) {
 	}
 
 	acc := &testutil.Accumulator{}
-	err := hddtemp.Gather(acc)
-
-	require.NoError(t, err)
+	require.NoError(t, acc.GatherError(hddtemp.Gather))
 	assert.Equal(t, acc.NFields(), 2)
 
 	var tests = []struct {

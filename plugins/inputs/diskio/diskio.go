@@ -1,6 +1,7 @@
 package diskio
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"strings"
@@ -85,7 +86,7 @@ func (s *DiskIO) init() error {
 	return nil
 }
 
-func (s *DiskIO) Gather(acc cua.Accumulator) error {
+func (s *DiskIO) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if !s.initialized {
 		err := s.init()
 		if err != nil {

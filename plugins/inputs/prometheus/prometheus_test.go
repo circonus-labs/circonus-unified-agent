@@ -1,6 +1,7 @@
 package prometheus
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"net/http"
@@ -171,7 +172,7 @@ go_gc_duration_seconds_count 42
 
 	var acc testutil.Accumulator
 
-	err := p.Gather(&acc)
+	err := p.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expected := []cua.Metric{

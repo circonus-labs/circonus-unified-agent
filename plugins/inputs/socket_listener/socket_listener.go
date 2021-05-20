@@ -2,6 +2,7 @@ package socketlistener
 
 import (
 	"bufio"
+	"context"
 	"crypto/tls"
 	"errors"
 	"fmt"
@@ -268,7 +269,7 @@ func (sl *SocketListener) SampleConfig() string {
 `
 }
 
-func (sl *SocketListener) Gather(_ cua.Accumulator) error {
+func (sl *SocketListener) Gather(_ context.Context, _ cua.Accumulator) error {
 	return nil
 }
 

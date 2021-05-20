@@ -1,6 +1,7 @@
 package rethinkdb
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"sync"
@@ -43,7 +44,7 @@ var localhost = &Server{URL: &url.URL{Host: "127.0.0.1:28015"}}
 
 // Reads stats from all configured servers accumulates stats.
 // Returns one of the errors encountered while gather stats (if any).
-func (r *RethinkDB) Gather(acc cua.Accumulator) error {
+func (r *RethinkDB) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if len(r.Servers) == 0 {
 		_ = r.gatherServer(localhost, acc)
 		return nil

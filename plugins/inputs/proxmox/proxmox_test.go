@@ -1,6 +1,7 @@
 package proxmox
 
 import (
+	"context"
 	"net/url"
 	"strings"
 	"testing"
@@ -137,7 +138,7 @@ func TestGather(t *testing.T) {
 	px.nodeSearchDomain = "test.example.com"
 
 	acc := &testutil.Accumulator{}
-	err := px.Gather(acc)
+	err := px.Gather(context.Background(), acc)
 	require.NoError(t, err)
 
 	// Results from both tests above

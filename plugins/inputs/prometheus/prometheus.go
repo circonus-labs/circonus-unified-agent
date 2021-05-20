@@ -211,7 +211,7 @@ func (p *Prometheus) GetAllURLs() (map[string]URLAndAddress, error) {
 
 // Reads stats from all configured servers accumulates stats.
 // Returns one of the errors encountered while gather stats (if any).
-func (p *Prometheus) Gather(acc cua.Accumulator) error {
+func (p *Prometheus) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if p.client == nil {
 		client, err := p.createHTTPClient()
 		if err != nil {

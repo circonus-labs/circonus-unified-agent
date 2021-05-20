@@ -1,6 +1,7 @@
 package jolokia2
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -40,7 +41,7 @@ func TestJolokia2_ClientAuthRequest(t *testing.T) {
 	`, server.URL))
 
 	var acc testutil.Accumulator
-	_ = plugin.Gather(&acc)
+	_ = plugin.Gather(context.Background(), &acc)
 
 	if username != "sally" {
 		t.Errorf("Expected to post with username %s, but was %s", "sally", username)
@@ -93,7 +94,7 @@ func TestJolokia2_ClientProxyAuthRequest(t *testing.T) {
 	`, server.URL))
 
 	var acc testutil.Accumulator
-	_ = plugin.Gather(&acc)
+	_ = plugin.Gather(context.Background(), &acc)
 
 	if username != "sally" {
 		t.Errorf("Expected to post with username %s, but was %s", "sally", username)

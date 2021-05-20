@@ -40,8 +40,7 @@ func (*ApcUpsd) SampleConfig() string {
 	return sampleConfig
 }
 
-func (h *ApcUpsd) Gather(acc cua.Accumulator) error {
-	ctx := context.Background()
+func (h *ApcUpsd) Gather(ctx context.Context, acc cua.Accumulator) error {
 
 	for _, addr := range h.Servers {
 		addrBits, err := url.Parse(addr)
@@ -52,10 +51,10 @@ func (h *ApcUpsd) Gather(acc cua.Accumulator) error {
 			addrBits.Scheme = "tcp"
 		}
 
-		ctx, cancel := context.WithTimeout(ctx, h.Timeout.Duration)
+		gctx, cancel := context.WithTimeout(ctx, h.Timeout.Duration)
 		defer cancel()
 
-		status, err := fetchStatus(ctx, addrBits)
+		status, err := fetchStatus(gctx, addrBits)
 		if err != nil {
 			return err
 		}

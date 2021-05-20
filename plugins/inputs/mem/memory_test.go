@@ -1,6 +1,7 @@
 package mem
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -63,7 +64,7 @@ func TestMemStats(t *testing.T) {
 	plugin.platform = "linux"
 
 	require.NoError(t, err)
-	err = plugin.Gather(&acc)
+	err = plugin.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	expected := []cua.Metric{

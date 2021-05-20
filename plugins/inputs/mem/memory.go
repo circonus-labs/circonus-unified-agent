@@ -1,6 +1,7 @@
 package mem
 
 import (
+	"context"
 	"fmt"
 	"runtime"
 
@@ -25,7 +26,7 @@ func (s *Stats) Init() error {
 	return nil
 }
 
-func (s *Stats) Gather(acc cua.Accumulator) error {
+func (s *Stats) Gather(ctx context.Context, acc cua.Accumulator) error {
 	vm, err := s.ps.VMStat()
 	if err != nil {
 		return fmt.Errorf("error getting virtual memory info: %w", err)

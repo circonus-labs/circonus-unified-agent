@@ -1,6 +1,7 @@
 package twemproxy
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -32,7 +33,7 @@ func (t *Twemproxy) Description() string {
 }
 
 // Gather data from all Twemproxy instances
-func (t *Twemproxy) Gather(acc cua.Accumulator) error {
+func (t *Twemproxy) Gather(ctx context.Context, acc cua.Accumulator) error {
 	conn, err := net.DialTimeout("tcp", t.Addr, 1*time.Second)
 	if err != nil {
 		return fmt.Errorf("dial (%s): %w", t.Addr, err)

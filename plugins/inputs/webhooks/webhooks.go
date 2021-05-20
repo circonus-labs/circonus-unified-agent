@@ -1,6 +1,7 @@
 package webhooks
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -74,7 +75,7 @@ func (*Webhooks) Description() string {
 	return "A Webhooks Event collector"
 }
 
-func (*Webhooks) Gather(_ cua.Accumulator) error {
+func (*Webhooks) Gather(_ context.Context, _ cua.Accumulator) error {
 	return nil
 }
 

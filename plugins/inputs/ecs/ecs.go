@@ -1,6 +1,7 @@
 package ecs
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -84,7 +85,7 @@ func (ecs *Ecs) SampleConfig() string {
 }
 
 // Gather is the entrypoint for cua metrics collection
-func (ecs *Ecs) Gather(acc cua.Accumulator) error {
+func (ecs *Ecs) Gather(ctx context.Context, acc cua.Accumulator) error {
 	err := initSetup(ecs)
 	if err != nil {
 		return err

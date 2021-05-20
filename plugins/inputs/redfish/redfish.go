@@ -1,6 +1,7 @@
 package redfish
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -247,7 +248,7 @@ func (r *Redfish) getThermal(ref string) (*Thermal, error) {
 	return thermal, nil
 }
 
-func (r *Redfish) Gather(acc cua.Accumulator) error {
+func (r *Redfish) Gather(ctx context.Context, acc cua.Accumulator) error {
 	address, _, err := net.SplitHostPort(r.baseURL.Host)
 	if err != nil {
 		address = r.baseURL.Host

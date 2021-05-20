@@ -1,6 +1,7 @@
 package statsd
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net"
@@ -446,7 +447,7 @@ func TestParse_Timings(t *testing.T) {
 		}
 	}
 
-	_ = s.Gather(acc)
+	_ = s.Gather(context.Background(), acc)
 
 	valid := map[string]interface{}{
 		"90_percentile": float64(11),
@@ -990,7 +991,7 @@ func TestParse_DataDogTags(t *testing.T) {
 
 			err := s.parseStatsdLine(tt.line)
 			require.NoError(t, err)
-			err = s.Gather(&acc)
+			err = s.Gather(context.Background(), &acc)
 			require.NoError(t, err)
 
 			testutil.RequireMetricsEqual(t, tt.expected, acc.GetCUAMetrics(),
@@ -1237,7 +1238,7 @@ func TestParse_TimingsMultipleFieldsWithTemplate(t *testing.T) {
 			t.Errorf("Parsing line %s should not have resulted in an error\n", line)
 		}
 	}
-	_ = s.Gather(acc)
+	_ = s.Gather(context.Background(), acc)
 
 	valid := map[string]interface{}{
 		"success_90_percentile": float64(11),
@@ -1288,7 +1289,7 @@ func TestParse_TimingsMultipleFieldsWithoutTemplate(t *testing.T) {
 			t.Errorf("Parsing line %s should not have resulted in an error\n", line)
 		}
 	}
-	_ = s.Gather(acc)
+	_ = s.Gather(context.Background(), acc)
 
 	expectedSuccess := map[string]interface{}{
 		"90_percentile": float64(11),
@@ -1459,7 +1460,7 @@ func TestParse_Timings_Delete(t *testing.T) {
 		t.Errorf("Should be 1 timing, found %d", len(s.timings))
 	}
 
-	_ = s.Gather(fakeacc)
+	_ = s.Gather(context.Background(), fakeacc)
 
 	if len(s.timings) != 0 {
 		t.Errorf("All timings should have been deleted, found %d", len(s.timings))
@@ -1484,7 +1485,7 @@ func TestParse_Gauges_Delete(t *testing.T) {
 		t.Error(err.Error())
 	}
 
-	_ = s.Gather(fakeacc)
+	_ = s.Gather(context.Background(), fakeacc)
 
 	err = testValidateGauge("current_users", 100, s.gauges)
 	if err == nil {
@@ -1510,7 +1511,7 @@ func TestParse_Sets_Delete(t *testing.T) {
 		t.Error(err.Error())
 	}
 
-	_ = s.Gather(fakeacc)
+	_ = s.Gather(context.Background(), fakeacc)
 
 	err = testValidateSet("unique_user_ids", 1, s.sets)
 	if err == nil {
@@ -1536,7 +1537,7 @@ func TestParse_Counters_Delete(t *testing.T) {
 		t.Error(err.Error())
 	}
 
-	_ = s.Gather(fakeacc)
+	_ = s.Gather(context.Background(), fakeacc)
 
 	err = testValidateCounter("total_users", 100, s.counters)
 	if err == nil {
@@ -1677,7 +1678,7 @@ func TestTCP(t *testing.T) {
 	require.NoError(t, err)
 
 	for {
-		err = statsd.Gather(&acc)
+		err = statsd.Gather(context.Background(), &acc)
 		require.NoError(t, err)
 
 		if len(acc.Metrics) > 0 {
@@ -1722,7 +1723,7 @@ func TestUdp(t *testing.T) {
 	require.NoError(t, err)
 
 	for {
-		err = statsd.Gather(&acc)
+		err = statsd.Gather(context.Background(), &acc)
 		require.NoError(t, err)
 
 		if len(acc.Metrics) > 0 {

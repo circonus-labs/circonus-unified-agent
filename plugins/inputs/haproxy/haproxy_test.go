@@ -1,6 +1,7 @@
 package haproxy
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/binary"
 	"fmt"
@@ -64,9 +65,7 @@ func TestHaproxyGeneratesMetricsWithAuthentication(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-
-	err := r.Gather(&acc)
-	require.NoError(t, err)
+	require.NoError(t, acc.GatherError(r.Gather))
 
 	tags := map[string]string{
 		"server": ts.Listener.Addr().String(),
@@ -83,7 +82,7 @@ func TestHaproxyGeneratesMetricsWithAuthentication(t *testing.T) {
 		Servers: []string{ts.URL},
 	}
 
-	_ = r.Gather(&acc)
+	_ = r.Gather(context.Background(), &acc)
 	require.NotEmpty(t, acc.Errors)
 }
 
@@ -98,9 +97,7 @@ func TestHaproxyGeneratesMetricsWithoutAuthentication(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-
-	err := r.Gather(&acc)
-	require.NoError(t, err)
+	require.NoError(t, acc.GatherError(r.Gather))
 
 	tags := map[string]string{
 		"server": ts.Listener.Addr().String(),
@@ -141,7 +138,7 @@ func TestHaproxyGeneratesMetricsUsingSocket(t *testing.T) {
 
 	var acc testutil.Accumulator
 
-	err := r.Gather(&acc)
+	err := r.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	fields := HaproxyGetFieldValues()
@@ -160,7 +157,7 @@ func TestHaproxyGeneratesMetricsUsingSocket(t *testing.T) {
 	// This mask should not match any socket
 	r.Servers = []string{_badmask}
 
-	_ = r.Gather(&acc)
+	_ = r.Gather(context.Background(), &acc)
 	require.NotEmpty(t, acc.Errors)
 }
 
@@ -171,7 +168,7 @@ func TestHaproxyDefaultGetFromLocalhost(t *testing.T) {
 
 	var acc testutil.Accumulator
 
-	err := r.Gather(&acc)
+	err := r.Gather(context.Background(), &acc)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "127.0.0.1:1936/haproxy?stats/;csv")
 }
@@ -189,7 +186,7 @@ func TestHaproxyKeepFieldNames(t *testing.T) {
 
 	var acc testutil.Accumulator
 
-	err := r.Gather(&acc)
+	err := r.Gather(context.Background(), &acc)
 	require.NoError(t, err)
 
 	tags := map[string]string{

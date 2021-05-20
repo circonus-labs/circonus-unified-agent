@@ -3,6 +3,8 @@
 package infiniband
 
 import (
+	"context"
+
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
 )
@@ -12,7 +14,7 @@ func (i *Infiniband) Init() error {
 	return nil
 }
 
-func (*Infiniband) Gather(acc cua.Accumulator) error {
+func (*Infiniband) Gather(_ context.Context, _ cua.Accumulator) error {
 	return nil
 }
 

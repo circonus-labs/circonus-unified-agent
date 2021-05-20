@@ -2,6 +2,7 @@ package redis
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"io"
 	"net/url"
@@ -193,7 +194,7 @@ func (r *Redis) init(acc cua.Accumulator) error {
 
 // Reads stats from all configured servers accumulates stats.
 // Returns one of the errors encountered while gather stats (if any).
-func (r *Redis) Gather(acc cua.Accumulator) error {
+func (r *Redis) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if !r.initialized {
 		err := r.init(acc)
 		if err != nil {

@@ -3,6 +3,7 @@ package systemdunits
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -135,7 +136,7 @@ func (s *SystemdUnits) SampleConfig() string {
 }
 
 // Gather parses systemctl outputs and adds counters to the Accumulator
-func (s *SystemdUnits) Gather(acc cua.Accumulator) error {
+func (s *SystemdUnits) Gather(ctx context.Context, acc cua.Accumulator) error {
 	out, err := s.systemctl(s.Timeout, s.UnitType)
 	if err != nil {
 		return err

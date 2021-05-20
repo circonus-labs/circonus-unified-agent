@@ -129,7 +129,11 @@ func (s *Snmp) init() error {
 		return nil
 	}
 
-	dest, err := circmgr.NewMetricDestination("snmp_dm", "snmp_dm", s.InstanceID, "", s.Log)
+	id := "snmp_dm"
+	if s.InstanceID != "" {
+		id += ":" + s.InstanceID
+	}
+	dest, err := circmgr.NewMetricDestination(id, "snmp_dm "+s.InstanceID, s.InstanceID, "", s.Log)
 	if err != nil {
 		return fmt.Errorf("new metric destination: %w", err)
 	}

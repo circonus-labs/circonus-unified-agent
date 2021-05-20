@@ -1,10 +1,20 @@
 # SNMP Input Plugin
 
-The `snmp` input plugin uses polling to gather metrics from SNMP agents.
+The `snmp_dm` input plugin uses polling to gather metrics from SNMP agents.
 Support for gathering individual OIDs as well as complete SNMP tables is
 included.
 
-### Prerequisites
+This plugin sends metrics directly to Circonus - it bypasses aggregators, processors, parsers, and outputs.
+The intended use-case is for sitations where a large number of SNMP collector instances is required. In such
+cases optimizations and efficiencies can be gained by sending metrics directly.
+
+The `snmp_dm` input plugin introduces a new configuration directive called `flush_delay` which when used will
+spread the load of submissions to the Circonus Broker over a duration. For example, setting `flush_delay = "2m"`,
+for hundreds of instances flushing metric submissions would be spread over random durations in the two minute window.
+This prevents all plugin instances from flushing their metrics at the same time and provides for a smoother flow of
+outgoing data.
+
+## Prerequisites
 
 This plugin uses the `snmptable` and `snmptranslate` programs from the
 [net-snmp][] project.  These tools will need to be installed into the `PATH` in
@@ -18,9 +28,22 @@ location of these files can be configured in the `snmp.conf` or via the
 `MIBDIRS` environment variable. See [`man 1 snmpcmd`][man snmpcmd] for more
 information.
 
-### Configuration
+## Configuration
+
 ```toml
-[[inputs.snmp]]
+[[inputs.snmp_dm]]
+  ## Instance ID is required
+  instance_id = ""
+
+  ## example of collecting hundreds of devices on a 5m cadence
+  # collection interval
+  interval = "5m"
+  # flush interval, so cua does not log warning about input 
+  # taking too long w/flush delay
+  flush_interval = "5m"
+  # spread flushing submissions over a two minute window
+  flush_delay = "2m"
+
   ## Agent addresses to retrieve values from.
   ##   example: agents = ["udp://127.0.0.1:161"]
   ##            agents = ["tcp://127.0.0.1:161"]
@@ -64,42 +87,42 @@ information.
   ## Add fields and tables defining the variables you wish to collect.  This
   ## example collects the system uptime and interface variables.  Reference the
   ## full plugin documentation for configuration details.
-  [[inputs.snmp.field]]
+  [[inputs.snmp_dm.field]]
     oid = "RFC1213-MIB::sysUpTime.0"
     name = "uptime"
 
-  [[inputs.snmp.field]]
+  [[inputs.snmp_dm.field]]
     oid = "RFC1213-MIB::sysName.0"
     name = "source"
     is_tag = true
 
-  [[inputs.snmp.table]]
+  [[inputs.snmp_dm.table]]
     oid = "IF-MIB::ifTable"
     name = "interface"
     inherit_tags = ["source"]
 
-    [[inputs.snmp.table.field]]
+    [[inputs.snmp_dm.table.field]]
       oid = "IF-MIB::ifDescr"
       name = "ifDescr"
       is_tag = true
 ```
 
-#### Configure SNMP Requests
+### Configure SNMP Requests
 
 This plugin provides two methods for configuring the SNMP requests: `fields`
 and `tables`.  Use the `field` option to gather single ad-hoc variables.
 To collect SNMP tables, use the `table` option.
 
-##### Field
+#### Field
 
 Use a `field` to collect a variable by OID.  Requests specified with this
 option operate similar to the `snmpget` utility.
 
 ```toml
-[[inputs.snmp]]
+[[inputs.snmp_dm]]
   # ... snip ...
 
-  [[inputs.snmp.field]]
+  [[inputs.snmp_dm.field]]
     ## Object identifier of the variable as a numeric or textual OID.
     oid = "RFC1213-MIB::sysName.0"
 
@@ -125,7 +148,7 @@ option operate similar to the `snmpget` utility.
     # conversion = ""
 ```
 
-##### Table
+#### Table
 
 Use a `table` to configure the collection of a SNMP table.  SNMP requests
 formed with this option operate similarly way to the `snmptable` command.
@@ -142,10 +165,10 @@ cases for columns use [metric filtering][].
 One [metric][] is created for each row of the SNMP table.
 
 ```toml
-[[inputs.snmp]]
+[[inputs.snmp_dm]]
   # ... snip ...
 
-  [[inputs.snmp.table]]
+  [[inputs.snmp_dm.table]]
     ## Object identifier of the SNMP table as a numeric or textual OID.
     oid = "IF-MIB::ifTable"
 
@@ -164,7 +187,7 @@ One [metric][] is created for each row of the SNMP table.
     ## required as any index columns are automatically added as tags.
     # index_as_tag = false
 
-    [[inputs.snmp.table.field]]
+    [[inputs.snmp_dm.table.field]]
       ## OID to get. May be a numeric or textual module-qualified OID.
       oid = "IF-MIB::ifDescr"
 
@@ -195,20 +218,20 @@ One [metric][] is created for each row of the SNMP table.
 Check that a numeric field can be translated to a textual field:
 
 ```shell
-$ snmptranslate .1.3.6.1.2.1.1.3.0
+snmptranslate .1.3.6.1.2.1.1.3.0
 DISMAN-EVENT-MIB::sysUpTimeInstance
 ```
 
 Request a top-level field:
 
 ```shell
-$ snmpget -v2c -c public 127.0.0.1 sysUpTime.0
+snmpget -v2c -c public 127.0.0.1 sysUpTime.0
 ```
 
 Request a table:
 
 ```shell
-$ snmptable -v2c -c public 127.0.0.1 ifTable
+snmptable -v2c -c public 127.0.0.1 ifTable
 ```
 
 To collect a packet capture, run this command in the background while running
@@ -216,13 +239,13 @@ agent or one of the above commands.  Adjust the interface, host and port as
 needed:
 
 ```shell
-$ sudo tcpdump -s 0 -i eth0 -w circonus-unified-agent-snmp.pcap host 127.0.0.1 and port 161
+sudo tcpdump -s 0 -i eth0 -w circonus-unified-agent-snmp.pcap host 127.0.0.1 and port 161
 ```
 
 ### Example Output
 
 ```text
-snmp,agent_host=127.0.0.1,source=loaner uptime=11331974i 1575509815000000000
+snmp_dm,agent_host=127.0.0.1,source=loaner uptime=11331974i 1575509815000000000
 interface,agent_host=127.0.0.1,ifDescr=wlan0,ifIndex=3,source=example.org ifAdminStatus=1i,ifInDiscards=0i,ifInErrors=0i,ifInNUcastPkts=0i,ifInOctets=3436617431i,ifInUcastPkts=2717778i,ifInUnknownProtos=0i,ifLastChange=0i,ifMtu=1500i,ifOperStatus=1i,ifOutDiscards=0i,ifOutErrors=0i,ifOutNUcastPkts=0i,ifOutOctets=581368041i,ifOutQLen=0i,ifOutUcastPkts=1354338i,ifPhysAddress="c8:5b:76:c9:e6:8c",ifSpecific=".0.0",ifSpeed=0i,ifType=6i 1575509815000000000
 interface,agent_host=127.0.0.1,ifDescr=eth0,ifIndex=2,source=example.org ifAdminStatus=1i,ifInDiscards=0i,ifInErrors=0i,ifInNUcastPkts=21i,ifInOctets=3852386380i,ifInUcastPkts=3634004i,ifInUnknownProtos=0i,ifLastChange=9088763i,ifMtu=1500i,ifOperStatus=1i,ifOutDiscards=0i,ifOutErrors=0i,ifOutNUcastPkts=0i,ifOutOctets=434865441i,ifOutQLen=0i,ifOutUcastPkts=2110394i,ifPhysAddress="c8:5b:76:c9:e6:8c",ifSpecific=".0.0",ifSpeed=1000000000i,ifType=6i 1575509815000000000
 interface,agent_host=127.0.0.1,ifDescr=lo,ifIndex=1,source=example.org ifAdminStatus=1i,ifInDiscards=0i,ifInErrors=0i,ifInNUcastPkts=0i,ifInOctets=51555569i,ifInUcastPkts=339097i,ifInUnknownProtos=0i,ifLastChange=0i,ifMtu=65536i,ifOperStatus=1i,ifOutDiscards=0i,ifOutErrors=0i,ifOutNUcastPkts=0i,ifOutOctets=51555569i,ifOutQLen=0i,ifOutUcastPkts=339097i,ifSpecific=".0.0",ifSpeed=10000000i,ifType=24i 1575509815000000000

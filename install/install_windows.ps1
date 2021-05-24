@@ -62,15 +62,15 @@ New-Module -name circonus-install -ScriptBlock {
     )
     if ($key -eq "" ) {
       Write-Host "Circonus API Key is required."
-      exit
+      return
     }
     if ((Test-Path $installpath)) {
       Write-Host "Circonus-Unified-Agent is already installed."
-      exit
+      return
     }
     if ([Environment]::Is64BitProcess -ne [Environment]::Is64BitOperatingSystem) {
       Write-Host "Circonus-Unified-Agent is only supported on 64-Bit Windows releases."
-      exit
+      return
     }
 
     # Create the install directory

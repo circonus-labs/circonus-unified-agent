@@ -164,7 +164,7 @@ __configure_service() {
 
     \launchctl load -w ${cua_service_file}
 
-    log "Starting circonus-unified-agent service"
+    log "Creating circonus-unified-agent service"
 }
 
 __get_latest_release() {

@@ -5,14 +5,6 @@ New-Module -name circonus-install -ScriptBlock {
   $releases = "https://api.github.com/repos/${repo}/releases"
   $zip = "${name}.zip"
 
-  function Get-Win32OS {
-    if(!$global:win32OS)
-    {
-      $global:win32OS = Get-WMIQuery win32_operatingsystem
-    }
-    $global:win32OS
-  }
-
   function New-Location {
     if (!(Test-Path $installpath)) {
       New-Item -ItemType Directory -Force -Path $installpath
@@ -61,7 +53,7 @@ New-Module -name circonus-install -ScriptBlock {
 
   function Start-Service {
     Write-Host "Starting service..."
-    Set-Service -Name circonus-unified-agent -Staus Running -PassThru
+    Set-Service -Name circonus-unified-agent -Status Running -PassThru
   }
 
   function Install-Project {
@@ -76,8 +68,9 @@ New-Module -name circonus-install -ScriptBlock {
       Write-Host "Circonus-Unified-Agent is already installed."
       exit
     }
-    if ((Get-Win32OS).osarchitecture -notlike '64-bit') {
+    if ([Environment]::Is64BitProcess -ne [Environment]::Is64BitOperatingSystem) {
       Write-Host "Circonus-Unified-Agent is only supported on 64-Bit Windows releases."
+      exit
     }
 
     # Create the install directory

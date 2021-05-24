@@ -1,4 +1,18 @@
 New-Module -name circonus-install -ScriptBlock {
+  $usage = "Circonus Unified Agent Install Help
+
+  Usage
+  
+    install --key <apikey>
+  
+  Options
+  
+    --key           Circonus API key/token **REQUIRED**
+    [--app]         Circonus API app name (authorized w/key) Default: circonus-unified-agent
+    [--help]        This message
+  
+  Note: Provide an authorized app for the key or ensure api 
+        key/token has adequate privileges (default app state:allow)"
   $installpath = "${env:systemdrive}\Program Files\Circonus\Circonus-Unified-Agent"
   $name = "circonus-unified-agent"
   $repo = "circonus-labs/${name}"
@@ -39,11 +53,12 @@ New-Module -name circonus-install -ScriptBlock {
   }
 
   function Set-Config {
-    param ($token)
+    param ($token, $app)
     Write-Host "Copying config..."
     Move-Item -Path "${installpath}\etc\example-circonus-unified-agent_windows.conf" -Destination "${installpath}\etc\circonus-unified-agent.conf"
     $file = "${installpath}\etc\circonus-unified-agent.conf"
     (Get-Content $file) -replace '  api_token = ""', "  api_token = `"${token}`"" | Set-Content $file
+    (Get-Content $file) -replace '  # api_app = "circonus-unified-agent"', "  api_app = `"${app}`"" | Set-Content $file
   }
 
   function Cleanup {
@@ -58,13 +73,21 @@ New-Module -name circonus-install -ScriptBlock {
 
   function Install-Project {
     param (
-      [string]$key = ""
+      [Parameter(mandatory=$True)]
+      [string]$key,
+      [string]$app = "circonus-unified-agent",
+      [bool]$help
     )
-    if ($key -eq "" ) {
-      Write-Host "Circonus API Key is required."
+    if ($help) {
+      Write-Host $usage
       return
     }
-    if ((Test-Path $installpath)) {
+    if ($key -eq "" ) {
+      Write-Host "Circonus API Key is required."
+      Write-Host $usage
+      return
+    }
+    if ((Test-Path -Path "${installpath}\sbin\circonus-unified-agentd.exe" -PathType Leaf)) {
       Write-Host "Circonus-Unified-Agent is already installed."
       return
     }
@@ -84,7 +107,7 @@ New-Module -name circonus-install -ScriptBlock {
     # Set the service up
     Enable-Service
     # Setup the default configuration file
-    Set-Config($key)
+    Set-Config($key, $app)
     # Cleanup tmp dir
     Cleanup
     # Start the service

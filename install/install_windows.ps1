@@ -123,6 +123,6 @@ New-Module -name circonus-install -ScriptBlock {
     # Start the service
     Start-Service
   }
-  Set-Alias install -value Install-Project | Out-Null
+  Set-Alias install -value Install-Project
   Export-ModuleMember -function 'Install-Project' -alias 'install'
 }

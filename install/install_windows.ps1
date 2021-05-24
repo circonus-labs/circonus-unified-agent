@@ -72,9 +72,19 @@ New-Module -name circonus-install -ScriptBlock {
   }
 
   function Install-Project {
+    <#
+    .SYNOPSIS
+    Install Circonus Unified Agent for Windows
+    .DESCRIPTION
+    Install Circonus Unified Agent for Windows
+    .EXAMPLE
+    iex; install -key <your key here>
+  #>
     param (
+      # Circonus API Key
       [Parameter(mandatory=$True)]
       [string]$key,
+      # Circonus app name
       [string]$app = "circonus-unified-agent",
       [bool]$help
     )

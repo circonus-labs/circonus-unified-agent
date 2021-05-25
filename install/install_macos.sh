@@ -31,6 +31,7 @@ cua_api_key=""
 cua_api_app=""
 cua_conf_file="/opt/circonus/unified-agent/etc/circonus-unified-agent.conf"
 cua_bin_file="/opt/circonus/unified-agent/sbin/circonus-unified-agentd"
+cua_service_file="/Library/LaunchDaemons/com.circonus.circonus-unified-agent.plist"
 
 usage() {
   printf "%b" "Circonus Unified Agent Install Help
@@ -147,6 +148,23 @@ __configure_agent() {
         \sed -i -e "s/  api_app = \"\"/  api_app = \"${cua_api_app}\"/" $cua_conf_file
         [[ $? -eq 0 ]] || fail "updating ${cua_conf_file} with api app"
     fi
+
+    log "Starting circonus-unified-agent service"
+
+    \launchctl start com.circonus.circonus-unified-agent
+    [[ $? -eq 0 ]] || fail "launchctl start com.circonus.circonus-unified-agent"
+}
+
+__configure_service() {
+    log "Configuring launchd service"
+
+    \cp /opt/circonus/unified-agent/scripts/com.circonus.circonus-unified-agent.plist ${cua_service_file}
+
+    [[ -f $cua_service_file ]] || fail "Service file (${cua_service_file}) not found"
+
+    \launchctl load -w ${cua_service_file}
+
+    log "Creating circonus-unified-agent service"
 }
 
 __get_latest_release() {
@@ -177,15 +195,12 @@ cua_install() {
     __cua_init "$@"
     __make_circonus_dir
     __get_cua_package
+    __configure_service
     __configure_agent
 
     echo
     echo
     pass "Circonus Unified Agent v${cua_version} installed"
-    echo
-    echo
-    log "You may now run the agent with:"
-    log "  ${cua_bin_file}"
     echo
     log "Make any additional customization to configuration:"
     log "  ${cua_conf_file}"

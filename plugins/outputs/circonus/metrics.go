@@ -42,7 +42,7 @@ func (c *Circonus) metricProcessor(id int, metrics []cua.Metric) int64 {
 	}
 
 	if agentDestination != nil {
-		if err := agentDestination.metrics.GaugeAdd(metricVolume+"_batch", nil, numMetrics, nil); err != nil {
+		if err := agentDestination.metrics.GaugeAdd(metricVolume+"_batch", nil, numMetrics, &start); err != nil {
 			c.Log.Warnf("adding gauge (%s): %s", metricVolume+"_batch", err)
 		}
 		agentDestination.queuedMetrics++

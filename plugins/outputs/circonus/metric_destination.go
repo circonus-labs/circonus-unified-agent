@@ -1,7 +1,6 @@
 package circonus
 
 import (
-	"fmt"
 	"os"
 	"strings"
 
@@ -105,9 +104,9 @@ func (c *Circonus) initMetricDestination(id, name, instanceID string) error {
 		name = "default"
 	}
 
-	dest, err := circmgr.NewMetricDestination(id, name, instanceID, c.CheckNamePrefix, c.Log)
+	dest, err := circmgr.NewMetricDestination(plugID, name, instanceID, c.CheckNamePrefix, c.Log)
 	if err != nil {
-		return fmt.Errorf("new metric destination: %w", err)
+		return err
 	}
 
 	c.metricDestinations[id] = &metricDestination{

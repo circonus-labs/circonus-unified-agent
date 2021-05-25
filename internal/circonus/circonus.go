@@ -25,6 +25,7 @@ type Circonus struct {
 	circCfg          *config.CirconusConfig
 	apiCfg           *apiclient.Config
 	brokerTLSConfigs map[string]*tls.Config
+	globalTags       trapmetrics.Tags
 	ready            bool
 	logger           cua.Logger
 	sync.Mutex
@@ -75,6 +76,7 @@ func Initialize(cfg *config.CirconusConfig, err error) error {
 	c := &Circonus{
 		circCfg:          cfg,
 		brokerTLSConfigs: make(map[string]*tls.Config),
+		globalTags:       make(trapmetrics.Tags, 0),
 	}
 
 	if c.circCfg.APIToken == "" {
@@ -126,6 +128,14 @@ func Initialize(cfg *config.CirconusConfig, err error) error {
 		c.circCfg.CheckSearchTags = []string{"service:" + an}
 	}
 
+	if c.circCfg.CheckNamePrefix == "" {
+		hn, err := os.Hostname()
+		if err != nil || hn == "" {
+			hn = "unknown"
+		}
+		c.circCfg.CheckNamePrefix = hn
+	}
+
 	c.logger = models.NewLogger("agent", "circ_metric_dest_mgr", "")
 
 	c.ready = true
@@ -140,6 +150,21 @@ func Ready() bool {
 		return false
 	}
 	return ch.ready
+}
+
+func AddGlobalTags(tags map[string]string) {
+	if ch == nil {
+		return
+	}
+	for k, v := range tags {
+		if k != "" && v != "" {
+			ch.globalTags = append(ch.globalTags, trapmetrics.Tag{Category: k, Value: v})
+		}
+	}
+}
+
+func GetGlobalTags() trapmetrics.Tags {
+	return ch.globalTags
 }
 
 // getAPIClient returns a Circonus API client or an error
@@ -193,9 +218,9 @@ func createMetrics(cfg *trapmetrics.Config) (*trapmetrics.TrapMetrics, error) {
 
 // NewMetricDestination will find/retrieve/create a new circonus check bundle and add it to a trap metrics instance to be
 // used as a metric destination.
-//  id = the plugin's actual id/name (e.g. inputs.cpu would be cpu, inputs.snmp would be snmp)
+//  id = plugin id/name (e.g. inputs.cpu would be cpu, inputs.snmp would be snmp)
 //  name = a vanity name used in the display name of the check
-//  instanceID = plugin's instance_id setting from the config
+//  instanceID = plugin instance_id setting from the config
 //  checkNamePrefix = used in the display name and target of the check
 //  logger = an instance of cua logger (already configured for the plugin requesting the metric destination)
 func NewMetricDestination(id, name, instanceID, checkNamePrefix string, logger cua.Logger) (*trapmetrics.TrapMetrics, error) {
@@ -225,7 +250,7 @@ func NewMetricDestination(id, name, instanceID, checkNamePrefix string, logger c
 	debugAPI := ch.circCfg.DebugAPI
 	traceMetrics := ch.circCfg.TraceMetrics
 
-	bundle := loadCheckConfig(instanceID)
+	bundle := loadCheckConfig(id)
 	saveConfig := false
 
 	if bundle != nil {
@@ -364,7 +389,7 @@ func NewMetricDestination(id, name, instanceID, checkNamePrefix string, logger c
 	}
 
 	if saveConfig {
-		saveCheckConfig(instanceID, bundle)
+		saveCheckConfig(id, bundle)
 	}
 
 	return metrics, nil

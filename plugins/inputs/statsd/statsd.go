@@ -6,8 +6,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"net"
-	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -15,9 +15,11 @@ import (
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/internal"
+	circmgr "github.com/circonus-labs/circonus-unified-agent/internal/circonus"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/parsers/graphite"
 	"github.com/circonus-labs/circonus-unified-agent/selfstat"
+	"github.com/maier/go-trapmetrics"
 )
 
 const (
@@ -38,6 +40,8 @@ const (
 
 // Statsd allows the importing of statsd and dogstatsd data.
 type Statsd struct {
+	InstanceID string `toml:"instance_id"`
+
 	// Protocol used on listener - udp or tcp
 	Protocol string `toml:"protocol"`
 
@@ -48,22 +52,23 @@ type Statsd struct {
 	// fills up, packets will get dropped until the next Gather interval is ran.
 	AllowedPendingMessages int
 
-	// Percentiles specifies the percentiles that will be calculated for timing
-	// and histogram stats.
-	Percentiles     []internal.Number
-	PercentileLimit int
+	// // Percentiles specifies the percentiles that will be calculated for timing
+	// // and histogram stats.
+	// Percentiles     []internal.Number
+	// PercentileLimit int
 
-	DeleteGauges   bool
-	DeleteCounters bool
-	DeleteSets     bool
-	DeleteTimings  bool
-	ConvertNames   bool
+	// DeleteGauges   bool
+	// DeleteCounters bool
+	// DeleteSets     bool
+	// DeleteTimings  bool
+	// ConvertNames   bool
 
 	// MetricSeparator is the separator between parts of the metric name.
 	MetricSeparator string
-	// This flag enables parsing of tags in the dogstatsd extension to the
-	// statsd protocol (http://docs.datadoghq.com/guides/dogstatsd/)
-	ParseDataDogTags bool // depreciated in 1.10; use datadog_extensions
+
+	// // This flag enables parsing of tags in the dogstatsd extension to the
+	// // statsd protocol (http://docs.datadoghq.com/guides/dogstatsd/)
+	// ParseDataDogTags bool // depreciated in 1.10; use datadog_extensions
 
 	// Parses extensions to statsd in the datadog statsd format
 	// currently supports metrics and datadog tags.
@@ -95,13 +100,13 @@ type Statsd struct {
 	in   chan input
 	done chan struct{}
 
-	// Cache gauges, counters & sets so they can be aggregated as they arrive
-	// gauges and counters map measurement/tags hash -> field name -> metrics
-	// sets and timings map measurement/tags hash -> metrics
-	gauges   map[string]cachedgauge
-	counters map[string]cachedcounter
-	sets     map[string]cachedset
-	timings  map[string]cachedtimings
+	// // Cache gauges, counters & sets so they can be aggregated as they arrive
+	// // gauges and counters map measurement/tags hash -> field name -> metrics
+	// // sets and timings map measurement/tags hash -> metrics
+	// gauges   map[string]cachedgauge
+	// counters map[string]cachedcounter
+	// sets     map[string]cachedset
+	// timings  map[string]cachedtimings
 
 	// bucket -> influx templates
 	Templates []string
@@ -134,6 +139,9 @@ type Statsd struct {
 
 	Log cua.Logger
 
+	// circonus destination for the metrics from this input
+	metricDestination *trapmetrics.TrapMetrics
+
 	// A pool of byte slices to handle parsing
 	bufPool sync.Pool
 }
@@ -146,10 +154,10 @@ type input struct {
 
 // One statsd metric, form is <bucket>:<value>|<mtype>|@<samplerate>
 type metric struct {
-	name       string
-	field      string
-	bucket     string
-	hash       string
+	name   string
+	field  string
+	bucket string
+	// hash       string
 	intvalue   int64
 	floatvalue float64
 	strvalue   string
@@ -157,37 +165,41 @@ type metric struct {
 	additive   bool
 	samplerate float64
 	tags       map[string]string
+	mtags      trapmetrics.Tags
 }
 
-type cachedset struct {
-	name   string
-	fields map[string]map[string]bool
-	tags   map[string]string
-}
+// type cachedset struct {
+// 	name   string
+// 	fields map[string]map[string]bool
+// 	tags   map[string]string
+// }
 
-type cachedgauge struct {
-	name   string
-	fields map[string]interface{}
-	tags   map[string]string
-}
+// type cachedgauge struct {
+// 	name   string
+// 	fields map[string]interface{}
+// 	tags   map[string]string
+// }
 
-type cachedcounter struct {
-	name   string
-	fields map[string]interface{}
-	tags   map[string]string
-}
+// type cachedcounter struct {
+// 	name   string
+// 	fields map[string]interface{}
+// 	tags   map[string]string
+// }
 
-type cachedtimings struct {
-	name   string
-	fields map[string]RunningStats
-	tags   map[string]string
-}
+// type cachedtimings struct {
+// 	name   string
+// 	fields map[string]RunningStats
+// 	tags   map[string]string
+// }
 
 func (*Statsd) Description() string {
 	return "Statsd UDP/TCP Server"
 }
 
 const sampleConfig = `
+  ## Instance ID -- required
+  instance_id = ""
+
   ## Protocol, must be "tcp", "udp", "udp4" or "udp6" (default=udp)
   protocol = "udp"
 
@@ -205,27 +217,8 @@ const sampleConfig = `
   ## Address and port to host UDP listener on
   service_address = ":8125"
 
-  ## The following configuration options control when agent clears it's cache
-  ## of previous values. If set to false, then agent will only clear it's
-  ## cache when the daemon is restarted.
-  ## Reset gauges every interval (default=true)
-  delete_gauges = true
-  ## Reset counters every interval (default=true)
-  delete_counters = true
-  ## Reset sets every interval (default=true)
-  delete_sets = true
-  ## Reset timings & histograms every interval (default=true)
-  delete_timings = true
-
-  ## Percentiles to calculate for timing & histogram stats
-  percentiles = [50.0, 90.0, 99.0, 99.9, 99.95, 100.0]
-
   ## separator to use between elements of a statsd metric
   metric_separator = "_"
-
-  ## Parses tags in the datadog statsd format
-  ## http://docs.datadoghq.com/guides/dogstatsd/
-  parse_data_dog_tags = false
 
   ## Parses datadog extensions to the statsd format
   datadog_extensions = false
@@ -239,11 +232,6 @@ const sampleConfig = `
   ## Number of UDP messages allowed to queue up, once filled,
   ## the statsd server will start dropping packets
   allowed_pending_messages = 10000
-
-  ## Number of timing/histogram values to track per-measurement in the
-  ## calculation of percentiles. Raising this limit increases the accuracy
-  ## of percentiles but also increases the memory usage and cpu time.
-  percentile_limit = 1000
 `
 
 func (*Statsd) SampleConfig() string {
@@ -253,76 +241,95 @@ func (*Statsd) SampleConfig() string {
 func (s *Statsd) Gather(ctx context.Context, acc cua.Accumulator) error {
 	s.Lock()
 	defer s.Unlock()
-	now := time.Now()
-
-	for _, m := range s.timings {
-		// Defining a template to parse field names for timers allows us to split
-		// out multiple fields per timer. In this case we prefix each stat with the
-		// field name and store these all in a single measurement.
-		fields := make(map[string]interface{})
-		for fieldName, stats := range m.fields {
-			var prefix string
-			if fieldName != defaultFieldName {
-				prefix = fieldName + "_"
-			}
-			fields[prefix+"mean"] = stats.Mean()
-			fields[prefix+"stddev"] = stats.Stddev()
-			fields[prefix+"sum"] = stats.Sum()
-			fields[prefix+"upper"] = stats.Upper()
-			fields[prefix+"lower"] = stats.Lower()
-			fields[prefix+"count"] = stats.Count()
-			for _, percentile := range s.Percentiles {
-				name := fmt.Sprintf("%s%v_percentile", prefix, percentile.Value)
-				fields[name] = stats.Percentile(percentile.Value)
-			}
-		}
-
-		acc.AddFields(m.name, fields, m.tags, now)
-	}
-	if s.DeleteTimings {
-		s.timings = make(map[string]cachedtimings)
+	if _, err := s.metricDestination.Flush(ctx); err != nil {
+		acc.AddError(fmt.Errorf("submitting metrics: %w", err))
+		// s.Log.Warnf("submitting metrics: %s", err)
 	}
 
-	for _, m := range s.gauges {
-		acc.AddGauge(m.name, m.fields, m.tags, now)
-	}
-	if s.DeleteGauges {
-		s.gauges = make(map[string]cachedgauge)
-	}
+	// s.Lock()
+	// defer s.Unlock()
+	// now := time.Now()
 
-	for _, m := range s.counters {
-		acc.AddCounter(m.name, m.fields, m.tags, now)
-	}
-	if s.DeleteCounters {
-		s.counters = make(map[string]cachedcounter)
-	}
+	// for _, m := range s.timings {
+	// 	// Defining a template to parse field names for timers allows us to split
+	// 	// out multiple fields per timer. In this case we prefix each stat with the
+	// 	// field name and store these all in a single measurement.
+	// 	fields := make(map[string]interface{})
+	// 	for fieldName, stats := range m.fields {
+	// 		var prefix string
+	// 		if fieldName != defaultFieldName {
+	// 			prefix = fieldName + "_"
+	// 		}
+	// 		fields[prefix+"mean"] = stats.Mean()
+	// 		fields[prefix+"stddev"] = stats.Stddev()
+	// 		fields[prefix+"sum"] = stats.Sum()
+	// 		fields[prefix+"upper"] = stats.Upper()
+	// 		fields[prefix+"lower"] = stats.Lower()
+	// 		fields[prefix+"count"] = stats.Count()
+	// 		for _, percentile := range s.Percentiles {
+	// 			name := fmt.Sprintf("%s%v_percentile", prefix, percentile.Value)
+	// 			fields[name] = stats.Percentile(percentile.Value)
+	// 		}
+	// 	}
 
-	for _, m := range s.sets {
-		fields := make(map[string]interface{})
-		for field, set := range m.fields {
-			fields[field] = int64(len(set))
-		}
-		acc.AddFields(m.name, fields, m.tags, now)
-	}
-	if s.DeleteSets {
-		s.sets = make(map[string]cachedset)
-	}
+	// 	acc.AddFields(m.name, fields, m.tags, now)
+	// }
+	// if s.DeleteTimings {
+	// 	s.timings = make(map[string]cachedtimings)
+	// }
+
+	// for _, m := range s.gauges {
+	// 	acc.AddGauge(m.name, m.fields, m.tags, now)
+	// }
+	// if s.DeleteGauges {
+	// 	s.gauges = make(map[string]cachedgauge)
+	// }
+
+	// for _, m := range s.counters {
+	// 	acc.AddCounter(m.name, m.fields, m.tags, now)
+	// }
+	// if s.DeleteCounters {
+	// 	s.counters = make(map[string]cachedcounter)
+	// }
+
+	// for _, m := range s.sets {
+	// 	fields := make(map[string]interface{})
+	// 	for field, set := range m.fields {
+	// 		fields[field] = int64(len(set))
+	// 	}
+	// 	acc.AddFields(m.name, fields, m.tags, now)
+	// }
+	// if s.DeleteSets {
+	// 	s.sets = make(map[string]cachedset)
+	// }
 	return nil
 }
 
-func (s *Statsd) Start(ac cua.Accumulator) error {
-	if s.ParseDataDogTags {
-		s.DataDogExtensions = true
-		s.Log.Warn("'parse_data_dog_tags' config option is deprecated, please use 'datadog_extensions' instead")
+func (s *Statsd) Start(ctx context.Context, ac cua.Accumulator) error {
+	if s.InstanceID == "" {
+		return fmt.Errorf("invalid instance_id (empty)")
 	}
+
+	s.Log.Debug("initializing metric destination")
+
+	id := "statsd"
+	if s.InstanceID != "" {
+		id += ":" + s.InstanceID
+	}
+	dest, err := circmgr.NewMetricDestination(id, "statsd "+s.InstanceID, s.InstanceID, "", s.Log)
+	if err != nil {
+		return fmt.Errorf("new metric destination: %w", err)
+	}
+
+	s.metricDestination = dest
 
 	s.acc = ac
 
-	// Make data structures
-	s.gauges = make(map[string]cachedgauge)
-	s.counters = make(map[string]cachedcounter)
-	s.sets = make(map[string]cachedset)
-	s.timings = make(map[string]cachedtimings)
+	// // Make data structures
+	// s.gauges = make(map[string]cachedgauge)
+	// s.counters = make(map[string]cachedcounter)
+	// s.sets = make(map[string]cachedset)
+	// s.timings = make(map[string]cachedtimings)
 
 	s.Lock()
 	defer s.Unlock()
@@ -354,9 +361,10 @@ func (s *Statsd) Start(ac cua.Accumulator) error {
 		s.accept <- true
 	}
 
-	if s.ConvertNames {
-		s.Log.Warn("'convert_names' config option is deprecated, please use 'metric_separator' instead")
-	}
+	// // remove this and the config directive
+	// if s.ConvertNames {
+	// 	s.Log.Warn("'convert_names' config option is deprecated, please use 'metric_separator' instead")
+	// }
 
 	if s.MetricSeparator == "" {
 		s.MetricSeparator = defaultSeparator
@@ -379,7 +387,7 @@ func (s *Statsd) Start(ac cua.Accumulator) error {
 		s.wg.Add(1)
 		go func() {
 			defer s.wg.Done()
-			_ = s.udpListen(conn)
+			_ = s.udpListen(ctx, conn)
 		}()
 	} else {
 		address, err := net.ResolveTCPAddr("tcp", s.ServiceAddress)
@@ -397,7 +405,7 @@ func (s *Statsd) Start(ac cua.Accumulator) error {
 		s.wg.Add(1)
 		go func() {
 			defer s.wg.Done()
-			_ = s.tcpListen(listener)
+			_ = s.tcpListen(ctx, listener)
 		}()
 	}
 
@@ -406,17 +414,20 @@ func (s *Statsd) Start(ac cua.Accumulator) error {
 		s.wg.Add(1)
 		go func() {
 			defer s.wg.Done()
-			s.parser()
+			s.parser(ctx)
 		}()
 	}
+
 	s.Log.Infof("Started the statsd service on %q", s.ServiceAddress)
 	return nil
 }
 
 // tcpListen() starts listening for udp packets on the configured port.
-func (s *Statsd) tcpListen(listener *net.TCPListener) error {
+func (s *Statsd) tcpListen(ctx context.Context, listener *net.TCPListener) error {
 	for {
 		select {
+		case <-ctx.Done():
+			return nil
 		case <-s.done:
 			return nil
 		default:
@@ -455,7 +466,7 @@ func (s *Statsd) tcpListen(listener *net.TCPListener) error {
 }
 
 // udpListen starts listening for udp packets on the configured port.
-func (s *Statsd) udpListen(conn *net.UDPConn) error {
+func (s *Statsd) udpListen(ctx context.Context, conn *net.UDPConn) error {
 	if s.ReadBufferSize > 0 {
 		_ = s.UDPlistener.SetReadBuffer(s.ReadBufferSize)
 	}
@@ -463,6 +474,8 @@ func (s *Statsd) udpListen(conn *net.UDPConn) error {
 	buf := make([]byte, udpMaxPacketSize)
 	for {
 		select {
+		case <-ctx.Done():
+			return nil
 		case <-s.done:
 			return nil
 		default:
@@ -500,9 +513,11 @@ func (s *Statsd) udpListen(conn *net.UDPConn) error {
 // parser monitors the s.in channel, if there is a packet ready, it parses the
 // packet into statsd strings and then calls parseStatsdLine, which parses a
 // single statsd metric into a struct.
-func (s *Statsd) parser() {
+func (s *Statsd) parser(ctx context.Context) {
 	for {
 		select {
+		case <-ctx.Done():
+			return
 		case <-s.done:
 			return
 		case in := <-s.in:
@@ -514,7 +529,9 @@ func (s *Statsd) parser() {
 				switch {
 				case line == "":
 				case s.DataDogExtensions && strings.HasPrefix(line, "_e"):
-					_ = s.parseEventMessage(in.Time, line, in.Addr)
+					continue
+					// circonus has no "events" type of facility
+					// _ = s.parseEventMessage(in.Time, line, in.Addr)
 				default:
 					_ = s.parseStatsdLine(line)
 				}
@@ -563,9 +580,9 @@ func (s *Statsd) parseStatsdLine(line string) error {
 
 	// Add a metric for each bit available
 	for _, bit := range bits {
-		m := metric{}
-
-		m.bucket = bucketName
+		m := metric{
+			bucket: bucketName,
+		}
 
 		// Validate splitting the bit on "|"
 		pipesplit := strings.Split(bit, "|")
@@ -591,7 +608,7 @@ func (s *Statsd) parseStatsdLine(line string) error {
 
 		// Validate metric type
 		switch pipesplit[1] {
-		case "g", "c", "s", "ms", "h":
+		case "g", "c", "s", "ms", "h", "t":
 			m.mtype = pipesplit[1]
 		default:
 			s.Log.Errorf("Metric type %q unsupported", pipesplit[1])
@@ -631,7 +648,7 @@ func (s *Statsd) parseStatsdLine(line string) error {
 				v = int64(float64(v) / m.samplerate)
 			}
 			m.intvalue = v
-		case "s":
+		case "s", "t":
 			m.strvalue = pipesplit[0]
 		}
 
@@ -640,14 +657,22 @@ func (s *Statsd) parseStatsdLine(line string) error {
 		switch m.mtype {
 		case "c":
 			m.tags["metric_type"] = "counter"
+			m.tags["statsd_type"] = "count" // used by circonus
 		case "g":
 			m.tags["metric_type"] = "gauge"
+			m.tags["statsd_type"] = "gauge"
 		case "s":
 			m.tags["metric_type"] = "set"
+			m.tags["statsd_type"] = "count" // used by circonus
 		case "ms":
 			m.tags["metric_type"] = "timing"
+			m.tags["statsd_type"] = "timing" // used by circonus
 		case "h":
 			m.tags["metric_type"] = "histogram"
+			m.tags["statsd_type"] = "histogram"
+		case "t":
+			m.tags["metric_type"] = "text"
+			m.tags["statsd_type"] = "text"
 		}
 		if len(lineTags) > 0 {
 			for k, v := range lineTags {
@@ -655,14 +680,23 @@ func (s *Statsd) parseStatsdLine(line string) error {
 			}
 		}
 
-		// Make a unique key for the measurement name/tags
-		var tg []string
-		for k, v := range m.tags {
-			tg = append(tg, k+"="+v)
+		globalTags := circmgr.GetGlobalTags()
+		m.mtags = make(trapmetrics.Tags, len(m.tags)+len(globalTags))
+		if len(globalTags) > 0 {
+			m.mtags = append(m.mtags, globalTags...)
 		}
-		sort.Strings(tg)
-		tg = append(tg, m.name)
-		m.hash = strings.Join(tg, "")
+		for k, v := range m.tags {
+			m.mtags = append(m.mtags, trapmetrics.Tag{Category: k, Value: v})
+		}
+
+		// // Make a unique key for the measurement name/tags
+		// var tg []string
+		// for k, v := range m.tags {
+		// 	tg = append(tg, k+"="+v)
+		// }
+		// sort.Strings(tg)
+		// tg = append(tg, m.name)
+		// m.hash = strings.Join(tg, "")
 
 		s.aggregate(m)
 	}
@@ -704,10 +738,10 @@ func (s *Statsd) parseName(bucket string) (string, string, map[string]string) {
 		name, tags, field, _ = p.ApplyTemplate(name)
 	}
 
-	if s.ConvertNames {
-		name = strings.ReplaceAll(name, ".", "_")
-		name = strings.ReplaceAll(name, "-", "__")
-	}
+	// if s.ConvertNames {
+	// 	name = strings.ReplaceAll(name, ".", "_")
+	// 	name = strings.ReplaceAll(name, "-", "__")
+	// }
 	if field == "" {
 		field = defaultFieldName
 	}
@@ -737,86 +771,136 @@ func parseKeyValue(keyvalue string) (string, string) {
 func (s *Statsd) aggregate(m metric) {
 	switch m.mtype {
 	case "ms", "h":
-		// Check if the measurement exists
-		cached, ok := s.timings[m.hash]
-		if !ok {
-			cached = cachedtimings{
-				name:   m.name,
-				fields: make(map[string]RunningStats),
-				tags:   m.tags,
-			}
-		}
-		// Check if the field exists. If we've not enabled multiple fields per timer
-		// this will be the default field name, eg. "value"
-		field, ok := cached.fields[m.field]
-		if !ok {
-			field = RunningStats{
-				PercLimit: s.PercentileLimit,
-			}
+		if m.field != "" && m.field != "value" {
+			m.mtags = append(m.mtags, trapmetrics.Tag{Category: "field", Value: m.field})
 		}
 		if m.samplerate > 0 {
 			for i := 0; i < int(1.0/m.samplerate); i++ {
-				field.AddValue(m.floatvalue)
+				if err := s.metricDestination.HistogramRecordValue(m.name, m.mtags, m.floatvalue); err != nil {
+					s.Log.Warnf("adding histogram (%s): %s", m.name, err)
+				}
 			}
-		} else {
-			field.AddValue(m.floatvalue)
+			return
 		}
-		cached.fields[m.field] = field
-		s.timings[m.hash] = cached
+
+		if err := s.metricDestination.HistogramRecordValue(m.name, m.mtags, m.floatvalue); err != nil {
+			s.Log.Warnf("adding histogram (%s): %s", m.name, err)
+		}
+
+		// // Check if the measurement exists
+		// cached, ok := s.timings[m.hash]
+		// if !ok {
+		// 	cached = cachedtimings{
+		// 		name:   m.name,
+		// 		fields: make(map[string]RunningStats),
+		// 		tags:   m.tags,
+		// 	}
+		// }
+		// // Check if the field exists. If we've not enabled multiple fields per timer
+		// // this will be the default field name, eg. "value"
+		// field, ok := cached.fields[m.field]
+		// if !ok {
+		// 	field = RunningStats{
+		// 		PercLimit: s.PercentileLimit,
+		// 	}
+		// }
+		// if m.samplerate > 0 {
+		// 	for i := 0; i < int(1.0/m.samplerate); i++ {
+		// 		field.AddValue(m.floatvalue)
+		// 	}
+		// } else {
+		// 	field.AddValue(m.floatvalue)
+		// }
+		// cached.fields[m.field] = field
+		// s.timings[m.hash] = cached
 	case "c":
-		// check if the measurement exists
-		_, ok := s.counters[m.hash]
-		if !ok {
-			s.counters[m.hash] = cachedcounter{
-				name:   m.name,
-				fields: make(map[string]interface{}),
-				tags:   m.tags,
-			}
+		if m.field != "" && m.field != "value" {
+			m.mtags = append(m.mtags, trapmetrics.Tag{Category: "field", Value: m.field})
 		}
-		// check if the field exists
-		_, ok = s.counters[m.hash].fields[m.field]
-		if !ok {
-			s.counters[m.hash].fields[m.field] = int64(0)
+		v := m.intvalue
+		if m.samplerate > 0 {
+			v = int64(math.Round(float64(v) / m.samplerate))
 		}
-		s.counters[m.hash].fields[m.field] =
-			s.counters[m.hash].fields[m.field].(int64) + m.intvalue
+		// counters are recorded like histograms, backend mutates back into a counter
+		if err := s.metricDestination.HistogramRecordCountForValue(m.name, m.mtags, v, 0); err != nil {
+			s.Log.Warnf("recording counter (%s): %s", m.name, err)
+		}
+		// // check if the measurement exists
+		// _, ok := s.counters[m.hash]
+		// if !ok {
+		// 	s.counters[m.hash] = cachedcounter{
+		// 		name:   m.name,
+		// 		fields: make(map[string]interface{}),
+		// 		tags:   m.tags,
+		// 	}
+		// }
+		// // check if the field exists
+		// _, ok = s.counters[m.hash].fields[m.field]
+		// if !ok {
+		// 	s.counters[m.hash].fields[m.field] = int64(0)
+		// }
+		// s.counters[m.hash].fields[m.field] =
+		// 	s.counters[m.hash].fields[m.field].(int64) + m.intvalue
 	case "g":
-		// check if the measurement exists
-		_, ok := s.gauges[m.hash]
-		if !ok {
-			s.gauges[m.hash] = cachedgauge{
-				name:   m.name,
-				fields: make(map[string]interface{}),
-				tags:   m.tags,
-			}
+		if m.field != "" && m.field != "value" {
+			m.mtags = append(m.mtags, trapmetrics.Tag{Category: "field", Value: m.field})
 		}
-		// check if the field exists
-		_, ok = s.gauges[m.hash].fields[m.field]
-		if !ok {
-			s.gauges[m.hash].fields[m.field] = float64(0)
+		if err := s.metricDestination.GaugeAdd(m.name, m.mtags, m.floatvalue, nil); err != nil {
+			s.Log.Warnf("adjusting gauge (%s): %s", m.name, err)
 		}
-		if m.additive {
-			s.gauges[m.hash].fields[m.field] =
-				s.gauges[m.hash].fields[m.field].(float64) + m.floatvalue
-		} else {
-			s.gauges[m.hash].fields[m.field] = m.floatvalue
-		}
+		// // check if the measurement exists
+		// _, ok := s.gauges[m.hash]
+		// if !ok {
+		// 	s.gauges[m.hash] = cachedgauge{
+		// 		name:   m.name,
+		// 		fields: make(map[string]interface{}),
+		// 		tags:   m.tags,
+		// 	}
+		// }
+		// // check if the field exists
+		// _, ok = s.gauges[m.hash].fields[m.field]
+		// if !ok {
+		// 	s.gauges[m.hash].fields[m.field] = float64(0)
+		// }
+		// if m.additive {
+		// 	s.gauges[m.hash].fields[m.field] =
+		// 		s.gauges[m.hash].fields[m.field].(float64) + m.floatvalue
+		// } else {
+		// 	s.gauges[m.hash].fields[m.field] = m.floatvalue
+		// }
 	case "s":
-		// check if the measurement exists
-		_, ok := s.sets[m.hash]
-		if !ok {
-			s.sets[m.hash] = cachedset{
-				name:   m.name,
-				fields: make(map[string]map[string]bool),
-				tags:   m.tags,
-			}
+		if m.field != "" && m.field != "value" {
+			m.mtags = append(m.mtags, trapmetrics.Tag{Category: "field", Value: m.field})
 		}
-		// check if the field exists
-		_, ok = s.sets[m.hash].fields[m.field]
-		if !ok {
-			s.sets[m.hash].fields[m.field] = make(map[string]bool)
+		if m.strvalue != "" {
+			m.mtags = append(m.mtags, trapmetrics.Tag{Category: "set_id", Value: m.strvalue})
 		}
-		s.sets[m.hash].fields[m.field][m.strvalue] = true
+		// sets are recorded like histograms, backend mutates back into a counter
+		if err := s.metricDestination.HistogramRecordCountForValue(m.name, m.mtags, 1, 0); err != nil {
+			s.Log.Warnf("recording set (%s:%): %s", m.name, m.field, err)
+		}
+		// // check if the measurement exists
+		// _, ok := s.sets[m.hash]
+		// if !ok {
+		// 	s.sets[m.hash] = cachedset{
+		// 		name:   m.name,
+		// 		fields: make(map[string]map[string]bool),
+		// 		tags:   m.tags,
+		// 	}
+		// }
+		// // check if the field exists
+		// _, ok = s.sets[m.hash].fields[m.field]
+		// if !ok {
+		// 	s.sets[m.hash].fields[m.field] = make(map[string]bool)
+		// }
+		// s.sets[m.hash].fields[m.field][m.strvalue] = true
+	case "t":
+		if m.field != "" && m.field != "value" {
+			m.mtags = append(m.mtags, trapmetrics.Tag{Category: "field", Value: m.field})
+		}
+		if err := s.metricDestination.TextSet(m.name, m.mtags, m.strvalue, nil); err != nil {
+			s.Log.Warnf("setting text (%s): %s", m.name, err)
+		}
 	}
 }
 
@@ -942,10 +1026,10 @@ func init() {
 			TCPKeepAlive:           false,
 			MetricSeparator:        "_",
 			AllowedPendingMessages: defaultAllowPendingMessage,
-			DeleteCounters:         true,
-			DeleteGauges:           true,
-			DeleteSets:             true,
-			DeleteTimings:          true,
+			// DeleteCounters:         true,
+			// DeleteGauges:           true,
+			// DeleteSets:             true,
+			// DeleteTimings:          true,
 		}
 	})
 }

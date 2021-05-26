@@ -1,3 +1,8 @@
+# v0.0.27
+
+* fix: (stackdriver_circonus) cancellation during collection, honor context through call stack
+* upd: (circmgr/circout) remove instance_id from check type
+
 # v0.0.26
 
 * upd: (snmp) no separate check for dm vs non-dm

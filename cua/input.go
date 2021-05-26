@@ -15,7 +15,7 @@ type ServiceInput interface {
 
 	// Start the ServiceInput.  The Accumulator may be retained and used until
 	// Stop returns.
-	Start(Accumulator) error
+	Start(context.Context, Accumulator) error
 
 	// Stop stops the services and closes any necessary channels and connections.
 	// Metrics should not be written out to the accumulator once stop returns, so

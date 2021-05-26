@@ -1,3 +1,18 @@
+# v0.0.26
+
+* upd: (snmp) one input to handle both dm and regular output
+* add: (snmp) text metric capability for syntax integer
+* add: (circmgr) same check name prefix handling as regular circ output
+* upd: (circmgr) use plugin and instance in cache file names
+* upd: (circmgr) reduce verbosity in new metric dest err msg
+* add: (circout) timestamp to agent metric
+* add: (statsd) new dm statsd input
+* add: (agent) context to input Start
+* add: (circmgr) global tags for dm inputs
+* upd: dependencies (go-trapcheck, go-trapmetrics)
+* fix: lint issues
+* upd: lint
+
 # v0.0.25
 
 * upd: enable default linux plugins for darwin and freebsd

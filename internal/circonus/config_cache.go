@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/circonus-labs/go-apiclient"
 	apiclicfg "github.com/circonus-labs/go-apiclient/config"
@@ -12,16 +13,16 @@ import (
 //
 // Check bundle config caching
 //
-func loadCheckConfig(instanceID string) *apiclient.CheckBundle {
+func loadCheckConfig(id string) *apiclient.CheckBundle {
 	if !ch.circCfg.CacheConfigs {
 		return nil
 	}
-	if instanceID == "" || ch.circCfg.CacheDir == "" {
+	if id == "" || ch.circCfg.CacheDir == "" {
 		return nil
 	}
 
 	path := ch.circCfg.CacheDir
-	checkConfigFile := filepath.Join(path, instanceID+".json")
+	checkConfigFile := filepath.Join(path, strings.ReplaceAll(id, ":", "_")+".json")
 
 	data, err := os.ReadFile(checkConfigFile)
 	if err != nil {
@@ -41,11 +42,11 @@ func loadCheckConfig(instanceID string) *apiclient.CheckBundle {
 	return &bundle
 }
 
-func saveCheckConfig(instanceID string, bundle *apiclient.CheckBundle) {
+func saveCheckConfig(id string, bundle *apiclient.CheckBundle) {
 	if !ch.circCfg.CacheConfigs {
 		return
 	}
-	if instanceID == "" || ch.circCfg.CacheDir == "" {
+	if id == "" || ch.circCfg.CacheDir == "" {
 		return
 	}
 	if bundle == nil {
@@ -53,7 +54,7 @@ func saveCheckConfig(instanceID string, bundle *apiclient.CheckBundle) {
 	}
 
 	path := ch.circCfg.CacheDir
-	checkConfigFile := filepath.Join(path, instanceID+".json")
+	checkConfigFile := filepath.Join(path, strings.ReplaceAll(id, ":", "_")+".json")
 
 	data, err := json.Marshal(bundle)
 	if err != nil {

@@ -412,7 +412,7 @@ func tailMultiplexed(
 
 // Start is a noop which is required for a *DockerLogs to implement
 // the cua.ServiceInput interface
-func (d *DockerLogs) Start(cua.Accumulator) error {
+func (d *DockerLogs) Start(_ context.Context, _ cua.Accumulator) error {
 	return nil
 }
 

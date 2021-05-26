@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
@@ -53,7 +54,7 @@ func main() {
 	}
 
 	// run the input plugin(s) until stdin closes or we receive a termination signal
-	if err := shim.Run(*pollInterval); err != nil {
+	if err := shim.Run(context.Background(), *pollInterval); err != nil {
 		fmt.Fprintf(os.Stderr, "Err: %s\n", err)
 		os.Exit(1)
 	}

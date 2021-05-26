@@ -130,7 +130,7 @@ func (*ClickHouse) Description() string {
 }
 
 // Start ClickHouse input service
-func (ch *ClickHouse) Start(cua.Accumulator) error {
+func (ch *ClickHouse) Start(_ context.Context, _ cua.Accumulator) error {
 	timeout := defaultTimeout
 	if ch.Timeout.Duration != 0 {
 		timeout = ch.Timeout.Duration

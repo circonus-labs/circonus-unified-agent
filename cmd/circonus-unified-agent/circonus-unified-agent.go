@@ -152,6 +152,9 @@ func runAgent(ctx context.Context,
 	if err := circonus.Initialize(c.GetGlobalCirconusConfig()); err != nil {
 		log.Printf("E! CMDM %s", err)
 	}
+	if len(c.Tags) > 0 {
+		circonus.AddGlobalTags(c.Tags)
+	}
 
 	if !*fTest && len(c.Outputs) == 0 {
 		return fmt.Errorf("Error: no outputs found, did you provide a valid config file?")

@@ -1,7 +1,6 @@
 package statsd
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -75,7 +74,7 @@ func TestEventGather(t *testing.T) {
 	}
 	acc := &testutil.Accumulator{}
 	s := NewTestStatsd()
-	require.NoError(t, s.Start(context.Background(), acc))
+	require.NoError(t, s.Start(acc))
 	defer s.Stop()
 
 	for i := range tests {
@@ -384,7 +383,7 @@ func TestEvents(t *testing.T) {
 	}
 	s := NewTestStatsd()
 	acc := &testutil.Accumulator{}
-	require.NoError(t, s.Start(context.Background(), acc))
+	require.NoError(t, s.Start(acc))
 	defer s.Stop()
 	for i := range tests {
 		i := i
@@ -413,7 +412,7 @@ func TestEventError(t *testing.T) {
 	now := time.Now()
 	s := NewTestStatsd()
 	acc := &testutil.Accumulator{}
-	require.NoError(t, s.Start(context.Background(), acc))
+	require.NoError(t, s.Start(acc))
 	defer s.Stop()
 
 	// missing length header

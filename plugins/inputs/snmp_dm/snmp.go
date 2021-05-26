@@ -97,8 +97,10 @@ func execCmd(arg0 string, args ...string) ([]byte, error) {
 
 // Snmp holds the configuration for the plugin.
 type Snmp struct {
-	InstanceID string `toml:"instance_id"`
-	FlushDelay string `toml:"flush_delay"`
+	// for direct metrics mode - send directly to circonus (bypassing output)
+	InstanceID    string `toml:"instance_id"`
+	DirectMetrics bool   `toml:"direct_metrics"`
+	FlushDelay    string `toml:"flush_delay"`
 
 	// The SNMP agent to query. Format is [SCHEME://]ADDR[:PORT] (e.g.
 	// udp://1.2.3.4:161).  If the scheme is not specified then "udp" is used.
@@ -117,10 +119,12 @@ type Snmp struct {
 	Name   string  // deprecated in 1.14; use name_override
 	Fields []Field `toml:"field"`
 
+	Log             cua.Logger
+	connectionCache []snmpConnection
+	initialized     bool
+
+	// direct metrics
 	flushDelay        time.Duration
-	Log               cua.Logger
-	connectionCache   []snmpConnection
-	initialized       bool
 	metricDestination *trapmetrics.TrapMetrics
 }
 
@@ -129,23 +133,25 @@ func (s *Snmp) init() error {
 		return nil
 	}
 
-	id := "snmp_dm"
-	if s.InstanceID != "" {
-		id += ":" + s.InstanceID
-	}
-	dest, err := circmgr.NewMetricDestination(id, "snmp_dm "+s.InstanceID, s.InstanceID, "", s.Log)
-	if err != nil {
-		return fmt.Errorf("new metric destination: %w", err)
-	}
-
-	s.metricDestination = dest
-
-	if s.FlushDelay != "" {
-		fd, err := time.ParseDuration(s.FlushDelay)
-		if err != nil {
-			return fmt.Errorf("parsing flush_delay (%s): %w", s.FlushDelay, err)
+	if s.DirectMetrics {
+		id := "snmp_dm"
+		if s.InstanceID != "" {
+			id += ":" + s.InstanceID
 		}
-		s.flushDelay = fd
+		dest, err := circmgr.NewMetricDestination(id, "snmp_dm "+s.InstanceID, s.InstanceID, "", s.Log)
+		if err != nil {
+			return fmt.Errorf("new metric destination: %w", err)
+		}
+
+		s.metricDestination = dest
+
+		if s.FlushDelay != "" {
+			fd, err := time.ParseDuration(s.FlushDelay)
+			if err != nil {
+				return fmt.Errorf("parsing flush_delay (%s): %w", s.FlushDelay, err)
+			}
+			s.flushDelay = fd
+		}
 	}
 
 	s.connectionCache = make([]snmpConnection, len(s.Agents))
@@ -258,6 +264,8 @@ type Field struct {
 	OidIndexLength int
 	// IsTag controls whether this OID is output as a tag or a value.
 	IsTag bool
+	// TextMetric controls whether this metric (if SYNTAX INTEGER) is sent as both an int and a textual representation
+	TextMetric bool
 	// Conversion controls any type conversion that is done on the value.
 	//  "float"/"float(0)" will convert the value into a float.
 	//  "float(X)" will convert the value into a float, and then move the decimal before Xth right-most digit.
@@ -293,7 +301,8 @@ func (f *Field) init() error {
 	}
 
 	// if tag and able to parse a textual convention from oid translation
-	if f.IsTag && len(stc.valMap) > 0 {
+	// for SYNTAX INTEGER fields e.g. ifType
+	if (f.IsTag || f.TextMetric) && len(stc.valMap) > 0 {
 		if f.Conversion == "" {
 			f.Conversion = "lookup"
 		}
@@ -385,13 +394,13 @@ func (s *Snmp) Gather(ctx context.Context, acc cua.Accumulator) error {
 				Fields: s.Fields,
 			}
 			topTags := map[string]string{}
-			if err := s.gatherTable(gs, t, topTags, false); err != nil {
+			if err := s.gatherTable(acc, gs, t, topTags, false); err != nil {
 				acc.AddError(fmt.Errorf("agent %s: %w", agent, err))
 			}
 
 			// Now is the real tables.
 			for _, t := range s.Tables {
-				if err := s.gatherTable(gs, t, topTags, true); err != nil {
+				if err := s.gatherTable(acc, gs, t, topTags, true); err != nil {
 					acc.AddError(fmt.Errorf("agent %s: gathering table %s: %w", agent, t.Name, err))
 				}
 			}
@@ -399,22 +408,24 @@ func (s *Snmp) Gather(ctx context.Context, acc cua.Accumulator) error {
 	}
 	wg.Wait()
 
-	if s.flushDelay > time.Duration(0) {
-		fd := internal.RandomDuration(s.flushDelay)
-		s.Log.Debugf("flush delay: %s", fd)
-		select {
-		case <-ctx.Done():
-		case <-time.After(fd):
+	if s.DirectMetrics && s.metricDestination != nil {
+		if s.flushDelay > time.Duration(0) {
+			fd := internal.RandomDuration(s.flushDelay)
+			s.Log.Debugf("flush delay: %s", fd)
+			select {
+			case <-ctx.Done():
+			case <-time.After(fd):
+			}
 		}
-	}
-	if _, err := s.metricDestination.Flush(context.Background()); err != nil {
-		s.Log.Warnf("submitting metrics: %s", err)
+		if _, err := s.metricDestination.Flush(ctx); err != nil {
+			s.Log.Warnf("submitting metrics: %s", err)
+		}
 	}
 
 	return nil
 }
 
-func (s *Snmp) gatherTable(gs snmpConnection, t Table, topTags map[string]string, walk bool) error {
+func (s *Snmp) gatherTable(acc cua.Accumulator, gs snmpConnection, t Table, topTags map[string]string, walk bool) error {
 	rt, err := t.Build(gs, walk)
 	if err != nil {
 		return err
@@ -438,12 +449,15 @@ func (s *Snmp) gatherTable(gs snmpConnection, t Table, topTags map[string]string
 			tr.Tags[s.AgentHostTag] = gs.Host()
 		}
 
-		for metricName, val := range tr.Fields {
-			if err := circmgr.AddMetricToDest(s.metricDestination, "snmp_dm", rt.Name, metricName, tr.Tags, val, rt.Time); err != nil {
-				s.Log.Warnf("adding %s: %s", metricName, err)
+		if s.DirectMetrics && s.metricDestination != nil {
+			for metricName, val := range tr.Fields {
+				if err := circmgr.AddMetricToDest(s.metricDestination, "snmp_dm", rt.Name, metricName, tr.Tags, val, rt.Time); err != nil {
+					s.Log.Warnf("adding %s: %s", metricName, err)
+				}
 			}
+		} else {
+			acc.AddFields(rt.Name, tr.Fields, tr.Tags, rt.Time)
 		}
-		// acc.AddFields(rt.Name, tr.Fields, tr.Tags, rt.Time)
 	}
 
 	return nil
@@ -529,14 +543,35 @@ func (t Table) Build(gs snmpConnection, walk bool) (*RTable, error) {
 					}
 				}
 
-				fv, err := fieldConvert(f.Conversion, ent)
-				if err != nil {
-					return &walkError{
-						msg: fmt.Sprintf("converting %q (OID %s) for field %s", ent.Value, ent.Name, f.Name),
-						err: err,
+				if f.TextMetric && f.Conversion == "lookup" {
+					fv, err := fieldConvert("int", ent)
+					if err != nil {
+						return &walkError{
+							msg: fmt.Sprintf("converting %q (OID %s) for field %s", ent.Value, ent.Name, f.Name),
+							err: err,
+						}
 					}
+					ifv[idx] = fv
+
+					fv, err = fieldConvert(f.Conversion, ent)
+					if err != nil {
+						return &walkError{
+							msg: fmt.Sprintf("converting %q (OID %s) for field %s", ent.Value, ent.Name, f.Name),
+							err: err,
+						}
+					}
+					ifv[idx+"_desc"] = fv
+
+				} else {
+					fv, err := fieldConvert(f.Conversion, ent)
+					if err != nil {
+						return &walkError{
+							msg: fmt.Sprintf("converting %q (OID %s) for field %s", ent.Value, ent.Name, f.Name),
+							err: err,
+						}
+					}
+					ifv[idx] = fv
 				}
-				ifv[idx] = fv
 
 				return nil
 			})
@@ -574,7 +609,12 @@ func (t Table) Build(gs snmpConnection, walk bool) (*RTable, error) {
 						rtr.Tags[f.Name] = fmt.Sprintf("%v", v)
 					}
 				} else {
-					rtr.Fields[f.Name] = v
+					mname := f.Name
+					if strings.HasSuffix(idx, "_desc") {
+						rtr.Fields[mname+"_desc"] = v
+					} else {
+						rtr.Fields[mname] = v
+					}
 				}
 			}
 		}

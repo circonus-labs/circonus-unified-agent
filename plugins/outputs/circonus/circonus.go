@@ -160,21 +160,29 @@ func (c *Circonus) Connect() error {
 	}
 
 	if defaultDestination == nil {
-		if err := c.initMetricDestination("*", "", ""); err != nil {
+		pluginID := "default"
+		instanceID := ""
+		metricGroupID := ""
+		if err := c.initMetricDestination(pluginID, instanceID, metricGroupID); err != nil {
 			c.Log.Errorf("unable to initialize circonus metric destination (%s)", err)
 			return err
 		}
-		if d, ok := c.metricDestinations["*"]; ok {
+		destKey := circmgr.MakeDestinationKey(pluginID, instanceID, metricGroupID)
+		if d, ok := c.metricDestinations[destKey]; ok {
 			defaultDestination = d
 		}
 	}
 
 	if agentDestination == nil {
-		if err := c.initMetricDestination("agent", "agent", ""); err != nil {
+		pluginID := "agent"
+		instanceID := config.DefaultInstanceID()
+		metricGroupID := ""
+		if err := c.initMetricDestination(pluginID, instanceID, metricGroupID); err != nil {
 			c.Log.Errorf("unable to initialize circonus metric destination (%s)", err)
 			return err
 		}
-		if d, ok := c.metricDestinations["agent"]; ok {
+		destKey := circmgr.MakeDestinationKey(pluginID, instanceID, metricGroupID)
+		if d, ok := c.metricDestinations[destKey]; ok {
 			agentDestination = d
 		}
 	}
@@ -182,11 +190,15 @@ func (c *Circonus) Connect() error {
 	if !c.SubOutput {
 		if config.DefaultPluginsEnabled() {
 			if hostDestination == nil {
-				if err := c.initMetricDestination("host", "host", ""); err != nil {
+				pluginID := "host"
+				instanceID := config.DefaultInstanceID()
+				metricGroupID := ""
+				if err := c.initMetricDestination(pluginID, instanceID, metricGroupID); err != nil {
 					c.Log.Errorf("unable to initialize circonus metric destination (%s)", err)
 					return err
 				}
-				if d, ok := c.metricDestinations["host"]; ok {
+				destKey := circmgr.MakeDestinationKey(pluginID, instanceID, metricGroupID)
+				if d, ok := c.metricDestinations[destKey]; ok {
 					hostDestination = d
 				}
 			}

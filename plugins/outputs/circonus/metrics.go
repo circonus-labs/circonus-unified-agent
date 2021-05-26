@@ -108,7 +108,7 @@ func (c *Circonus) metricProcessor(id int, metrics []cua.Metric) int64 {
 func (c *Circonus) handleGeneric(m cua.Metric) int64 {
 	dest := c.getMetricDestination(m)
 	if dest == nil {
-		c.Log.Warnf("no metric destination found for metric (%#v)", m)
+		c.Log.Warnf("no metric destination found for metric (%+v)", m)
 		return 0
 	}
 	numMetrics := int64(0)

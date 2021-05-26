@@ -18,7 +18,7 @@ type metricDestination struct {
 
 // getMetricDestination returns a destination for the plugin identified by a plugin and plugin instance id
 func (c *Circonus) getMetricDestination(m cua.Metric) *metricDestination {
-	plugin := m.Origin()
+	pluginID := m.Origin()
 	instanceID := m.OriginInstance()
 
 	// default - used in two cases:
@@ -29,7 +29,7 @@ func (c *Circonus) getMetricDestination(m cua.Metric) *metricDestination {
 		defaultDest = defaultDestination
 	}
 
-	if c.OneCheck || plugin == "" {
+	if c.OneCheck || pluginID == "" {
 		return defaultDest
 	}
 
@@ -37,7 +37,7 @@ func (c *Circonus) getMetricDestination(m cua.Metric) *metricDestination {
 		// host metrics - the "default" plugins which are enabled by default
 		// but can be controlled via the (ENABLE_DEFAULT_PLUGINS env var
 		// any value other than "false" will enable the default plugins)
-		if config.IsDefaultPlugin(plugin) {
+		if config.IsDefaultPlugin(pluginID) {
 			hostDest := defaultDest
 			if config.DefaultPluginsEnabled() {
 				if hostDestination != nil {
@@ -47,7 +47,7 @@ func (c *Circonus) getMetricDestination(m cua.Metric) *metricDestination {
 			return hostDest
 		}
 		// agent metrics - metrics the agent emits about itself - always enabled
-		if config.IsAgentPlugin(plugin) {
+		if config.IsAgentPlugin(pluginID) {
 			agentDest := defaultDest
 			if agentDestination != nil {
 				agentDest = agentDestination
@@ -56,34 +56,29 @@ func (c *Circonus) getMetricDestination(m cua.Metric) *metricDestination {
 		}
 	}
 
-	id := plugin
-	if instanceID != "" {
-		id += ":" + instanceID
-	}
-	metricGroup := ""
-	if plugin == "stackdriver_circonus" {
-		metricGroup = c.getMetricGroupTag(m)
-		if metricGroup != "" {
-			parts := strings.SplitN(metricGroup, "/", 2)
+	metricGroupID := ""
+	if pluginID == "stackdriver_circonus" {
+		metricGroupID = c.getMetricGroupTag(m)
+		if metricGroupID != "" {
+			parts := strings.SplitN(metricGroupID, "/", 2)
 			if len(parts) > 0 {
-				id += ":" + parts[0]
-				metricGroup = parts[0]
-			} else {
-				id += ":" + metricGroup
+				metricGroupID = parts[0]
 			}
 		}
 	}
 
+	destKey := circmgr.MakeDestinationKey(pluginID, instanceID, metricGroupID)
+
 	c.RLock()
-	d, found := c.metricDestinations[id]
+	d, found := c.metricDestinations[destKey]
 	c.RUnlock()
 
 	if found {
 		return d
 	}
 
-	if err := c.initMetricDestination(id, plugin+" "+instanceID+" "+metricGroup, instanceID); err == nil {
-		if d, ok := c.metricDestinations[id]; ok {
+	if err := c.initMetricDestination(pluginID, instanceID, metricGroupID); err == nil {
+		if d, ok := c.metricDestinations[destKey]; ok {
 			return d
 		}
 	} else {
@@ -94,24 +89,20 @@ func (c *Circonus) getMetricDestination(m cua.Metric) *metricDestination {
 	return defaultDest
 }
 
-func (c *Circonus) initMetricDestination(id, name, instanceID string) error {
+func (c *Circonus) initMetricDestination(pluginID, instanceID, metricGroupID string) error {
 	c.Lock()
 	defer c.Unlock()
 
-	plugID := id
-	if id == "*" {
-		plugID = "default"
-		name = "default"
-	}
-
-	dest, err := circmgr.NewMetricDestination(plugID, name, instanceID, c.CheckNamePrefix, c.Log)
+	dest, err := circmgr.NewMetricDestination(pluginID, instanceID, metricGroupID, c.CheckNamePrefix, c.Log)
 	if err != nil {
 		return err
 	}
 
-	c.metricDestinations[id] = &metricDestination{
+	destKey := circmgr.MakeDestinationKey(pluginID, instanceID, metricGroupID)
+
+	c.metricDestinations[destKey] = &metricDestination{
 		metrics: dest,
-		id:      plugID,
+		id:      pluginID,
 	}
 
 	return nil

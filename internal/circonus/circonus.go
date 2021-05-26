@@ -218,12 +218,12 @@ func createMetrics(cfg *trapmetrics.Config) (*trapmetrics.TrapMetrics, error) {
 
 // NewMetricDestination will find/retrieve/create a new circonus check bundle and add it to a trap metrics instance to be
 // used as a metric destination.
-//  id = plugin id/name (e.g. inputs.cpu would be cpu, inputs.snmp would be snmp)
-//  name = a vanity name used in the display name of the check
-//  instanceID = plugin instance_id setting from the config
+//  pluginID = id/name (e.g. inputs.cpu would be cpu, inputs.snmp would be snmp)
+//  instanceID = instance_id setting from the config
+//  metricGroupID = group of metrics from the plugin (some offer multiple)
 //  checkNamePrefix = used in the display name and target of the check
 //  logger = an instance of cua logger (already configured for the plugin requesting the metric destination)
-func NewMetricDestination(id, name, instanceID, checkNamePrefix string, logger cua.Logger) (*trapmetrics.TrapMetrics, error) {
+func NewMetricDestination(pluginID, instanceID, metricGroupID, checkNamePrefix string, logger cua.Logger) (*trapmetrics.TrapMetrics, error) {
 	if ch == nil {
 		return nil, fmt.Errorf("circonus metric destination management module: module not initialized")
 	}
@@ -233,14 +233,10 @@ func NewMetricDestination(id, name, instanceID, checkNamePrefix string, logger c
 
 	// serialize, don't want too many checks being created simultaneously - api rate limits, overwhelm broker, duplicate checks, etc.
 
+	destKey := MakeDestinationKey(pluginID, instanceID, metricGroupID)
+
 	ch.Lock()
 	defer ch.Unlock()
-
-	plugID := id
-	if id == "*" {
-		plugID = "default"
-		name = "default"
-	}
 
 	if checkNamePrefix == "" && ch.circCfg.CheckNamePrefix != "" {
 		checkNamePrefix = ch.circCfg.CheckNamePrefix
@@ -250,7 +246,7 @@ func NewMetricDestination(id, name, instanceID, checkNamePrefix string, logger c
 	debugAPI := ch.circCfg.DebugAPI
 	traceMetrics := ch.circCfg.TraceMetrics
 
-	bundle := loadCheckConfig(id)
+	bundle := loadCheckConfig(destKey)
 	saveConfig := false
 
 	if bundle != nil {
@@ -276,13 +272,31 @@ func NewMetricDestination(id, name, instanceID, checkNamePrefix string, logger c
 		}
 	}
 
-	checkType := "httptrap:cua:" + plugID + ":" + runtime.GOOS
-	checkDisplayName := checkNamePrefix + " " + name + " (" + runtime.GOOS + ")"
+	checkType := []string{"httptrap", "cua", pluginID}
+	if metricGroupID != "" {
+		checkType = append(checkType, metricGroupID)
+	}
+	checkType = append(checkType, runtime.GOOS)
+
+	checkDisplayName := []string{checkNamePrefix, pluginID}
+	if instanceID != "" && instanceID != pluginID {
+		checkDisplayName = append(checkDisplayName, instanceID)
+	}
+	if metricGroupID != "" {
+		checkDisplayName = append(checkDisplayName, metricGroupID)
+	}
+	checkDisplayName = append(checkDisplayName, "("+runtime.GOOS+")")
+
+	searchTags := ch.circCfg.CheckSearchTags
+	if !strings.Contains(strings.Join(searchTags, ","), "__instance_id") {
+		searchTags = append(searchTags, "__instance_id:"+instanceID)
+	}
+
 	checkTarget := checkNamePrefix
 
 	instanceLogger := &Logshim{
 		logh:     logger,
-		prefix:   plugID,
+		prefix:   destKey,
 		debugAPI: debugAPI,
 	}
 
@@ -298,13 +312,13 @@ func NewMetricDestination(id, name, instanceID, checkNamePrefix string, logger c
 	tc := &trapcheck.Config{
 		Client:          circAPI,
 		Logger:          instanceLogger,
-		CheckSearchTags: ch.circCfg.CheckSearchTags,
+		CheckSearchTags: searchTags,
 		TraceMetrics:    traceMetrics,
 	}
 
 	cc := &apiclient.CheckBundle{
-		Type:        checkType,
-		DisplayName: checkDisplayName,
+		Type:        strings.Join(checkType, ":"),
+		DisplayName: strings.Join(checkDisplayName, " "),
 		Target:      checkTarget,
 	}
 	if ch.circCfg.Broker != "" {
@@ -389,8 +403,12 @@ func NewMetricDestination(id, name, instanceID, checkNamePrefix string, logger c
 	}
 
 	if saveConfig {
-		saveCheckConfig(id, bundle)
+		saveCheckConfig(destKey, bundle)
 	}
 
 	return metrics, nil
+}
+
+func MakeDestinationKey(pluginID, instanceID, metricGroupID string) string {
+	return fmt.Sprintf("%s:%s:%s", pluginID, instanceID, metricGroupID)
 }

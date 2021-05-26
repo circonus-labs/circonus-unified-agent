@@ -28,7 +28,7 @@ information.
 ## Configuration
 
 ```toml
-[[inputs.snmp_dm]]
+[[inputs.snmp]]
   ## Instance ID is required
   instance_id = ""
   ## Direct metrics
@@ -86,21 +86,21 @@ information.
   ## Add fields and tables defining the variables you wish to collect.  This
   ## example collects the system uptime and interface variables.  Reference the
   ## full plugin documentation for configuration details.
-  [[inputs.snmp_dm.field]]
+  [[inputs.snmp.field]]
     oid = "RFC1213-MIB::sysUpTime.0"
     name = "uptime"
 
-  [[inputs.snmp_dm.field]]
+  [[inputs.snmp.field]]
     oid = "RFC1213-MIB::sysName.0"
     name = "source"
     is_tag = true
 
-  [[inputs.snmp_dm.table]]
+  [[inputs.snmp.table]]
     oid = "IF-MIB::ifTable"
     name = "interface"
     inherit_tags = ["source"]
 
-    [[inputs.snmp_dm.table.field]]
+    [[inputs.snmp.table.field]]
       oid = "IF-MIB::ifDescr"
       name = "ifDescr"
       is_tag = true
@@ -118,10 +118,10 @@ Use a `field` to collect a variable by OID.  Requests specified with this
 option operate similar to the `snmpget` utility.
 
 ```toml
-[[inputs.snmp_dm]]
+[[inputs.snmp]]
   # ... snip ...
 
-  [[inputs.snmp_dm.field]]
+  [[inputs.snmp.field]]
     ## Object identifier of the variable as a numeric or textual OID.
     oid = "RFC1213-MIB::sysName.0"
 
@@ -164,10 +164,10 @@ cases for columns use [metric filtering][].
 One [metric][] is created for each row of the SNMP table.
 
 ```toml
-[[inputs.snmp_dm]]
+[[inputs.snmp]]
   # ... snip ...
 
-  [[inputs.snmp_dm.table]]
+  [[inputs.snmp.table]]
     ## Object identifier of the SNMP table as a numeric or textual OID.
     oid = "IF-MIB::ifTable"
 
@@ -186,7 +186,7 @@ One [metric][] is created for each row of the SNMP table.
     ## required as any index columns are automatically added as tags.
     # index_as_tag = false
 
-    [[inputs.snmp_dm.table.field]]
+    [[inputs.snmp.table.field]]
       ## OID to get. May be a numeric or textual module-qualified OID.
       oid = "IF-MIB::ifDescr"
 
@@ -244,7 +244,7 @@ sudo tcpdump -s 0 -i eth0 -w circonus-unified-agent-snmp.pcap host 127.0.0.1 and
 ### Example Output
 
 ```text
-snmp_dm,agent_host=127.0.0.1,source=loaner uptime=11331974i 1575509815000000000
+snmp,agent_host=127.0.0.1,source=loaner uptime=11331974i 1575509815000000000
 interface,agent_host=127.0.0.1,ifDescr=wlan0,ifIndex=3,source=example.org ifAdminStatus=1i,ifInDiscards=0i,ifInErrors=0i,ifInNUcastPkts=0i,ifInOctets=3436617431i,ifInUcastPkts=2717778i,ifInUnknownProtos=0i,ifLastChange=0i,ifMtu=1500i,ifOperStatus=1i,ifOutDiscards=0i,ifOutErrors=0i,ifOutNUcastPkts=0i,ifOutOctets=581368041i,ifOutQLen=0i,ifOutUcastPkts=1354338i,ifPhysAddress="c8:5b:76:c9:e6:8c",ifSpecific=".0.0",ifSpeed=0i,ifType=6i 1575509815000000000
 interface,agent_host=127.0.0.1,ifDescr=eth0,ifIndex=2,source=example.org ifAdminStatus=1i,ifInDiscards=0i,ifInErrors=0i,ifInNUcastPkts=21i,ifInOctets=3852386380i,ifInUcastPkts=3634004i,ifInUnknownProtos=0i,ifLastChange=9088763i,ifMtu=1500i,ifOperStatus=1i,ifOutDiscards=0i,ifOutErrors=0i,ifOutNUcastPkts=0i,ifOutOctets=434865441i,ifOutQLen=0i,ifOutUcastPkts=2110394i,ifPhysAddress="c8:5b:76:c9:e6:8c",ifSpecific=".0.0",ifSpeed=1000000000i,ifType=6i 1575509815000000000
 interface,agent_host=127.0.0.1,ifDescr=lo,ifIndex=1,source=example.org ifAdminStatus=1i,ifInDiscards=0i,ifInErrors=0i,ifInNUcastPkts=0i,ifInOctets=51555569i,ifInUcastPkts=339097i,ifInUnknownProtos=0i,ifLastChange=0i,ifMtu=65536i,ifOperStatus=1i,ifOutDiscards=0i,ifOutErrors=0i,ifOutNUcastPkts=0i,ifOutOctets=51555569i,ifOutQLen=0i,ifOutUcastPkts=339097i,ifSpecific=".0.0",ifSpeed=10000000i,ifType=24i 1575509815000000000

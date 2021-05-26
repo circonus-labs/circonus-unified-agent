@@ -129,7 +129,7 @@ func walkXML(nodes []xmlnode, parents []string, separator string, f func(xmlnode
 				parentName = strings.Join([]string{parentName, attr.Value}, separator)
 			}
 		}
-		nodeParents := append(parents, parentName)
+		nodeParents := append(parents, parentName) //nolint:gocritic
 		if f(node, nodeParents, separator) {
 			walkXML(node.Nodes, nodeParents, separator, f)
 		}

@@ -180,7 +180,7 @@ func getTags(cert *x509.Certificate, location string) map[string]string {
 	tags["issuer_common_name"] = cert.Issuer.CommonName
 	tags["issuer_serial_number"] = cert.Issuer.SerialNumber
 
-	san := append(cert.DNSNames, cert.EmailAddresses...)
+	san := append(cert.DNSNames, cert.EmailAddresses...) //nolint:gocritic
 	for _, ip := range cert.IPAddresses {
 		san = append(san, ip.String())
 	}

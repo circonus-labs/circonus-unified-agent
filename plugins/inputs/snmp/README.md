@@ -1,6 +1,6 @@
 # SNMP Input Plugin
 
-The `snmp_dm` input plugin uses polling to gather metrics from SNMP agents.
+The `snmp` input plugin uses polling to gather metrics from SNMP agents.
 Support for gathering individual OIDs as well as complete SNMP tables is
 included.
 
@@ -8,11 +8,8 @@ This plugin sends metrics directly to Circonus - it bypasses aggregators, proces
 The intended use-case is for sitations where a large number of SNMP collector instances is required. In such
 cases optimizations and efficiencies can be gained by sending metrics directly.
 
-The `snmp_dm` input plugin introduces a new configuration directive called `flush_delay` which when used will
-spread the load of submissions to the Circonus Broker over a duration. For example, setting `flush_delay = "2m"`,
-for hundreds of instances flushing metric submissions would be spread over random durations in the two minute window.
-This prevents all plugin instances from flushing their metrics at the same time and provides for a smoother flow of
-outgoing data.
+The `snmp` input plugin introduces a new capability to send metrics directly to Circonus `direct_metrics`. Useful when
+there are a large number of snmp plugin instances.
 
 ## Prerequisites
 
@@ -34,6 +31,8 @@ information.
 [[inputs.snmp_dm]]
   ## Instance ID is required
   instance_id = ""
+  ## Direct metrics
+  # direct_metrics = false
 
   ## example of collecting hundreds of devices on a 5m cadence
   # collection interval

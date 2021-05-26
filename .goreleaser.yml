@@ -44,7 +44,7 @@ dockers:
             - "circonus/{{.ProjectName}}:{{.Tag}}-amd64"
             - "circonus/{{.ProjectName}}:latest-amd64"
         skip_push: false
-        dockerfile: docker/x86_64/Dockerfile
+        dockerfile: builds/docker/x86_64/Dockerfile
         build_flag_templates:
             - "--label=org.label-schema.schema-version=1.0"
             - "--label=org.label-schema.version={{.Version}}"
@@ -60,7 +60,7 @@ dockers:
             - "circonus/{{.ProjectName}}:{{.Tag}}-arm64"
             - "circonus/{{.ProjectName}}:latest-arm64"
         skip_push: false
-        dockerfile: docker/arm64/Dockerfile
+        dockerfile: builds/docker/arm64/Dockerfile
         build_flag_templates:
             - "--label=org.label-schema.schema-version=1.0"
             - "--label=org.label-schema.version={{.Version}}"
@@ -94,9 +94,15 @@ nfpms:
       empty_folders:
         - /opt/circonus/unified-agent/etc/config.d
       contents:
-        - src: "scripts/circonus-unified-agent.service"
+        - src: "LICENSE"
+          dst: "/opt/circonus/unified-agent/LICENSE"
+        - src: "README.md"
+          dst: "/opt/circonus/unified-agent/README.md"
+        - src: "CHANGELOG.md"
+          dst: "/opt/circonus/unified-agent/CHANGELOG.md"
+        - src: "service/circonus-unified-agent.service"
           dst: "/opt/circonus/unified-agent/service/circonus-unified-agent.service"
-        - src: "scripts/init.sh"
+        - src: "service/init.sh"
           dst: "/opt/circonus/unified-agent/service/init.sh"
         - src: "etc/example-circonus-unified-agent.conf" 
           dst: "/opt/circonus/unified-agent/etc/circonus-unified-agent.conf"
@@ -104,15 +110,15 @@ nfpms:
       overrides:
         deb:
           scripts:
-            preinstall: "scripts/deb/pre-install.sh"
-            postinstall: "scripts/deb/post-install.sh"
-            preremove: "scripts/deb/pre-remove.sh"
-            postremove: "scripts/deb/post-remove.sh"
+            preinstall: "builds/deb/pre-install.sh"
+            postinstall: "builds/deb/post-install.sh"
+            preremove: "builds/deb/pre-remove.sh"
+            postremove: "builds/deb/post-remove.sh"
         rpm:
           scripts:
-            preinstall: "scripts/rpm/pre-install.sh"
-            postinstall: "scripts/rpm/post-install.sh"
-            postremove: "scripts/rpm/post-remove.sh"
+            preinstall: "builds/rpm/pre-install.sh"
+            postinstall: "builds/rpm/post-install.sh"
+            postremove: "builds/rpm/post-remove.sh"
 
 archives:
     -   
@@ -131,7 +137,7 @@ archives:
           - CHANGELOG.md
           - etc/*
           - etc/**/*
-          - scripts/circonus-unified-agent.service
+          - service/*
 
 release:
     github:

@@ -1,5 +1,10 @@
 # v0.0.26
 
+* upd: (snmp) no separate check for dm vs non-dm
+* upd: (snmp) promote snmp dm plugin
+* upd: (snmp) deprecate old snmp plugin
+* add: add builds dir with assets for building pkgs and docker
+* add: service dir with os service definitions
 * upd: (snmp) one input to handle both dm and regular output
 * add: (snmp) text metric capability for syntax integer
 * add: (circmgr) same check name prefix handling as regular circ output

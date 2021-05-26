@@ -134,16 +134,17 @@ func (s *Snmp) init() error {
 	}
 
 	if s.DirectMetrics {
-		id := "snmp_dm"
+		id := "snmp"
 		if s.InstanceID != "" {
 			id += ":" + s.InstanceID
 		}
-		dest, err := circmgr.NewMetricDestination(id, "snmp_dm "+s.InstanceID, s.InstanceID, "", s.Log)
+		dest, err := circmgr.NewMetricDestination(id, "snmp "+s.InstanceID, s.InstanceID, "", s.Log)
 		if err != nil {
 			return fmt.Errorf("new metric destination: %w", err)
 		}
 
 		s.metricDestination = dest
+		s.Log.Info("using Direct Metrics mode")
 
 		if s.FlushDelay != "" {
 			fd, err := time.ParseDuration(s.FlushDelay)
@@ -345,9 +346,9 @@ func (e *walkError) Unwrap() error {
 }
 
 func init() {
-	inputs.Add("snmp_dm", func() cua.Input {
+	inputs.Add("snmp", func() cua.Input {
 		return &Snmp{
-			Name: "snmp_dm",
+			Name: "snmp",
 			ClientConfig: snmp.ClientConfig{
 				Retries:        3,
 				MaxRepetitions: 10,

@@ -101,6 +101,7 @@ type Snmp struct {
 	InstanceID    string `toml:"instance_id"`
 	DirectMetrics bool   `toml:"direct_metrics"`
 	FlushDelay    string `toml:"flush_delay"`
+	Broker        string `toml:"broker"`
 
 	// The SNMP agent to query. Format is [SCHEME://]ADDR[:PORT] (e.g.
 	// udp://1.2.3.4:161).  If the scheme is not specified then "udp" is used.
@@ -134,11 +135,13 @@ func (s *Snmp) init() error {
 	}
 
 	if s.DirectMetrics {
-		id := "snmp"
-		if s.InstanceID != "" {
-			id += ":" + s.InstanceID
+		opts := &circmgr.MetricDestConfig{
+			PluginID:      "snmp",
+			InstanceID:    s.InstanceID,
+			MetricGroupID: "",
+			Broker:        s.Broker,
 		}
-		dest, err := circmgr.NewMetricDestination(id, "snmp "+s.InstanceID, s.InstanceID, "", s.Log)
+		dest, err := circmgr.NewMetricDestination(opts, s.Log)
 		if err != nil {
 			return fmt.Errorf("new metric destination: %w", err)
 		}

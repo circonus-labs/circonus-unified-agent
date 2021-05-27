@@ -41,6 +41,7 @@ const (
 // Statsd allows the importing of statsd and dogstatsd data.
 type Statsd struct {
 	InstanceID string `toml:"instance_id"`
+	Broker     string `toml:"broker"`
 
 	// Protocol used on listener - udp or tcp
 	Protocol string `toml:"protocol"`
@@ -311,12 +312,14 @@ func (s *Statsd) Start(ctx context.Context, ac cua.Accumulator) error {
 	}
 
 	s.Log.Debug("initializing metric destination")
-
-	id := "statsd"
-	if s.InstanceID != "" {
-		id += ":" + s.InstanceID
+	opts := &circmgr.MetricDestConfig{
+		PluginID:      "statsd",
+		InstanceID:    s.InstanceID,
+		MetricGroupID: "",
+		Broker:        s.Broker,
 	}
-	dest, err := circmgr.NewMetricDestination(id, "statsd "+s.InstanceID, s.InstanceID, "", s.Log)
+
+	dest, err := circmgr.NewMetricDestination(opts, s.Log)
 	if err != nil {
 		return fmt.Errorf("new metric destination: %w", err)
 	}

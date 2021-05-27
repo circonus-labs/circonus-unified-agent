@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
@@ -24,11 +25,21 @@ var ch *Circonus
 type Circonus struct {
 	circCfg          *config.CirconusConfig
 	apiCfg           *apiclient.Config
+	brokerCIDrx      string
 	brokerTLSConfigs map[string]*tls.Config
 	globalTags       trapmetrics.Tags
 	ready            bool
 	logger           cua.Logger
 	sync.Mutex
+}
+
+type MetricDestConfig struct {
+	PluginID        string // plugin id or name (e.g. snmp, ping, etc.)
+	InstanceID      string // plugin instance id (all plugins require an instance_id setting)
+	MetricGroupID   string // metric group id (some plugins produce multiple "metric groups")
+	APIToken        string // allow override of api token for a specific plugin (dm input or circonus output)
+	Broker          string // allow override of broker for a specific plugin (dm input or circonus output)
+	CheckNamePrefix string // allow override of check name prefix for a specific plugin (dm input or circonus output)
 }
 
 // Logshim is for api and traps - it uses the info level and
@@ -77,6 +88,7 @@ func Initialize(cfg *config.CirconusConfig, err error) error {
 		circCfg:          cfg,
 		brokerTLSConfigs: make(map[string]*tls.Config),
 		globalTags:       make(trapmetrics.Tags, 0),
+		brokerCIDrx:      `^/broker/[0-9]+$`,
 	}
 
 	if c.circCfg.APIToken == "" {
@@ -168,7 +180,7 @@ func GetGlobalTags() trapmetrics.Tags {
 }
 
 // getAPIClient returns a Circonus API client or an error
-func getAPIClient() (*apiclient.API, error) {
+func getAPIClient(opts *MetricDestConfig) (*apiclient.API, error) {
 	if ch == nil {
 		return nil, fmt.Errorf("circonus metric destination management module: module not initialized")
 	}
@@ -176,7 +188,15 @@ func getAPIClient() (*apiclient.API, error) {
 		return nil, fmt.Errorf("circonus metric destination management module: invalid agent circonus config")
 	}
 
-	client, err := apiclient.New(ch.apiCfg)
+	cfg := *ch.apiCfg
+	if opts != nil {
+		// only option which may currently be overridden is the api key
+		if opts.APIToken != "" {
+			cfg.TokenKey = opts.APIToken
+		}
+	}
+
+	client, err := apiclient.New(&cfg)
 	if err != nil {
 		return nil, fmt.Errorf("circonus metric destination management module: unable to initialize circonus api client: %w", err)
 	}
@@ -223,13 +243,18 @@ func createMetrics(cfg *trapmetrics.Config) (*trapmetrics.TrapMetrics, error) {
 //  metricGroupID = group of metrics from the plugin (some offer multiple)
 //  checkNamePrefix = used in the display name and target of the check
 //  logger = an instance of cua logger (already configured for the plugin requesting the metric destination)
-func NewMetricDestination(pluginID, instanceID, metricGroupID, checkNamePrefix string, logger cua.Logger) (*trapmetrics.TrapMetrics, error) {
+func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetrics.TrapMetrics, error) {
 	if ch == nil {
 		return nil, fmt.Errorf("circonus metric destination management module: module not initialized")
 	}
 	if !ch.ready {
 		return nil, fmt.Errorf("circonus metric destination management module: invalid agent circonus config")
 	}
+
+	pluginID := opts.PluginID
+	instanceID := opts.InstanceID
+	metricGroupID := opts.MetricGroupID
+	checkNamePrefix := opts.CheckNamePrefix
 
 	// serialize, don't want too many checks being created simultaneously - api rate limits, overwhelm broker, duplicate checks, etc.
 
@@ -247,8 +272,6 @@ func NewMetricDestination(pluginID, instanceID, metricGroupID, checkNamePrefix s
 	traceMetrics := ch.circCfg.TraceMetrics
 
 	bundle := loadCheckConfig(destKey)
-	saveConfig := false
-
 	if bundle != nil {
 		// NOTE: api call debug won't be set on existing checks unless they are cached.
 		//       submission debugging will work as the flags will be set after the
@@ -287,9 +310,10 @@ func NewMetricDestination(pluginID, instanceID, metricGroupID, checkNamePrefix s
 	}
 	checkDisplayName = append(checkDisplayName, "("+runtime.GOOS+")")
 
-	searchTags := ch.circCfg.CheckSearchTags
+	searchTags := make([]string, len(ch.circCfg.CheckSearchTags))
+	searchTags = append(searchTags, ch.circCfg.CheckSearchTags...)
 	if !strings.Contains(strings.Join(searchTags, ","), "__instance_id") {
-		searchTags = append(searchTags, "__instance_id:"+instanceID)
+		searchTags = append(searchTags, "__instance_id:"+strings.ToLower(instanceID))
 	}
 
 	checkTarget := checkNamePrefix
@@ -301,7 +325,7 @@ func NewMetricDestination(pluginID, instanceID, metricGroupID, checkNamePrefix s
 	}
 
 	// API client
-	circAPI, err := getAPIClient()
+	circAPI, err := getAPIClient(opts)
 	if err != nil {
 		return nil, err
 	}
@@ -316,29 +340,50 @@ func NewMetricDestination(pluginID, instanceID, metricGroupID, checkNamePrefix s
 		TraceMetrics:    traceMetrics,
 	}
 
-	cc := &apiclient.CheckBundle{
-		Type:        strings.Join(checkType, ":"),
-		DisplayName: strings.Join(checkDisplayName, " "),
-		Target:      checkTarget,
-	}
-	if ch.circCfg.Broker != "" {
-		cc.Brokers = []string{ch.circCfg.Broker}
-	}
-	tc.CheckConfig = cc
+	var cc *apiclient.CheckBundle
 
-	if len(cc.Brokers) > 0 {
-		if tlscfg, ok := ch.brokerTLSConfigs[cc.Brokers[0]]; ok {
-			tc.SubmitTLSConfig = tlscfg.Clone()
+	if bundle != nil {
+		// cached bundle, use the cid
+		cc = &apiclient.CheckBundle{
+			CID: bundle.CID,
 		}
-	} else if bundle != nil {
-		tc.CheckConfig = &apiclient.CheckBundle{CID: bundle.CID}
 		if len(bundle.Brokers) > 0 {
 			if tlscfg, ok := ch.brokerTLSConfigs[bundle.Brokers[0]]; ok {
 				tc.SubmitTLSConfig = tlscfg.Clone()
 			}
 		}
+	} else {
+		cc = &apiclient.CheckBundle{
+			Type:        strings.Join(checkType, ":"),
+			DisplayName: strings.Join(checkDisplayName, " "),
+			Target:      checkTarget,
+		}
+		if opts.Broker != "" {
+			cc.Brokers = []string{opts.Broker}
+		} else if ch.circCfg.Broker != "" {
+			cc.Brokers = []string{ch.circCfg.Broker}
+		}
+		if len(cc.Brokers) > 0 {
+			// fixup config supplied broker CID if needed
+			bid := cc.Brokers[0]
+			if !strings.HasPrefix(bid, "/broker/") {
+				bid = "/broker/" + bid
+				matched, err := regexp.MatchString(ch.brokerCIDrx, bid)
+				if err != nil {
+					return nil, err
+				}
+				if !matched {
+					return nil, fmt.Errorf("invalid broker cid (%s): %w", bid, err)
+				}
+				cc.Brokers[0] = bid
+			}
+			if tlscfg, ok := ch.brokerTLSConfigs[cc.Brokers[0]]; ok {
+				tc.SubmitTLSConfig = tlscfg.Clone()
+			}
+		}
 	}
 
+	tc.CheckConfig = cc
 	check, err := createCheck(tc)
 	if err != nil {
 		return nil, err
@@ -350,7 +395,7 @@ func NewMetricDestination(pluginID, instanceID, metricGroupID, checkNamePrefix s
 			return nil, fmt.Errorf("circonus metric destination management module: unable to get check bundle: %w", err)
 		}
 		bundle = b
-		saveConfig = true
+		saveCheckConfig(destKey, bundle)
 	}
 
 	// if checks are going to a non-public trap
@@ -364,7 +409,7 @@ func NewMetricDestination(pluginID, instanceID, metricGroupID, checkNamePrefix s
 		if t != nil {
 			ch.brokerTLSConfigs[bundle.Brokers[0]] = t.Clone()
 		} else {
-			// note: err==nil, t==nil means it's a public broker (api.circonus.com) or using http: as the schema
+			// note: err==nil and t==nil means public broker (api.circonus.com) or using http: as the schema
 			ch.brokerTLSConfigs[bundle.Brokers[0]] = t
 		}
 	}
@@ -400,10 +445,6 @@ func NewMetricDestination(pluginID, instanceID, metricGroupID, checkNamePrefix s
 			_, _ = check.TraceMetrics(traceMetrics)
 			ch.logger.Infof("set debug:%t trace:%s on check %s", debugAPI, traceMetrics, checkUUID)
 		}
-	}
-
-	if saveConfig {
-		saveCheckConfig(destKey, bundle)
 	}
 
 	return metrics, nil

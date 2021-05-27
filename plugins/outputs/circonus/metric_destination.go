@@ -72,18 +72,20 @@ func (c *Circonus) getMetricDestination(m cua.Metric) *metricDestination {
 	c.RLock()
 	d, found := c.metricDestinations[destKey]
 	c.RUnlock()
-
 	if found {
 		return d
 	}
 
-	if err := c.initMetricDestination(pluginID, instanceID, metricGroupID); err == nil {
-		if d, ok := c.metricDestinations[destKey]; ok {
-			return d
-		}
-	} else {
+	if err := c.initMetricDestination(pluginID, instanceID, metricGroupID); err != nil {
 		c.Log.Errorf("error initializing metric destination: %s", err)
 		os.Exit(1) //nolint:gocritic
+	}
+
+	c.RLock()
+	d, found = c.metricDestinations[destKey]
+	c.RUnlock()
+	if found {
+		return d
 	}
 
 	return defaultDest
@@ -93,7 +95,16 @@ func (c *Circonus) initMetricDestination(pluginID, instanceID, metricGroupID str
 	c.Lock()
 	defer c.Unlock()
 
-	dest, err := circmgr.NewMetricDestination(pluginID, instanceID, metricGroupID, c.CheckNamePrefix, c.Log)
+	opts := circmgr.MetricDestConfig{
+		PluginID:        pluginID,
+		InstanceID:      instanceID,
+		MetricGroupID:   metricGroupID,
+		APIToken:        c.APIToken,
+		Broker:          c.Broker,
+		CheckNamePrefix: c.CheckNamePrefix,
+	}
+
+	dest, err := circmgr.NewMetricDestination(&opts, c.Log)
 	if err != nil {
 		return err
 	}

@@ -3,7 +3,6 @@
 package circonus
 
 import (
-	"os"
 	"runtime/debug"
 	"sync"
 	"time"
@@ -29,11 +28,13 @@ var (
 
 // Circonus values are used to output data to the Circonus platform.
 type Circonus struct {
+	// token and broker can, optionally, override the agent.circonus settings for this output instance
+	APIToken string `toml:"api_token"` // api token
+	Broker   string `toml:"broker"`    // optional: broker ID - numeric portion of _cid from broker api object (default is selected: enterprise or public httptrap broker)
+
 	// for backwards compatibility, allow old config options to work
 	// circonus config should be in [agent.circonus] going forward
-	Broker          string            `toml:"broker"`            // optional: broker ID - numeric portion of _cid from broker api object (default is selected: enterprise or public httptrap broker)
 	APIURL          string            `toml:"api_url"`           // optional: api url (default: https://api.circonus.com/v2)
-	APIToken        string            `toml:"api_token"`         // api token (REQUIRED)
 	APIApp          string            `toml:"api_app"`           // optional: api app (default: circonus-unified-agent)
 	APITLSCA        string            `toml:"api_tls_ca"`        // optional: api ca cert file
 	CacheConfigs    bool              `toml:"cache_configs"`     // optional: cache check bundle configurations - efficient for large number of inputs
@@ -85,13 +86,13 @@ func (c *Circonus) Init() error {
 		}
 	}
 
-	if c.CheckNamePrefix == "" {
-		hn, err := os.Hostname()
-		if err != nil || hn == "" {
-			hn = "unknown"
-		}
-		c.CheckNamePrefix = hn
-	}
+	// if c.CheckNamePrefix == "" {
+	// 	hn, err := os.Hostname()
+	// 	if err != nil || hn == "" {
+	// 		hn = "unknown"
+	// 	}
+	// 	c.CheckNamePrefix = hn
+	// }
 
 	if c.PoolSize == 0 {
 		c.PoolSize = defaultWorkerPoolSize
@@ -161,7 +162,7 @@ func (c *Circonus) Connect() error {
 
 	if defaultDestination == nil {
 		pluginID := "default"
-		instanceID := ""
+		instanceID := config.DefaultInstanceID()
 		metricGroupID := ""
 		if err := c.initMetricDestination(pluginID, instanceID, metricGroupID); err != nil {
 			c.Log.Errorf("unable to initialize circonus metric destination (%s)", err)

@@ -1,3 +1,12 @@
+# v0.0.28
+
+* add: (circmgr,circout,snmp,statsd) allow broker and api overrides in plugins (direct metric input and circonus output)
+* upd: (circmgr) validate broker settings (valid broker cid format)
+* fix: (circmgr) lowercase instance_id for check search tag
+* add: (snmp,statsd) broker config setting
+* upd: (circout) use broker and api key overrides if supplied
+* fix: (circout) don't force check prefix to host if not supplied in config
+
 # v0.0.27
 
 * fix: (stackdriver_circonus) cancellation during collection, honor context through call stack

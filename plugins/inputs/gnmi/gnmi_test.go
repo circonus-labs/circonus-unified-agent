@@ -81,7 +81,7 @@ func TestWaitError(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err = plugin.Start(&acc)
+	err = plugin.Start(context.Background(), &acc)
 	require.NoError(t, err)
 
 	var wg sync.WaitGroup
@@ -139,7 +139,7 @@ func TestUsernamePassword(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	err = plugin.Start(&acc)
+	err = plugin.Start(context.Background(), &acc)
 	require.NoError(t, err)
 
 	var wg sync.WaitGroup
@@ -382,7 +382,7 @@ func TestNotification(t *testing.T) {
 			gnmi.RegisterGNMIServer(grpcServer, tt.server)
 
 			var acc testutil.Accumulator
-			err = tt.plugin.Start(&acc)
+			err = tt.plugin.Start(context.Background(), &acc)
 			require.NoError(t, err)
 
 			var wg sync.WaitGroup
@@ -459,7 +459,7 @@ func TestRedial(t *testing.T) {
 	}()
 
 	var acc testutil.Accumulator
-	err = plugin.Start(&acc)
+	err = plugin.Start(context.Background(), &acc)
 	require.NoError(t, err)
 
 	acc.Wait(2)

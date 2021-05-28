@@ -1,6 +1,7 @@
 package syslog
 
 import (
+	"context"
 	"crypto/tls"
 	"net"
 	"os"
@@ -147,7 +148,7 @@ func testStrictNonTransparent(t *testing.T, protocol string, address string, wan
 			}
 			require.Equal(t, receiver.KeepAlivePeriod, keepAlive)
 			acc := &testutil.Accumulator{}
-			require.NoError(t, receiver.Start(acc))
+			require.NoError(t, receiver.Start(context.Background(), acc))
 			defer receiver.Stop()
 
 			// Connect
@@ -204,7 +205,7 @@ func testBestEffortNonTransparent(t *testing.T, protocol string, address string,
 			}
 			require.Equal(t, receiver.KeepAlivePeriod, keepAlive)
 			acc := &testutil.Accumulator{}
-			require.NoError(t, receiver.Start(acc))
+			require.NoError(t, receiver.Start(context.Background(), acc))
 			defer receiver.Stop()
 
 			// Connect

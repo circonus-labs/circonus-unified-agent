@@ -204,9 +204,9 @@ func (d *DockerLogs) matchedContainerName(names []string) string {
 func (d *DockerLogs) Gather(ctx context.Context, acc cua.Accumulator) error {
 	acc.SetPrecision(time.Nanosecond)
 
-	ctx, cancel := context.WithTimeout(ctx, d.Timeout.Duration)
+	dctx, cancel := context.WithTimeout(ctx, d.Timeout.Duration)
 	defer cancel()
-	containers, err := d.client.ContainerList(ctx, d.opts)
+	containers, err := d.client.ContainerList(dctx, d.opts)
 	if err != nil {
 		return fmt.Errorf("container list: %w", err)
 	}
@@ -221,8 +221,8 @@ func (d *DockerLogs) Gather(ctx context.Context, acc cua.Accumulator) error {
 			continue
 		}
 
-		ctx, cancel := context.WithCancel(context.Background())
-		d.addToContainerList(container.ID, cancel)
+		cctx, ccancel := context.WithCancel(ctx)
+		d.addToContainerList(container.ID, ccancel)
 
 		// Start a new goroutine for every new container that has logs to collect
 		d.wg.Add(1)
@@ -232,7 +232,7 @@ func (d *DockerLogs) Gather(ctx context.Context, acc cua.Accumulator) error {
 				d.removeFromContainerList(container.ID)
 			}()
 
-			err = d.tailContainerLogs(ctx, acc, container, containerName)
+			err = d.tailContainerLogs(cctx, acc, container, containerName)
 			if !errors.Is(err, context.Canceled) {
 				acc.AddError(err)
 			}

@@ -95,7 +95,7 @@ func (n *NSQConsumer) Description() string {
 }
 
 // Start pulls data from nsq
-func (n *NSQConsumer) Start(ac cua.Accumulator) error {
+func (n *NSQConsumer) Start(ctx context.Context, ac cua.Accumulator) error {
 	acc := ac.WithTracking(n.MaxUndeliveredMessages)
 	sem := make(semaphore, n.MaxUndeliveredMessages)
 	n.messages = make(map[cua.TrackingID]*nsq.Message, n.MaxUndeliveredMessages)

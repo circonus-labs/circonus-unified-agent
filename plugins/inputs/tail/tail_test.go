@@ -53,7 +53,7 @@ func TestTailBadLine(t *testing.T) {
 	require.NoError(t, err)
 
 	acc := testutil.Accumulator{}
-	require.NoError(t, tt.Start(&acc))
+	require.NoError(t, tt.Start(context.Background(), &acc))
 
 	require.NoError(t, acc.GatherError(tt.Gather))
 
@@ -81,7 +81,7 @@ func TestTailDosLineEndings(t *testing.T) {
 	require.NoError(t, err)
 
 	acc := testutil.Accumulator{}
-	require.NoError(t, tt.Start(&acc))
+	require.NoError(t, tt.Start(context.Background(), &acc))
 	defer tt.Stop()
 	require.NoError(t, acc.GatherError(tt.Gather))
 
@@ -116,7 +116,7 @@ func TestGrokParseLogFilesWithMultiline(t *testing.T) {
 	require.NoError(t, err)
 
 	acc := testutil.Accumulator{}
-	assert.NoError(t, tt.Start(&acc))
+	assert.NoError(t, tt.Start(context.Background(), &acc))
 	defer tt.Stop()
 
 	acc.Wait(3)
@@ -179,7 +179,7 @@ func TestGrokParseLogFilesWithMultilineTimeout(t *testing.T) {
 	require.NoError(t, err)
 
 	acc := testutil.Accumulator{}
-	assert.NoError(t, tt.Start(&acc))
+	assert.NoError(t, tt.Start(context.Background(), &acc))
 	time.Sleep(11 * time.Millisecond) // will force timeout
 	_, err = tmpfile.WriteString("[04/Jun/2016:12:41:48 +0100] INFO HelloExample: This is info\r\n")
 	require.NoError(t, err)
@@ -232,7 +232,7 @@ func TestGrokParseLogFilesWithMultilineTailerCloseFlushesMultilineBuffer(t *test
 	require.NoError(t, err)
 
 	acc := testutil.Accumulator{}
-	assert.NoError(t, tt.Start(&acc))
+	assert.NoError(t, tt.Start(context.Background(), &acc))
 	acc.Wait(3)
 	assert.Equal(t, uint64(3), acc.NMetrics())
 	// Close tailer, so multiline buffer is flushed
@@ -291,7 +291,7 @@ cpu,42
 	require.NoError(t, err)
 
 	acc := testutil.Accumulator{}
-	err = plugin.Start(&acc)
+	err = plugin.Start(context.Background(), &acc)
 	require.NoError(t, err)
 	defer plugin.Stop()
 	err = plugin.Gather(context.Background(), &acc)
@@ -347,7 +347,7 @@ func TestMultipleMetricsOnFirstLine(t *testing.T) {
 	require.NoError(t, err)
 
 	acc := testutil.Accumulator{}
-	err = plugin.Start(&acc)
+	err = plugin.Start(context.Background(), &acc)
 	require.NoError(t, err)
 	defer plugin.Stop()
 	err = plugin.Gather(context.Background(), &acc)
@@ -506,7 +506,7 @@ func TestCharacterEncoding(t *testing.T) {
 			require.NoError(t, err)
 
 			var acc testutil.Accumulator
-			err = tt.plugin.Start(&acc)
+			err = tt.plugin.Start(context.Background(), &acc)
 			require.NoError(t, err)
 			acc.Wait(len(tt.expected))
 			tt.plugin.Stop()
@@ -540,7 +540,7 @@ func TestTailEOF(t *testing.T) {
 	require.NoError(t, err)
 
 	acc := testutil.Accumulator{}
-	require.NoError(t, tt.Start(&acc))
+	require.NoError(t, tt.Start(context.Background(), &acc))
 	defer tt.Stop()
 	require.NoError(t, acc.GatherError(tt.Gather))
 	acc.Wait(1) // input hits eof

@@ -112,7 +112,7 @@ func TestLifecycleSanity(t *testing.T) {
 	err := plugin.Init()
 	require.NoError(t, err)
 
-	err = plugin.Start(&acc)
+	err = plugin.Start(context.Background(), &acc)
 	require.NoError(t, err)
 
 	err = plugin.Gather(context.Background(), &acc)
@@ -273,7 +273,7 @@ func TestTopicTag(t *testing.T) {
 			require.NoError(t, err)
 
 			var acc testutil.Accumulator
-			err = plugin.Start(&acc)
+			err = plugin.Start(context.Background(), &acc)
 			require.NoError(t, err)
 
 			handler(nil, &Message{})
@@ -309,7 +309,7 @@ func TestAddRouteCalledForEachTopic(t *testing.T) {
 	require.NoError(t, err)
 
 	var acc testutil.Accumulator
-	err = plugin.Start(&acc)
+	err = plugin.Start(context.Background(), &acc)
 	require.NoError(t, err)
 
 	plugin.Stop()
@@ -340,7 +340,7 @@ func TestSubscribeCalledIfNoSession(t *testing.T) {
 	require.NoError(t, err)
 
 	var acc testutil.Accumulator
-	err = plugin.Start(&acc)
+	err = plugin.Start(context.Background(), &acc)
 	require.NoError(t, err)
 
 	plugin.Stop()
@@ -371,7 +371,7 @@ func TestSubscribeNotCalledIfSession(t *testing.T) {
 	require.NoError(t, err)
 
 	var acc testutil.Accumulator
-	err = plugin.Start(&acc)
+	err = plugin.Start(context.Background(), &acc)
 	require.NoError(t, err)
 
 	plugin.Stop()

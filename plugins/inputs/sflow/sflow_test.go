@@ -1,6 +1,7 @@
 package sflow
 
 import (
+	"context"
 	"encoding/hex"
 	"net"
 	"testing"
@@ -20,7 +21,7 @@ func TestSFlow(t *testing.T) {
 	require.NoError(t, err)
 
 	var acc testutil.Accumulator
-	err = sflow.Start(&acc)
+	err = sflow.Start(context.Background(), &acc)
 	require.NoError(t, err)
 	defer sflow.Stop()
 
@@ -117,7 +118,7 @@ func BenchmarkSFlow(b *testing.B) {
 	require.NoError(b, err)
 
 	var acc testutil.Accumulator
-	err = sflow.Start(&acc)
+	err = sflow.Start(context.Background(), &acc)
 	require.NoError(b, err)
 	defer sflow.Stop()
 

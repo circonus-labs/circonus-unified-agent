@@ -4,6 +4,7 @@
 package ras
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -117,7 +118,7 @@ func TestMissingDatabase(t *testing.T) {
 	var acc testutil.Accumulator
 	ras := newRas()
 	ras.DBPath = "/nonexistent/ras.db"
-	err := ras.Start(&acc)
+	err := ras.Start(context.Background(), &acc)
 	assert.Error(t, err)
 }
 

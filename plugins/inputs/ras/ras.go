@@ -83,7 +83,7 @@ func (r *Ras) Description() string {
 }
 
 // Start initializes connection to DB, metrics are gathered in Gather
-func (r *Ras) Start(cua.Accumulator) error {
+func (r *Ras) Start(_ context.Context, _ cua.Accumulator) error {
 	err := validateDbPath(r.DBPath)
 	if err != nil {
 		return err

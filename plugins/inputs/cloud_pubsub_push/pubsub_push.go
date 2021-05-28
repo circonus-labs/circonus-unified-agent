@@ -130,7 +130,7 @@ func (p *PubSubPush) SetParser(parser parsers.Parser) {
 }
 
 // Start starts the http listener service.
-func (p *PubSubPush) Start(acc cua.Accumulator) error {
+func (p *PubSubPush) Start(ctx context.Context, acc cua.Accumulator) error {
 	if p.MaxBodySize.Size == 0 {
 		p.MaxBodySize.Size = defaultMaxBodySize
 	}
@@ -154,7 +154,7 @@ func (p *PubSubPush) Start(acc cua.Accumulator) error {
 		TLSConfig:   tlsConf,
 	}
 
-	p.ctx, p.cancel = context.WithCancel(context.Background())
+	p.ctx, p.cancel = context.WithCancel(ctx)
 	p.wg = &sync.WaitGroup{}
 	p.acc = acc.WithTracking(p.MaxUndeliveredMessages)
 	p.sem = make(chan struct{}, p.MaxUndeliveredMessages)

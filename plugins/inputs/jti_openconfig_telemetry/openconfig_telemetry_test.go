@@ -88,7 +88,7 @@ func TestOpenConfigTelemetryData(t *testing.T) {
 	var acc testutil.Accumulator
 
 	cfg.Sensors = []string{"/sensor"}
-	err := cfg.Start(&acc)
+	err := cfg.Start(context.Background(), &acc)
 	require.NoError(t, err)
 
 	tags := map[string]string{
@@ -115,7 +115,7 @@ func TestOpenConfigTelemetryData(t *testing.T) {
 func TestOpenConfigTelemetryDataWithPrefix(t *testing.T) {
 	var acc testutil.Accumulator
 	cfg.Sensors = []string{"/sensor_with_prefix"}
-	err := cfg.Start(&acc)
+	err := cfg.Start(context.Background(), &acc)
 	require.NoError(t, err)
 
 	tags := map[string]string{
@@ -141,7 +141,7 @@ func TestOpenConfigTelemetryDataWithPrefix(t *testing.T) {
 func TestOpenConfigTelemetryDataWithMultipleTags(t *testing.T) {
 	var acc testutil.Accumulator
 	cfg.Sensors = []string{"/sensor_with_multiple_tags"}
-	err := cfg.Start(&acc)
+	err := cfg.Start(context.Background(), &acc)
 	require.NoError(t, err)
 
 	tags1 := map[string]string{
@@ -183,7 +183,7 @@ func TestOpenConfigTelemetryDataWithMultipleTags(t *testing.T) {
 func TestOpenConfigTelemetryDataWithStringValues(t *testing.T) {
 	var acc testutil.Accumulator
 	cfg.Sensors = []string{"/sensor_with_string_values"}
-	err := cfg.Start(&acc)
+	err := cfg.Start(context.Background(), &acc)
 	require.NoError(t, err)
 
 	tags := map[string]string{

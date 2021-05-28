@@ -125,7 +125,7 @@ func (h *HTTPListenerV2) SetParser(parser parsers.Parser) {
 }
 
 // Start starts the http listener service.
-func (h *HTTPListenerV2) Start(acc cua.Accumulator) error {
+func (h *HTTPListenerV2) Start(ctx context.Context, acc cua.Accumulator) error {
 	if h.MaxBodySize.Size == 0 {
 		h.MaxBodySize.Size = defaultMaxBodySize
 	}

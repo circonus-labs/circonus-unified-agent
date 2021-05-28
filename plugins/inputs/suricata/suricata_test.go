@@ -1,6 +1,7 @@
 package suricata
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"math/rand"
@@ -33,7 +34,7 @@ func TestSuricataLarge(t *testing.T) {
 		},
 	}
 	acc := testutil.Accumulator{}
-	require.NoError(t, s.Start(&acc))
+	require.NoError(t, s.Start(context.Background(), &acc))
 	defer s.Stop()
 
 	data, err := os.ReadFile("testdata/test1.json")
@@ -62,7 +63,7 @@ func TestSuricata(t *testing.T) {
 		},
 	}
 	acc := testutil.Accumulator{}
-	require.NoError(t, s.Start(&acc))
+	require.NoError(t, s.Start(context.Background(), &acc))
 	defer s.Stop()
 
 	c, err := net.Dial("unix", tmpfn)
@@ -107,7 +108,7 @@ func TestThreadStats(t *testing.T) {
 	}
 
 	acc := testutil.Accumulator{}
-	require.NoError(t, s.Start(&acc))
+	require.NoError(t, s.Start(context.Background(), &acc))
 	defer s.Stop()
 
 	c, err := net.Dial("unix", tmpfn)
@@ -152,7 +153,7 @@ func TestSuricataInvalid(t *testing.T) {
 	acc := testutil.Accumulator{}
 	acc.SetDebug(true)
 
-	require.NoError(t, s.Start(&acc))
+	require.NoError(t, s.Start(context.Background(), &acc))
 	defer s.Stop()
 
 	c, err := net.Dial("unix", tmpfn)
@@ -174,7 +175,7 @@ func TestSuricataInvalidPath(t *testing.T) {
 	}
 
 	acc := testutil.Accumulator{}
-	require.Error(t, s.Start(&acc))
+	require.Error(t, s.Start(context.Background(), &acc))
 }
 
 func TestSuricataTooLongLine(t *testing.T) {
@@ -191,7 +192,7 @@ func TestSuricataTooLongLine(t *testing.T) {
 	}
 	acc := testutil.Accumulator{}
 
-	require.NoError(t, s.Start(&acc))
+	require.NoError(t, s.Start(context.Background(), &acc))
 	defer s.Stop()
 
 	c, err := net.Dial("unix", tmpfn)
@@ -217,7 +218,7 @@ func TestSuricataEmptyJSON(t *testing.T) {
 		},
 	}
 	acc := testutil.Accumulator{}
-	require.NoError(t, s.Start(&acc))
+	require.NoError(t, s.Start(context.Background(), &acc))
 	defer s.Stop()
 
 	c, err := net.Dial("unix", tmpfn)
@@ -245,7 +246,7 @@ func TestSuricataDisconnectSocket(t *testing.T) {
 	}
 	acc := testutil.Accumulator{}
 
-	require.NoError(t, s.Start(&acc))
+	require.NoError(t, s.Start(context.Background(), &acc))
 	defer s.Stop()
 
 	c, err := net.Dial("unix", tmpfn)
@@ -276,6 +277,6 @@ func TestSuricataStartStop(t *testing.T) {
 		},
 	}
 	acc := testutil.Accumulator{}
-	require.NoError(t, s.Start(&acc))
+	require.NoError(t, s.Start(context.Background(), &acc))
 	s.Stop()
 }

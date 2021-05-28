@@ -1,6 +1,7 @@
 package postgresql
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"net"
@@ -97,7 +98,7 @@ type Service struct {
 }
 
 // Start starts the ServiceInput's service, whatever that may be
-func (p *Service) Start(cua.Accumulator) (err error) {
+func (p *Service) Start(ctx context.Context, acc cua.Accumulator) (err error) {
 	const localhost = "host=localhost sslmode=disable"
 
 	if p.Address == "" || p.Address == "localhost" {

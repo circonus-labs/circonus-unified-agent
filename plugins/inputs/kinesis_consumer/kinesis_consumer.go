@@ -138,7 +138,7 @@ func (k *KinesisConsumer) SetParser(parser parsers.Parser) {
 	k.parser = parser
 }
 
-func (k *KinesisConsumer) connect(ac cua.Accumulator) error {
+func (k *KinesisConsumer) connect(ctx context.Context, ac cua.Accumulator) error {
 	credentialConfig := &internalaws.CredentialConfig{
 		Region:      k.Region,
 		AccessKey:   k.AccessKey,
@@ -199,22 +199,22 @@ func (k *KinesisConsumer) connect(ac cua.Accumulator) error {
 	k.checkpoints = make(map[string]checkpoint, k.MaxUndeliveredMessages)
 	k.sem = make(chan struct{}, k.MaxUndeliveredMessages)
 
-	ctx := context.Background()
-	ctx, k.cancel = context.WithCancel(ctx)
+	kctx, cancel := context.WithCancel(ctx)
+	k.cancel = cancel
 
 	k.wg.Add(1)
 	go func() {
 		defer k.wg.Done()
-		k.onDelivery(ctx)
+		k.onDelivery(kctx)
 	}()
 
 	k.wg.Add(1)
 	go func() {
 		defer k.wg.Done()
-		err := k.cons.Scan(ctx, func(r *consumer.Record) consumer.ScanStatus {
+		err := k.cons.Scan(kctx, func(r *consumer.Record) consumer.ScanStatus {
 			select {
-			case <-ctx.Done():
-				return consumer.ScanStatus{Error: ctx.Err()}
+			case <-kctx.Done():
+				return consumer.ScanStatus{Error: kctx.Err()}
 			case k.sem <- struct{}{}:
 				break
 			}
@@ -236,8 +236,8 @@ func (k *KinesisConsumer) connect(ac cua.Accumulator) error {
 	return nil
 }
 
-func (k *KinesisConsumer) Start(ac cua.Accumulator) error {
-	err := k.connect(ac)
+func (k *KinesisConsumer) Start(ctx context.Context, acc cua.Accumulator) error {
+	err := k.connect(ctx, acc)
 	if err != nil {
 		return err
 	}
@@ -316,7 +316,7 @@ func (k *KinesisConsumer) Stop() {
 
 func (k *KinesisConsumer) Gather(ctx context.Context, acc cua.Accumulator) error {
 	if k.cons == nil {
-		return k.connect(acc)
+		return k.connect(ctx, acc)
 	}
 	k.lastSeqNum = maxSeq
 

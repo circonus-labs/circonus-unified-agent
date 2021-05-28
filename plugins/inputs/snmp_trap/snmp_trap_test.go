@@ -1,6 +1,7 @@
 package snmptrap
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"strconv"
@@ -1290,7 +1291,7 @@ func TestReceiveTrap(t *testing.T) {
 			// Don't look up oid with snmptranslate.
 			s.execCmd = fakeExecCmd
 			var acc testutil.Accumulator
-			require.Nil(t, s.Start(&acc))
+			require.Nil(t, s.Start(context.Background(), &acc))
 			defer s.Stop()
 
 			// Preload the cache with the oids we'll use in this test

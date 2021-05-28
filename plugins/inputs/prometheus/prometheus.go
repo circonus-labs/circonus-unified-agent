@@ -372,11 +372,11 @@ func (p *Prometheus) gatherURL(u URLAndAddress, acc cua.Accumulator) error {
 }
 
 // Start will start the Kubernetes scraping if enabled in the configuration
-func (p *Prometheus) Start(a cua.Accumulator) error {
+func (p *Prometheus) Start(ctx context.Context, a cua.Accumulator) error {
 	if p.MonitorPods {
-		var ctx context.Context
-		ctx, p.cancel = context.WithCancel(context.Background())
-		return p.start(ctx)
+		var pctx context.Context
+		pctx, p.cancel = context.WithCancel(ctx)
+		return p.start(pctx)
 	}
 	return nil
 }

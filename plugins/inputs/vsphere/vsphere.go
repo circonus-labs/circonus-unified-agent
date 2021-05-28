@@ -259,9 +259,9 @@ func (v *VSphere) Description() string {
 
 // Start is called from agent core when a plugin is started and allows it to
 // perform initialization tasks.
-func (v *VSphere) Start(acc cua.Accumulator) error {
+func (v *VSphere) Start(ctx context.Context, acc cua.Accumulator) error {
 	v.Log.Info("Starting plugin")
-	ctx, cancel := context.WithCancel(context.Background())
+	vctx, cancel := context.WithCancel(ctx)
 	v.cancel = cancel
 
 	// Check for deprecated settings
@@ -276,7 +276,7 @@ func (v *VSphere) Start(acc cua.Accumulator) error {
 		if err != nil {
 			return fmt.Errorf("parse url (%s): %w", rawURL, err)
 		}
-		ep, err := NewEndpoint(ctx, v, u, v.Log)
+		ep, err := NewEndpoint(vctx, v, u, v.Log)
 		if err != nil {
 			return err
 		}

@@ -277,7 +277,7 @@ func (sl *SocketListener) SetParser(parser parsers.Parser) {
 	sl.Parser = parser
 }
 
-func (sl *SocketListener) Start(acc cua.Accumulator) error {
+func (sl *SocketListener) Start(ctx context.Context, acc cua.Accumulator) error {
 	sl.Accumulator = acc
 	spl := strings.SplitN(sl.ServiceAddress, "://", 2)
 	if len(spl) != 2 {

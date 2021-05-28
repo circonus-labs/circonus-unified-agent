@@ -27,7 +27,7 @@ func TestPgBouncerGeneratesMetrics(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	require.NoError(t, p.Start(&acc))
+	require.NoError(t, p.Start(context.Background(), &acc))
 	require.NoError(t, p.Gather(context.Background(), &acc))
 
 	intMetrics := []string{

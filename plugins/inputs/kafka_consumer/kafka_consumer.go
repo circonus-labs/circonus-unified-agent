@@ -209,7 +209,7 @@ func (k *KafkaConsumer) Init() error {
 	return nil
 }
 
-func (k *KafkaConsumer) Start(acc cua.Accumulator) error {
+func (k *KafkaConsumer) Start(ctx context.Context, acc cua.Accumulator) error {
 	var err error
 	k.consumer, err = k.ConsumerCreator.Create(
 		k.Brokers,
@@ -220,21 +220,21 @@ func (k *KafkaConsumer) Start(acc cua.Accumulator) error {
 		return fmt.Errorf("consumer create: %w", err)
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
+	kctx, cancel := context.WithCancel(ctx)
 	k.cancel = cancel
 
 	// Start consumer goroutine
 	k.wg.Add(1)
 	go func() {
 		defer k.wg.Done()
-		for ctx.Err() == nil {
+		for kctx.Err() == nil {
 			handler := NewConsumerGroupHandler(acc, k.MaxUndeliveredMessages, k.parser)
 			handler.MaxMessageLen = k.MaxMessageLen
 			handler.TopicTag = k.TopicTag
-			err := k.consumer.Consume(ctx, k.Topics, handler)
+			err := k.consumer.Consume(kctx, k.Topics, handler)
 			if err != nil {
 				acc.AddError(err)
-				_ = internal.SleepContext(ctx, reconnectDelay)
+				_ = internal.SleepContext(kctx, reconnectDelay)
 			}
 		}
 		err = k.consumer.Close()

@@ -1,6 +1,7 @@
 package riemannlistener
 
 import (
+	"context"
 	"log"
 	"testing"
 	"time"
@@ -21,7 +22,7 @@ func TestSocketListener_tcp(t *testing.T) {
 	sl.ReadBufferSize = internal.Size{Size: 1024}
 
 	acc := &testutil.Accumulator{}
-	err := sl.Start(acc)
+	err := sl.Start(context.Background(), acc)
 	require.NoError(t, err)
 	defer sl.Stop()
 

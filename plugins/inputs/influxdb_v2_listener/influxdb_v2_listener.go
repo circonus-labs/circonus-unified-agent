@@ -143,7 +143,7 @@ func (h *InfluxDBV2Listener) Init() error {
 }
 
 // Start starts the InfluxDB listener service.
-func (h *InfluxDBV2Listener) Start(acc cua.Accumulator) error {
+func (h *InfluxDBV2Listener) Start(ctx context.Context, acc cua.Accumulator) error {
 	h.acc = acc
 
 	tlsConf, err := h.ServerConfig.TLSConfig()

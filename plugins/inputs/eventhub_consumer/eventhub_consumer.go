@@ -193,17 +193,17 @@ func (e *EventHub) Init() (err error) {
 }
 
 // Start the EventHub ServiceInput
-func (e *EventHub) Start(acc cua.Accumulator) error {
+func (e *EventHub) Start(ctx context.Context, acc cua.Accumulator) error {
 	e.in = make(chan []cua.Metric)
 
-	var ctx context.Context
-	ctx, e.cancel = context.WithCancel(context.Background())
+	ectx, cancel := context.WithCancel(ctx)
+	e.cancel = cancel
 
 	// Start tracking
 	e.wg.Add(1)
 	go func() {
 		defer e.wg.Done()
-		e.startTracking(ctx, acc)
+		e.startTracking(ectx, acc)
 	}()
 
 	// Configure receiver options
@@ -212,7 +212,7 @@ func (e *EventHub) Start(acc cua.Accumulator) error {
 	partitions := e.PartitionIDs
 
 	if len(e.PartitionIDs) == 0 {
-		runtimeinfo, err := e.hub.GetRuntimeInformation(ctx)
+		runtimeinfo, err := e.hub.GetRuntimeInformation(ectx)
 		if err != nil {
 			return fmt.Errorf("runtime info: %w", err)
 		}
@@ -221,7 +221,7 @@ func (e *EventHub) Start(acc cua.Accumulator) error {
 	}
 
 	for _, partitionID := range partitions {
-		_, err := e.hub.Receive(ctx, partitionID, e.onMessage, receiveOpts...)
+		_, err := e.hub.Receive(ectx, partitionID, e.onMessage, receiveOpts...)
 		if err != nil {
 			return fmt.Errorf("creating receiver for partition %q: %w", partitionID, err)
 		}

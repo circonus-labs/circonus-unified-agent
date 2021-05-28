@@ -27,7 +27,7 @@ func TestPostgresqlGeneratesMetrics(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	require.NoError(t, p.Start(&acc))
+	require.NoError(t, p.Start(context.Background(), &acc))
 	require.NoError(t, p.Gather(context.Background(), &acc))
 
 	intMetrics := []string{
@@ -112,7 +112,7 @@ func TestPostgresqlTagsMetricsWithDatabaseName(t *testing.T) {
 
 	var acc testutil.Accumulator
 
-	require.NoError(t, p.Start(&acc))
+	require.NoError(t, p.Start(context.Background(), &acc))
 	require.NoError(t, p.Gather(context.Background(), &acc))
 
 	point, ok := acc.Get("postgresql")
@@ -137,7 +137,7 @@ func TestPostgresqlDefaultsToAllDatabases(t *testing.T) {
 
 	var acc testutil.Accumulator
 
-	require.NoError(t, p.Start(&acc))
+	require.NoError(t, p.Start(context.Background(), &acc))
 	require.NoError(t, p.Gather(context.Background(), &acc))
 
 	var found bool
@@ -169,7 +169,7 @@ func TestPostgresqlIgnoresUnwantedColumns(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	require.NoError(t, p.Start(&acc))
+	require.NoError(t, p.Start(context.Background(), &acc))
 	require.NoError(t, p.Gather(context.Background(), &acc))
 
 	for col := range p.IgnoredColumns() {
@@ -194,7 +194,7 @@ func TestPostgresqlDatabaseWhitelistTest(t *testing.T) {
 
 	var acc testutil.Accumulator
 
-	require.NoError(t, p.Start(&acc))
+	require.NoError(t, p.Start(context.Background(), &acc))
 	require.NoError(t, p.Gather(context.Background(), &acc))
 
 	var foundTemplate0 = false
@@ -233,7 +233,7 @@ func TestPostgresqlDatabaseBlacklistTest(t *testing.T) {
 	}
 
 	var acc testutil.Accumulator
-	require.NoError(t, p.Start(&acc))
+	require.NoError(t, p.Start(context.Background(), &acc))
 	require.NoError(t, p.Gather(context.Background(), &acc))
 
 	var foundTemplate0 = false

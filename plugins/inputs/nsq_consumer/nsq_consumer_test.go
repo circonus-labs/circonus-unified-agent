@@ -3,6 +3,7 @@ package nsqconsumer
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/binary"
 	"io"
 	"log"
@@ -49,7 +50,7 @@ func TestReadsMetricsFromNSQ(t *testing.T) {
 	consumer.SetParser(p)
 	var acc testutil.Accumulator
 	assert.Equal(t, 0, len(acc.Metrics), "There should not be any points")
-	if err := consumer.Start(&acc); err != nil {
+	if err := consumer.Start(context.Background(), &acc); err != nil {
 		t.Fatal(err.Error())
 	}
 

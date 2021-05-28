@@ -98,8 +98,8 @@ func (*IntelRDT) SampleConfig() string {
 `
 }
 
-func (r *IntelRDT) Start(acc cua.Accumulator) error {
-	ctx, cancel := context.WithCancel(context.Background())
+func (r *IntelRDT) Start(ctx context.Context, acc cua.Accumulator) error {
+	rctx, cancel := context.WithCancel(ctx)
 	r.cancel = cancel
 
 	r.Processor = NewProcessor()
@@ -110,9 +110,9 @@ func (r *IntelRDT) Start(acc cua.Accumulator) error {
 		return err
 	}
 
-	r.Publisher.publish(ctx)
-	go r.errorHandler(ctx)
-	go r.scheduler(ctx)
+	r.Publisher.publish(rctx)
+	go r.errorHandler(rctx)
+	go r.scheduler(rctx)
 
 	return nil
 }

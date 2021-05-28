@@ -1,3 +1,10 @@
+# v0.0.29
+
+* upd: deps (go-apiclient, go-trapcheck, go-trapmetrics)
+* fix: (circmgr) do not forward blank tags
+* upd: (circmgr) add `__os`, `__plugin_id`, and `__metric_group` check tags
+* upd: remove last deps on pkg/errors
+
 # v0.0.28
 
 * add: (circmgr,circout,snmp,statsd) allow broker and api overrides in plugins (direct metric input and circonus output)

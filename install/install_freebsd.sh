@@ -170,7 +170,7 @@ __configure_agent() {
 __configure_service() {
     log "Configuring FreeBSD Service"
 
-    \cp /opt/circonus/unified-agent/scripts/circonus_unified_agentd ${cua_service_file}
+    \cp /opt/circonus/unified-agent/service/circonus_unified_agentd ${cua_service_file}
 
     [[ -f $cua_service_file ]] || fail "Service file (${cua_service_file}) not found"
 

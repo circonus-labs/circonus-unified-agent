@@ -3,6 +3,7 @@
 package ping
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"regexp"
@@ -12,7 +13,7 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 )
 
-func (p *Ping) pingToURL(u string, acc cua.Accumulator) {
+func (p *Ping) pingToURL(ctx context.Context, u string, acc cua.Accumulator) {
 	tags := map[string]string{"url": u}
 	fields := map[string]interface{}{"result_code": 0}
 
@@ -34,9 +35,9 @@ func (p *Ping) pingToURL(u string, acc cua.Accumulator) {
 	if err != nil {
 		// fatal error
 		if pendingError != nil {
-			acc.AddError(fmt.Errorf("%w: %s", pendingError, u))
+			acc.AddError(fmt.Errorf("%s: %w", u, pendingError))
 		} else {
-			acc.AddError(fmt.Errorf("%w: %s", err, u))
+			acc.AddError(fmt.Errorf("%s: %w", u, err))
 		}
 
 		fields["result_code"] = 2
@@ -88,7 +89,7 @@ func (p *Ping) args(url string) []string {
 func processPingOutput(out string) (int, int, int, int, int, int, error) {
 	// So find a line contain 3 numbers except reply lines
 	var stats, aproxs []string = nil, nil
-	procErr := fmt.Errorf("fatal error processing ping output")
+	err := errors.New("Fatal error processing ping output")
 	stat := regexp.MustCompile(`=\W*(\d+)\D*=\W*(\d+)\D*=\W*(\d+)`)
 	aprox := regexp.MustCompile(`=\W*(\d+)\D*ms\D*=\W*(\d+)\D*ms\D*=\W*(\d+)\D*ms`)
 	tttLine := regexp.MustCompile(`TTL=\d+`)
@@ -109,35 +110,35 @@ func processPingOutput(out string) (int, int, int, int, int, int, error) {
 
 	// stats data should contain 4 members: entireExpression + ( Send, Receive, Lost )
 	if len(stats) != 4 {
-		return 0, 0, 0, -1, -1, -1, procErr
+		return 0, 0, 0, -1, -1, -1, err
 	}
 	trans, err := strconv.Atoi(stats[1])
 	if err != nil {
-		return 0, 0, 0, -1, -1, -1, fmt.Errorf("ping atoi trans (%s): %w", stats[1], err)
+		return 0, 0, 0, -1, -1, -1, err
 	}
 	receivedPacket, err := strconv.Atoi(stats[2])
 	if err != nil {
-		return 0, 0, 0, -1, -1, -1, fmt.Errorf("ping atoi recv (%s): %w", stats[2], err)
+		return 0, 0, 0, -1, -1, -1, err
 	}
 
 	// aproxs data should contain 4 members: entireExpression + ( min, max, avg )
 	if len(aproxs) != 4 {
-		return trans, receivedReply, receivedPacket, -1, -1, -1, procErr
+		return trans, receivedReply, receivedPacket, -1, -1, -1, err
 	}
 	min, err := strconv.Atoi(aproxs[1])
 	if err != nil {
-		return trans, receivedReply, receivedPacket, -1, -1, -1, fmt.Errorf("ping atoi min (%s): %w", aproxs[1], err)
+		return trans, receivedReply, receivedPacket, -1, -1, -1, err
 	}
 	max, err := strconv.Atoi(aproxs[2])
 	if err != nil {
-		return trans, receivedReply, receivedPacket, -1, -1, -1, fmt.Errorf("ping atoi max (%s): %w", aproxs[2], err)
+		return trans, receivedReply, receivedPacket, -1, -1, -1, err
 	}
 	avg, err := strconv.Atoi(aproxs[3])
 	if err != nil {
-		return 0, 0, 0, -1, -1, -1, fmt.Errorf("ping atoi avg (%s): %w", aproxs[3], err)
+		return 0, 0, 0, -1, -1, -1, err
 	}
 
-	return trans, receivedReply, receivedPacket, avg, min, max, nil
+	return trans, receivedReply, receivedPacket, avg, min, max, err
 }
 
 func (p *Ping) timeout() float64 {

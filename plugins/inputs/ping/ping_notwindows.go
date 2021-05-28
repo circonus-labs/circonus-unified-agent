@@ -3,6 +3,7 @@
 package ping
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os/exec"
@@ -15,7 +16,7 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 )
 
-func (p *Ping) pingToURL(u string, acc cua.Accumulator) {
+func (p *Ping) pingToURL(ctx context.Context, u string, acc cua.Accumulator) {
 	tags := map[string]string{"url": u}
 	fields := map[string]interface{}{"result_code": 0}
 
@@ -26,9 +27,9 @@ func (p *Ping) pingToURL(u string, acc cua.Accumulator) {
 		// the output.
 		// Linux iputils-ping returns 1, BSD-derived ping returns 2.
 		status := -1
-		var exitErr *exec.ExitError
-		if errors.As(err, &exitErr) {
-			if ws, ok := exitErr.Sys().(syscall.WaitStatus); ok {
+		var exitError *exec.ExitError
+		if errors.As(err, &exitError) { // exitError, ok := err.(*exec.ExitError); ok {
+			if ws, ok := exitError.Sys().(syscall.WaitStatus); ok {
 				status = ws.ExitStatus()
 				fields["result_code"] = status
 			}
@@ -60,7 +61,7 @@ func (p *Ping) pingToURL(u string, acc cua.Accumulator) {
 	trans, rec, ttl, min, avg, max, stddev, err := processPingOutput(out)
 	if err != nil {
 		// fatal error
-		acc.AddError(fmt.Errorf("%w: %s", err, u))
+		acc.AddError(fmt.Errorf("%s: %w", u, err))
 		fields["result_code"] = 2
 		acc.AddFields("ping", fields, tags)
 		return
@@ -169,11 +170,11 @@ func processPingOutput(out string) (int, int, int, float64, float64, float64, fl
 	var trans, recv, ttl int = 0, 0, -1
 	var min, avg, max, stddev float64 = -1.0, -1.0, -1.0, -1.0
 	// Set this error to nil if we find a 'transmitted' line
-	err := fmt.Errorf("fatal error processing ping output")
+	err := errors.New("Fatal error processing ping output")
 	lines := strings.Split(out, "\n")
 	for _, line := range lines {
-		switch {
 		// Reading only first TTL, ignoring other TTL messages
+		switch {
 		case ttl == -1 && (strings.Contains(line, "ttl=") || strings.Contains(line, "hlim=")):
 			ttl, err = getTTL(line)
 		case strings.Contains(line, "transmitted") && strings.Contains(line, "received"):
@@ -191,26 +192,18 @@ func processPingOutput(out string) (int, int, int, float64, float64, float64, fl
 	return trans, recv, ttl, min, avg, max, stddev, err
 }
 
-func getPacketStats(line string, trans, recv int) (int, int, error) { //nolint:staticcheck,unparam
+func getPacketStats(line string, trans, recv int) (int, int, error) {
 	stats := strings.Split(line, ", ")
-
-	var err error
-
 	// Transmitted packets
-	tpkts := strings.Split(stats[0], " ")[0]
-	t, err := strconv.Atoi(tpkts)
+	t, err := strconv.Atoi(strings.Split(stats[0], " ")[0])
 	if err != nil {
-		return t, recv, fmt.Errorf("atoi (%s): %w", tpkts, err)
+		return trans, recv, err
 	}
+	trans = t
 
 	// Received packets
-	rpkts := strings.Split(stats[1], " ")[0]
-	r, err := strconv.Atoi(rpkts)
-	if err != nil {
-		return t, r, fmt.Errorf("atoi (%s): %w", rpkts, err)
-	}
-
-	return t, r, nil
+	recv, err = strconv.Atoi(strings.Split(stats[1], " ")[0])
+	return trans, recv, err
 }
 
 func getTTL(line string) (int, error) {
@@ -219,33 +212,34 @@ func getTTL(line string) (int, error) {
 	return strconv.Atoi(ttlMatch[2])
 }
 
-func checkRoundTripTimeStats(line string, min, avg, max, stddev float64) (float64, float64, float64, float64, error) { //nolint:staticcheck,unparam
+func checkRoundTripTimeStats(line string, min, avg, max, stddev float64) (float64, float64, float64, float64, error) {
 	stats := strings.Split(line, " ")[3]
 	data := strings.Split(stats, "/")
 
-	mi, err := strconv.ParseFloat(data[0], 64)
+	mn, err := strconv.ParseFloat(data[0], 64)
 	if err != nil {
-		return mi, avg, max, stddev, fmt.Errorf("parsefloat (%s): %w", data[0], err)
+		return min, avg, max, stddev, err
 	}
+	min = mn
 
-	av, err := strconv.ParseFloat(data[1], 64)
+	a, err := strconv.ParseFloat(data[1], 64)
 	if err != nil {
-		return mi, av, max, stddev, fmt.Errorf("parsefloat (%s): %w", data[1], err)
+		return min, avg, max, stddev, err
 	}
+	avg = a
 
 	mx, err := strconv.ParseFloat(data[2], 64)
 	if err != nil {
-		return mi, av, mx, stddev, fmt.Errorf("parsefloat (%s): %w", data[2], err)
+		return min, avg, max, stddev, err
 	}
+	max = mx
 
-	sd := stddev
 	if len(data) == 4 {
-		s, err := strconv.ParseFloat(data[3], 64)
+		sd, err := strconv.ParseFloat(data[3], 64)
 		if err != nil {
-			return mi, av, mx, s, fmt.Errorf("parse float (%s): %w", data[3], err)
+			return min, avg, max, stddev, err
 		}
-		sd = s
+		stddev = sd
 	}
-
-	return mi, av, mx, sd, nil
+	return min, avg, max, stddev, err
 }

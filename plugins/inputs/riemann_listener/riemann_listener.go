@@ -10,7 +10,6 @@ import (
 	"log"
 	"net"
 	"os"
-	"os/signal"
 	"strings"
 	"sync"
 	"time"
@@ -311,9 +310,9 @@ func (rsl *RiemannSocketListener) Gather(_ context.Context, _ cua.Accumulator) e
 	return nil
 }
 
-func (rsl *RiemannSocketListener) Start(acc cua.Accumulator) error {
-	ctx, cancelFunc := context.WithCancel(context.Background())
-	go processOsSignals(cancelFunc)
+func (rsl *RiemannSocketListener) Start(ctx context.Context, acc cua.Accumulator) error {
+	// rctx, cancelFunc := context.WithCancel(ctx)
+	// go processOsSignals(cancelFunc)
 	rsl.Accumulator = acc
 	if rsl.ServiceAddress == "" {
 		rsl.Log.Warnf("Using default service_address tcp://:5555")
@@ -366,20 +365,19 @@ func (rsl *RiemannSocketListener) Start(acc cua.Accumulator) error {
 	return nil
 }
 
-// Handle cancellations from the process
-func processOsSignals(cancelFunc context.CancelFunc) {
-	signalChan := make(chan os.Signal, 1)
-	signal.Notify(signalChan, os.Interrupt)
-	for {
-		sig := <-signalChan
-		if sig == os.Interrupt {
-			log.Println("Signal SIGINT is received, probably due to `Ctrl-C`, exiting ...")
-			cancelFunc()
-			return
-		}
-	}
-
-}
+// // Handle cancellations from the process
+// func processOsSignals(cancelFunc context.CancelFunc) {
+// 	signalChan := make(chan os.Signal, 1)
+// 	signal.Notify(signalChan, os.Interrupt)
+// 	for {
+// 		sig := <-signalChan
+// 		if sig == os.Interrupt {
+// 			log.Println("Signal SIGINT is received, probably due to `Ctrl-C`, exiting ...")
+// 			cancelFunc()
+// 			return
+// 		}
+// 	}
+// }
 
 func (rsl *RiemannSocketListener) Stop() {
 	rsl.wg.Done()

@@ -360,7 +360,7 @@ func TestRunningOutputWriteFailOrder(t *testing.T) {
 	// Verify that 10 metrics were written
 	assert.Len(t, m.Metrics(), 10)
 	// Verify that they are in order
-	expected := append(first5, next5...)
+	expected := append(first5, next5...) // nolint:gocritic
 	assert.Equal(t, expected, m.Metrics())
 }
 
@@ -421,7 +421,7 @@ func TestRunningOutputWriteFailOrder2(t *testing.T) {
 	// Verify that 20 metrics were written
 	assert.Len(t, m.Metrics(), 20)
 	// Verify that they are in order
-	expected := append(first5, next5...)
+	expected := append(first5, next5...) //nolint:gocritic
 	expected = append(expected, first5...)
 	expected = append(expected, next5...)
 	assert.Equal(t, expected, m.Metrics())

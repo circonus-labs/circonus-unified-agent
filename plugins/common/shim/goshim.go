@@ -73,10 +73,10 @@ func (s *Shim) watchForShutdown(cancel context.CancelFunc) {
 }
 
 // Run the input plugins..
-func (s *Shim) Run(pollInterval time.Duration) error {
+func (s *Shim) Run(ctx context.Context, pollInterval time.Duration) error {
 	switch {
 	case s.Input != nil:
-		err := s.RunInput(pollInterval)
+		err := s.RunInput(ctx, pollInterval)
 		if err != nil {
 			return fmt.Errorf("RunInput error: %w", err)
 		}

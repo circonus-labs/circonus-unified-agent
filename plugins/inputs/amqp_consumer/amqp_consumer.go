@@ -208,7 +208,7 @@ func (a *AMQPConsumer) createConfig() (*amqp.Config, error) {
 }
 
 // Start satisfies the cua.ServiceInput interface
-func (a *AMQPConsumer) Start(acc cua.Accumulator) error {
+func (a *AMQPConsumer) Start(ctx context.Context, acc cua.Accumulator) error {
 	amqpConf, err := a.createConfig()
 	if err != nil {
 		return err
@@ -224,7 +224,7 @@ func (a *AMQPConsumer) Start(acc cua.Accumulator) error {
 		return err
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(ctx)
 	a.cancel = cancel
 
 	a.wg = &sync.WaitGroup{}

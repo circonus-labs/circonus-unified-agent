@@ -59,7 +59,7 @@ func (s *Suricata) SampleConfig() string {
 
 // Start initiates background collection of JSON data from the socket
 // provided to Suricata.
-func (s *Suricata) Start(acc cua.Accumulator) error {
+func (s *Suricata) Start(ctx context.Context, acc cua.Accumulator) error {
 	var err error
 	s.inputListener, err = net.ListenUnix("unix", &net.UnixAddr{
 		Name: s.Source,
@@ -68,13 +68,13 @@ func (s *Suricata) Start(acc cua.Accumulator) error {
 	if err != nil {
 		return fmt.Errorf("net listen (%s): %w", s.Source, err)
 	}
-	ctx, cancel := context.WithCancel(context.Background())
+	sctx, cancel := context.WithCancel(ctx)
 	s.cancel = cancel
 	s.inputListener.SetUnlinkOnClose(true)
 	s.wg.Add(1)
 	go func() {
 		defer s.wg.Done()
-		go s.handleServerConnection(ctx, acc)
+		go s.handleServerConnection(sctx, acc)
 	}()
 	return nil
 }

@@ -100,7 +100,7 @@ func (wh *Webhooks) AvailableWebhooks() []Webhook {
 	return webhooks
 }
 
-func (wh *Webhooks) Start(acc cua.Accumulator) error {
+func (wh *Webhooks) Start(ctx context.Context, acc cua.Accumulator) error {
 	r := mux.NewRouter()
 
 	for _, webhook := range wh.AvailableWebhooks() {

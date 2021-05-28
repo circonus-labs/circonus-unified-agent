@@ -164,10 +164,10 @@ func (t *Tail) Gather(ctx context.Context, acc cua.Accumulator) error {
 	return t.tailNewFiles(true)
 }
 
-func (t *Tail) Start(acc cua.Accumulator) error {
+func (t *Tail) Start(ctx context.Context, acc cua.Accumulator) error {
 	t.acc = acc.WithTracking(t.MaxUndeliveredLines)
 
-	t.ctx, t.cancel = context.WithCancel(context.Background())
+	t.ctx, t.cancel = context.WithCancel(ctx)
 
 	t.wg.Add(1)
 	go func() {

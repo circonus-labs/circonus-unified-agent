@@ -95,7 +95,7 @@ func (a *Aurora) Gather(ctx context.Context, acc cua.Accumulator) error {
 		}
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), a.Timeout.Duration)
+	actx, cancel := context.WithTimeout(ctx, a.Timeout.Duration)
 	defer cancel()
 
 	var wg sync.WaitGroup
@@ -103,7 +103,7 @@ func (a *Aurora) Gather(ctx context.Context, acc cua.Accumulator) error {
 		wg.Add(1)
 		go func(u *url.URL) {
 			defer wg.Done()
-			role, err := a.gatherRole(ctx, u)
+			role, err := a.gatherRole(actx, u)
 			if err != nil {
 				acc.AddError(fmt.Errorf("%s: %w", u, err))
 				return
@@ -113,7 +113,7 @@ func (a *Aurora) Gather(ctx context.Context, acc cua.Accumulator) error {
 				return
 			}
 
-			err = a.gatherScheduler(ctx, u, role, acc)
+			err = a.gatherScheduler(actx, u, role, acc)
 			if err != nil {
 				acc.AddError(fmt.Errorf("%s: %w", u, err))
 			}

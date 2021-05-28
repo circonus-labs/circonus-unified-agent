@@ -1,6 +1,7 @@
 package syslog
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net"
@@ -235,7 +236,7 @@ func testRFC5426(t *testing.T, protocol string, address string, bestEffort bool)
 			// Create receiver
 			receiver := newUDPSyslogReceiver(protocol+"://"+address, bestEffort)
 			acc := &testutil.Accumulator{}
-			require.NoError(t, receiver.Start(acc))
+			require.NoError(t, receiver.Start(context.Background(), acc))
 			defer receiver.Stop()
 
 			// Connect
@@ -331,7 +332,7 @@ func TestTimeIncrement_udp(t *testing.T) {
 		Separator:  "_",
 	}
 	acc := &testutil.Accumulator{}
-	require.NoError(t, receiver.Start(acc))
+	require.NoError(t, receiver.Start(context.Background(), acc))
 	defer receiver.Stop()
 
 	// Connect

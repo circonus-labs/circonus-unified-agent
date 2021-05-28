@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
@@ -24,10 +25,21 @@ var ch *Circonus
 type Circonus struct {
 	circCfg          *config.CirconusConfig
 	apiCfg           *apiclient.Config
+	brokerCIDrx      string
 	brokerTLSConfigs map[string]*tls.Config
+	globalTags       trapmetrics.Tags
 	ready            bool
 	logger           cua.Logger
 	sync.Mutex
+}
+
+type MetricDestConfig struct {
+	PluginID        string // plugin id or name (e.g. snmp, ping, etc.)
+	InstanceID      string // plugin instance id (all plugins require an instance_id setting)
+	MetricGroupID   string // metric group id (some plugins produce multiple "metric groups")
+	APIToken        string // allow override of api token for a specific plugin (dm input or circonus output)
+	Broker          string // allow override of broker for a specific plugin (dm input or circonus output)
+	CheckNamePrefix string // allow override of check name prefix for a specific plugin (dm input or circonus output)
 }
 
 // Logshim is for api and traps - it uses the info level and
@@ -75,6 +87,8 @@ func Initialize(cfg *config.CirconusConfig, err error) error {
 	c := &Circonus{
 		circCfg:          cfg,
 		brokerTLSConfigs: make(map[string]*tls.Config),
+		globalTags:       make(trapmetrics.Tags, 0),
+		brokerCIDrx:      `^/broker/[0-9]+$`,
 	}
 
 	if c.circCfg.APIToken == "" {
@@ -126,6 +140,14 @@ func Initialize(cfg *config.CirconusConfig, err error) error {
 		c.circCfg.CheckSearchTags = []string{"service:" + an}
 	}
 
+	if c.circCfg.CheckNamePrefix == "" {
+		hn, err := os.Hostname()
+		if err != nil || hn == "" {
+			hn = "unknown"
+		}
+		c.circCfg.CheckNamePrefix = hn
+	}
+
 	c.logger = models.NewLogger("agent", "circ_metric_dest_mgr", "")
 
 	c.ready = true
@@ -142,8 +164,23 @@ func Ready() bool {
 	return ch.ready
 }
 
+func AddGlobalTags(tags map[string]string) {
+	if ch == nil {
+		return
+	}
+	for k, v := range tags {
+		if k != "" && v != "" {
+			ch.globalTags = append(ch.globalTags, trapmetrics.Tag{Category: k, Value: v})
+		}
+	}
+}
+
+func GetGlobalTags() trapmetrics.Tags {
+	return ch.globalTags
+}
+
 // getAPIClient returns a Circonus API client or an error
-func getAPIClient() (*apiclient.API, error) {
+func getAPIClient(opts *MetricDestConfig) (*apiclient.API, error) {
 	if ch == nil {
 		return nil, fmt.Errorf("circonus metric destination management module: module not initialized")
 	}
@@ -151,7 +188,15 @@ func getAPIClient() (*apiclient.API, error) {
 		return nil, fmt.Errorf("circonus metric destination management module: invalid agent circonus config")
 	}
 
-	client, err := apiclient.New(ch.apiCfg)
+	cfg := *ch.apiCfg
+	if opts != nil {
+		// only option which may currently be overridden is the api key
+		if opts.APIToken != "" {
+			cfg.TokenKey = opts.APIToken
+		}
+	}
+
+	client, err := apiclient.New(&cfg)
 	if err != nil {
 		return nil, fmt.Errorf("circonus metric destination management module: unable to initialize circonus api client: %w", err)
 	}
@@ -193,12 +238,12 @@ func createMetrics(cfg *trapmetrics.Config) (*trapmetrics.TrapMetrics, error) {
 
 // NewMetricDestination will find/retrieve/create a new circonus check bundle and add it to a trap metrics instance to be
 // used as a metric destination.
-//  id = the plugin's actual id/name (e.g. inputs.cpu would be cpu, inputs.snmp would be snmp)
-//  name = a vanity name used in the display name of the check
-//  instanceID = plugin's instance_id setting from the config
+//  pluginID = id/name (e.g. inputs.cpu would be cpu, inputs.snmp would be snmp)
+//  instanceID = instance_id setting from the config
+//  metricGroupID = group of metrics from the plugin (some offer multiple)
 //  checkNamePrefix = used in the display name and target of the check
 //  logger = an instance of cua logger (already configured for the plugin requesting the metric destination)
-func NewMetricDestination(id, name, instanceID, checkNamePrefix string, logger cua.Logger) (*trapmetrics.TrapMetrics, error) {
+func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetrics.TrapMetrics, error) {
 	if ch == nil {
 		return nil, fmt.Errorf("circonus metric destination management module: module not initialized")
 	}
@@ -206,16 +251,17 @@ func NewMetricDestination(id, name, instanceID, checkNamePrefix string, logger c
 		return nil, fmt.Errorf("circonus metric destination management module: invalid agent circonus config")
 	}
 
+	pluginID := opts.PluginID
+	instanceID := opts.InstanceID
+	metricGroupID := opts.MetricGroupID
+	checkNamePrefix := opts.CheckNamePrefix
+
 	// serialize, don't want too many checks being created simultaneously - api rate limits, overwhelm broker, duplicate checks, etc.
+
+	destKey := MakeDestinationKey(pluginID, instanceID, metricGroupID)
 
 	ch.Lock()
 	defer ch.Unlock()
-
-	plugID := id
-	if id == "*" {
-		plugID = "default"
-		name = "default"
-	}
 
 	if checkNamePrefix == "" && ch.circCfg.CheckNamePrefix != "" {
 		checkNamePrefix = ch.circCfg.CheckNamePrefix
@@ -225,9 +271,7 @@ func NewMetricDestination(id, name, instanceID, checkNamePrefix string, logger c
 	debugAPI := ch.circCfg.DebugAPI
 	traceMetrics := ch.circCfg.TraceMetrics
 
-	bundle := loadCheckConfig(instanceID)
-	saveConfig := false
-
+	bundle := loadCheckConfig(destKey)
 	if bundle != nil {
 		// NOTE: api call debug won't be set on existing checks unless they are cached.
 		//       submission debugging will work as the flags will be set after the
@@ -251,18 +295,56 @@ func NewMetricDestination(id, name, instanceID, checkNamePrefix string, logger c
 		}
 	}
 
-	checkType := "httptrap:cua:" + plugID + ":" + runtime.GOOS
-	checkDisplayName := checkNamePrefix + " " + name + " (" + runtime.GOOS + ")"
+	checkType := []string{"httptrap", "cua", pluginID}
+	if metricGroupID != "" {
+		checkType = append(checkType, metricGroupID)
+	}
+	checkType = append(checkType, runtime.GOOS)
+	// if pluginID == "host" {
+	// 	checkType = append(checkType, runtime.GOOS)
+	// }
+
+	checkDisplayName := []string{checkNamePrefix, pluginID}
+	if instanceID != "" && instanceID != pluginID {
+		checkDisplayName = append(checkDisplayName, instanceID)
+	}
+	if metricGroupID != "" {
+		checkDisplayName = append(checkDisplayName, metricGroupID)
+	}
+	checkDisplayName = append(checkDisplayName, "("+runtime.GOOS+")")
+
+	// tags used to SEARCH for a specific check
+	searchTags := make([]string, 0)
+	if len(ch.circCfg.CheckSearchTags) > 0 {
+		for _, tag := range ch.circCfg.CheckSearchTags {
+			if tag != "" {
+				searchTags = append(searchTags, tag)
+			}
+		}
+	}
+	if !strings.Contains(strings.Join(searchTags, ","), "__instance_id") {
+		searchTags = append(searchTags, "__instance_id:"+strings.ToLower(instanceID))
+	}
+
+	// additional tags to ADD to a check (metadata, DESCRIBE a check)
+	checkTags := []string{
+		"__os:" + runtime.GOOS,
+		"__plugin_id:" + pluginID,
+	}
+	if metricGroupID != "" {
+		checkTags = append(checkTags, "__metric_group:"+metricGroupID)
+	}
+
 	checkTarget := checkNamePrefix
 
 	instanceLogger := &Logshim{
 		logh:     logger,
-		prefix:   plugID,
+		prefix:   destKey,
 		debugAPI: debugAPI,
 	}
 
 	// API client
-	circAPI, err := getAPIClient()
+	circAPI, err := getAPIClient(opts)
 	if err != nil {
 		return nil, err
 	}
@@ -273,33 +355,56 @@ func NewMetricDestination(id, name, instanceID, checkNamePrefix string, logger c
 	tc := &trapcheck.Config{
 		Client:          circAPI,
 		Logger:          instanceLogger,
-		CheckSearchTags: ch.circCfg.CheckSearchTags,
+		CheckSearchTags: searchTags,
 		TraceMetrics:    traceMetrics,
 	}
 
-	cc := &apiclient.CheckBundle{
-		Type:        checkType,
-		DisplayName: checkDisplayName,
-		Target:      checkTarget,
-	}
-	if ch.circCfg.Broker != "" {
-		cc.Brokers = []string{ch.circCfg.Broker}
-	}
-	tc.CheckConfig = cc
+	var cc *apiclient.CheckBundle
 
-	if len(cc.Brokers) > 0 {
-		if tlscfg, ok := ch.brokerTLSConfigs[cc.Brokers[0]]; ok {
-			tc.SubmitTLSConfig = tlscfg.Clone()
+	if bundle != nil {
+		// cached bundle, use the cid
+		cc = &apiclient.CheckBundle{
+			CID:  bundle.CID,
+			Tags: checkTags,
 		}
-	} else if bundle != nil {
-		tc.CheckConfig = &apiclient.CheckBundle{CID: bundle.CID}
 		if len(bundle.Brokers) > 0 {
 			if tlscfg, ok := ch.brokerTLSConfigs[bundle.Brokers[0]]; ok {
 				tc.SubmitTLSConfig = tlscfg.Clone()
 			}
 		}
+	} else {
+		cc = &apiclient.CheckBundle{
+			Type:        strings.Join(checkType, ":"),
+			DisplayName: strings.Join(checkDisplayName, " "),
+			Target:      checkTarget,
+			Tags:        checkTags,
+		}
+		if opts.Broker != "" {
+			cc.Brokers = []string{opts.Broker}
+		} else if ch.circCfg.Broker != "" {
+			cc.Brokers = []string{ch.circCfg.Broker}
+		}
+		if len(cc.Brokers) > 0 {
+			// fixup config supplied broker CID if needed
+			bid := cc.Brokers[0]
+			if !strings.HasPrefix(bid, "/broker/") {
+				bid = "/broker/" + bid
+				matched, err := regexp.MatchString(ch.brokerCIDrx, bid)
+				if err != nil {
+					return nil, err
+				}
+				if !matched {
+					return nil, fmt.Errorf("invalid broker cid (%s): %w", bid, err)
+				}
+				cc.Brokers[0] = bid
+			}
+			if tlscfg, ok := ch.brokerTLSConfigs[cc.Brokers[0]]; ok {
+				tc.SubmitTLSConfig = tlscfg.Clone()
+			}
+		}
 	}
 
+	tc.CheckConfig = cc
 	check, err := createCheck(tc)
 	if err != nil {
 		return nil, err
@@ -311,7 +416,7 @@ func NewMetricDestination(id, name, instanceID, checkNamePrefix string, logger c
 			return nil, fmt.Errorf("circonus metric destination management module: unable to get check bundle: %w", err)
 		}
 		bundle = b
-		saveConfig = true
+		saveCheckConfig(destKey, bundle)
 	}
 
 	// if checks are going to a non-public trap
@@ -325,7 +430,7 @@ func NewMetricDestination(id, name, instanceID, checkNamePrefix string, logger c
 		if t != nil {
 			ch.brokerTLSConfigs[bundle.Brokers[0]] = t.Clone()
 		} else {
-			// note: err==nil, t==nil means it's a public broker (api.circonus.com) or using http: as the schema
+			// note: err==nil and t==nil means public broker (api.circonus.com) or using http: as the schema
 			ch.brokerTLSConfigs[bundle.Brokers[0]] = t
 		}
 	}
@@ -363,9 +468,9 @@ func NewMetricDestination(id, name, instanceID, checkNamePrefix string, logger c
 		}
 	}
 
-	if saveConfig {
-		saveCheckConfig(instanceID, bundle)
-	}
-
 	return metrics, nil
+}
+
+func MakeDestinationKey(pluginID, instanceID, metricGroupID string) string {
+	return fmt.Sprintf("%s:%s:%s", pluginID, instanceID, metricGroupID)
 }

@@ -58,7 +58,7 @@ func TestExternalInputWorks(t *testing.T) {
 	defer close(metrics)
 	acc := agent.NewAccumulator(&TestMetricMaker{}, metrics)
 
-	require.NoError(t, e.Start(acc))
+	require.NoError(t, e.Start(context.Background(), acc))
 	require.NoError(t, e.Gather(context.Background(), acc))
 
 	// grab a metric and make sure it's a thing

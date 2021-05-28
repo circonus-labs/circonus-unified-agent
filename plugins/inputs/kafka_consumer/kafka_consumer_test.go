@@ -192,7 +192,7 @@ func TestStartStop(t *testing.T) {
 	require.NoError(t, err)
 
 	var acc testutil.Accumulator
-	err = plugin.Start(&acc)
+	err = plugin.Start(context.Background(), &acc)
 	require.NoError(t, err)
 
 	plugin.Stop()

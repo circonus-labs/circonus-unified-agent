@@ -61,7 +61,7 @@ func (s *SFlow) Init() error {
 }
 
 // Start starts this sFlow listener listening on the configured network for sFlow packets
-func (s *SFlow) Start(acc cua.Accumulator) error {
+func (s *SFlow) Start(ctx context.Context, acc cua.Accumulator) error {
 	s.decoder.OnPacket(func(p *V5Format) {
 		metrics, err := makeMetrics(p)
 		if err != nil {

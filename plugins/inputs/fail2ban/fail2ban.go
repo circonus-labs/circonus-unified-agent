@@ -61,7 +61,7 @@ func (f *Fail2ban) Gather(ctx context.Context, acc cua.Accumulator) error {
 		arg = append(arg, f.path)
 	}
 
-	args := append(arg, "status")
+	args := append(arg, "status") //nolint:gocritic
 
 	cmd := execCommand(name, args...)
 	out, err := cmd.Output()
@@ -83,7 +83,7 @@ func (f *Fail2ban) Gather(ctx context.Context, acc cua.Accumulator) error {
 
 	for _, jail := range jails {
 		fields := make(map[string]interface{})
-		args := append(arg, "status", jail)
+		args := append(arg, "status", jail) //nolint:gocritic
 		cmd := execCommand(name, args...)
 		out, err := cmd.Output()
 		if err != nil {

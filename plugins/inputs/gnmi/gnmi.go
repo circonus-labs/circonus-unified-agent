@@ -76,13 +76,14 @@ type Subscription struct {
 }
 
 // Start the http listener service
-func (c *GNMI) Start(acc cua.Accumulator) error {
+func (c *GNMI) Start(ctx context.Context, acc cua.Accumulator) error {
 	var err error
-	var ctx context.Context
 	var tlscfg *tls.Config
 	var request *gnmi.SubscribeRequest
 	c.acc = acc
-	ctx, c.cancel = context.WithCancel(context.Background())
+
+	cctx, cancel := context.WithCancel(ctx)
+	c.cancel = cancel
 
 	// Validate configuration
 	if request, err = c.newSubscribeRequest(); err != nil {
@@ -99,7 +100,7 @@ func (c *GNMI) Start(acc cua.Accumulator) error {
 	}
 
 	if len(c.Username) > 0 {
-		ctx = metadata.AppendToOutgoingContext(ctx, "username", c.Username, "password", c.Password)
+		cctx = metadata.AppendToOutgoingContext(cctx, "username", c.Username, "password", c.Password)
 	}
 
 	// Invert explicit alias list and prefill subscription names
@@ -137,13 +138,13 @@ func (c *GNMI) Start(acc cua.Accumulator) error {
 	for _, addr := range c.Addresses {
 		go func(address string) {
 			defer c.wg.Done()
-			for ctx.Err() == nil {
-				if err := c.subscribeGNMI(ctx, address, tlscfg, request); err != nil && ctx.Err() == nil {
+			for cctx.Err() == nil {
+				if err := c.subscribeGNMI(cctx, address, tlscfg, request); err != nil && ctx.Err() == nil {
 					acc.AddError(err)
 				}
 
 				select {
-				case <-ctx.Done():
+				case <-cctx.Done():
 				case <-time.After(c.Redial.Duration):
 				}
 			}

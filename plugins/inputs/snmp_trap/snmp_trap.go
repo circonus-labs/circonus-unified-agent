@@ -127,7 +127,7 @@ func (s *SnmpTrap) Init() error {
 	return nil
 }
 
-func (s *SnmpTrap) Start(acc cua.Accumulator) error {
+func (s *SnmpTrap) Start(ctx context.Context, acc cua.Accumulator) error {
 	s.acc = acc
 	s.listener = gosnmp.NewTrapListener()
 	s.listener.OnNewTrap = makeTrapHandler(s)

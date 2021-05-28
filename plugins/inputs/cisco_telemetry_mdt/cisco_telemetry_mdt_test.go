@@ -18,7 +18,7 @@ import (
 func TestHandleTelemetryTwoSimple(t *testing.T) {
 	c := &CiscoTelemetryMDT{Log: testutil.Logger{}, Transport: "dummy", Aliases: map[string]string{"alias": "type:model/some/path"}}
 	acc := &testutil.Accumulator{}
-	err := c.Start(acc)
+	err := c.Start(context.Background(), acc)
 	// error is expected since we are passing in dummy transport
 	require.Error(t, err)
 
@@ -95,7 +95,7 @@ func TestHandleTelemetryTwoSimple(t *testing.T) {
 func TestHandleTelemetrySingleNested(t *testing.T) {
 	c := &CiscoTelemetryMDT{Log: testutil.Logger{}, Transport: "dummy", Aliases: map[string]string{"nested": "type:model/nested/path"}}
 	acc := &testutil.Accumulator{}
-	err := c.Start(acc)
+	err := c.Start(context.Background(), acc)
 	// error is expected since we are passing in dummy transport
 	require.Error(t, err)
 
@@ -162,7 +162,7 @@ func TestHandleTelemetrySingleNested(t *testing.T) {
 func TestHandleEmbeddedTags(t *testing.T) {
 	c := &CiscoTelemetryMDT{Transport: "dummy", Aliases: map[string]string{"extra": "type:model/extra"}, EmbeddedTags: []string{"type:model/extra/list/name"}}
 	acc := &testutil.Accumulator{}
-	err := c.Start(acc)
+	err := c.Start(context.Background(), acc)
 	// error is expected since we are passing in dummy transport
 	require.Error(t, err)
 
@@ -234,7 +234,7 @@ func TestHandleEmbeddedTags(t *testing.T) {
 func TestHandleNXAPI(t *testing.T) {
 	c := &CiscoTelemetryMDT{Transport: "dummy", Aliases: map[string]string{"nxapi": "show nxapi"}}
 	acc := &testutil.Accumulator{}
-	err := c.Start(acc)
+	err := c.Start(context.Background(), acc)
 	// error is expected since we are passing in dummy transport
 	require.Error(t, err)
 
@@ -322,7 +322,7 @@ func TestHandleNXAPI(t *testing.T) {
 func TestHandleNXDME(t *testing.T) {
 	c := &CiscoTelemetryMDT{Transport: "dummy", Aliases: map[string]string{"dme": "sys/dme"}}
 	acc := &testutil.Accumulator{}
-	err := c.Start(acc)
+	err := c.Start(context.Background(), acc)
 	// error is expected since we are passing in dummy transport
 	require.Error(t, err)
 
@@ -395,7 +395,7 @@ func TestHandleNXDME(t *testing.T) {
 func TestTCPDialoutOverflow(t *testing.T) {
 	c := &CiscoTelemetryMDT{Log: testutil.Logger{}, Transport: "tcp", ServiceAddress: "127.0.0.1:0"}
 	acc := &testutil.Accumulator{}
-	err := c.Start(acc)
+	err := c.Start(context.Background(), acc)
 	require.NoError(t, err)
 
 	hdr := struct {
@@ -455,7 +455,7 @@ func TestTCPDialoutMultiple(t *testing.T) {
 	c := &CiscoTelemetryMDT{Log: testutil.Logger{}, Transport: "tcp", ServiceAddress: "127.0.0.1:0", Aliases: map[string]string{
 		"some": "type:model/some/path", "parallel": "type:model/parallel/path", "other": "type:model/other/path"}}
 	acc := &testutil.Accumulator{}
-	err := c.Start(acc)
+	err := c.Start(context.Background(), acc)
 	require.NoError(t, err)
 
 	telemetry := mockTelemetryMessage()
@@ -518,7 +518,7 @@ func TestTCPDialoutMultiple(t *testing.T) {
 func TestGRPCDialoutError(t *testing.T) {
 	c := &CiscoTelemetryMDT{Log: testutil.Logger{}, Transport: "grpc", ServiceAddress: "127.0.0.1:0"}
 	acc := &testutil.Accumulator{}
-	err := c.Start(acc)
+	err := c.Start(context.Background(), acc)
 	require.NoError(t, err)
 
 	addr := c.Address()
@@ -540,7 +540,7 @@ func TestGRPCDialoutMultiple(t *testing.T) {
 	c := &CiscoTelemetryMDT{Log: testutil.Logger{}, Transport: "grpc", ServiceAddress: "127.0.0.1:0", Aliases: map[string]string{
 		"some": "type:model/some/path", "parallel": "type:model/parallel/path", "other": "type:model/other/path"}}
 	acc := &testutil.Accumulator{}
-	err := c.Start(acc)
+	err := c.Start(context.Background(), acc)
 	require.NoError(t, err)
 	telemetry := mockTelemetryMessage()
 

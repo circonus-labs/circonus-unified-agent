@@ -1,6 +1,7 @@
 package postgresqlextensible
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -25,7 +26,7 @@ func queryRunner(t *testing.T, q query) *testutil.Accumulator {
 		Query:     q,
 	}
 	var acc testutil.Accumulator
-	_ = p.Start(&acc)
+	_ = p.Start(context.Background(), &acc)
 	_ = p.Init()
 	require.NoError(t, acc.GatherError(p.Gather))
 	return &acc
@@ -222,7 +223,7 @@ func TestPostgresqlSqlScript(t *testing.T) {
 		Query:     q,
 	}
 	var acc testutil.Accumulator
-	_ = p.Start(&acc)
+	_ = p.Start(context.Background(), &acc)
 	_ = p.Init()
 
 	require.NoError(t, acc.GatherError(p.Gather))
@@ -245,7 +246,7 @@ func TestPostgresqlIgnoresUnwantedColumns(t *testing.T) {
 
 	var acc testutil.Accumulator
 
-	require.NoError(t, p.Start(&acc))
+	require.NoError(t, p.Start(context.Background(), &acc))
 	require.NoError(t, acc.GatherError(p.Gather))
 	assert.NotEmpty(t, p.IgnoredColumns())
 	for col := range p.IgnoredColumns() {

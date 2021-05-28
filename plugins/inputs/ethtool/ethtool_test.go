@@ -4,11 +4,11 @@ package ethtool
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"testing"
 
 	"github.com/circonus-labs/circonus-unified-agent/testutil"
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -37,7 +37,7 @@ func (c *CommandEthtoolMock) DriverName(intf string) (driverName string, err err
 		driverName = i.DriverName
 		return
 	}
-	return driverName, errors.New("interface not found")
+	return driverName, fmt.Errorf("interface not found")
 }
 
 func (c *CommandEthtoolMock) Interfaces() ([]net.Interface, error) {
@@ -69,7 +69,7 @@ func (c *CommandEthtoolMock) Stats(intf string) (stat map[string]uint64, err err
 		stat = i.Stat
 		return
 	}
-	return stat, errors.New("interface not found")
+	return stat, fmt.Errorf("interface not found")
 }
 
 func setup() {

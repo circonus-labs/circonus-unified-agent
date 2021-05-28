@@ -2,6 +2,7 @@ package execd
 
 import (
 	"bufio"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -63,7 +64,7 @@ func (e *Execd) SetParser(parser parsers.Parser) {
 	e.parser = parser
 }
 
-func (e *Execd) Start(acc cua.Accumulator) error {
+func (e *Execd) Start(ctx context.Context, acc cua.Accumulator) error {
 	e.acc = acc
 	var err error
 	e.process, err = process.New(e.Command)

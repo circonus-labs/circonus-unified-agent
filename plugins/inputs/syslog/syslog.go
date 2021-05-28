@@ -129,7 +129,7 @@ func (s *Syslog) Gather(_ context.Context, _ cua.Accumulator) error {
 }
 
 // Start starts the service.
-func (s *Syslog) Start(acc cua.Accumulator) error {
+func (s *Syslog) Start(ctx context.Context, acc cua.Accumulator) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 

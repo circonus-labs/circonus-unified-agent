@@ -60,7 +60,7 @@ type CiscoTelemetryMDT struct {
 }
 
 // Start the Cisco MDT service
-func (c *CiscoTelemetryMDT) Start(acc cua.Accumulator) error {
+func (c *CiscoTelemetryMDT) Start(ctx context.Context, acc cua.Accumulator) error {
 	var err error
 	c.acc = acc
 	c.listener, err = net.Listen("tcp", c.ServiceAddress)

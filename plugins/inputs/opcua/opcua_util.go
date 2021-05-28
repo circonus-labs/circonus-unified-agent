@@ -20,7 +20,6 @@ import (
 	"github.com/gopcua/opcua"
 	"github.com/gopcua/opcua/debug"
 	"github.com/gopcua/opcua/ua"
-	"github.com/pkg/errors"
 )
 
 // SELF SIGNED CERT FUNCTIONS
@@ -326,5 +325,5 @@ func validateEndpointConfig(endpoints []*ua.EndpointDescription, secPolicy strin
 		}
 	}
 
-	return errors.Errorf("server does not support an endpoint with security : %s , %s", secPolicy, secMode)
+	return fmt.Errorf("server does not support an endpoint with security : %s , %s", secPolicy, secMode)
 }

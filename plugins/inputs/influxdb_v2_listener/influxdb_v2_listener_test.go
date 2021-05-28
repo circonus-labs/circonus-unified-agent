@@ -101,7 +101,7 @@ func TestWriteSecureNoClientAuth(t *testing.T) {
 
 	acc := &testutil.Accumulator{}
 	require.NoError(t, listener.Init())
-	require.NoError(t, listener.Start(acc))
+	require.NoError(t, listener.Start(context.Background(), acc))
 	defer listener.Stop()
 
 	cas := x509.NewCertPool()
@@ -127,7 +127,7 @@ func TestWriteSecureWithClientAuth(t *testing.T) {
 
 	acc := &testutil.Accumulator{}
 	require.NoError(t, listener.Init())
-	require.NoError(t, listener.Start(acc))
+	require.NoError(t, listener.Start(context.Background(), acc))
 	defer listener.Stop()
 
 	// post single message to listener
@@ -142,7 +142,7 @@ func TestWriteTokenAuth(t *testing.T) {
 
 	acc := &testutil.Accumulator{}
 	require.NoError(t, listener.Init())
-	require.NoError(t, listener.Start(acc))
+	require.NoError(t, listener.Start(context.Background(), acc))
 	defer listener.Stop()
 
 	client := &http.Client{}
@@ -164,7 +164,7 @@ func TestWriteKeepBucket(t *testing.T) {
 
 	acc := &testutil.Accumulator{}
 	require.NoError(t, listener.Init())
-	require.NoError(t, listener.Start(acc))
+	require.NoError(t, listener.Start(context.Background(), acc))
 	defer listener.Stop()
 
 	// post single message to listener
@@ -214,7 +214,7 @@ func TestWriteNoNewline(t *testing.T) {
 
 	acc := &testutil.Accumulator{}
 	require.NoError(t, listener.Init())
-	require.NoError(t, listener.Start(acc))
+	require.NoError(t, listener.Start(context.Background(), acc))
 	defer listener.Stop()
 
 	// post single message to listener
@@ -235,7 +235,7 @@ func TestAllOrNothing(t *testing.T) {
 
 	acc := &testutil.Accumulator{}
 	require.NoError(t, listener.Init())
-	require.NoError(t, listener.Start(acc))
+	require.NoError(t, listener.Start(context.Background(), acc))
 	defer listener.Stop()
 
 	// post single message to listener
@@ -254,7 +254,7 @@ func TestWriteMaxLineSizeIncrease(t *testing.T) {
 
 	acc := &testutil.Accumulator{}
 	require.NoError(t, listener.Init())
-	require.NoError(t, listener.Start(acc))
+	require.NoError(t, listener.Start(context.Background(), acc))
 	defer listener.Stop()
 
 	// Post a gigantic metric to the listener and verify that it writes OK this time:
@@ -274,7 +274,7 @@ func TestWriteVerySmallMaxBody(t *testing.T) {
 
 	acc := &testutil.Accumulator{}
 	require.NoError(t, listener.Init())
-	require.NoError(t, listener.Start(acc))
+	require.NoError(t, listener.Start(context.Background(), acc))
 	defer listener.Stop()
 
 	resp, err := http.Post(createURL(listener, "http", "/api/v2/write", "bucket=mybucket"), "", bytes.NewBuffer([]byte(hugeMetric)))
@@ -294,7 +294,7 @@ func TestWriteLargeLine(t *testing.T) {
 
 	acc := &testutil.Accumulator{}
 	require.NoError(t, listener.Init())
-	require.NoError(t, listener.Start(acc))
+	require.NoError(t, listener.Start(context.Background(), acc))
 	defer listener.Stop()
 
 	resp, err := http.Post(createURL(listener, "http", "/api/v2/write", "bucket=mybucket"), "", bytes.NewBuffer([]byte(hugeMetric+testMsgs)))
@@ -363,7 +363,7 @@ func TestWriteGzippedData(t *testing.T) {
 
 	acc := &testutil.Accumulator{}
 	require.NoError(t, listener.Init())
-	require.NoError(t, listener.Start(acc))
+	require.NoError(t, listener.Start(context.Background(), acc))
 	defer listener.Stop()
 
 	data, err := os.ReadFile("./testdata/testmsgs.gz")
@@ -398,7 +398,7 @@ func TestWriteHighTraffic(t *testing.T) {
 
 	acc := &testutil.Accumulator{}
 	require.NoError(t, listener.Init())
-	require.NoError(t, listener.Start(acc))
+	require.NoError(t, listener.Start(context.Background(), acc))
 	defer listener.Stop()
 
 	// post many messages to listener
@@ -428,7 +428,7 @@ func TestReceive404ForInvalidEndpoint(t *testing.T) {
 
 	acc := &testutil.Accumulator{}
 	require.NoError(t, listener.Init())
-	require.NoError(t, listener.Start(acc))
+	require.NoError(t, listener.Start(context.Background(), acc))
 	defer listener.Stop()
 
 	// post single message to listener
@@ -443,7 +443,7 @@ func TestWriteInvalid(t *testing.T) {
 
 	acc := &testutil.Accumulator{}
 	require.NoError(t, listener.Init())
-	require.NoError(t, listener.Start(acc))
+	require.NoError(t, listener.Start(context.Background(), acc))
 	defer listener.Stop()
 
 	// post single message to listener
@@ -458,7 +458,7 @@ func TestWriteEmpty(t *testing.T) {
 
 	acc := &testutil.Accumulator{}
 	require.NoError(t, listener.Init())
-	require.NoError(t, listener.Start(acc))
+	require.NoError(t, listener.Start(context.Background(), acc))
 	defer listener.Stop()
 
 	// post single message to listener
@@ -475,7 +475,7 @@ func TestReady(t *testing.T) {
 	}
 	acc := &testutil.Accumulator{}
 	require.NoError(t, listener.Init())
-	require.NoError(t, listener.Start(acc))
+	require.NoError(t, listener.Start(context.Background(), acc))
 	defer listener.Stop()
 
 	// post ping to listener
@@ -494,7 +494,7 @@ func TestWriteWithPrecision(t *testing.T) {
 
 	acc := &testutil.Accumulator{}
 	require.NoError(t, listener.Init())
-	require.NoError(t, listener.Start(acc))
+	require.NoError(t, listener.Start(context.Background(), acc))
 	defer listener.Stop()
 
 	msg := "xyzzy value=42 1422568543\n"
@@ -519,7 +519,7 @@ func TestWriteWithPrecisionNoTimestamp(t *testing.T) {
 
 	acc := &testutil.Accumulator{}
 	require.NoError(t, listener.Init())
-	require.NoError(t, listener.Start(acc))
+	require.NoError(t, listener.Start(context.Background(), acc))
 	defer listener.Stop()
 
 	msg := "xyzzy value=42\n"

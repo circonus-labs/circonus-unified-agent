@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"math"
 	"net"
 	"os/exec"
@@ -17,10 +16,11 @@ import (
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/internal"
+	circmgr "github.com/circonus-labs/circonus-unified-agent/internal/circonus"
 	"github.com/circonus-labs/circonus-unified-agent/internal/snmp"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
 	"github.com/gosnmp/gosnmp"
-	"github.com/influxdata/wlog"
+	"github.com/maier/go-trapmetrics"
 )
 
 const description = `Retrieves SNMP values from remote agents`
@@ -76,13 +76,13 @@ var execCommand = exec.Command
 // execCmd executes the specified command, returning the STDOUT content.
 // If command exits with error status, the output is captured into the returned error.
 func execCmd(arg0 string, args ...string) ([]byte, error) {
-	if wlog.LogLevel() == wlog.DEBUG {
-		quoted := make([]string, 0, len(args))
-		for _, arg := range args {
-			quoted = append(quoted, fmt.Sprintf("%q", arg))
-		}
-		log.Printf("D! [inputs.snmp] executing %q %s", arg0, strings.Join(quoted, " "))
-	}
+	// if wlog.LogLevel() == wlog.DEBUG {
+	// 	quoted := make([]string, 0, len(args))
+	// 	for _, arg := range args {
+	// 		quoted = append(quoted, fmt.Sprintf("%q", arg))
+	// 	}
+	// 	log.Printf("D! [inputs.snmp] executing %q %s", arg0, strings.Join(quoted, " "))
+	// }
 
 	out, err := execCommand(arg0, args...).Output()
 	if err != nil {
@@ -97,6 +97,12 @@ func execCmd(arg0 string, args ...string) ([]byte, error) {
 
 // Snmp holds the configuration for the plugin.
 type Snmp struct {
+	// for direct metrics mode - send directly to circonus (bypassing output)
+	InstanceID    string `toml:"instance_id"`
+	DirectMetrics bool   `toml:"direct_metrics"`
+	FlushDelay    string `toml:"flush_delay"`
+	Broker        string `toml:"broker"`
+
 	// The SNMP agent to query. Format is [SCHEME://]ADDR[:PORT] (e.g.
 	// udp://1.2.3.4:161).  If the scheme is not specified then "udp" is used.
 	Agents []string `toml:"agents"`
@@ -114,13 +120,42 @@ type Snmp struct {
 	Name   string  // deprecated in 1.14; use name_override
 	Fields []Field `toml:"field"`
 
+	Log             cua.Logger
 	connectionCache []snmpConnection
 	initialized     bool
+
+	// direct metrics
+	flushDelay        time.Duration
+	metricDestination *trapmetrics.TrapMetrics
 }
 
 func (s *Snmp) init() error {
 	if s.initialized {
 		return nil
+	}
+
+	if s.DirectMetrics {
+		opts := &circmgr.MetricDestConfig{
+			PluginID:      "snmp",
+			InstanceID:    s.InstanceID,
+			MetricGroupID: "",
+			Broker:        s.Broker,
+		}
+		dest, err := circmgr.NewMetricDestination(opts, s.Log)
+		if err != nil {
+			return fmt.Errorf("new metric destination: %w", err)
+		}
+
+		s.metricDestination = dest
+		s.Log.Info("using Direct Metrics mode")
+
+		if s.FlushDelay != "" {
+			fd, err := time.ParseDuration(s.FlushDelay)
+			if err != nil {
+				return fmt.Errorf("parsing flush_delay (%s): %w", s.FlushDelay, err)
+			}
+			s.flushDelay = fd
+		}
 	}
 
 	s.connectionCache = make([]snmpConnection, len(s.Agents))
@@ -233,6 +268,8 @@ type Field struct {
 	OidIndexLength int
 	// IsTag controls whether this OID is output as a tag or a value.
 	IsTag bool
+	// TextMetric controls whether this metric (if SYNTAX INTEGER) is sent as both an int and a textual representation
+	TextMetric bool
 	// Conversion controls any type conversion that is done on the value.
 	//  "float"/"float(0)" will convert the value into a float.
 	//  "float(X)" will convert the value into a float, and then move the decimal before Xth right-most digit.
@@ -268,7 +305,8 @@ func (f *Field) init() error {
 	}
 
 	// if tag and able to parse a textual convention from oid translation
-	if f.IsTag && len(stc.valMap) > 0 {
+	// for SYNTAX INTEGER fields e.g. ifType
+	if (f.IsTag || f.TextMetric) && len(stc.valMap) > 0 {
 		if f.Conversion == "" {
 			f.Conversion = "lookup"
 		}
@@ -374,6 +412,20 @@ func (s *Snmp) Gather(ctx context.Context, acc cua.Accumulator) error {
 	}
 	wg.Wait()
 
+	if s.DirectMetrics && s.metricDestination != nil {
+		if s.flushDelay > time.Duration(0) {
+			fd := internal.RandomDuration(s.flushDelay)
+			s.Log.Debugf("flush delay: %s", fd)
+			select {
+			case <-ctx.Done():
+			case <-time.After(fd):
+			}
+		}
+		if _, err := s.metricDestination.Flush(ctx); err != nil {
+			s.Log.Warnf("submitting metrics: %s", err)
+		}
+	}
+
 	return nil
 }
 
@@ -400,7 +452,16 @@ func (s *Snmp) gatherTable(acc cua.Accumulator, gs snmpConnection, t Table, topT
 		if _, ok := tr.Tags[s.AgentHostTag]; !ok {
 			tr.Tags[s.AgentHostTag] = gs.Host()
 		}
-		acc.AddFields(rt.Name, tr.Fields, tr.Tags, rt.Time)
+
+		if s.DirectMetrics && s.metricDestination != nil {
+			for metricName, val := range tr.Fields {
+				if err := circmgr.AddMetricToDest(s.metricDestination, "snmp_dm", rt.Name, metricName, tr.Tags, val, rt.Time); err != nil {
+					s.Log.Warnf("adding %s: %s", metricName, err)
+				}
+			}
+		} else {
+			acc.AddFields(rt.Name, tr.Fields, tr.Tags, rt.Time)
+		}
 	}
 
 	return nil
@@ -486,14 +547,35 @@ func (t Table) Build(gs snmpConnection, walk bool) (*RTable, error) {
 					}
 				}
 
-				fv, err := fieldConvert(f.Conversion, ent)
-				if err != nil {
-					return &walkError{
-						msg: fmt.Sprintf("converting %q (OID %s) for field %s", ent.Value, ent.Name, f.Name),
-						err: err,
+				if f.TextMetric && f.Conversion == "lookup" {
+					fv, err := fieldConvert("int", ent)
+					if err != nil {
+						return &walkError{
+							msg: fmt.Sprintf("converting %q (OID %s) for field %s", ent.Value, ent.Name, f.Name),
+							err: err,
+						}
 					}
+					ifv[idx] = fv
+
+					fv, err = fieldConvert(f.Conversion, ent)
+					if err != nil {
+						return &walkError{
+							msg: fmt.Sprintf("converting %q (OID %s) for field %s", ent.Value, ent.Name, f.Name),
+							err: err,
+						}
+					}
+					ifv[idx+"_desc"] = fv
+
+				} else {
+					fv, err := fieldConvert(f.Conversion, ent)
+					if err != nil {
+						return &walkError{
+							msg: fmt.Sprintf("converting %q (OID %s) for field %s", ent.Value, ent.Name, f.Name),
+							err: err,
+						}
+					}
+					ifv[idx] = fv
 				}
-				ifv[idx] = fv
 
 				return nil
 			})
@@ -531,7 +613,12 @@ func (t Table) Build(gs snmpConnection, walk bool) (*RTable, error) {
 						rtr.Tags[f.Name] = fmt.Sprintf("%v", v)
 					}
 				} else {
-					rtr.Fields[f.Name] = v
+					mname := f.Name
+					if strings.HasSuffix(idx, "_desc") {
+						rtr.Fields[mname+"_desc"] = v
+					} else {
+						rtr.Fields[mname] = v
+					}
 				}
 			}
 		}

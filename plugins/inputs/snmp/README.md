@@ -4,7 +4,14 @@ The `snmp` input plugin uses polling to gather metrics from SNMP agents.
 Support for gathering individual OIDs as well as complete SNMP tables is
 included.
 
-### Prerequisites
+This plugin sends metrics directly to Circonus - it bypasses aggregators, processors, parsers, and outputs.
+The intended use-case is for sitations where a large number of SNMP collector instances is required. In such
+cases optimizations and efficiencies can be gained by sending metrics directly.
+
+The `snmp` input plugin introduces a new capability to send metrics directly to Circonus `direct_metrics`. Useful when
+there are a large number of snmp plugin instances.
+
+## Prerequisites
 
 This plugin uses the `snmptable` and `snmptranslate` programs from the
 [net-snmp][] project.  These tools will need to be installed into the `PATH` in
@@ -18,9 +25,24 @@ location of these files can be configured in the `snmp.conf` or via the
 `MIBDIRS` environment variable. See [`man 1 snmpcmd`][man snmpcmd] for more
 information.
 
-### Configuration
+## Configuration
+
 ```toml
 [[inputs.snmp]]
+  ## Instance ID is required
+  instance_id = ""
+  ## Direct metrics
+  # direct_metrics = false
+
+  ## example of collecting hundreds of devices on a 5m cadence
+  # collection interval
+  interval = "5m"
+  # flush interval, so cua does not log warning about input 
+  # taking too long w/flush delay
+  flush_interval = "5m"
+  # spread flushing submissions over a two minute window
+  flush_delay = "2m"
+
   ## Agent addresses to retrieve values from.
   ##   example: agents = ["udp://127.0.0.1:161"]
   ##            agents = ["tcp://127.0.0.1:161"]
@@ -84,13 +106,13 @@ information.
       is_tag = true
 ```
 
-#### Configure SNMP Requests
+### Configure SNMP Requests
 
 This plugin provides two methods for configuring the SNMP requests: `fields`
 and `tables`.  Use the `field` option to gather single ad-hoc variables.
 To collect SNMP tables, use the `table` option.
 
-##### Field
+#### Field
 
 Use a `field` to collect a variable by OID.  Requests specified with this
 option operate similar to the `snmpget` utility.
@@ -125,7 +147,7 @@ option operate similar to the `snmpget` utility.
     # conversion = ""
 ```
 
-##### Table
+#### Table
 
 Use a `table` to configure the collection of a SNMP table.  SNMP requests
 formed with this option operate similarly way to the `snmptable` command.
@@ -195,20 +217,20 @@ One [metric][] is created for each row of the SNMP table.
 Check that a numeric field can be translated to a textual field:
 
 ```shell
-$ snmptranslate .1.3.6.1.2.1.1.3.0
+snmptranslate .1.3.6.1.2.1.1.3.0
 DISMAN-EVENT-MIB::sysUpTimeInstance
 ```
 
 Request a top-level field:
 
 ```shell
-$ snmpget -v2c -c public 127.0.0.1 sysUpTime.0
+snmpget -v2c -c public 127.0.0.1 sysUpTime.0
 ```
 
 Request a table:
 
 ```shell
-$ snmptable -v2c -c public 127.0.0.1 ifTable
+snmptable -v2c -c public 127.0.0.1 ifTable
 ```
 
 To collect a packet capture, run this command in the background while running
@@ -216,7 +238,7 @@ agent or one of the above commands.  Adjust the interface, host and port as
 needed:
 
 ```shell
-$ sudo tcpdump -s 0 -i eth0 -w circonus-unified-agent-snmp.pcap host 127.0.0.1 and port 161
+sudo tcpdump -s 0 -i eth0 -w circonus-unified-agent-snmp.pcap host 127.0.0.1 and port 161
 ```
 
 ### Example Output

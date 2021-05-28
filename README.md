@@ -8,7 +8,7 @@ These input plugins are designed to be easy to develop and contribute. Pull requ
 
 ## Documentation
 
-The user documentation, including instructions for installation and administration, is located at https://docs.circonus.com/circonus/agents/circonus-unified-agent/
+The user documentation, including instructions for installation and administration, is located at [https://docs.circonus.com/circonus/agents/circonus-unified-agent/](https://docs.circonus.com/circonus/agents/circonus-unified-agent/)
 
 The developer guide, covering concepts and development details, is located under the [docs](/docs) directory of the present repo.
 
@@ -17,27 +17,10 @@ The developer guide, covering concepts and development details, is located under
 ### Minimum Requirements
 
 CUA shares the same [minimum requirements](https://github.com/golang/go/wiki/MinimumRequirements) as Go:
-- Linux kernel version 2.6.23 or later
+
 - Windows 7 or later
 - FreeBSD 11.2 or later
 - MacOS 10.11 El Capitan or later
-
-The associated Makefile required GNU make.
-
-### Building
-
-1. [Install Go](https://golang.org/doc/install) >=1.14 (1.15 recommended)
-   Make sure to set your $GOPATH and have $GOPATH/bin in your path.
-
-2. Clone the Circonus Unified Agent repository:
-   ```
-   cd ~/src
-   git clone https://github.com/circonus-labs/circonus-unified-agent.git
-   ```
-3. Run `make` from the source directory
-   ```
-   cd ~/src/circonus-unified-agent
-   make
 
 ### Changelog
 
@@ -47,6 +30,7 @@ version.
 ## Contributing
 
 There are many ways to contribute:
+
 - Fix and [report bugs](https://github.com/circonus-labs/circonus-unified-agent/issues/new)
 - [Improve documentation](https://github.com/circonus-labs/circonus-unified-agent/issues?q=is%3Aopen+label%3Adocumentation)
 - [Review code and feature proposals](https://github.com/circonus-labs/circonus-unified-agent/pulls)

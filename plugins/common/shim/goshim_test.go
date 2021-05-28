@@ -49,7 +49,7 @@ func runErroringInputPlugin(t *testing.T, interval time.Duration, stdin io.Reade
 	}
 	_ = shim.AddInput(inp)
 	go func() {
-		err := shim.Run(interval)
+		err := shim.Run(context.Background(), interval)
 		require.NoError(t, err)
 		exited <- true
 	}()

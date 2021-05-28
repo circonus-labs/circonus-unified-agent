@@ -211,7 +211,7 @@ func TestArgs6(t *testing.T) {
 
 func TestArguments(t *testing.T) {
 	arguments := []string{"-c", "3"}
-	expected := append(arguments, "www.google.com")
+	expected := append(arguments, "www.google.com") //nolint:gocritic
 	p := Ping{
 		Count:        2,
 		Interface:    "eth0",

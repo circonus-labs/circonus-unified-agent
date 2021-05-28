@@ -1,6 +1,7 @@
 package cloudpubsub
 
 import (
+	"context"
 	"encoding/base64"
 	"errors"
 	"testing"
@@ -36,7 +37,7 @@ func TestRunParse(t *testing.T) {
 	}
 
 	acc := &testutil.Accumulator{}
-	if err := ps.Start(acc); err != nil {
+	if err := ps.Start(context.Background(), acc); err != nil {
 		t.Fatalf("test PubSub failed to start: %s", err)
 	}
 	defer ps.Stop()
@@ -81,7 +82,7 @@ func TestRunBase64(t *testing.T) {
 	}
 
 	acc := &testutil.Accumulator{}
-	if err := ps.Start(acc); err != nil {
+	if err := ps.Start(context.Background(), acc); err != nil {
 		t.Fatalf("test PubSub failed to start: %s", err)
 	}
 	defer ps.Stop()
@@ -125,7 +126,7 @@ func TestRunInvalidMessages(t *testing.T) {
 
 	acc := &testutil.Accumulator{}
 
-	if err := ps.Start(acc); err != nil {
+	if err := ps.Start(context.Background(), acc); err != nil {
 		t.Fatalf("test PubSub failed to start: %s", err)
 	}
 	defer ps.Stop()
@@ -172,7 +173,7 @@ func TestRunOverlongMessages(t *testing.T) {
 		MaxMessageLen: 1,
 	}
 
-	if err := ps.Start(acc); err != nil {
+	if err := ps.Start(context.Background(), acc); err != nil {
 		t.Fatalf("test PubSub failed to start: %s", err)
 	}
 	defer ps.Stop()
@@ -219,7 +220,7 @@ func TestRunErrorInSubscriber(t *testing.T) {
 		RetryReceiveDelaySeconds: 1,
 	}
 
-	if err := ps.Start(acc); err != nil {
+	if err := ps.Start(context.Background(), acc); err != nil {
 		t.Fatalf("test PubSub failed to start: %s", err)
 	}
 	defer ps.Stop()

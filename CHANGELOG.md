@@ -1,3 +1,48 @@
+# v0.0.30
+
+* upd: add context to service input Start method
+
+# v0.0.29
+
+* upd: deps (go-apiclient, go-trapcheck, go-trapmetrics)
+* fix: (circmgr) do not forward blank tags
+* upd: (circmgr) add `__os`, `__plugin_id`, and `__metric_group` check tags
+* upd: remove last deps on pkg/errors
+
+# v0.0.28
+
+* add: (circmgr,circout,snmp,statsd) allow broker and api overrides in plugins (direct metric input and circonus output)
+* upd: (circmgr) validate broker settings (valid broker cid format)
+* fix: (circmgr) lowercase instance_id for check search tag
+* add: (snmp,statsd) broker config setting
+* upd: (circout) use broker and api key overrides if supplied
+* fix: (circout) don't force check prefix to host if not supplied in config
+
+# v0.0.27
+
+* fix: (stackdriver_circonus) cancellation during collection, honor context through call stack
+* upd: (circmgr/circout) remove instance_id from check type
+
+# v0.0.26
+
+* upd: (snmp) no separate check for dm vs non-dm
+* upd: (snmp) promote snmp dm plugin
+* upd: (snmp) deprecate old snmp plugin
+* add: add builds dir with assets for building pkgs and docker
+* add: service dir with os service definitions
+* upd: (snmp) one input to handle both dm and regular output
+* add: (snmp) text metric capability for syntax integer
+* add: (circmgr) same check name prefix handling as regular circ output
+* upd: (circmgr) use plugin and instance in cache file names
+* upd: (circmgr) reduce verbosity in new metric dest err msg
+* add: (circout) timestamp to agent metric
+* add: (statsd) new dm statsd input
+* add: (agent) context to input Start
+* add: (circmgr) global tags for dm inputs
+* upd: dependencies (go-trapcheck, go-trapmetrics)
+* fix: lint issues
+* upd: lint
+
 # v0.0.25
 
 * upd: enable default linux plugins for darwin and freebsd

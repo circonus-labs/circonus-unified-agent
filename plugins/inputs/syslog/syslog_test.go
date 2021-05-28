@@ -1,6 +1,7 @@
 package syslog
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -34,14 +35,14 @@ func TestAddress(t *testing.T) {
 	rec = &Syslog{
 		Address: "localhost:6514",
 	}
-	err = rec.Start(&testutil.Accumulator{})
+	err = rec.Start(context.Background(), &testutil.Accumulator{})
 	require.EqualError(t, err, "missing protocol within address 'localhost:6514'")
 	require.Error(t, err)
 
 	rec = &Syslog{
 		Address: "unsupported://example.com:6514",
 	}
-	err = rec.Start(&testutil.Accumulator{})
+	err = rec.Start(context.Background(), &testutil.Accumulator{})
 	require.EqualError(t, err, "unknown protocol 'unsupported' in 'example.com:6514'")
 	require.Error(t, err)
 
@@ -55,7 +56,7 @@ func TestAddress(t *testing.T) {
 		rec = &Syslog{
 			Address: "unixgram://" + sock,
 		}
-		err = rec.Start(&testutil.Accumulator{})
+		err = rec.Start(context.Background(), &testutil.Accumulator{})
 		require.NoError(t, err)
 		require.Equal(t, sock, rec.Address)
 		rec.Stop()
@@ -65,7 +66,7 @@ func TestAddress(t *testing.T) {
 	rec = &Syslog{
 		Address: "tcp://localhost",
 	}
-	err = rec.Start(&testutil.Accumulator{})
+	err = rec.Start(context.Background(), &testutil.Accumulator{})
 	require.NoError(t, err)
 	require.Equal(t, "localhost:6514", rec.Address)
 	rec.Stop()

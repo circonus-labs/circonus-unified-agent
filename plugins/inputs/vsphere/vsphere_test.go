@@ -493,7 +493,7 @@ func testCollection(t *testing.T, excludeClusters bool) {
 
 	var acc testutil.Accumulator
 
-	require.NoError(t, v.Start(&acc))
+	require.NoError(t, v.Start(context.Background(), &acc))
 	defer v.Stop()
 	require.NoError(t, v.Gather(context.Background(), &acc))
 	require.Equal(t, 0, len(acc.Errors), fmt.Sprintf("Errors found: %s", acc.Errors))

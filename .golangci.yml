@@ -20,7 +20,8 @@ linters:
     - ineffassign
     - deadcode
     - typecheck
-    - golint
+    # - revive
+    # - golint -- deprecated, owner archived repo, replaced by 'revive'
     - gosec
     # - interfacer -- deprecated, owner archived repo
     - misspell

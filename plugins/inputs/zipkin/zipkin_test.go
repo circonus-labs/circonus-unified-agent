@@ -2,6 +2,7 @@ package zipkin
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -601,7 +602,7 @@ func TestZipkinPlugin(t *testing.T) {
 		Port: 0,
 	}
 
-	err := z.Start(&mockAcc)
+	err := z.Start(context.Background(), &mockAcc)
 	if err != nil {
 		t.Fatal("Failed to start zipkin server")
 	}

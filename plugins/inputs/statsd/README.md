@@ -1,10 +1,13 @@
 # StatsD Input Plugin
 
-### Configuration
+## Configuration
 
 ```toml
 # Statsd Server
 [[inputs.statsd]]
+  ## Instance ID -- required
+  instance_id = ""
+  
   ## Protocol, must be "tcp", "udp4", "udp6" or "udp" (default=udp)
   protocol = "udp"
 
@@ -22,28 +25,13 @@
   ## Address and port to host UDP listener on
   service_address = ":8125"
 
-  ## The following configuration options control when agent clears it's cache
-  ## of previous values. If set to false, then agent will only clear it's
-  ## cache when the daemon is restarted.
-  ## Reset gauges every interval (default=true)
-  delete_gauges = true
-  ## Reset counters every interval (default=true)
-  delete_counters = true
-  ## Reset sets every interval (default=true)
-  delete_sets = true
-  ## Reset timings & histograms every interval (default=true)
-  delete_timings = true
-
-  ## Percentiles to calculate for timing & histogram stats.
-  percentiles = [50.0, 90.0, 99.0, 99.9, 99.95, 100.0]
-
   ## separator to use between elements of a statsd metric
   metric_separator = "_"
 
   ## Parses extensions to statsd in the datadog statsd format
   ## currently supports metrics and datadog tags.
   ## http://docs.datadoghq.com/guides/dogstatsd/
-  datadog_extensions = false
+  datadog_extensions = true
 
   ## Statsd data translation templates, more info can be read here:
   ## https://github.com/circonus-labs/circonus-unified-agent/blob/master/docs/TEMPLATE_PATTERN.md
@@ -55,17 +43,12 @@
   ## the statsd server will start dropping packets
   allowed_pending_messages = 10000
 
-  ## Number of timing/histogram values to track per-measurement in the
-  ## calculation of percentiles. Raising this limit increases the accuracy
-  ## of percentiles but also increases the memory usage and cpu time.
-  percentile_limit = 1000
-
   ## Maximum socket buffer size in bytes, once the buffer fills up, metrics
   ## will start dropping.  Defaults to the OS default.
   # read_buffer_size = 65535
 ```
 
-### Description
+## Description
 
 The statsd plugin is a special type of plugin which runs a backgrounded statsd
 listener service while agent is running.
@@ -109,27 +92,11 @@ This also allows for mixed types in a single line:
 The string `foo:1|c:200|ms` is internally split into two individual metrics
 `foo:1|c` and `foo:200|ms` which are added to the aggregator separately.
 
-### Influx Statsd
-
-In order to take advantage of InfluxDB's tagging system, a couple
-additions to the standard statsd protocol have been made. First, tags
-may be specified in a manner similar to the line-protocol, like this:
-
-```text
-users.current,service=payroll,region=us-west:32|g
-```
-
-<!-- TODO Second, you can specify multiple fields within a measurement:
-
-```
-current.users,service=payroll,server=host01:west=10,east=10,central=2,south=10|g
-``` -->
-
-### Measurements
+## Measurements
 
 Meta:
 
-* tags: `metric_type=<gauge|set|counter|timing|histogram>`
+* tags: `metric_type=<gauge|set|counter|timing|histogram|text>`
 
 Outputted measurements will depend entirely on the measurements that the user
 sends, but here is a brief rundown of what you can expect to find from each
@@ -153,6 +120,8 @@ metric type:
 * Timings & Histograms
   * Timers are meant to track how long something took. They are an invaluable
     tool for tracking application performance.
+
+<!--
   * The following aggregate measurements are made for timers:
     * `statsd_<name>_lower`: The lower bound is the lowest value statsd saw
       for that stat during that interval.
@@ -170,8 +139,9 @@ metric type:
       that `P%` of all the values statsd saw for that stat during that time
       period are below x. The most common value that people use for `P` is the
       `90`, this is a great number to try to optimize.
+-->
 
-### Plugin arguments
+## Plugin arguments
 
 * **protocol** string: Protocol used in listener - tcp or udp options
 
@@ -183,6 +153,8 @@ metric type:
 
 * **service_address** string: Address to listen for statsd UDP packets on
 
+<!--
+
 * **delete_gauges** boolean: Delete gauges on every collection interval
 
 * **delete_counters** boolean: Delete counters on every collection interval
@@ -192,19 +164,22 @@ metric type:
 * **delete_timings** boolean: Delete timings on every collection interval
 
 * **percentiles** []int: Percentiles to calculate for timing & histogram stats
+-->
 
 * **allowed_pending_messages** integer: Number of messages allowed to queue up waiting to be processed. When this fills, messages will be dropped and logged.
 
+<!--
 * **percentile_limit** integer: Number of timing/histogram values to track per-measurement in the calculation of percentiles. Raising this limit increases the accuracy of percentiles but also increases the memory usage and cpu time.
+-->
 
 * **templates** []string: Templates for transforming statsd buckets into influx measurements and tags.
 
-* **datadog_extensions** boolean: Enable parsing of DataDog's extensions to dogstatsd format (http://docs.datadoghq.com/guides/dogstatsd/)
+* **datadog_extensions** boolean: Enable parsing of DataDog's extensions to [dogstatsd format](http://docs.datadoghq.com/guides/dogstatsd/) Note: events are ignored at this time.
 
-### Statsd bucket -> InfluxDB line-protocol Templates
+### Templates for Statsd bucket --> measurement name and tags
 
 The plugin supports specifying templates for transforming statsd buckets into
-InfluxDB measurement names and tags. The templates have a _measurement_ keyword,
+measurement names and tags. The templates have a _measurement_ keyword,
 which can be used to specify parts of the bucket that are to be used in the
 measurement name. Other words in the template are used as tag names. For example,
 the following template:

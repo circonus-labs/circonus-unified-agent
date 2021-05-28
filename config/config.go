@@ -1907,7 +1907,18 @@ ignore_fs = ["tmpfs", "devtmpfs", "devfs", "iso9660", "overlay", "aufs", "squash
 
 func getDefaultPluginList() *map[string]circonusPlugin {
 	switch runtime.GOOS {
-	case "linux", "darwin", "freebsd":
+	case "darwin":
+		// disable plugins which don't work on darwin
+		if cfg, ok := defaultPluginList["cpu"]; ok {
+			cfg.Enabled = false
+			defaultPluginList["cpu"] = cfg
+		}
+		if cfg, ok := defaultPluginList["diskio"]; ok {
+			cfg.Enabled = false
+			defaultPluginList["diskio"] = cfg
+		}
+		return &defaultPluginList
+	case "linux", "freebsd":
 		return &defaultPluginList
 	case "windows":
 		return &defaultWindowsPluginList

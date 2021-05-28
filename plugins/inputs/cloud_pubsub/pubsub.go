@@ -79,7 +79,7 @@ func (ps *PubSub) SetParser(parser parsers.Parser) {
 // Start initializes the plugin and processing messages from Google PubSub.
 // Two goroutines are started - one pulling for the subscription, one
 // receiving delivery notifications from the accumulator.
-func (ps *PubSub) Start(ac cua.Accumulator) error {
+func (ps *PubSub) Start(ctx context.Context, ac cua.Accumulator) error {
 	if ps.Subscription == "" {
 		return fmt.Errorf(`"subscription" is required`)
 	}
@@ -92,7 +92,7 @@ func (ps *PubSub) Start(ac cua.Accumulator) error {
 	ps.acc = ac.WithTracking(ps.MaxUndeliveredMessages)
 
 	// Create top-level context with cancel that will be called on Stop().
-	ctx, cancel := context.WithCancel(context.Background())
+	pctx, cancel := context.WithCancel(ctx)
 	ps.cancel = cancel
 
 	if ps.stubSub != nil {
@@ -110,14 +110,14 @@ func (ps *PubSub) Start(ac cua.Accumulator) error {
 	ps.wg.Add(1)
 	go func() {
 		defer ps.wg.Done()
-		ps.waitForDelivery(ctx)
+		ps.waitForDelivery(pctx)
 	}()
 
 	// Start goroutine for subscription receiver.
 	ps.wg.Add(1)
 	go func() {
 		defer ps.wg.Done()
-		ps.receiveWithRetry(ctx)
+		ps.receiveWithRetry(pctx)
 	}()
 
 	return nil

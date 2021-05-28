@@ -157,7 +157,7 @@ func (h *InfluxDBListener) Init() error {
 }
 
 // Start starts the InfluxDB listener service.
-func (h *InfluxDBListener) Start(acc cua.Accumulator) error {
+func (h *InfluxDBListener) Start(ctx context.Context, acc cua.Accumulator) error {
 	h.acc = acc
 
 	tlsConf, err := h.ServerConfig.TLSConfig()

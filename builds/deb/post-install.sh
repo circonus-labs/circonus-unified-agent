@@ -44,8 +44,8 @@ if [[ ! -d /opt/circonus/unified-agent/etc/config.d ]]; then
 fi
 
 # If 'circonus-unified-agent.conf' is not present use package's sample (fresh install)
-if [[ ! -f /opt/circonus/unified-agent/etc/circonus-unified-agent.conf ]] && [[ -f /opt/circonus/unified-agent/etc/circonus-unified-agent.conf.sample ]]; then
-   cp /opt/circonus/unified-agent/etc/circonus-unified-agent.conf.sample /opt/circonus/unified-agent/etc/circonus-unified-agent.conf
+if [[ ! -f /opt/circonus/unified-agent/etc/circonus-unified-agent.conf ]] && [[ -f /opt/circonus/unified-agent/etc/example-circonus-unified-agent.conf ]]; then
+   cp /opt/circonus/unified-agent/etc/example-circonus-unified-agent.conf /opt/circonus/unified-agent/etc/circonus-unified-agent.conf
 fi
 
 test -d $LOG_DIR || mkdir -p $LOG_DIR

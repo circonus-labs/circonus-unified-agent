@@ -338,7 +338,7 @@ func (m *OpenConfigTelemetry) collectData(ctx context.Context,
 	}
 }
 
-func (m *OpenConfigTelemetry) Start(acc cua.Accumulator) error {
+func (m *OpenConfigTelemetry) Start(ctx context.Context, acc cua.Accumulator) error {
 	// Build sensors config
 	if m.splitSensorConfig() == 0 {
 		return fmt.Errorf("no valid sensor configuration available")
@@ -359,7 +359,6 @@ func (m *OpenConfigTelemetry) Start(acc cua.Accumulator) error {
 	// Connect to given list of servers and start collecting data
 	var grpcClientConn *grpc.ClientConn
 	var wg sync.WaitGroup
-	ctx := context.Background()
 	m.wg = &wg
 	for _, server := range m.Servers {
 		// Extract device address and port

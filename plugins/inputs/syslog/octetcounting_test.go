@@ -1,6 +1,7 @@
 package syslog
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"net"
@@ -347,7 +348,7 @@ func testStrictOctetCounting(t *testing.T, protocol string, address string, want
 			}
 			require.Equal(t, receiver.KeepAlivePeriod, keepAlive)
 			acc := &testutil.Accumulator{}
-			require.NoError(t, receiver.Start(acc))
+			require.NoError(t, receiver.Start(context.Background(), acc))
 			defer receiver.Stop()
 
 			// Connect
@@ -404,7 +405,7 @@ func testBestEffortOctetCounting(t *testing.T, protocol string, address string, 
 			}
 			require.Equal(t, receiver.KeepAlivePeriod, keepAlive)
 			acc := &testutil.Accumulator{}
-			require.NoError(t, receiver.Start(acc))
+			require.NoError(t, receiver.Start(context.Background(), acc))
 			defer receiver.Stop()
 
 			// Connect

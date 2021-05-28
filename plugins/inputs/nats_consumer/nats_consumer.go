@@ -133,7 +133,7 @@ func (n *natsConsumer) natsErrHandler(c *nats.Conn, s *nats.Subscription, e erro
 }
 
 // Start the nats consumer. Caller must call *natsConsumer.Stop() to clean up.
-func (n *natsConsumer) Start(acc cua.Accumulator) error {
+func (n *natsConsumer) Start(ctx context.Context, acc cua.Accumulator) error {
 	n.acc = acc.WithTracking(n.MaxUndeliveredMessages)
 
 	var connectErr error
@@ -189,14 +189,14 @@ func (n *natsConsumer) Start(acc cua.Accumulator) error {
 		}
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
+	nctx, cancel := context.WithCancel(ctx)
 	n.cancel = cancel
 
 	// Start the message reader
 	n.wg.Add(1)
 	go func() {
 		defer n.wg.Done()
-		go n.receiver(ctx)
+		go n.receiver(nctx)
 	}()
 
 	n.Log.Infof("Started the NATS consumer service, nats: %v, subjects: %v, queue: %v",

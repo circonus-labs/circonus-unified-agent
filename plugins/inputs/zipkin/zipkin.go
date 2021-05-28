@@ -84,7 +84,7 @@ func (z *Zipkin) Gather(_ context.Context, _ cua.Accumulator) error { return nil
 
 // Start launches a separate goroutine for collecting zipkin client http requests,
 // passing in a cua.Accumulator such that data can be collected.
-func (z *Zipkin) Start(acc cua.Accumulator) error {
+func (z *Zipkin) Start(ctx context.Context, acc cua.Accumulator) error {
 	z.handler = NewSpanHandler(z.Path)
 
 	var wg sync.WaitGroup

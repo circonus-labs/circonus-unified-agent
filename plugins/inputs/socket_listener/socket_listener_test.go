@@ -2,6 +2,7 @@ package socketlistener
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"io"
 	"log"
@@ -53,7 +54,7 @@ func TestSocketListener_tcp_tls(t *testing.T) {
 	sl.ServerConfig = *pki.TLSServerConfig()
 
 	acc := &testutil.Accumulator{}
-	err := sl.Start(acc)
+	err := sl.Start(context.Background(), acc)
 	require.NoError(t, err)
 	defer sl.Stop()
 
@@ -78,7 +79,7 @@ func TestSocketListener_unix_tls(t *testing.T) {
 	sl.ServerConfig = *pki.TLSServerConfig()
 
 	acc := &testutil.Accumulator{}
-	err = sl.Start(acc)
+	err = sl.Start(context.Background(), acc)
 	require.NoError(t, err)
 	defer sl.Stop()
 
@@ -101,7 +102,7 @@ func TestSocketListener_tcp(t *testing.T) {
 	sl.ReadBufferSize = internal.Size{Size: 1024}
 
 	acc := &testutil.Accumulator{}
-	err := sl.Start(acc)
+	err := sl.Start(context.Background(), acc)
 	require.NoError(t, err)
 	defer sl.Stop()
 
@@ -120,7 +121,7 @@ func TestSocketListener_udp(t *testing.T) {
 	sl.ReadBufferSize = internal.Size{Size: 1024}
 
 	acc := &testutil.Accumulator{}
-	err := sl.Start(acc)
+	err := sl.Start(context.Background(), acc)
 	require.NoError(t, err)
 	defer sl.Stop()
 
@@ -146,7 +147,7 @@ func TestSocketListener_unix(t *testing.T) {
 	sl.ReadBufferSize = internal.Size{Size: 1024}
 
 	acc := &testutil.Accumulator{}
-	err = sl.Start(acc)
+	err = sl.Start(context.Background(), acc)
 	require.NoError(t, err)
 	defer sl.Stop()
 
@@ -175,7 +176,7 @@ func TestSocketListener_unixgram(t *testing.T) {
 	sl.ReadBufferSize = internal.Size{Size: 1024}
 
 	acc := &testutil.Accumulator{}
-	err = sl.Start(acc)
+	err = sl.Start(context.Background(), acc)
 	require.NoError(t, err)
 	defer sl.Stop()
 
@@ -195,7 +196,7 @@ func TestSocketListenerDecode_tcp(t *testing.T) {
 	sl.ContentEncoding = "gzip"
 
 	acc := &testutil.Accumulator{}
-	err := sl.Start(acc)
+	err := sl.Start(context.Background(), acc)
 	require.NoError(t, err)
 	defer sl.Stop()
 
@@ -215,7 +216,7 @@ func TestSocketListenerDecode_udp(t *testing.T) {
 	sl.ContentEncoding = "gzip"
 
 	acc := &testutil.Accumulator{}
-	err := sl.Start(acc)
+	err := sl.Start(context.Background(), acc)
 	require.NoError(t, err)
 	defer sl.Stop()
 

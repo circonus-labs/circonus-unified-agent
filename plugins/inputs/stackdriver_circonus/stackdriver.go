@@ -210,6 +210,9 @@ func (smc *stackdriverMetricClient) ListMetricDescriptors(
 		mdResp := smc.conn.ListMetricDescriptors(ctx, req)
 		smc.listMetricDescriptorsCalls.Incr(1)
 		for {
+			if smc.done(ctx) {
+				return
+			}
 			mdDesc, mdErr := mdResp.Next()
 			if mdErr != nil {
 				if !errors.Is(mdErr, iterator.Done) {
@@ -239,6 +242,9 @@ func (smc *stackdriverMetricClient) ListTimeSeries(
 		tsResp := smc.conn.ListTimeSeries(ctx, req)
 		smc.listTimeSeriesCalls.Incr(1)
 		for {
+			if smc.done(ctx) {
+				return
+			}
 			tsDesc, tsErr := tsResp.Next()
 			if tsErr != nil {
 				if !errors.Is(tsErr, iterator.Done) {
@@ -256,6 +262,15 @@ func (smc *stackdriverMetricClient) ListTimeSeries(
 // Close implements metricClient interface
 func (smc *stackdriverMetricClient) Close() error {
 	return smc.conn.Close()
+}
+
+func (smc *stackdriverMetricClient) done(ctx context.Context) bool {
+	select {
+	case <-ctx.Done():
+		return true
+	default:
+		return false
+	}
 }
 
 // Description implements cua.Input interface
@@ -568,6 +583,12 @@ func (s *Stackdriver) generatetimeSeriesConfs(
 			} else {
 				ret = append(ret, s.newTimeSeriesConf(metricType, startTime, endTime))
 			}
+			if s.done(ctx) {
+				break
+			}
+		}
+		if s.done(ctx) {
+			break
 		}
 	}
 
@@ -641,7 +662,11 @@ func (s *Stackdriver) gatherTimeSeries(
 				// See: https://godoc.org/google.golang.org/genproto/googleapis/monitoring/v3#TypedValue
 				switch tsDesc.ValueType {
 				case metricpb.MetricDescriptor_BOOL:
-					value = p.Value.GetBoolValue()
+					value = 0
+					v := p.Value.GetBoolValue()
+					if v {
+						value = 1
+					}
 				case metricpb.MetricDescriptor_INT64:
 					value = p.Value.GetInt64Value()
 				case metricpb.MetricDescriptor_DOUBLE:
@@ -652,6 +677,12 @@ func (s *Stackdriver) gatherTimeSeries(
 
 				_ = grouper.Add(tsConf.measurement, tags, ts, tsConf.fieldKey, value)
 			}
+			if s.done(ctx) {
+				break
+			}
+		}
+		if s.done(ctx) {
+			break
 		}
 	}
 
@@ -768,6 +799,15 @@ func (s *Stackdriver) addDistribution(
 	} /*else {
 		s.Log.Debugf("Histogram has 0 buckets\n")
 	}*/
+}
+
+func (s *Stackdriver) done(ctx context.Context) bool {
+	select {
+	case <-ctx.Done():
+		return true
+	default:
+		return false
+	}
 }
 
 func init() {

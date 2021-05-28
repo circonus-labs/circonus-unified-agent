@@ -183,12 +183,12 @@ func (m *MQTTConsumer) Init() error {
 	return nil
 }
 
-func (m *MQTTConsumer) Start(acc cua.Accumulator) error {
+func (m *MQTTConsumer) Start(ctx context.Context, acc cua.Accumulator) error {
 	m.state = Disconnected
 
 	m.acc = acc.WithTracking(m.MaxUndeliveredMessages)
 	m.sem = make(semaphore, m.MaxUndeliveredMessages)
-	m.ctx, m.cancel = context.WithCancel(context.Background())
+	m.ctx, m.cancel = context.WithCancel(ctx)
 
 	m.client = m.clientFactory(m.opts)
 

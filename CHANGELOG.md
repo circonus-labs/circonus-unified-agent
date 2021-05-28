@@ -1,3 +1,7 @@
+# v0.0.30
+
+* upd: add context to service input Start method
+
 # v0.0.29
 
 * upd: deps (go-apiclient, go-trapcheck, go-trapmetrics)

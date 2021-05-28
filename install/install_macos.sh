@@ -158,7 +158,7 @@ __configure_agent() {
 __configure_service() {
     log "Configuring launchd service"
 
-    \cp /opt/circonus/unified-agent/service/com.circonus.circonus-unified-agent.plist ${cua_service_file}
+    \cp /opt/circonus/unified-agent/service/circonus-unified-agent.macos ${cua_service_file}
 
     [[ -f $cua_service_file ]] || fail "Service file (${cua_service_file}) not found"
 

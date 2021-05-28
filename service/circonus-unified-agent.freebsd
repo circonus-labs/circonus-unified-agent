@@ -1,0 +1,44 @@
+#!/bin/sh
+#
+# $FreeBSD$
+#
+
+# PROVIDE: circonus_unified_agentd
+# REQUIRE: DAEMON NETWORKING
+# BEFORE: LOGIN
+# KEYWORD: shutdown
+
+# Add the following lines to /etc/rc.conf to enable circonus_unified_agentd:
+# circonus_unified_agentd_enable="YES"
+#
+# circonus_unified_agentd_enable (bool): Set to YES to enable circonus_unified_agentd
+# Default: NO
+# circonus_unified_agentd_conf (str): circonus_unified_agentd configuration file
+# Default: ${PREFIX}/etc/circonus_unified_agentd.conf
+# circonus_unified_agentd_flags (str): Extra flags passed to circonus_unified_agentd
+
+. /etc/rc.subr
+
+name="circonus_unified_agentd"
+desc="Circonus Unified Agent Daemon"
+rcvar="circonus_unified_agentd_enable"
+load_rc_config $name
+
+: ${circonus_unified_agentd_enable:="YES"}
+: ${circonus_unified_agentd_flags:="--quiet"}
+: ${circonus_unified_agentd_conf:="/opt/circonus/unified-agent/etc/circonus-unified-agent.conf"}
+
+#daemon
+start_precmd=circonus_unified_agentd_prestart
+pidfile="/var/run/${name}.pid"
+command=/usr/sbin/daemon
+command_args="-crP ${pidfile} /opt/circonus/unified-agent/sbin/circonus-unified-agentd ${circonus_unified_agentd_flags_flags} --pidfile ${pidfile} --config=${circonus_unified_agentd_conf} >> /var/log/circonus_unified_agentd.log 2>&1"
+
+echo ${command_args}
+
+circonus_unified_agentd_prestart() {
+ # Have to empty rc_flags so they don't get passed to daemon(8)
+ rc_flags=""
+}
+
+run_rc_command "$1"

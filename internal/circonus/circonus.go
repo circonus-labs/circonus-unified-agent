@@ -300,6 +300,9 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 		checkType = append(checkType, metricGroupID)
 	}
 	checkType = append(checkType, runtime.GOOS)
+	// if pluginID == "host" {
+	// 	checkType = append(checkType, runtime.GOOS)
+	// }
 
 	checkDisplayName := []string{checkNamePrefix, pluginID}
 	if instanceID != "" && instanceID != pluginID {
@@ -310,10 +313,26 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 	}
 	checkDisplayName = append(checkDisplayName, "("+runtime.GOOS+")")
 
-	searchTags := make([]string, len(ch.circCfg.CheckSearchTags))
-	searchTags = append(searchTags, ch.circCfg.CheckSearchTags...)
+	// tags used to SEARCH for a specific check
+	searchTags := make([]string, 0)
+	if len(ch.circCfg.CheckSearchTags) > 0 {
+		for _, tag := range ch.circCfg.CheckSearchTags {
+			if tag != "" {
+				searchTags = append(searchTags, tag)
+			}
+		}
+	}
 	if !strings.Contains(strings.Join(searchTags, ","), "__instance_id") {
 		searchTags = append(searchTags, "__instance_id:"+strings.ToLower(instanceID))
+	}
+
+	// additional tags to ADD to a check (metadata, DESCRIBE a check)
+	checkTags := []string{
+		"__os:" + runtime.GOOS,
+		"__plugin_id:" + pluginID,
+	}
+	if metricGroupID != "" {
+		checkTags = append(checkTags, "__metric_group:"+metricGroupID)
 	}
 
 	checkTarget := checkNamePrefix
@@ -345,7 +364,8 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 	if bundle != nil {
 		// cached bundle, use the cid
 		cc = &apiclient.CheckBundle{
-			CID: bundle.CID,
+			CID:  bundle.CID,
+			Tags: checkTags,
 		}
 		if len(bundle.Brokers) > 0 {
 			if tlscfg, ok := ch.brokerTLSConfigs[bundle.Brokers[0]]; ok {
@@ -357,6 +377,7 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 			Type:        strings.Join(checkType, ":"),
 			DisplayName: strings.Join(checkDisplayName, " "),
 			Target:      checkTarget,
+			Tags:        checkTags,
 		}
 		if opts.Broker != "" {
 			cc.Brokers = []string{opts.Broker}

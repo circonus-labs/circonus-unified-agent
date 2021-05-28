@@ -2,6 +2,7 @@ package filecount
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -12,7 +13,6 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/internal/globpath"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
 	"github.com/karrick/godirwalk"
-	"github.com/pkg/errors"
 )
 
 const sampleConfig = `
@@ -216,7 +216,7 @@ func (fc *FileCount) count(acc cua.Accumulator, basedir string, glob globpath.Gl
 		Unsorted:             true,
 		FollowSymbolicLinks:  fc.FollowSymlinks,
 		ErrorCallback: func(osPathname string, err error) godirwalk.ErrorAction {
-			if os.IsPermission(errors.Cause(err)) {
+			if errors.Is(err, os.ErrPermission) { // os.IsPermission(errors.Cause(err)) {
 				fc.Log.Debug(err)
 				return godirwalk.SkipNode
 			}

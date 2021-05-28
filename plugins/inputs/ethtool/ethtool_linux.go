@@ -11,7 +11,6 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/filter"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
-	"github.com/pkg/errors"
 	"github.com/safchain/ethtool"
 )
 
@@ -67,7 +66,7 @@ func (e *Ethtool) gatherEthtoolStats(iface net.Interface, acc cua.Accumulator) {
 
 	driverName, err := e.command.DriverName(iface.Name)
 	if err != nil {
-		driverErr := errors.Wrapf(err, "%s driver", iface.Name)
+		driverErr := fmt.Errorf("%s driver: %w", iface.Name, err)
 		acc.AddError(driverErr)
 		return
 	}
@@ -77,7 +76,7 @@ func (e *Ethtool) gatherEthtoolStats(iface net.Interface, acc cua.Accumulator) {
 	fields := make(map[string]interface{})
 	stats, err := e.command.Stats(iface.Name)
 	if err != nil {
-		statsErr := errors.Wrapf(err, "%s stats", iface.Name)
+		statsErr := fmt.Errorf("%s stats: %w", iface.Name, err)
 		acc.AddError(statsErr)
 		return
 	}

@@ -98,10 +98,12 @@ func execCmd(arg0 string, args ...string) ([]byte, error) {
 // Snmp holds the configuration for the plugin.
 type Snmp struct {
 	// for direct metrics mode - send directly to circonus (bypassing output)
-	InstanceID    string `toml:"instance_id"`
-	DirectMetrics bool   `toml:"direct_metrics"`
-	FlushDelay    string `toml:"flush_delay"`
-	Broker        string `toml:"broker"`
+	InstanceID    string  `toml:"instance_id"`
+	DirectMetrics bool    `toml:"direct_metrics"`
+	FlushDelay    string  `toml:"flush_delay"`
+	Broker        string  `toml:"broker"`
+	DebugAPI      *bool   `toml:"debug_api"`
+	TraceMetrics  *string `toml:"trace_metrics"`
 
 	// The SNMP agent to query. Format is [SCHEME://]ADDR[:PORT] (e.g.
 	// udp://1.2.3.4:161).  If the scheme is not specified then "udp" is used.
@@ -140,6 +142,8 @@ func (s *Snmp) init() error {
 			InstanceID:    s.InstanceID,
 			MetricGroupID: "",
 			Broker:        s.Broker,
+			DebugAPI:      s.DebugAPI,
+			TraceMetrics:  s.TraceMetrics,
 		}
 		dest, err := circmgr.NewMetricDestination(opts, s.Log)
 		if err != nil {

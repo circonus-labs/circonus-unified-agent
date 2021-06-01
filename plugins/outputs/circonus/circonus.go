@@ -29,8 +29,10 @@ var (
 // Circonus values are used to output data to the Circonus platform.
 type Circonus struct {
 	// token and broker can, optionally, override the agent.circonus settings for this output instance
-	APIToken string `toml:"api_token"` // api token
-	Broker   string `toml:"broker"`    // optional: broker ID - numeric portion of _cid from broker api object (default is selected: enterprise or public httptrap broker)
+	APIToken     string  `toml:"api_token"`     // api token
+	Broker       string  `toml:"broker"`        // optional: broker ID - numeric portion of _cid from broker api object (default is selected: enterprise or public httptrap broker)
+	DebugAPI     *bool   `toml:"debug_api"`     // optional: debug circonus api calls
+	TraceMetrics *string `toml:"trace_metrics"` // optional: output json sent to broker (path to write files to or `-` for logger)
 
 	// for backwards compatibility, allow old config options to work
 	// circonus config should be in [agent.circonus] going forward
@@ -39,8 +41,6 @@ type Circonus struct {
 	APITLSCA        string            `toml:"api_tls_ca"`        // optional: api ca cert file
 	CacheConfigs    bool              `toml:"cache_configs"`     // optional: cache check bundle configurations - efficient for large number of inputs
 	CacheDir        string            `toml:"cache_dir"`         // optional: where to cache the check bundle configurations - must be read/write for user running cua
-	DebugAPI        bool              `toml:"debug_api"`         // optional: debug circonus api calls
-	TraceMetrics    string            `toml:"trace_metrics"`     // optional: output json sent to broker (path to write files to or `-` for logger)
 	DebugChecks     map[string]string `toml:"debug_checks"`      // optional: use when instructed by circonus support
 	CheckSearchTags []string          `toml:"check_search_tags"` // optional: set of tags to use when searching for checks (default: service:circonus-unified-agentd)
 	//
@@ -75,24 +75,20 @@ func (c *Circonus) Init() error {
 			Broker:          c.Broker,
 			CacheConfigs:    c.CacheConfigs,
 			CacheDir:        c.CacheDir,
-			DebugAPI:        c.DebugAPI,
-			TraceMetrics:    c.TraceMetrics,
 			DebugChecks:     c.DebugChecks,
 			CheckSearchTags: c.CheckSearchTags,
+		}
+		if c.DebugAPI != nil {
+			cfg.DebugAPI = *c.DebugAPI
+		}
+		if c.TraceMetrics != nil {
+			cfg.TraceMetrics = *c.TraceMetrics
 		}
 
 		if err := circmgr.Initialize(cfg, nil); err != nil {
 			return err
 		}
 	}
-
-	// if c.CheckNamePrefix == "" {
-	// 	hn, err := os.Hostname()
-	// 	if err != nil || hn == "" {
-	// 		hn = "unknown"
-	// 	}
-	// 	c.CheckNamePrefix = hn
-	// }
 
 	if c.PoolSize == 0 {
 		c.PoolSize = defaultWorkerPoolSize
@@ -219,7 +215,8 @@ func (c *Circonus) Connect() error {
 func (c *Circonus) emitAgentVersion() {
 	agentVersion := inter.Version()
 	if agentDestination != nil {
-		_ = agentDestination.metrics.TextSet("cua_version", nil, agentVersion, nil)
+		ts := time.Now()
+		_ = agentDestination.metrics.TextSet("cua_version", nil, agentVersion, &ts)
 	}
 }
 

@@ -34,12 +34,14 @@ type Circonus struct {
 }
 
 type MetricDestConfig struct {
-	PluginID        string // plugin id or name (e.g. snmp, ping, etc.)
-	InstanceID      string // plugin instance id (all plugins require an instance_id setting)
-	MetricGroupID   string // metric group id (some plugins produce multiple "metric groups")
-	APIToken        string // allow override of api token for a specific plugin (dm input or circonus output)
-	Broker          string // allow override of broker for a specific plugin (dm input or circonus output)
-	CheckNamePrefix string // allow override of check name prefix for a specific plugin (dm input or circonus output)
+	PluginID        string  // plugin id or name (e.g. snmp, ping, etc.)
+	InstanceID      string  // plugin instance id (all plugins require an instance_id setting)
+	MetricGroupID   string  // metric group id (some plugins produce multiple "metric groups")
+	APIToken        string  // allow override of api token for a specific plugin (dm input or circonus output)
+	Broker          string  // allow override of broker for a specific plugin (dm input or circonus output)
+	CheckNamePrefix string  // allow override of check name prefix for a specific plugin (dm input or circonus output)
+	DebugAPI        *bool   // allow override of api debugging per output
+	TraceMetrics    *string // allow override of metric tracing per output
 }
 
 // Logshim is for api and traps - it uses the info level and
@@ -270,6 +272,13 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 	debugCheckSet := false
 	debugAPI := ch.circCfg.DebugAPI
 	traceMetrics := ch.circCfg.TraceMetrics
+
+	if opts.DebugAPI != nil {
+		debugAPI = *opts.DebugAPI
+	}
+	if opts.TraceMetrics != nil {
+		traceMetrics = *opts.TraceMetrics
+	}
 
 	bundle := loadCheckConfig(destKey)
 	if bundle != nil {

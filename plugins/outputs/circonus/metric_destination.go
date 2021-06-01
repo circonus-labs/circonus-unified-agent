@@ -102,6 +102,8 @@ func (c *Circonus) initMetricDestination(pluginID, instanceID, metricGroupID str
 		APIToken:        c.APIToken,
 		Broker:          c.Broker,
 		CheckNamePrefix: c.CheckNamePrefix,
+		DebugAPI:        c.DebugAPI,
+		TraceMetrics:    c.TraceMetrics,
 	}
 
 	dest, err := circmgr.NewMetricDestination(&opts, c.Log)

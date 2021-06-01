@@ -1,9 +1,7 @@
 #!/bin/bash
 
 BIN_DIR=/opt/circonus/unified-agent/sbin
-LOG_DIR=/var/log/circonus
 SERVICE_DIR=/opt/circonus/unified-agent/service
-LOGROTATE_DIR=/etc/logrotate.d
 
 function install_init {
     cp -f $SERVICE_DIR/init.sh /etc/init.d/circonus-unified-agent
@@ -47,10 +45,6 @@ fi
 if [[ ! -f /opt/circonus/unified-agent/etc/circonus-unified-agent.conf ]] && [[ -f /opt/circonus/unified-agent/etc/example-circonus-unified-agent.conf ]]; then
    cp /opt/circonus/unified-agent/etc/example-circonus-unified-agent.conf /opt/circonus/unified-agent/etc/circonus-unified-agent.conf
 fi
-
-test -d $LOG_DIR || mkdir -p $LOG_DIR
-chown -R -L cua:cua $LOG_DIR
-chmod 755 $LOG_DIR
 
 if [[ "$(readlink /proc/1/exe)" == */systemd ]]; then
 	install_systemd /lib/systemd/system/circonus-unified-agent.service

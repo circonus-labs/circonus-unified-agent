@@ -163,7 +163,7 @@ __configure_agent() {
 
     log "Starting circonus-unified-agent service"
 
-    \${cua_service_file} start
+    ${cua_service_file} start
     [[ $? -eq 0 ]] || fail "${cua_service_file} enable"
 }
 
@@ -174,7 +174,7 @@ __configure_service() {
 
     [[ -f $cua_service_file ]] || fail "Service file (${cua_service_file}) not found"
 
-    \${cua_service_file} enable
+    ${cua_service_file} enable
 
     log "Created circonus-unified-agent service"
 }

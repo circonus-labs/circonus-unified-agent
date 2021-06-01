@@ -4,7 +4,7 @@ BIN_DIR=/opt/circonus/unified-agent/sbin
 SERVICE_DIR=/opt/circonus/unified-agent/service
 
 function install_init {
-    cp -f $SERVICE_DIR/init.sh /etc/init.d/circonus-unified-agent
+    cp -f $SERVICE_DIR/circonus-unified-agent.init /etc/init.d/circonus-unified-agent
     chmod +x /etc/init.d/circonus-unified-agent
 }
 

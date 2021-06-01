@@ -1,3 +1,14 @@
+# v0.0.31
+
+* upd: rename systemd/init service defs to indicate they are for linux
+* upd: dep (go-trapcheck, go-trapmetrics) - metric submission performance
+* upd: allow override of api debug and trace per check creator (dm or output)
+* fix: remove chown for log dir (deb/rpm - cua doesn't use)
+* add: in service definition for FreeBSD and other logistical changes - CIRC-6586
+* upd: rename service definitions to indicate what OS they are for - CIRC-6586
+* upd: installer scripts to reference new home for service definitions
+* add: freebsd service definition
+
 # v0.0.30
 
 * upd: add context to service input Start method

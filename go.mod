@@ -79,8 +79,8 @@ require (
 	github.com/kubernetes/apimachinery v0.0.0-20190119020841-d41becfba9ee
 	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/lib/pq v1.3.0 // indirect
-	github.com/maier/go-trapcheck v0.0.8
-	github.com/maier/go-trapmetrics v0.0.7
+	github.com/maier/go-trapcheck v0.0.9
+	github.com/maier/go-trapmetrics v0.0.9
 	github.com/matttproud/golang_protobuf_extensions v1.0.1
 	github.com/mdlayher/apcupsd v0.0.0-20200608131503-2bf01da7bf1b
 	github.com/miekg/dns v1.0.14

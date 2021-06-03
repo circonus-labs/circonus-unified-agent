@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
-	"github.com/circonus-labs/circonus-unified-agent/plugins/serializers/influx"
+	"github.com/circonus-labs/circonus-unified-agent/plugins/serializers/circonus"
 )
 
 type empty struct{}
@@ -102,7 +102,10 @@ func hasQuit(ctx context.Context) bool {
 }
 
 func (s *Shim) writeProcessedMetrics() error {
-	serializer := influx.NewSerializer()
+	serializer, err := circonus.NewSerializer(time.Millisecond)
+	if err != nil {
+		return err
+	}
 	for m := range s.metricCh {
 		b, err := serializer.Serialize(m)
 		if err != nil {
@@ -111,20 +114,7 @@ func (s *Shim) writeProcessedMetrics() error {
 		// Write this to stdout
 		fmt.Fprint(s.stdout, string(b))
 	}
-	// for {
-	// 	select {
-	// 	case m, open := <-s.metricCh:
-	// 		if !open {
-	// 			return nil
-	// 		}
-	// 		b, err := serializer.Serialize(m)
-	// 		if err != nil {
-	// 			return fmt.Errorf("failed to serialize metric: %s", err)
-	// 		}
-	// 		// Write this to stdout
-	// 		fmt.Fprint(s.stdout, string(b))
-	// 	}
-	// }
+
 	return nil
 }
 

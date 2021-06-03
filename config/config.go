@@ -1429,17 +1429,17 @@ func (c *Config) buildSerializer(name string, tbl *ast.Table) (serializers.Seria
 	c.getFieldString(tbl, "data_format", &sc.DataFormat)
 
 	if sc.DataFormat == "" {
-		sc.DataFormat = "influx"
+		sc.DataFormat = "circonus"
 	}
 
 	c.getFieldString(tbl, "prefix", &sc.Prefix)
 	c.getFieldString(tbl, "template", &sc.Template)
 	c.getFieldStringSlice(tbl, "templates", &sc.Templates)
 	c.getFieldString(tbl, "carbon2_format", &sc.Carbon2Format)
-	c.getFieldInt(tbl, "influx_max_line_bytes", &sc.InfluxMaxLineBytes)
+	// c.getFieldInt(tbl, "influx_max_line_bytes", &sc.InfluxMaxLineBytes)
 
-	c.getFieldBool(tbl, "influx_sort_fields", &sc.InfluxSortFields)
-	c.getFieldBool(tbl, "influx_uint_support", &sc.InfluxUintSupport)
+	// c.getFieldBool(tbl, "influx_sort_fields", &sc.InfluxSortFields)
+	// c.getFieldBool(tbl, "influx_uint_support", &sc.InfluxUintSupport)
 	c.getFieldBool(tbl, "graphite_tag_support", &sc.GraphiteTagSupport)
 	c.getFieldString(tbl, "graphite_separator", &sc.GraphiteSeparator)
 
@@ -1448,8 +1448,8 @@ func (c *Config) buildSerializer(name string, tbl *ast.Table) (serializers.Seria
 	c.getFieldBool(tbl, "splunkmetric_hec_routing", &sc.HecRouting)
 	c.getFieldBool(tbl, "splunkmetric_multimetric", &sc.SplunkmetricMultiMetric)
 
-	c.getFieldStringSlice(tbl, "wavefront_source_override", &sc.WavefrontSourceOverride)
-	c.getFieldBool(tbl, "wavefront_use_strict", &sc.WavefrontUseStrict)
+	// c.getFieldStringSlice(tbl, "wavefront_source_override", &sc.WavefrontSourceOverride)
+	// c.getFieldBool(tbl, "wavefront_use_strict", &sc.WavefrontUseStrict)
 
 	c.getFieldBool(tbl, "prometheus_export_timestamp", &sc.PrometheusExportTimestamp)
 	c.getFieldBool(tbl, "prometheus_sort_metrics", &sc.PrometheusSortMetrics)

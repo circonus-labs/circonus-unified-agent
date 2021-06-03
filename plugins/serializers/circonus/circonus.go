@@ -46,7 +46,7 @@ func (s *Serializer) SerializeBatch(metrics []cua.Metric) ([]byte, error) {
 			}
 
 			_, _ = buf.WriteString(fmt.Sprintf(
-				"{%q: {\"_value\":%v, \"_type\": %q, \"_ts\":%d}}\n",
+				"{%q: {\"_value\": %v, \"_type\": %q, \"_ts\": %d}}\n",
 				field.Key+"|ST["+tags.String()+"]",
 				field.Value,
 				mt,

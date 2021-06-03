@@ -36,7 +36,7 @@ func TestProcessorShim(t *testing.T) {
 		wg.Done()
 	}()
 
-	serializer, _ := serializers.NewInfluxSerializer()
+	serializer, _ := serializers.NewCirconusSerializer(time.Millisecond)
 	parser, _ := parsers.NewInfluxParser()
 
 	m, _ := metric.New("thing",

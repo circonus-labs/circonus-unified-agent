@@ -7,7 +7,7 @@ the general steps to set it up.
 2. Create the directory `C:\Program Files\Circonus Unified Agent` (if you install in a different
    location simply specify the `--config` parameter with the desired location)
 3. Unzip the windows release into `C:\Program Files\Circonus Unified Agent`
-4. Rename `etc\example-circonus-unified-agent-windows.conf` to `etc\circonus-unified-agent.conf`
+4. Rename `etc\example-circonus-unified-agent_windows.conf` to `etc\circonus-unified-agent.conf`
 5. Edit `etc\circonus-unified-agent.conf` - at a minimum add a valid Circonus API Token to `api_token` under the `[agent.circonus]` section
 6. To install the service into the Windows Service Manager, run the following in PowerShell as an administrator (If necessary, you can wrap any spaces in the file paths in double quotes ""):
 

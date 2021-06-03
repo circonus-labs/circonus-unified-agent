@@ -1732,121 +1732,15 @@ var defaultWindowsPluginList = map[string]circonusPlugin{
 		Enabled: true,
 		Data: []byte(`
 instance_id = "` + defaultInstanceID + `"
-[[inputs.win_perf_counters.object]]
-  # Processor usage, alternative to native, reports on a per core.
-  ObjectName = "Processor"
-  Instances = ["*"]
-  Counters = [
-    "% Idle Time",
-    "% Interrupt Time",
-    "% Privileged Time",
-    "% User Time",
-    "% Processor Time",
-    "% DPC Time",
-  ]
-  Measurement = "win_cpu"
-  # Set to true to include _Total instance when querying for all (*).
-  IncludeTotal=true
-
-[[inputs.win_perf_counters.object]]
-  # Disk times and queues
-  ObjectName = "LogicalDisk"
-  Instances = ["*"]
-  Counters = [
-    "% Idle Time",
-    "% Disk Time",
-    "% Disk Read Time",
-    "% Disk Write Time",
-    "% Free Space",
-    "Current Disk Queue Length",
-    "Free Megabytes",
-  ]
-  Measurement = "win_disk"
-  # Set to true to include _Total instance when querying for all (*).
-  #IncludeTotal=false
-
-[[inputs.win_perf_counters.object]]
-  ObjectName = "PhysicalDisk"
-  Instances = ["*"]
-  Counters = [
-    "Disk Read Bytes/sec",
-    "Disk Write Bytes/sec",
-    "Current Disk Queue Length",
-    "Disk Reads/sec",
-    "Disk Writes/sec",
-    "% Disk Time",
-    "% Disk Read Time",
-    "% Disk Write Time",
-  ]
-  Measurement = "win_diskio"
-
-[[inputs.win_perf_counters.object]]
-  ObjectName = "Network Interface"
-  Instances = ["*"]
-  Counters = [
-    "Bytes Received/sec",
-    "Bytes Sent/sec",
-    "Packets Received/sec",
-    "Packets Sent/sec",
-    "Packets Received Discarded",
-    "Packets Outbound Discarded",
-    "Packets Received Errors",
-    "Packets Outbound Errors",
-  ]
-  Measurement = "win_net"
-
-[[inputs.win_perf_counters.object]]
-  ObjectName = "System"
-  Counters = [
-    "Context Switches/sec",
-    "System Calls/sec",
-    "Processor Queue Length",
-    "System Up Time",
-    "Processes",
-    "Threads",
-    "File Data Operations/sec",
-    "File Control Operations/sec",
-    "Registry Quota In Use",
-  ]
-  Instances = ["------"]
-  Measurement = "win_system"
-  # Set to true to include _Total instance when querying for all (*).
-  #IncludeTotal=false
-
-[[inputs.win_perf_counters.object]]
-  # Example query where the Instance portion must be removed to get data back,
-  # such as from the Memory object.
-  ObjectName = "Memory"
-  Counters = [
-    "Available Bytes",
-    "Committed Bytes",
-    "Cache Faults/sec",
-    "Demand Zero Faults/sec",
-    "Page Faults/sec",
-    "Pages/sec",
-    "Transition Faults/sec",
-    "Pool Nonpaged Bytes",
-    "Pool Paged Bytes",
-    "Standby Cache Reserve Bytes",
-    "Standby Cache Normal Priority Bytes",
-    "Standby Cache Core Bytes",
-  ]
-  # Use 6 x - to remove the Instance bit from the query.
-  Instances = ["------"]
-  Measurement = "win_mem"
-  # Set to true to include _Total instance when querying for all (*).
-  #IncludeTotal=false
-
-[[inputs.win_perf_counters.object]]
-  # Example query where the Instance portion must be removed to get data back,
-  # such as from the Paging File object.
-  ObjectName = "Paging File"
-  Counters = [
-    "% Usage",
-  ]
-  Instances = ["_Total"]
-  Measurement = "win_swap"
-`),
+object = [
+  {ObjectName = "Paging File", Counters = ["% Usage"], Instances = ["_Total"], Measurement = "win_swap"},
+  {ObjectName = "Memory", Counters = ["Available Bytes","Committed Bytes","Cache Faults/sec","Demand Zero Faults/sec","Page Faults/sec","Pages/sec","Transition Faults/sec","Pool Nonpaged Bytes","Pool Paged Bytes","Standby Cache Reserve Bytes","Standby Cache Normal Priority Bytes","Standby Cache Core Bytes"],Instances = ["------"],Measurement = "win_mem"},
+  {ObjectName = "System",Counters = ["Context Switches/sec","System Calls/sec","Processor Queue Length","System Up Time","Processes","Threads","File Data Operations/sec","File Control Operations/sec","Registry Quota In Use"],Instances = ["------"],Measurement = "win_system"},
+  {ObjectName = "Network Interface",Instances = ["*"],Counters = ["Bytes Received/sec","Bytes Sent/sec","Packets Received/sec","Packets Sent/sec","Packets Received Discarded","Packets Outbound Discarded","Packets Received Errors","Packets Outbound Errors"],Measurement = "win_net"},
+  {ObjectName = "PhysicalDisk",Instances = ["*"],Counters = ["Disk Read Bytes/sec","Disk Write Bytes/sec","Current Disk Queue Length","Disk Reads/sec","Disk Writes/sec","% Disk Time","% Disk Read Time","% Disk Write Time"],Measurement = "win_diskio"},
+  {ObjectName = "LogicalDisk",Instances = ["*"],Counters = ["% Idle Time","% Disk Time","% Disk Read Time","% Disk Write Time","% Free Space","Current Disk Queue Length","Free Megabytes"],Measurement = "win_disk"},
+  {ObjectName = "Processor",Instances = ["*"],Counters = ["% Idle Time","% Interrupt Time","% Privileged Time","% User Time","% Processor Time","% DPC Time"],Measurement = "win_cpu",IncludeTotal = true},
+]`),
 	},
 }
 

@@ -180,16 +180,13 @@ func (p *Ping) Gather(ctx context.Context, acc cua.Accumulator) error {
 
 type pingStats struct {
 	ping.Statistics
-	ttl  int
-	ttls []int
+	ttl int
 }
 
 type NativePingFunc func(ctx context.Context, destination string) (*pingStats, error)
 
 func (p *Ping) nativePing(ctx context.Context, destination string) (*pingStats, error) {
-	ps := &pingStats{
-		ttls: make([]int, 0),
-	}
+	ps := &pingStats{}
 
 	pinger, err := ping.NewPinger(destination)
 	if err != nil {
@@ -221,7 +218,6 @@ func (p *Ping) nativePing(ctx context.Context, destination string) (*pingStats, 
 	pinger.OnRecv = func(pkt *ping.Packet) {
 		once.Do(func() {
 			ps.ttl = pkt.Ttl
-			ps.ttls = append(ps.ttls, pkt.Ttl)
 		})
 	}
 
@@ -268,11 +264,6 @@ func (p *Ping) addStats(acc cua.Accumulator, fields map[string]interface{}, tags
 			for pktNum, rtt := range stats.Rtts {
 				if err := p.metricDestination.HistogramRecordTiming("rtt", mtags, float64(rtt)/float64(time.Millisecond)); err != nil {
 					p.Log.Warnf("setting histogram metric (rtt %d): %s", pktNum, err)
-				}
-			}
-			for pktNum, ttl := range stats.ttls {
-				if err := p.metricDestination.HistogramRecordTiming("ttl", mtags, float64(ttl)); err != nil {
-					p.Log.Warnf("setting histogram metric (ttl %d): %s", pktNum, err)
 				}
 			}
 		} else if rtts != nil {

@@ -173,7 +173,7 @@ func (p *Ping) args(url string, system string) []string {
 func processPingOutput(out string) (int, int, int, float64, float64, float64, float64, []float64, error) {
 	var trans, recv, ttl int = 0, 0, -1
 	var min, avg, max, stddev float64 = -1.0, -1.0, -1.0, -1.0
-	var tm float64
+	var rtt float64
 	rtts := make([]float64, 0)
 	// Set this error to nil if we find a 'transmitted' line
 	err := errors.New("Fatal error processing ping output")
@@ -182,14 +182,16 @@ func processPingOutput(out string) (int, int, int, float64, float64, float64, fl
 		// Reading only first TTL, ignoring other TTL messages
 		switch {
 		case ttl == -1 && (strings.Contains(line, "ttl=") || strings.Contains(line, "hlim=")):
-			ttl, tm, err = getTTLRTT(line)
+			// grab ttl and rtt from first occurrence
+			ttl, rtt, err = getTTLRTT(line)
 			if err == nil {
-				rtts = append(rtts, tm)
+				rtts = append(rtts, rtt)
 			}
 		case ttl != -1 && (strings.Contains(line, "ttl=") || strings.Contains(line, "hlim=")):
-			_, tm, err = getTTLRTT(line)
+			// then ignore the ttl and just collect the rtt
+			_, rtt, err = getTTLRTT(line)
 			if err == nil {
-				rtts = append(rtts, tm)
+				rtts = append(rtts, rtt)
 			}
 		case strings.Contains(line, "transmitted") && strings.Contains(line, "received"):
 			trans, recv, err = getPacketStats(line, trans, recv)

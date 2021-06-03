@@ -31,7 +31,7 @@ func (p *Ping) pingToURL(ctx context.Context, u string, acc cua.Accumulator) {
 		// Combine go err + stderr output
 		pendingError = errors.New(strings.TrimSpace(out) + ", " + err.Error())
 	}
-	trans, recReply, receivePacket, avg, min, max, err := processPingOutput(out)
+	trans, recReply, receivePacket, avg, min, max, rtts, err := processPingOutput(out)
 	if err != nil {
 		// fatal error
 		if pendingError != nil {
@@ -65,7 +65,7 @@ func (p *Ping) pingToURL(ctx context.Context, u string, acc cua.Accumulator) {
 		fields["maximum_response_ms"] = float64(max)
 	}
 
-	p.addStats(acc, fields, tags, nil, nil)
+	p.addStats(acc, fields, tags, nil, &rtts)
 	// acc.AddFields("ping", fields, tags)
 }
 
@@ -88,19 +88,29 @@ func (p *Ping) args(url string) []string {
 
 // processPingOutput takes in a string output from the ping command
 // based on linux implementation but using regex ( multilanguage support )
-// It returns (<transmitted packets>, <received reply>, <received packet>, <average response>, <min response>, <max response>)
-func processPingOutput(out string) (int, int, int, int, int, int, error) {
+// It returns (<transmitted packets>, <received reply>, <received packet>, <average response>, <min response>, <max response>, []rtts)
+func processPingOutput(out string) (int, int, int, int, int, int, []float64, error) {
 	// So find a line contain 3 numbers except reply lines
 	var stats, aproxs []string = nil, nil
+	rtts := make([]float64, 0)
 	err := errors.New("Fatal error processing ping output")
 	stat := regexp.MustCompile(`=\W*(\d+)\D*=\W*(\d+)\D*=\W*(\d+)`)
 	aprox := regexp.MustCompile(`=\W*(\d+)\D*ms\D*=\W*(\d+)\D*ms\D*=\W*(\d+)\D*ms`)
 	tttLine := regexp.MustCompile(`TTL=\d+`)
+	timeLine := regexp.MustCompile(`time=(\d+[\.\d]*)`)
 	lines := strings.Split(out, "\n")
 	var receivedReply int = 0
 	for _, line := range lines {
 		if tttLine.MatchString(line) {
 			receivedReply++
+			rttMatch := timeLine.FindStringSubmatch(line)
+			if len(rttMatch) < 2 {
+				continue
+			}
+			rtt, err := strconv.ParseFloat(rttMatch[1], 32)
+			if err == nil {
+				rtts = append(rtts, rtt)
+			}
 		} else {
 			if stats == nil {
 				stats = stat.FindStringSubmatch(line)
@@ -113,35 +123,35 @@ func processPingOutput(out string) (int, int, int, int, int, int, error) {
 
 	// stats data should contain 4 members: entireExpression + ( Send, Receive, Lost )
 	if len(stats) != 4 {
-		return 0, 0, 0, -1, -1, -1, err
+		return 0, 0, 0, -1, -1, -1, rtts, err
 	}
 	trans, err := strconv.Atoi(stats[1])
 	if err != nil {
-		return 0, 0, 0, -1, -1, -1, err
+		return 0, 0, 0, -1, -1, -1, rtts, err
 	}
 	receivedPacket, err := strconv.Atoi(stats[2])
 	if err != nil {
-		return 0, 0, 0, -1, -1, -1, err
+		return 0, 0, 0, -1, -1, -1, rtts, err
 	}
 
 	// aproxs data should contain 4 members: entireExpression + ( min, max, avg )
 	if len(aproxs) != 4 {
-		return trans, receivedReply, receivedPacket, -1, -1, -1, err
+		return trans, receivedReply, receivedPacket, -1, -1, -1, rtts, err
 	}
 	min, err := strconv.Atoi(aproxs[1])
 	if err != nil {
-		return trans, receivedReply, receivedPacket, -1, -1, -1, err
+		return trans, receivedReply, receivedPacket, -1, -1, -1, rtts, err
 	}
 	max, err := strconv.Atoi(aproxs[2])
 	if err != nil {
-		return trans, receivedReply, receivedPacket, -1, -1, -1, err
+		return trans, receivedReply, receivedPacket, -1, -1, -1, rtts, err
 	}
 	avg, err := strconv.Atoi(aproxs[3])
 	if err != nil {
-		return 0, 0, 0, -1, -1, -1, err
+		return 0, 0, 0, -1, -1, -1, rtts, err
 	}
 
-	return trans, receivedReply, receivedPacket, avg, min, max, err
+	return trans, receivedReply, receivedPacket, avg, min, max, rtts, err
 }
 
 func (p *Ping) timeout() float64 {

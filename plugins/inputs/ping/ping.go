@@ -180,13 +180,16 @@ func (p *Ping) Gather(ctx context.Context, acc cua.Accumulator) error {
 
 type pingStats struct {
 	ping.Statistics
-	ttl int
+	ttl  int
+	ttls []int
 }
 
 type NativePingFunc func(ctx context.Context, destination string) (*pingStats, error)
 
 func (p *Ping) nativePing(ctx context.Context, destination string) (*pingStats, error) {
-	ps := &pingStats{}
+	ps := &pingStats{
+		ttls: make([]int, 0),
+	}
 
 	pinger, err := ping.NewPinger(destination)
 	if err != nil {
@@ -218,6 +221,7 @@ func (p *Ping) nativePing(ctx context.Context, destination string) (*pingStats, 
 	pinger.OnRecv = func(pkt *ping.Packet) {
 		once.Do(func() {
 			ps.ttl = pkt.Ttl
+			ps.ttls = append(ps.ttls, pkt.Ttl)
 		})
 	}
 
@@ -239,6 +243,48 @@ func (p *Ping) nativePing(ctx context.Context, destination string) (*pingStats, 
 	return ps, nil
 }
 
+func (p *Ping) addStats(acc cua.Accumulator, fields map[string]interface{}, tags map[string]string, stats *pingStats, rtts *[]float64) { //nolint:unparam
+	if !p.DirectMetrics || p.metricDestination == nil {
+		acc.AddFields("ping", fields, tags)
+		return
+	}
+
+	ts := time.Now()
+	mtags := circmgr.ConvertTags("ping", "", tags)
+	for metricName, val := range fields {
+		switch v := val.(type) {
+		case string:
+			if err := p.metricDestination.TextSet(metricName, mtags, v, &ts); err != nil {
+				p.Log.Warnf("setting text metric (%s): %s", metricName, err)
+			}
+		default:
+			if err := p.metricDestination.GaugeSet(metricName, mtags, v, &ts); err != nil {
+				p.Log.Warnf("setting gauge metric (%s): %s", metricName, err)
+			}
+		}
+	}
+	if p.Count > 1 {
+		if stats != nil {
+			for pktNum, rtt := range stats.Rtts {
+				if err := p.metricDestination.HistogramRecordTiming("rtt", mtags, float64(rtt)/float64(time.Millisecond)); err != nil {
+					p.Log.Warnf("setting histogram metric (rtt %d): %s", pktNum, err)
+				}
+			}
+			for pktNum, ttl := range stats.ttls {
+				if err := p.metricDestination.HistogramRecordTiming("ttl", mtags, float64(ttl)); err != nil {
+					p.Log.Warnf("setting histogram metric (ttl %d): %s", pktNum, err)
+				}
+			}
+		} else if rtts != nil {
+			for pktNum, rtt := range *rtts {
+				if err := p.metricDestination.HistogramRecordTiming("rtt", mtags, rtt); err != nil {
+					p.Log.Warnf("setting histogram metric (rtt %d): %s", pktNum, err)
+				}
+			}
+		}
+	}
+}
+
 func (p *Ping) pingToURLNative(ctx context.Context, destination string, acc cua.Accumulator) {
 	tags := map[string]string{"url": destination}
 	fields := map[string]interface{}{}
@@ -251,7 +297,8 @@ func (p *Ping) pingToURLNative(ctx context.Context, destination string, acc cua.
 		} else {
 			fields["result_code"] = 2
 		}
-		acc.AddFields("ping", fields, tags)
+		p.addStats(acc, fields, tags, nil, nil)
+		// acc.AddFields("ping", fields, tags)
 		return
 	}
 
@@ -264,7 +311,8 @@ func (p *Ping) pingToURLNative(ctx context.Context, destination string, acc cua.
 	if stats.PacketsSent == 0 {
 		p.Log.Debug("no packets sent")
 		fields["result_code"] = 2
-		acc.AddFields("ping", fields, tags)
+		p.addStats(acc, fields, tags, nil, nil)
+		// acc.AddFields("ping", fields, tags)
 		return
 	}
 
@@ -272,7 +320,8 @@ func (p *Ping) pingToURLNative(ctx context.Context, destination string, acc cua.
 		p.Log.Debug("no packets received")
 		fields["result_code"] = 1
 		fields["percent_packet_loss"] = float64(100)
-		acc.AddFields("ping", fields, tags)
+		p.addStats(acc, fields, tags, nil, nil)
+		// acc.AddFields("ping", fields, tags)
 		return
 	}
 
@@ -297,32 +346,7 @@ func (p *Ping) pingToURLNative(ctx context.Context, destination string, acc cua.
 	fields["maximum_response_ms"] = float64(stats.MaxRtt) / float64(time.Millisecond)
 	fields["standard_deviation_ms"] = float64(stats.StdDevRtt) / float64(time.Millisecond)
 
-	if !p.DirectMetrics || p.metricDestination == nil {
-		acc.AddFields("ping", fields, tags)
-		return
-	}
-
-	ts := time.Now()
-	mtags := circmgr.ConvertTags("ping", "", tags)
-	for metricName, val := range fields {
-		switch v := val.(type) {
-		case string:
-			if err := p.metricDestination.TextSet(metricName, mtags, v, &ts); err != nil {
-				p.Log.Warnf("setting text metric (%s): %s", metricName, err)
-			}
-		default:
-			if err := p.metricDestination.GaugeSet(metricName, mtags, v, &ts); err != nil {
-				p.Log.Warnf("setting gauge metric (%s): %s", metricName, err)
-			}
-		}
-	}
-	if p.Count > 1 {
-		for pktNum, rtt := range stats.Rtts {
-			if err := p.metricDestination.HistogramRecordTiming("rtt", mtags, float64(rtt)/float64(time.Millisecond)); err != nil {
-				p.Log.Warnf("setting gauge metric (rtt %d): %s", pktNum, err)
-			}
-		}
-	}
+	p.addStats(acc, fields, tags, stats, nil)
 }
 
 type durationSlice []time.Duration

@@ -42,7 +42,8 @@ func (p *Ping) pingToURL(ctx context.Context, u string, acc cua.Accumulator) {
 
 		fields["result_code"] = 2
 		fields["errors"] = 100.0
-		acc.AddFields("ping", fields, tags)
+		p.addStats(acc, fields, tags, nil, nil)
+		// acc.AddFields("ping", fields, tags)
 		return
 	}
 	// Calculate packet loss percentage
@@ -63,7 +64,9 @@ func (p *Ping) pingToURL(ctx context.Context, u string, acc cua.Accumulator) {
 	if max >= 0 {
 		fields["maximum_response_ms"] = float64(max)
 	}
-	acc.AddFields("ping", fields, tags)
+
+	p.addStats(acc, fields, tags, nil, nil)
+	// acc.AddFields("ping", fields, tags)
 }
 
 // args returns the arguments for the 'ping' executable

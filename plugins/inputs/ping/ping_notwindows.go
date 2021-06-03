@@ -54,16 +54,18 @@ func (p *Ping) pingToURL(ctx context.Context, u string, acc cua.Accumulator) {
 				acc.AddError(fmt.Errorf("host %s: %w", u, err))
 			}
 			fields["result_code"] = 2
-			acc.AddFields("ping", fields, tags)
+			p.addStats(acc, fields, tags, nil, nil)
+			// acc.AddFields("ping", fields, tags)
 			return
 		}
 	}
-	trans, rec, ttl, min, avg, max, stddev, err := processPingOutput(out)
+	trans, rec, ttl, min, avg, max, stddev, rtts, err := processPingOutput(out)
 	if err != nil {
 		// fatal error
 		acc.AddError(fmt.Errorf("%s: %w", u, err))
 		fields["result_code"] = 2
-		acc.AddFields("ping", fields, tags)
+		p.addStats(acc, fields, tags, nil, nil)
+		// acc.AddFields("ping", fields, tags)
 		return
 	}
 
@@ -88,7 +90,9 @@ func (p *Ping) pingToURL(ctx context.Context, u string, acc cua.Accumulator) {
 	if stddev >= 0 {
 		fields["standard_deviation_ms"] = stddev
 	}
-	acc.AddFields("ping", fields, tags)
+
+	p.addStats(acc, fields, tags, nil, &rtts)
+	// acc.AddFields("ping", fields, tags)
 }
 
 // args returns the arguments for the 'ping' executable
@@ -166,9 +170,11 @@ func (p *Ping) args(url string, system string) []string {
 //     round-trip min/avg/max/stddev = 34.843/43.508/52.172/8.664 ms
 //
 // It returns (<transmitted packets>, <received packets>, <average response>)
-func processPingOutput(out string) (int, int, int, float64, float64, float64, float64, error) {
+func processPingOutput(out string) (int, int, int, float64, float64, float64, float64, []float64, error) {
 	var trans, recv, ttl int = 0, 0, -1
 	var min, avg, max, stddev float64 = -1.0, -1.0, -1.0, -1.0
+	var tm float64
+	rtts := make([]float64, 0)
 	// Set this error to nil if we find a 'transmitted' line
 	err := errors.New("Fatal error processing ping output")
 	lines := strings.Split(out, "\n")
@@ -176,20 +182,28 @@ func processPingOutput(out string) (int, int, int, float64, float64, float64, fl
 		// Reading only first TTL, ignoring other TTL messages
 		switch {
 		case ttl == -1 && (strings.Contains(line, "ttl=") || strings.Contains(line, "hlim=")):
-			ttl, err = getTTL(line)
+			ttl, tm, err = getTTLRTT(line)
+			if err == nil {
+				rtts = append(rtts, tm)
+			}
+		case ttl != -1 && (strings.Contains(line, "ttl=") || strings.Contains(line, "hlim=")):
+			_, tm, err = getTTLRTT(line)
+			if err == nil {
+				rtts = append(rtts, tm)
+			}
 		case strings.Contains(line, "transmitted") && strings.Contains(line, "received"):
 			trans, recv, err = getPacketStats(line, trans, recv)
 			if err != nil {
-				return trans, recv, ttl, min, avg, max, stddev, err
+				return trans, recv, ttl, min, avg, max, stddev, rtts, err
 			}
 		case strings.Contains(line, "min/avg/max"):
 			min, avg, max, stddev, err = checkRoundTripTimeStats(line, min, avg, max, stddev)
 			if err != nil {
-				return trans, recv, ttl, min, avg, max, stddev, err
+				return trans, recv, ttl, min, avg, max, stddev, rtts, err
 			}
 		}
 	}
-	return trans, recv, ttl, min, avg, max, stddev, err
+	return trans, recv, ttl, min, avg, max, stddev, rtts, err
 }
 
 func getPacketStats(line string, trans, recv int) (int, int, error) {
@@ -206,10 +220,33 @@ func getPacketStats(line string, trans, recv int) (int, int, error) {
 	return trans, recv, err
 }
 
-func getTTL(line string) (int, error) {
+// func getTTL(line string) (int, error) {
+// 	ttlLine := regexp.MustCompile(`(ttl|hlim)=(\d+)`)
+// 	ttlMatch := ttlLine.FindStringSubmatch(line)
+// 	return strconv.Atoi(ttlMatch[2])
+// }
+
+func getTTLRTT(line string) (int, float64, error) {
 	ttlLine := regexp.MustCompile(`(ttl|hlim)=(\d+)`)
 	ttlMatch := ttlLine.FindStringSubmatch(line)
-	return strconv.Atoi(ttlMatch[2])
+	if len(ttlMatch) < 3 {
+		return -1, -1, fmt.Errorf("unable to find ttl")
+	}
+	ttl, err := strconv.Atoi(ttlMatch[2])
+	if err != nil {
+		return -1, -1, err
+	}
+	rttLine := regexp.MustCompile(`time=(\d+[\.\d+]*)`)
+	rttMatch := rttLine.FindStringSubmatch(line)
+	if len(rttMatch) < 2 {
+		return ttl, -1, fmt.Errorf("unable to find rtt")
+	}
+	rtt, err := strconv.ParseFloat(rttMatch[1], 32)
+	if err != nil {
+		return ttl, -1, err
+	}
+
+	return ttl, rtt, nil
 }
 
 func checkRoundTripTimeStats(line string, min, avg, max, stddev float64) (float64, float64, float64, float64, error) {

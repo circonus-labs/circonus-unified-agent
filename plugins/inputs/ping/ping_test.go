@@ -4,6 +4,7 @@ package ping
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 	"sort"
 	"testing"
@@ -75,7 +76,7 @@ ping: -i interval too short: Operation not permitted
 
 // Test that ping command output is processed properly
 func TestProcessPingOutput(t *testing.T) {
-	trans, rec, ttl, min, avg, max, stddev, err := processPingOutput(bsdPingOutput)
+	trans, rec, ttl, min, avg, max, stddev, rtts, err := processPingOutput(bsdPingOutput)
 	assert.NoError(t, err)
 	assert.Equal(t, 55, ttl, "ttl value is 55")
 	assert.Equal(t, 5, trans, "5 packets were transmitted")
@@ -84,8 +85,10 @@ func TestProcessPingOutput(t *testing.T) {
 	assert.InDelta(t, 20.224, avg, 0.001)
 	assert.InDelta(t, 27.263, max, 0.001)
 	assert.InDelta(t, 4.076, stddev, 0.001)
+	assert.Equal(t, 5, len(rtts), "5 rtts")
+	assert.Equal(t, "15.087", fmt.Sprintf("%.3f", rtts[0]), "15.087 rtt 0")
 
-	trans, rec, ttl, min, avg, max, stddev, err = processPingOutput(freebsdPing6Output)
+	trans, rec, ttl, min, avg, max, stddev, rtts, err = processPingOutput(freebsdPing6Output)
 	assert.NoError(t, err)
 	assert.Equal(t, 117, ttl, "ttl value is 117")
 	assert.Equal(t, 5, trans, "5 packets were transmitted")
@@ -94,8 +97,10 @@ func TestProcessPingOutput(t *testing.T) {
 	assert.InDelta(t, 53.211, avg, 0.001)
 	assert.InDelta(t, 93.870, max, 0.001)
 	assert.InDelta(t, 22.000, stddev, 0.001)
+	assert.Equal(t, 5, len(rtts), "5 rtts")
+	assert.Equal(t, "93.870", fmt.Sprintf("%.3f", rtts[0]), "93.870 rtt 0")
 
-	trans, rec, ttl, min, avg, max, stddev, err = processPingOutput(linuxPingOutput)
+	trans, rec, ttl, min, avg, max, stddev, rtts, err = processPingOutput(linuxPingOutput)
 	assert.NoError(t, err)
 	assert.Equal(t, 63, ttl, "ttl value is 63")
 	assert.Equal(t, 5, trans, "5 packets were transmitted")
@@ -104,8 +109,10 @@ func TestProcessPingOutput(t *testing.T) {
 	assert.InDelta(t, 43.628, avg, 0.001)
 	assert.InDelta(t, 51.806, max, 0.001)
 	assert.InDelta(t, 5.325, stddev, 0.001)
+	assert.Equal(t, 5, len(rtts), "5 rtts")
+	assert.Equal(t, "35.200", fmt.Sprintf("%.3f", rtts[0]), "35.200 rtt 0")
 
-	trans, rec, ttl, min, avg, max, stddev, err = processPingOutput(busyBoxPingOutput)
+	trans, rec, ttl, min, avg, max, stddev, rtts, err = processPingOutput(busyBoxPingOutput)
 	assert.NoError(t, err)
 	assert.Equal(t, 56, ttl, "ttl value is 56")
 	assert.Equal(t, 4, trans, "4 packets were transmitted")
@@ -114,6 +121,8 @@ func TestProcessPingOutput(t *testing.T) {
 	assert.InDelta(t, 17.611, avg, 0.001)
 	assert.InDelta(t, 22.559, max, 0.001)
 	assert.InDelta(t, -1.0, stddev, 0.001)
+	assert.Equal(t, 4, len(rtts), "4 rtts")
+	assert.Equal(t, "22.559", fmt.Sprintf("%.3f", rtts[0]), "22.559 rtt 0")
 }
 
 // Linux ping output with varying TTL
@@ -132,7 +141,7 @@ rtt min/avg/max/mdev = 35.225/43.628/51.806/5.325 ms
 
 // Test that ping command output is processed properly
 func TestProcessPingOutputWithVaryingTTL(t *testing.T) {
-	trans, rec, ttl, min, avg, max, stddev, err := processPingOutput(linuxPingOutputWithVaryingTTL)
+	trans, rec, ttl, min, avg, max, stddev, rtts, err := processPingOutput(linuxPingOutputWithVaryingTTL)
 	assert.NoError(t, err)
 	assert.Equal(t, 63, ttl, "ttl value is 63")
 	assert.Equal(t, 5, trans, "5 packets were transmitted")
@@ -141,12 +150,13 @@ func TestProcessPingOutputWithVaryingTTL(t *testing.T) {
 	assert.InDelta(t, 43.628, avg, 0.001)
 	assert.InDelta(t, 51.806, max, 0.001)
 	assert.InDelta(t, 5.325, stddev, 0.001)
+	assert.Equal(t, 5, len(rtts), "5 rtts")
 }
 
 // Test that processPingOutput returns an error when 'ping' fails to run, such
 // as when an invalid argument is provided
 func TestErrorProcessPingOutput(t *testing.T) {
-	_, _, _, _, _, _, _, err := processPingOutput(fatalPingOutput)
+	_, _, _, _, _, _, _, _, err := processPingOutput(fatalPingOutput)
 	assert.Error(t, err, "Error was expected from processPingOutput")
 }
 

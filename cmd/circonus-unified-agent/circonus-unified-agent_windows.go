@@ -71,7 +71,7 @@ func runAsWindowsService(inputFilters, outputFilters, aggregatorFilters, process
 		DisplayName: *fServiceDisplayName,
 		Description: "Collects data using a series of plugins and publishes it to " +
 			"another series of plugins.",
-		Arguments: []string{"--config", programFiles + `\Circonus\circonus-unified-agent.conf`},
+		Arguments: []string{"--config", programFiles + `\Circonus Unified Agent\etc\circonus-unified-agent.conf`},
 	}
 
 	prg := &program{

@@ -14,7 +14,7 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/internal"
 	"github.com/circonus-labs/circonus-unified-agent/models"
-	"github.com/circonus-labs/circonus-unified-agent/plugins/serializers/influx"
+	circjson "github.com/circonus-labs/circonus-unified-agent/plugins/serializers/circonus"
 )
 
 // Agent runs a set of plugins.
@@ -834,13 +834,17 @@ func (a *Agent) Test(ctx context.Context, wait time.Duration) error {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		s := influx.NewSerializer()
-		s.SetFieldSortOrder(influx.SortFields)
+		sj, err := circjson.NewSerializer(time.Millisecond)
+		if err != nil {
+			log.Fatalf("circonus serializer: %s", err)
+		}
 
 		for metric := range src {
-			octets, err := s.Serialize(metric)
+			m, err := sj.Serialize(metric)
 			if err == nil {
-				fmt.Print("> ", string(octets))
+				fmt.Print(string(m))
+			} else {
+				log.Printf("!E %s\n", err)
 			}
 			metric.Reject()
 		}

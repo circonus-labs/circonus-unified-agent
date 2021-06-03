@@ -8,7 +8,6 @@ New-Module -name circonus-install -ScriptBlock {
   Options
   
     --key           Circonus API key/token **REQUIRED**
-    [--app]         Circonus API app name (authorized w/key) Default: circonus-unified-agent
     [--help]        This message
   
   Note: Provide an authorized app for the key or ensure api 
@@ -53,12 +52,11 @@ New-Module -name circonus-install -ScriptBlock {
   }
 
   function Set-Config {
-    param ($token, $app)
+    param ($token)
     Write-Host "Copying config..."
     Move-Item -Path "${installpath}\etc\example-circonus-unified-agent_windows.conf" -Destination "${installpath}\etc\circonus-unified-agent.conf"
     $file = "${installpath}\etc\circonus-unified-agent.conf"
     (Get-Content $file) -replace '  api_token = ""', "  api_token = `"${token}`"" | Set-Content $file
-    (Get-Content $file) -replace '  # api_app = "circonus-unified-agent"', "  api_app = `"${app}`"" | Set-Content $file
   }
 
   function Cleanup {
@@ -84,8 +82,7 @@ New-Module -name circonus-install -ScriptBlock {
       # Circonus API Key
       [Parameter(mandatory=$True)]
       [string]$key,
-      # Circonus app name
-      [string]$app = "circonus-unified-agent",
+      # display help
       [bool]$help
     )
     if ($help) {
@@ -117,7 +114,7 @@ New-Module -name circonus-install -ScriptBlock {
     # Set the service up
     Enable-Service
     # Setup the default configuration file
-    Set-Config($key, $app)
+    Set-Config($key)
     # Cleanup tmp dir
     Cleanup
     # Start the service

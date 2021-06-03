@@ -23,14 +23,6 @@ func NewSerializer(timestampUnits time.Duration) (*Serializer, error) {
 
 func (s *Serializer) Serialize(metric cua.Metric) ([]byte, error) {
 	return s.SerializeBatch([]cua.Metric{metric})
-	// m := s.createObject(metric)
-	// serialized, err := json.Marshal(m)
-	// if err != nil {
-	// 	return []byte{}, fmt.Errorf("json marshal: %w", err)
-	// }
-	// serialized = append(serialized, '\n')
-
-	// return serialized, nil
 }
 
 func (s *Serializer) SerializeBatch(metrics []cua.Metric) ([]byte, error) {
@@ -60,56 +52,11 @@ func (s *Serializer) SerializeBatch(metrics []cua.Metric) ([]byte, error) {
 				mt,
 				metric.Time().UnixNano()/int64(s.TimestampUnits),
 			))
-
 		}
 	}
 
 	return buf.Bytes(), nil
-
-	// objects := make([]interface{}, 0, len(metrics))
-	// for _, metric := range metrics {
-	// 	m := s.createObject(metric)
-	// 	objects = append(objects, m)
-	// }
-
-	// obj := map[string]interface{}{
-	// 	"metrics": objects,
-	// }
-
-	// serialized, err := json.MarshalIndent(objects, "", "  ")
-	// if err != nil {
-	// 	return []byte{}, fmt.Errorf("json marshal: %w", err)
-	// }
-	// return serialized, nil
 }
-
-// func (s *Serializer) createObject(metric cua.Metric) map[string]interface{} {
-// 	m := make(map[string]interface{}, 4)
-
-// 	tags := make(map[string]string, len(metric.TagList()))
-// 	for _, tag := range metric.TagList() {
-// 		tags[tag.Key] = tag.Value
-// 	}
-// 	m["tags"] = tags
-
-// 	fields := make(map[string]interface{}, len(metric.FieldList()))
-// 	for _, field := range metric.FieldList() {
-// 		switch fv := field.Value.(type) {
-// 		case float64:
-// 			// JSON does not support these special values
-// 			if math.IsNaN(fv) || math.IsInf(fv, 0) { //nolint:staticcheck
-// 				continue
-// 			}
-// 		default:
-// 			fields[field.Key] = field.Value
-// 		}
-// 	}
-// 	m["fields"] = fields
-
-// 	m["name"] = metric.Name()
-// 	m["timestamp"] = metric.Time().UnixNano() / int64(s.TimestampUnits)
-// 	return m
-// }
 
 func truncateDuration(units time.Duration) time.Duration {
 	// Default precision is 1s
@@ -164,17 +111,3 @@ func (s *Serializer) convertTags(m cua.Metric) trapmetrics.Tags { //nolint:unpar
 
 	return ctags
 }
-
-// func (s *Serializer) getMetricGroupTag(m cua.Metric) string {
-// 	for _, t := range m.TagList() {
-// 		if t.Key == "input_metric_group" {
-// 			return t.Value
-// 		}
-// 	}
-// 	if m.Name() != "" && m.Name() != m.Origin() {
-// 		// what the plugin identifies a subgroup of metrics as, some have multiple names
-// 		// e.g. internal, smart, aws, etc.
-// 		return m.Name()
-// 	}
-// 	return ""
-// }

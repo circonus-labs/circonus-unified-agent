@@ -10,7 +10,7 @@ Agent metrics are the internal representation used to model data during processi
 
 * **Timestamp**: Date and time associated with the fields.
 
-This metric type exists only in memory and must be converted to a concrete representation in order to be transmitted or viewed.  To achieve this the agent provides several [output data formats][] sometimes referred to as *serializers*.  The default serializer converts to [InfluxDB Line Protocol][line protocol] which provides a high performance and one-to-one direct mapping from agent metrics.
+This metric type exists only in memory and must be converted to a concrete representation in order to be transmitted or viewed.  To achieve this the agent provides several [output data formats][] sometimes referred to as *serializers*.  The default serializer converts to [Circonus][line protocol] which provides a high performance and one-to-one direct mapping from agent metrics.
 
 [output data formats]: /docs/DATA_FORMATS_OUTPUT.md
-[line protocol]: /plugins/serializers/influx
+[line protocol]: /plugins/serializers/circonus

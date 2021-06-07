@@ -89,7 +89,7 @@ type Ping struct {
 	Size *int
 
 	// Privileged mode
-	Privileged bool
+	Privileged *bool
 
 	// for Direct Metrics
 	metricDestination *trapmetrics.TrapMetrics
@@ -193,7 +193,11 @@ func (p *Ping) nativePing(ctx context.Context, destination string) (*pingStats, 
 		return nil, fmt.Errorf("failed to create new pinger: %w", err)
 	}
 
-	pinger.SetPrivileged(p.Privileged)
+	if p.Privileged != nil {
+		pinger.SetPrivileged(*p.Privileged)
+	} else {
+		pinger.SetPrivileged(true)
+	}
 
 	if p.IPv6 {
 		pinger.SetNetwork("ip6")
@@ -259,16 +263,20 @@ func (p *Ping) addStats(acc cua.Accumulator, fields map[string]interface{}, tags
 			}
 		}
 	}
+
 	if p.Count > 1 {
+		htags := make(trapmetrics.Tags, len(mtags)+1)
+		copy(htags, mtags)
+		htags = append(htags, trapmetrics.Tag{Category: "units", Value: "milliseconds"})
 		if stats != nil {
 			for pktNum, rtt := range stats.Rtts {
-				if err := p.metricDestination.HistogramRecordTiming("rtt", mtags, float64(rtt)/float64(time.Millisecond)); err != nil {
+				if err := p.metricDestination.HistogramRecordTiming("rtt", htags, float64(rtt)/float64(time.Millisecond)); err != nil {
 					p.Log.Warnf("setting histogram metric (rtt %d): %s", pktNum, err)
 				}
 			}
 		} else if rtts != nil {
 			for pktNum, rtt := range *rtts {
-				if err := p.metricDestination.HistogramRecordTiming("rtt", mtags, rtt); err != nil {
+				if err := p.metricDestination.HistogramRecordTiming("rtt", htags, rtt); err != nil {
 					p.Log.Warnf("setting histogram metric (rtt %d): %s", pktNum, err)
 				}
 			}

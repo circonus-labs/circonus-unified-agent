@@ -17,8 +17,8 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/internal"
 	circmgr "github.com/circonus-labs/circonus-unified-agent/internal/circonus"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
+	"github.com/circonus-labs/go-trapmetrics"
 	"github.com/go-ping/ping"
-	"github.com/maier/go-trapmetrics"
 )
 
 const (

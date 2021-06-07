@@ -10,11 +10,10 @@ import (
 	"time"
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
-	"github.com/maier/go-trapmetrics"
+	"github.com/circonus-labs/circonus-unified-agent/testutil"
+	"github.com/circonus-labs/go-trapmetrics"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/circonus-labs/circonus-unified-agent/testutil"
 )
 
 const (

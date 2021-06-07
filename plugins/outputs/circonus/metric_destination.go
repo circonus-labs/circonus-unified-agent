@@ -7,7 +7,7 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/config"
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	circmgr "github.com/circonus-labs/circonus-unified-agent/internal/circonus"
-	"github.com/maier/go-trapmetrics"
+	"github.com/circonus-labs/go-trapmetrics"
 )
 
 type metricDestination struct {

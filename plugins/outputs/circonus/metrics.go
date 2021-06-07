@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
-	"github.com/maier/go-trapmetrics"
+	"github.com/circonus-labs/go-trapmetrics"
 )
 
 func (c *Circonus) metricProcessor(id int, metrics []cua.Metric) int64 {

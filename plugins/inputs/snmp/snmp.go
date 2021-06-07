@@ -19,8 +19,8 @@ import (
 	circmgr "github.com/circonus-labs/circonus-unified-agent/internal/circonus"
 	"github.com/circonus-labs/circonus-unified-agent/internal/snmp"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
+	"github.com/circonus-labs/go-trapmetrics"
 	"github.com/gosnmp/gosnmp"
-	"github.com/maier/go-trapmetrics"
 )
 
 const description = `Retrieves SNMP values from remote agents`

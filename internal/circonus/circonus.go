@@ -16,8 +16,8 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/models"
 	"github.com/circonus-labs/go-apiclient"
-	"github.com/maier/go-trapcheck"
-	"github.com/maier/go-trapmetrics"
+	"github.com/circonus-labs/go-trapcheck"
+	"github.com/circonus-labs/go-trapmetrics"
 )
 
 var ch *Circonus

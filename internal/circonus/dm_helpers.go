@@ -3,7 +3,7 @@ package circonus
 import (
 	"time"
 
-	"github.com/maier/go-trapmetrics"
+	"github.com/circonus-labs/go-trapmetrics"
 )
 
 // Contains helpers for direct metric input plugins

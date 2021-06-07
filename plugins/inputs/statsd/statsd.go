@@ -19,7 +19,7 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/parsers/graphite"
 	"github.com/circonus-labs/circonus-unified-agent/selfstat"
-	"github.com/maier/go-trapmetrics"
+	"github.com/circonus-labs/go-trapmetrics"
 )
 
 const (

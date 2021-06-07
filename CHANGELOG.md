@@ -1,3 +1,21 @@
+# v0.0.32
+
+* upd: switch trap packages to circonus-labs
+* fix: (config, example confs) win perf registry quota counter name
+* feat: ping direct metric mode
+  * add: units tag to rtt histogram
+  * upd: default privileged to true
+* upd: (example confs) cache and trace paths
+* fix: (circmgr) don't use empty metric group for tag
+* doc: add linux support mention back into readme
+* fix: removing the Windows OSI `--app` flag
+* feat: circonus serializer (use for `--test`)
+* upd: default config directory for windows
+* doc: update WINDOWS_SERVICE.md
+* upd: CIRC-6586 FreeBSD service definition - address PID issue whereby restarting or stopping would not work as expected
+* upd: CIRC-6586 MacOS service definition - convention is to use a fully qualified service name that matches the LaunchDaemon file name
+* upd: CIRC-6586 freebsd installer - remove escaping that prevented commands from being executed properly
+
 # v0.0.31
 
 * upd: rename systemd/init service defs to indicate they are for linux

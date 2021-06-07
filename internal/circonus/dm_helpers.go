@@ -32,6 +32,9 @@ func ConvertTags(pluginID, metricGroup string, tags map[string]string) trapmetri
 	if len(tags) == 0 && pluginID == "" {
 		return ctags
 	}
+	if metricGroup == "" {
+		metricGroup = pluginID
+	}
 
 	ctags = make(trapmetrics.Tags, 0)
 	haveInputMetricGroup := false
@@ -46,7 +49,7 @@ func ConvertTags(pluginID, metricGroup string, tags map[string]string) trapmetri
 	if pluginID != "" {
 		ctags = append(ctags, trapmetrics.Tag{Category: "input_plugin", Value: pluginID})
 	}
-	if !haveInputMetricGroup {
+	if !haveInputMetricGroup && metricGroup != "" {
 		if pluginID != "" && pluginID != metricGroup {
 			ctags = append(ctags, trapmetrics.Tag{Category: "input_metric_group", Value: metricGroup})
 		}

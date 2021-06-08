@@ -11,12 +11,12 @@ updates:
     schedule:
       interval: "daily"
     allow:
-      - dependency_name: "github.com/circonus-labs/go-apiclient"
-      - dependency_name: "github.com/circonus-labs/go-trapcheck"
-      - dependency_name: "github.com/circonus-labs/go-trapmetrics"
-      - dependency_name: "github.com/shirou/gopsutil/v3"
-      - dependency_name: "github.com/go-ping/ping"
-      - dependency_name: "github.com/gosnmp/gosnmp"
+      - dependency-name: "github.com/circonus-labs/go-apiclient"
+      - dependency-name: "github.com/circonus-labs/go-trapcheck"
+      - dependency-name: "github.com/circonus-labs/go-trapmetrics"
+      - dependency-name: "github.com/shirou/gopsutil/v3"
+      - dependency-name: "github.com/go-ping/ping"
+      - dependency-name: "github.com/gosnmp/gosnmp"
       
   - package-ecosystem: "github-actions"
     directory: "/"

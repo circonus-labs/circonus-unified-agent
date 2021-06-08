@@ -56,7 +56,7 @@ require (
 	github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d
 	github.com/golang/geo v0.0.0-20190916061304-5b978397cfec
 	github.com/golang/protobuf v1.3.5
-	github.com/google/go-cmp v0.5.2
+	github.com/google/go-cmp v0.5.6
 	github.com/google/go-github/v32 v32.1.0
 	github.com/gopcua/opcua v0.1.12
 	github.com/gorilla/mux v1.6.2
@@ -83,6 +83,7 @@ require (
 	github.com/lib/pq v1.3.0 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1
 	github.com/mdlayher/apcupsd v0.0.0-20200608131503-2bf01da7bf1b
+	github.com/mdlayher/netlink v1.4.1 // indirect
 	github.com/miekg/dns v1.0.14
 	github.com/mitchellh/go-testing-interface v1.0.0 // indirect
 	github.com/morikuni/aec v1.0.0 // indirect
@@ -119,15 +120,17 @@ require (
 	github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c
 	github.com/yuin/gopher-lua v0.0.0-20180630135845-46796da1b0b4 // indirect
 	go.starlark.net v0.0.0-20200901195727-6e684ef5eeee
+	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a // indirect
 	golang.org/x/exp v0.0.0-20200224162631-6cc2880d07d6 // indirect
 	golang.org/x/lint v0.0.0-20200302205851-738671d3881b // indirect
-	golang.org/x/net v0.0.0-20200904194848-62affa334b73
+	golang.org/x/net v0.0.0-20210525063256-abc453219eb5
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys v0.0.0-20210217105451-b926d437f341
-	golang.org/x/text v0.3.3
+	golang.org/x/sys v0.0.0-20210608053332-aa57babbf139
+	golang.org/x/text v0.3.6
 	golang.org/x/tools v0.0.0-20200317043434-63da46f3035e // indirect
-	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20200205215550-e35592f146e4
+	golang.zx2c4.com/wireguard v0.0.20200121 // indirect
+	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20210506160403-92e472f520a5
 	google.golang.org/api v0.20.0
 	google.golang.org/genproto v0.0.0-20200513103714-09dca8ec2884
 	google.golang.org/grpc v1.33.1

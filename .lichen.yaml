@@ -1,0 +1,25 @@
+allow:
+  # on osi approved list
+  - "Apache-2.0"
+  - "MIT"
+  - "BSD-2-Clause"
+  - "BSD-2-Clause-FreeBSD" # BSD-2-Clause
+  - "BSD-3-Clause"
+  - "ISC"
+  - "EPL-1.0" # eclipse public license
+  - "MPL-2.0" # mozilla public license
+  - "CC-BY-SA-4.0" # creative commons sharealike 
+  - "Zlib"
+  # not on osi approved list
+  - "OpenSSL"
+
+override:
+  - path: "github.com/wvanbergen/kazoo-go" # file named "MIT-LICENSE"
+    licenses: ["MIT"]
+  - path: "github.com/harlow/kinesis-consumer" # file named LICENSE (not in expected format)
+    licenses: ["MIT"] # older version used had file "MIT-LICENSE"
+  - path: "github.com/goburrow/modbus" # file named LICENSE (not in expected format)
+    licenses: ["BSD-3-Clause"]
+  - path: "github.com/couchbase/goutils" # file named LICENSE.md (not expected format)
+    licenses: ["Apache-2.0"]
+

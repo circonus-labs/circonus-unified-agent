@@ -51,8 +51,8 @@ type Number struct {
 }
 
 type ReadWaitCloser struct {
-	pipeReader *io.PipeReader
 	wg         sync.WaitGroup
+	pipeReader *io.PipeReader
 }
 
 // SetVersion sets the agent version

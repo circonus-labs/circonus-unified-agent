@@ -29,11 +29,11 @@ builds:
             - -s
             - -w
             - -extldflags "-static"
-            - -X main.version={{.Version}}
-            - -X main.commit={{.ShortCommit}}
-            - -X main.branch={{.Branch}}
-            - -X main.buildDate={{.Date}}
-            - -X main.buildTag={{.Tag}}
+            - -X github.com/circonus-labs/circonus-unified-agent/internal/release.version={{.Version}}
+            - -X github.com/circonus-labs/circonus-unified-agent/internal/release.commit={{.ShortCommit}}
+            - -X github.com/circonus-labs/circonus-unified-agent/internal/release.branch={{.Branch}}
+            - -X github.com/circonus-labs/circonus-unified-agent/internal/release.buildDate={{.Date}}
+            - -X github.com/circonus-labs/circonus-unified-agent/internal/release.buildTag={{.Tag}}
 dockers:
     -
         goos: linux

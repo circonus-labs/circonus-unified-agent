@@ -14,34 +14,36 @@ import (
 
 	"github.com/circonus-labs/circonus-unified-agent/config"
 	"github.com/circonus-labs/circonus-unified-agent/cua"
+	"github.com/circonus-labs/circonus-unified-agent/internal/release"
 	"github.com/circonus-labs/circonus-unified-agent/models"
 	"github.com/circonus-labs/go-apiclient"
 	"github.com/circonus-labs/go-trapcheck"
 	"github.com/circonus-labs/go-trapmetrics"
+	"github.com/shirou/gopsutil/v3/host"
 )
 
 var ch *Circonus
 
 type Circonus struct {
+	sync.Mutex
+	logger           cua.Logger
+	brokerTLSConfigs map[string]*tls.Config
 	circCfg          *config.CirconusConfig
 	apiCfg           *apiclient.Config
 	brokerCIDrx      string
-	brokerTLSConfigs map[string]*tls.Config
 	globalTags       trapmetrics.Tags
 	ready            bool
-	logger           cua.Logger
-	sync.Mutex
 }
 
 type MetricDestConfig struct {
-	PluginID        string  // plugin id or name (e.g. snmp, ping, etc.)
-	InstanceID      string  // plugin instance id (all plugins require an instance_id setting)
+	DebugAPI        *bool   // allow override of api debugging per output
+	TraceMetrics    *string // allow override of metric tracing per output
 	MetricGroupID   string  // metric group id (some plugins produce multiple "metric groups")
 	APIToken        string  // allow override of api token for a specific plugin (dm input or circonus output)
 	Broker          string  // allow override of broker for a specific plugin (dm input or circonus output)
 	CheckNamePrefix string  // allow override of check name prefix for a specific plugin (dm input or circonus output)
-	DebugAPI        *bool   // allow override of api debugging per output
-	TraceMetrics    *string // allow override of metric tracing per output
+	PluginID        string  // plugin id or name (e.g. snmp, ping, etc.)
+	InstanceID      string  // plugin instance id (all plugins require an instance_id setting)
 }
 
 // Logshim is for api and traps - it uses the info level and
@@ -309,9 +311,6 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 		checkType = append(checkType, metricGroupID)
 	}
 	checkType = append(checkType, runtime.GOOS)
-	// if pluginID == "host" {
-	// 	checkType = append(checkType, runtime.GOOS)
-	// }
 
 	checkDisplayName := []string{checkNamePrefix, pluginID}
 	if instanceID != "" && instanceID != pluginID {
@@ -331,17 +330,20 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 			}
 		}
 	}
-	if !strings.Contains(strings.Join(searchTags, ","), "__instance_id") {
-		searchTags = append(searchTags, "__instance_id:"+strings.ToLower(instanceID))
+	if !strings.Contains(strings.Join(searchTags, ","), "_instance_id") {
+		searchTags = append(searchTags, "_instance_id:"+strings.ToLower(instanceID))
 	}
 
 	// additional tags to ADD to a check (metadata, DESCRIBE a check)
 	checkTags := []string{
-		"__os:" + runtime.GOOS,
-		"__plugin_id:" + pluginID,
+		"_plugin_id:" + pluginID,
 	}
 	if metricGroupID != "" {
-		checkTags = append(checkTags, "__metric_group:"+metricGroupID)
+		checkTags = append(checkTags, "_metric_group:"+metricGroupID)
+	}
+
+	if pluginID == "host" {
+		checkTags = append(checkTags, getOSCheckTags()...)
 	}
 
 	checkTarget := checkNamePrefix
@@ -428,6 +430,14 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 		saveCheckConfig(destKey, bundle)
 	}
 
+	if pluginID == "host" {
+		if b, err := updateCheckTags(circAPI, bundle, checkTags, logger); err != nil {
+			logger.Warnf("circonus metric destination management moudle: updating check %s", err)
+		} else if b != nil {
+			saveCheckConfig(destKey, b)
+		}
+	}
+
 	// if checks are going to a non-public trap
 	// cache the brokerTLS to use for other checks
 	// so that the api isn't hit for evevry check to pull the broker
@@ -482,4 +492,87 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 
 func MakeDestinationKey(pluginID, instanceID, metricGroupID string) string {
 	return fmt.Sprintf("%s:%s:%s", pluginID, instanceID, metricGroupID)
+}
+
+func getOSCheckTags() []string {
+	ri := release.GetInfo()
+	checkTags := []string{
+		"_os:" + runtime.GOOS,
+		"_agent:" + ri.Name + "-" + ri.Version,
+	}
+
+	hi, err := host.Info()
+	if err != nil {
+		return checkTags
+	}
+	if hi.OS != "" {
+		checkTags = append(checkTags, "_os:"+hi.OS)
+	}
+	if hi.Platform != "" {
+		checkTags = append(checkTags, "_platform:"+strings.ToLower(hi.Platform))
+	}
+	if hi.PlatformFamily != "" {
+		checkTags = append(checkTags, "_platform_family:"+strings.ToLower(hi.PlatformFamily))
+	}
+	if hi.PlatformVersion != "" {
+		checkTags = append(checkTags, "_platform_version:"+strings.ToLower(hi.PlatformVersion))
+	}
+	if hi.KernelVersion != "" {
+		checkTags = append(checkTags, "_kernel_version:"+strings.ToLower(hi.KernelVersion))
+	}
+	if hi.KernelArch != "" {
+		checkTags = append(checkTags, "_kernel_arch:"+strings.ToLower(hi.KernelArch))
+	}
+	if hi.VirtualizationSystem != "" {
+		checkTags = append(checkTags, "_virt_sys:"+strings.ToLower(hi.VirtualizationSystem))
+	}
+	if hi.VirtualizationRole != "" {
+		checkTags = append(checkTags, "_virt_role:"+strings.ToLower(hi.VirtualizationRole))
+	}
+
+	return checkTags
+}
+
+func updateCheckTags(client *apiclient.API, bundle *apiclient.CheckBundle, tags []string, _ cua.Logger) (*apiclient.CheckBundle, error) {
+
+	update := false
+	for _, ostag := range tags {
+		found := false
+		ostagParts := strings.SplitN(ostag, ":", 2)
+		for j, ctag := range bundle.Tags {
+			if ostag == ctag {
+				found = true
+				break
+			}
+
+			ctagParts := strings.SplitN(ctag, ":", 2)
+			if len(ostagParts) == len(ctagParts) {
+				if ostagParts[0] == ctagParts[0] {
+					if ostagParts[1] != ctagParts[1] {
+						// logger.Warnf("modifying tag: new: %v old: %v", ostagParts, ctagParts)
+						bundle.Tags[j] = ostag
+						update = true // but force update since we're modifying a tag
+						found = true
+						break
+					}
+				}
+
+			}
+		}
+		if !found {
+			// logger.Warnf("adding missing tag: %s curr: %v", ostag, bundle.Tags)
+			bundle.Tags = append(bundle.Tags, ostag)
+			update = true
+		}
+	}
+
+	if update {
+		b, err := client.UpdateCheckBundle(bundle)
+		if err != nil {
+			return nil, err
+		}
+		return b, nil
+	}
+
+	return nil, nil
 }

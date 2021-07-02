@@ -22,6 +22,7 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/internal"
 	"github.com/circonus-labs/circonus-unified-agent/internal/circonus"
 	"github.com/circonus-labs/circonus-unified-agent/internal/goplugin"
+	"github.com/circonus-labs/circonus-unified-agent/internal/release"
 	"github.com/circonus-labs/circonus-unified-agent/logger"
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/aggregators/all"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
@@ -247,7 +248,7 @@ func formatFullVersion() string {
 		if commit == "" {
 			commit = "unknown"
 		}
-		if buildTag != "" {
+		if buildTag == "" {
 			buildTag = "n/a"
 		}
 		git := fmt.Sprintf("(git: %s %s %s)", branch, commit, buildTag)
@@ -261,7 +262,19 @@ func formatFullVersion() string {
 	return strings.Join(parts, " ")
 }
 
+func setReleaseInfo() {
+	ri := release.GetInfo()
+
+	version = ri.Version
+	commit = ri.Commit
+	branch = ri.Branch
+	buildDate = ri.BuildDate
+	buildTag = ri.BuildTag
+}
+
 func main() {
+	setReleaseInfo()
+
 	flag.Usage = func() { usageExit(0) }
 	flag.Parse()
 	args := flag.Args()

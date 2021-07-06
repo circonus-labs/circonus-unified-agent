@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"math"
@@ -340,8 +341,8 @@ type RTableRow struct {
 }
 
 type walkError struct {
-	msg string
 	err error
+	msg string
 }
 
 func (e *walkError) Error() string {
@@ -691,7 +692,7 @@ func fieldConvert(conv string, sv gosnmp.SnmpPDU) (interface{}, error) {
 
 	if conv == "" {
 		if bs, ok := v.([]byte); ok {
-			return string(bs), nil
+			return hex.EncodeToString(bs), nil
 		}
 		return v, nil
 	}
@@ -817,11 +818,11 @@ func fieldConvert(conv string, sv gosnmp.SnmpPDU) (interface{}, error) {
 }
 
 type snmpTableCache struct {
+	err     error
 	mibName string
 	oidNum  string
 	oidText string
 	fields  []Field
-	err     error
 }
 
 var snmpTableCaches map[string]snmpTableCache
@@ -910,12 +911,12 @@ func snmpTableCall(oid string) (mibName string, oidNum string, oidText string, f
 }
 
 type TranslateItem struct {
+	err        error
+	valMap     map[string]string
 	mibName    string
 	oidNum     string
 	oidText    string
 	conversion string
-	valMap     map[string]string
-	err        error
 }
 
 var snmpTranslateCachesLock sync.Mutex

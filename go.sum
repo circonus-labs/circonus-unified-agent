@@ -123,8 +123,9 @@ github.com/circonus-labs/circonus-gometrics v2.3.1+incompatible/go.mod h1:nmEj6D
 github.com/circonus-labs/circonusllhist v0.1.3/go.mod h1:kMXHVDlOchFAehlya5ePtbp5jckzBHf4XRpQvBOLI+I=
 github.com/circonus-labs/go-apiclient v0.7.15 h1:r9sUdc+EDM0tL6Z6u03dac8fxYvlz1kPhxlNwkoIoqM=
 github.com/circonus-labs/go-apiclient v0.7.15/go.mod h1:RFgkvdYEkimzgu3V2vVYlS1bitjOz1SF6uw109ieNeY=
-github.com/circonus-labs/go-trapcheck v0.0.1 h1:GvXzsbz8i3RmEnR+RWSRCOCfFxZW6vad0cRlshVnmm0=
 github.com/circonus-labs/go-trapcheck v0.0.1/go.mod h1:CVuyNYI9UsJhXTJJojLeHaSryo47XWNJe94YjxsXEv0=
+github.com/circonus-labs/go-trapcheck v0.0.4 h1:jJs4tgBBWomh3zLsaPKKUIK8qOnjZii0TxXYgvrVkMA=
+github.com/circonus-labs/go-trapcheck v0.0.4/go.mod h1:CVuyNYI9UsJhXTJJojLeHaSryo47XWNJe94YjxsXEv0=
 github.com/circonus-labs/go-trapmetrics v0.0.1 h1:H6SyGF8ChkIS58LP/iwexX02yGda6QDqFc1AgubvK+s=
 github.com/circonus-labs/go-trapmetrics v0.0.1/go.mod h1:i4iLXXqAGrEvaekuxJPKMpZEeayuK321SJOU+T+LF0U=
 github.com/cisco-ie/nx-telemetry-proto v0.0.0-20190531143454-82441e232cf6 h1:57RI0wFkG/smvVTcz7F43+R0k+Hvci3jAVQF9lyMoOo=

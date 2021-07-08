@@ -21,10 +21,9 @@ type Credentials interface {
 }
 
 type ServiceAccount struct {
-	AccountID  string
 	PrivateKey *rsa.PrivateKey
-
-	auth *AuthToken
+	auth       *AuthToken
+	AccountID  string
 }
 
 type TokenCreds struct {

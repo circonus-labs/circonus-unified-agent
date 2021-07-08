@@ -43,32 +43,25 @@ var (
 )
 
 type DCOS struct {
-	ClusterURL string `toml:"cluster_url"`
-
+	appFilter       filter.Filter
+	client          Client
+	containerFilter filter.Filter
+	nodeFilter      filter.Filter
+	creds           Credentials
+	tls.ClientConfig
+	TokenFile                string
 	ServiceAccountID         string `toml:"service_account_id"`
 	ServiceAccountPrivateKey string
-
-	TokenFile string
-
-	NodeInclude      []string
-	NodeExclude      []string
-	ContainerInclude []string
-	ContainerExclude []string
-	AppInclude       []string
-	AppExclude       []string
-
-	MaxConnections  int
-	ResponseTimeout internal.Duration
-	tls.ClientConfig
-
-	client Client
-	creds  Credentials
-
-	initialized     bool
-	nodeFilter      filter.Filter
-	containerFilter filter.Filter
-	appFilter       filter.Filter
-	// taskNameFilter  filter.Filter
+	ClusterURL               string `toml:"cluster_url"`
+	NodeExclude              []string
+	NodeInclude              []string
+	AppInclude               []string
+	ContainerExclude         []string
+	ContainerInclude         []string
+	AppExclude               []string
+	MaxConnections           int
+	ResponseTimeout          internal.Duration
+	initialized              bool
 }
 
 func (d *DCOS) Description() string {
@@ -239,9 +232,7 @@ func (d *DCOS) createPoints(m *Metrics) []*point {
 			fieldKey += "_bytes"
 		}
 
-		if strings.HasPrefix(fieldKey, "dcos_metrics_module_") {
-			fieldKey = strings.TrimPrefix(fieldKey, "dcos_metrics_module_")
-		}
+		fieldKey = strings.TrimPrefix(fieldKey, "dcos_metrics_module_")
 
 		tagset := make([]string, 0, len(tags))
 		for k, v := range tags {

@@ -25,11 +25,11 @@ func AuthHandler(username, password, realm string, onError BasicAuthErrorFunc) f
 }
 
 type basicAuthHandler struct {
+	next     http.Handler
+	onError  BasicAuthErrorFunc
 	username string
 	password string
 	realm    string
-	onError  BasicAuthErrorFunc
-	next     http.Handler
 }
 
 func (h *basicAuthHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
@@ -64,9 +64,9 @@ func GenericAuthHandler(credentials string, onError GenericAuthErrorFunc) func(h
 
 // Generic auth scheme handler - exact match on `Authorization: <credentials>`
 type genericAuthHandler struct {
-	credentials string
-	onError     GenericAuthErrorFunc
 	next        http.Handler
+	onError     GenericAuthErrorFunc
+	credentials string
 }
 
 func (h *genericAuthHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
@@ -100,9 +100,9 @@ func IPRangeHandler(network []*net.IPNet, onError ErrorFunc) func(h http.Handler
 }
 
 type ipRangeHandler struct {
-	network []*net.IPNet
-	onError ErrorFunc
 	next    http.Handler
+	onError ErrorFunc
+	network []*net.IPNet
 }
 
 func (h *ipRangeHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {

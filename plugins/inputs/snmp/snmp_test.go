@@ -22,8 +22,8 @@ import (
 )
 
 type testSNMPConnection struct {
-	host   string
 	values map[string]interface{}
+	host   string
 }
 
 func (tsc *testSNMPConnection) Host() string {

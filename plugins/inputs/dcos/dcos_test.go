@@ -49,9 +49,9 @@ func (c *mockClient) GetAppMetrics(ctx context.Context, node, container string) 
 
 func TestAddNodeMetrics(t *testing.T) {
 	var tests = []struct {
-		name    string
 		metrics *Metrics
 		check   func(*testutil.Accumulator) []bool
+		name    string
 	}{
 		{
 			name: "basic datapoint conversion",
@@ -209,9 +209,9 @@ func TestAddNodeMetrics(t *testing.T) {
 
 func TestAddContainerMetrics(t *testing.T) {
 	var tests = []struct {
-		name    string
 		metrics *Metrics
 		check   func(*testutil.Accumulator) []bool
+		name    string
 	}{
 		{
 			name: "container",
@@ -281,9 +281,9 @@ func TestAddContainerMetrics(t *testing.T) {
 
 func TestAddAppMetrics(t *testing.T) {
 	var tests = []struct {
-		name    string
 		metrics *Metrics
 		check   func(*testutil.Accumulator) []bool
+		name    string
 	}{
 		{
 			name: "tags are optional",
@@ -356,11 +356,11 @@ func TestAddAppMetrics(t *testing.T) {
 
 func TestGatherFilterNode(t *testing.T) {
 	var tests = []struct {
+		client      Client
+		check       func(*testutil.Accumulator) []bool
 		name        string
 		nodeInclude []string
 		nodeExclude []string
-		client      Client
-		check       func(*testutil.Accumulator) []bool
 	}{
 		{
 			name: "cluster without nodes has no metrics",

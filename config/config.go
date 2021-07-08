@@ -208,6 +208,7 @@ type CirconusConfig struct {
 	APITLSCA        string            `toml:"api_tls_ca"`        // optional: api ca cert file
 	CacheConfigs    bool              `toml:"cache_configs"`     // optional: cache check bundle configurations - efficient for large number of inputs
 	CacheDir        string            `toml:"cache_dir"`         // optional: where to cache the check bundle configurations - must be read/write for user running cua
+	CacheNoVerify   bool              `toml:"cache_no_verify"`   // optional: don't verify checks loaded from cache, just use them
 	DebugAPI        bool              `toml:"debug_api"`         // optional: debug circonus api calls
 	TraceMetrics    string            `toml:"trace_metrics"`     // optional: output json sent to broker (path to write files to or `-` for logger)
 	DebugChecks     map[string]string `toml:"debug_checks"`      // optional: use when instructed by circonus support

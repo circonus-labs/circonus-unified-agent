@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"math"
@@ -340,8 +341,8 @@ type RTableRow struct {
 }
 
 type walkError struct {
-	msg string
 	err error
+	msg string
 }
 
 func (e *walkError) Error() string {
@@ -377,10 +378,21 @@ func (s *Snmp) Description() string {
 	return description
 }
 
+func isDone(ctx context.Context) bool {
+	select {
+	case <-ctx.Done():
+		return true
+	default:
+		return false
+	}
+}
+
 // Gather retrieves all the configured fields and tables.
 // Any error encountered does not halt the process. The errors are accumulated
 // and returned at the end.
 func (s *Snmp) Gather(ctx context.Context, acc cua.Accumulator) error {
+	gstart := time.Now()
+
 	if err := s.init(); err != nil {
 		return err
 	}
@@ -396,6 +408,10 @@ func (s *Snmp) Gather(ctx context.Context, acc cua.Accumulator) error {
 				return
 			}
 
+			if isDone(ctx) {
+				return
+			}
+
 			// First is the top-level fields. We treat the fields as table prefixes with an empty index.
 			t := Table{
 				Name:   s.Name,
@@ -406,15 +422,25 @@ func (s *Snmp) Gather(ctx context.Context, acc cua.Accumulator) error {
 				acc.AddError(fmt.Errorf("agent %s: %w", agent, err))
 			}
 
+			if isDone(ctx) {
+				return
+			}
+
 			// Now is the real tables.
 			for _, t := range s.Tables {
 				if err := s.gatherTable(acc, gs, t, topTags, true); err != nil {
 					acc.AddError(fmt.Errorf("agent %s: gathering table %s: %w", agent, t.Name, err))
 				}
+				if isDone(ctx) {
+					return
+				}
 			}
 		}(i, agent)
 	}
 	wg.Wait()
+
+	gdur := time.Since(gstart)
+	fdur := ""
 
 	if s.DirectMetrics && s.metricDestination != nil {
 		if s.flushDelay > time.Duration(0) {
@@ -425,9 +451,22 @@ func (s *Snmp) Gather(ctx context.Context, acc cua.Accumulator) error {
 			case <-time.After(fd):
 			}
 		}
+		fstart := time.Now()
 		if _, err := s.metricDestination.Flush(ctx); err != nil {
 			s.Log.Warnf("submitting metrics: %s", err)
 		}
+		fdur = time.Since(fstart).String()
+	}
+
+	gatherDur := time.Since(gstart)
+
+	if gatherDur >= 1*time.Minute {
+		msg := "snmp get: " + gdur.String()
+		if fdur != "" {
+			msg += " - flush: " + fdur
+		}
+		msg += " - total: " + gatherDur.String()
+		s.Log.Warn(msg)
 	}
 
 	return nil
@@ -691,7 +730,7 @@ func fieldConvert(conv string, sv gosnmp.SnmpPDU) (interface{}, error) {
 
 	if conv == "" {
 		if bs, ok := v.([]byte); ok {
-			return string(bs), nil
+			return hex.EncodeToString(bs), nil
 		}
 		return v, nil
 	}
@@ -817,11 +856,11 @@ func fieldConvert(conv string, sv gosnmp.SnmpPDU) (interface{}, error) {
 }
 
 type snmpTableCache struct {
+	err     error
 	mibName string
 	oidNum  string
 	oidText string
 	fields  []Field
-	err     error
 }
 
 var snmpTableCaches map[string]snmpTableCache
@@ -910,12 +949,12 @@ func snmpTableCall(oid string) (mibName string, oidNum string, oidText string, f
 }
 
 type TranslateItem struct {
+	err        error
+	valMap     map[string]string
 	mibName    string
 	oidNum     string
 	oidText    string
 	conversion string
-	valMap     map[string]string
-	err        error
 }
 
 var snmpTranslateCachesLock sync.Mutex

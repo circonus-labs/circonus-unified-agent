@@ -59,8 +59,8 @@ type Circonus struct {
 
 // processors handle incoming batches
 type processors struct {
-	metrics chan []cua.Metric
 	wg      sync.WaitGroup
+	metrics chan []cua.Metric
 }
 
 // Init performs initialization of a Circonus client.
@@ -217,6 +217,7 @@ func (c *Circonus) emitAgentVersion() {
 	if agentDestination != nil {
 		ts := time.Now()
 		_ = agentDestination.metrics.TextSet("cua_version", nil, agentVersion, &ts)
+		agentDestination.queuedMetrics++
 	}
 }
 

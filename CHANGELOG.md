@@ -1,3 +1,19 @@
+# v0.0.33
+
+* add: check tags for host check with os meta data
+* add: (snmp) context awareness during collection
+* add: (snmp) log timing msg for gather taking >1m
+* fix: (circout) lint struct alignment
+* add: (circmgr) cache_no_verify to use checks from cache w/o verifying via API
+* fix: (snmp) convert octet-string to hex to avoid control characters emitted in metrics
+* upd: dependencies (go-trapcheck,go-trapmetrics)
+* fix: lint issues
+* build(deps): bump github.com/shirou/gopsutil/v3 from 3.21.5 to 3.21.6
+* fix: adding basic parsing for Windows machines w/o IE
+* build(deps): bump github.com/gosnmp/gosnmp from 1.31.0 to 1.32.0
+* build(deps): bump github.com/shirou/gopsutil/v3 from 3.21.4 to 3.21.5
+* add: dependabot config
+
 # v0.0.32
 
 * upd: switch trap packages to circonus-labs

@@ -1,5 +1,6 @@
 # v0.0.33
 
+* add: check tags for host check with os meta data
 * add: (snmp) context awareness during collection
 * add: (snmp) log timing msg for gather taking >1m
 * fix: (circout) lint struct alignment

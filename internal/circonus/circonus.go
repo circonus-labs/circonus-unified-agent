@@ -371,9 +371,16 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 	}
 
 	var cc *apiclient.CheckBundle
+	var tch *trapcheck.TrapCheck
 
-	if bundle != nil {
-		// cached bundle, use the cid
+	switch {
+	case bundle != nil && ch.circCfg.CacheNoVerify: // use cached check bundle and don't verify by pulling from API again
+		var err error
+		tch, err = trapcheck.NewFromCheckBundle(tc, bundle)
+		if err != nil {
+			return nil, err
+		}
+	case bundle != nil: // cached bundle, use the cid
 		cc = &apiclient.CheckBundle{
 			CID:  bundle.CID,
 			Tags: checkTags,
@@ -383,7 +390,7 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 				tc.SubmitTLSConfig = tlscfg.Clone()
 			}
 		}
-	} else {
+	default: // find/create check bundle
 		cc = &apiclient.CheckBundle{
 			Type:        strings.Join(checkType, ":"),
 			DisplayName: strings.Join(checkDisplayName, " "),
@@ -415,14 +422,17 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 		}
 	}
 
-	tc.CheckConfig = cc
-	check, err := createCheck(tc)
-	if err != nil {
-		return nil, err
+	if tch == nil {
+		var err error
+		tc.CheckConfig = cc
+		tch, err = createCheck(tc)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if bundle == nil { // it wasn't loaded from cache
-		b, err := check.GetCheckBundle()
+		b, err := tch.GetCheckBundle()
 		if err != nil {
 			return nil, fmt.Errorf("circonus metric destination management module: unable to get check bundle: %w", err)
 		}
@@ -442,7 +452,7 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 	// cache the brokerTLS to use for other checks
 	// so that the api isn't hit for evevry check to pull the broker
 	if _, ok := ch.brokerTLSConfigs[bundle.Brokers[0]]; !ok {
-		t, err := check.GetBrokerTLSConfig()
+		t, err := tch.GetBrokerTLSConfig()
 		if err != nil {
 			return nil, fmt.Errorf("circonus metric destination management module: unable to get broker tls config: %w", err)
 		}
@@ -456,7 +466,7 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 
 	// Trap Metrics
 	tm := &trapmetrics.Config{
-		Trap:   check,
+		Trap:   tch,
 		Logger: instanceLogger,
 	}
 	metrics, err := createMetrics(tm)
@@ -482,7 +492,7 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 			}
 			circAPI.Debug = debugAPI
 			instanceLogger.debugAPI = debugAPI
-			_, _ = check.TraceMetrics(traceMetrics)
+			_, _ = tch.TraceMetrics(traceMetrics)
 			ch.logger.Infof("set debug:%t trace:%s on check %s", debugAPI, traceMetrics, checkUUID)
 		}
 	}
@@ -498,7 +508,7 @@ func getOSCheckTags() []string {
 	ri := release.GetInfo()
 	checkTags := []string{
 		"_os:" + runtime.GOOS,
-		"_agent:" + ri.Name + "-" + ri.Version,
+		"_agent:" + ri.Name + "-" + strings.ToLower(ri.Version),
 	}
 
 	hi, err := host.Info()
@@ -533,7 +543,7 @@ func getOSCheckTags() []string {
 	return checkTags
 }
 
-func updateCheckTags(client *apiclient.API, bundle *apiclient.CheckBundle, tags []string, _ cua.Logger) (*apiclient.CheckBundle, error) {
+func updateCheckTags(client *apiclient.API, bundle *apiclient.CheckBundle, tags []string, logger cua.Logger) (*apiclient.CheckBundle, error) {
 
 	update := false
 	for _, ostag := range tags {
@@ -549,7 +559,7 @@ func updateCheckTags(client *apiclient.API, bundle *apiclient.CheckBundle, tags 
 			if len(ostagParts) == len(ctagParts) {
 				if ostagParts[0] == ctagParts[0] {
 					if ostagParts[1] != ctagParts[1] {
-						// logger.Warnf("modifying tag: new: %v old: %v", ostagParts, ctagParts)
+						logger.Warnf("modifying tag: new: %v old: %v", ostagParts, ctagParts)
 						bundle.Tags[j] = ostag
 						update = true // but force update since we're modifying a tag
 						found = true
@@ -560,7 +570,7 @@ func updateCheckTags(client *apiclient.API, bundle *apiclient.CheckBundle, tags 
 			}
 		}
 		if !found {
-			// logger.Warnf("adding missing tag: %s curr: %v", ostag, bundle.Tags)
+			logger.Warnf("adding missing tag: %s curr: %v", ostag, bundle.Tags)
 			bundle.Tags = append(bundle.Tags, ostag)
 			update = true
 		}

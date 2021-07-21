@@ -337,6 +337,7 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 	// additional tags to ADD to a check (metadata, DESCRIBE a check)
 	checkTags := []string{
 		"_plugin_id:" + pluginID,
+		"_instance_id:" + strings.ToLower(instanceID),
 	}
 	if metricGroupID != "" {
 		checkTags = append(checkTags, "_metric_group:"+metricGroupID)
@@ -515,9 +516,10 @@ func getOSCheckTags() []string {
 	if err != nil {
 		return checkTags
 	}
-	if hi.OS != "" {
-		checkTags = append(checkTags, "_os:"+hi.OS)
-	}
+	// hi.OS is runtime.GOOS, which is added above
+	// if hi.OS != "" {
+	// 	checkTags = append(checkTags, "_os:"+hi.OS)
+	// }
 	if hi.Platform != "" {
 		checkTags = append(checkTags, "_platform:"+strings.ToLower(hi.Platform))
 	}

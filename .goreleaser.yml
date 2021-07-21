@@ -90,7 +90,7 @@ nfpms:
       formats:
         - deb
         - rpm
-      bindir: /opt/circonus/unified-agent
+      bindir: /opt/circonus/unified-agent/sbin
       empty_folders:
         - /opt/circonus/unified-agent/etc/config.d
       contents:

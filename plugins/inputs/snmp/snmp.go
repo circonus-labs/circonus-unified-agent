@@ -439,8 +439,13 @@ func (s *Snmp) Gather(ctx context.Context, acc cua.Accumulator) error {
 	}
 	wg.Wait()
 
-	gdur := time.Since(gstart)
-	fdur := ""
+	stats := map[string]interface{}{"dur_snmp_get": time.Since(gstart).Seconds()}
+	stags := map[string]string{"units": "seconds"}
+	dmtags := trapmetrics.Tags{trapmetrics.Tag{Category: "units", Value: "seconds"}}
+
+	if s.DirectMetrics && s.metricDestination != nil {
+		_ = s.metricDestination.GaugeSet("dur_snmp_get", dmtags, time.Since(gstart).Seconds(), nil)
+	}
 
 	if s.DirectMetrics && s.metricDestination != nil {
 		if s.flushDelay > time.Duration(0) {
@@ -455,19 +460,27 @@ func (s *Snmp) Gather(ctx context.Context, acc cua.Accumulator) error {
 		if _, err := s.metricDestination.Flush(ctx); err != nil {
 			s.Log.Warnf("submitting metrics: %s", err)
 		}
-		fdur = time.Since(fstart).String()
+		_ = s.metricDestination.GaugeSet("dur_last_submit", dmtags, time.Since(fstart).Seconds(), nil)
 	}
 
-	gatherDur := time.Since(gstart)
-
-	if gatherDur >= 1*time.Minute {
-		msg := "snmp get: " + gdur.String()
-		if fdur != "" {
-			msg += " - flush: " + fdur
-		}
-		msg += " - total: " + gatherDur.String()
-		s.Log.Warn(msg)
+	if s.DirectMetrics && s.metricDestination != nil {
+		_ = s.metricDestination.GaugeSet("dur_last_gather", trapmetrics.Tags{}, time.Since(gstart).Seconds(), nil)
+	} else {
+		stats["dur_gather"] = time.Since(gstart).Seconds()
 	}
+
+	// gatherDur := time.Since(gstart)
+
+	// if gatherDur >= 1*time.Minute {
+	// 	msg := "snmp get: " + gdur.String()
+	// 	if fdur != "" {
+	// 		msg += " - flush: " + fdur
+	// 	}
+	// 	msg += " - total: " + gatherDur.String()
+	// 	s.Log.Warn(msg)
+	// }
+
+	acc.AddFields("snmp", stats, stags, time.Now())
 
 	return nil
 }

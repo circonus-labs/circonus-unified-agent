@@ -1,3 +1,10 @@
+# v0.0.34
+
+* fix: location of binary for rpm/deb
+* upd: (circmgr) remove redundant check tags
+* upd: (snmp) send collection duration as metric
+* fix: (snmp test) lint
+
 # v0.0.33
 
 * add: check tags for host check with os meta data

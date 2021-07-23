@@ -30,41 +30,30 @@ const (
 
 // Docker object
 type Docker struct {
-	Endpoint       string
-	ContainerNames []string // deprecated in 1.4; use container_name_include
-
-	GatherServices bool `toml:"gather_services"`
-
-	Timeout        internal.Duration
-	PerDevice      bool     `toml:"perdevice"`
-	Total          bool     `toml:"total"`
-	TagEnvironment []string `toml:"tag_env"`
-	LabelInclude   []string `toml:"docker_label_include"`
-	LabelExclude   []string `toml:"docker_label_exclude"`
-
-	ContainerInclude []string `toml:"container_name_include"`
-	ContainerExclude []string `toml:"container_name_exclude"`
-
-	ContainerStateInclude []string `toml:"container_state_include"`
-	ContainerStateExclude []string `toml:"container_state_exclude"`
-
-	IncludeSourceTag bool `toml:"source_tag"`
-
-	Log cua.Logger
-
-	tlsint.ClientConfig
-
-	newEnvClient func() (Client, error)
-	newClient    func(string, *tls.Config) (Client, error)
-
-	client Client
-	// httpClient      *http.Client
-	engineHost      string
-	serverVersion   string
-	filtersCreated  bool
-	labelFilter     filter.Filter
-	containerFilter filter.Filter
 	stateFilter     filter.Filter
+	containerFilter filter.Filter
+	labelFilter     filter.Filter
+	Log             cua.Logger
+	client          Client
+	newClient       func(string, *tls.Config) (Client, error)
+	newEnvClient    func() (Client, error)
+	tlsint.ClientConfig
+	engineHost            string
+	serverVersion         string
+	Endpoint              string
+	TagEnvironment        []string `toml:"tag_env"`
+	ContainerStateInclude []string `toml:"container_state_include"`
+	ContainerExclude      []string `toml:"container_name_exclude"`
+	ContainerInclude      []string `toml:"container_name_include"`
+	LabelExclude          []string `toml:"docker_label_exclude"`
+	LabelInclude          []string `toml:"docker_label_include"`
+	ContainerStateExclude []string `toml:"container_state_exclude"`
+	Timeout               internal.Duration
+	Total                 bool `toml:"total"`
+	PerDevice             bool `toml:"perdevice"`
+	filtersCreated        bool
+	GatherServices        bool `toml:"gather_services"`
+	IncludeSourceTag      bool `toml:"source_tag"`
 }
 
 // KB, MB, GB, TB, PB...human friendly
@@ -92,9 +81,6 @@ var sampleConfig = `
 
   ## Set to true to collect Swarm metrics(desired_replicas, running_replicas)
   gather_services = false
-
-  ## Only collect metrics for these containers, collect all if empty
-  container_names = []
 
   ## Set the source tag for the metrics to the container ID hostname, eg first 12 chars
   source_tag = true
@@ -902,11 +888,6 @@ func parseSize(sizeStr string) (int64, error) {
 }
 
 func (d *Docker) createContainerFilters() error {
-	// Backwards compatibility for deprecated `container_names` parameter.
-	if len(d.ContainerNames) > 0 {
-		d.ContainerInclude = append(d.ContainerInclude, d.ContainerNames...)
-	}
-
 	filter, err := filter.NewIncludeExcludeFilter(d.ContainerInclude, d.ContainerExclude)
 	if err != nil {
 		return fmt.Errorf("container filters: %w", err)

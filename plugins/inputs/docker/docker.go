@@ -97,7 +97,7 @@ var sampleConfig = `
   container_names = []
 
   ## Set the source tag for the metrics to the container ID hostname, eg first 12 chars
-  source_tag = false
+  source_tag = true
 
   ## Containers to include and exclude. Globs accepted.
   ## Note that an empty array for both will include all containers

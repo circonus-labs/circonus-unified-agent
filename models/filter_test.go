@@ -484,9 +484,9 @@ func TestFilter_FilterTagsPassAndDrop(t *testing.T) {
 
 func BenchmarkFilter(b *testing.B) {
 	tests := []struct {
+		metric cua.Metric
 		name   string
 		filter Filter
-		metric cua.Metric
 	}{
 		{
 			name:   "empty filter",

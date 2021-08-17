@@ -5,11 +5,10 @@ import (
 )
 
 type stat struct {
-	v           int64
+	tags        map[string]string
 	measurement string
 	field       string
-	tags        map[string]string
-	// key         uint64
+	v           int64
 }
 
 func (s *stat) Incr(v int64) {

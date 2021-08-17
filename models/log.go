@@ -9,8 +9,8 @@ import (
 
 // Logger defines a logging structure for plugins.
 type Logger struct {
-	OnErrs []func()
 	Name   string // Name is the plugin name, will be printed in the `[]`.
+	OnErrs []func()
 }
 
 // NewLogger creates a new logger instance

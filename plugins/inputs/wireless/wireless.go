@@ -7,8 +7,8 @@ import (
 
 // Wireless is used to store configuration values.
 type Wireless struct {
-	HostProc string     `toml:"host_proc"`
 	Log      cua.Logger `toml:"-"`
+	HostProc string     `toml:"host_proc"`
 }
 
 var sampleConfig = `

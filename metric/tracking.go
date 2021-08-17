@@ -45,11 +45,11 @@ func debugFinalizer(d *trackingData) {
 }
 
 type trackingData struct {
+	notifyFunc  NotifyFunc
 	id          cua.TrackingID
 	rc          int32
 	acceptCount int32
 	rejectCount int32
-	notifyFunc  NotifyFunc
 }
 
 func (d *trackingData) incr() {

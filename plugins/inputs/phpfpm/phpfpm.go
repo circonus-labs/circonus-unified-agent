@@ -39,11 +39,10 @@ type metric map[string]int64
 type poolStat map[string]metric
 
 type phpfpm struct {
+	client *http.Client
+	tls.ClientConfig
 	Urls    []string
 	Timeout internal.Duration
-	tls.ClientConfig
-
-	client *http.Client
 }
 
 var sampleConfig = `

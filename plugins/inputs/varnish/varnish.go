@@ -1,3 +1,4 @@
+//go:build !windows
 // +build !windows
 
 package varnish
@@ -22,14 +23,13 @@ type runner func(cmdName string, UseSudo bool, InstanceName string, Timeout inte
 
 // Varnish is used to store configuration values
 type Varnish struct {
-	Stats        []string
+	filter       filter.Filter
+	run          runner
 	Binary       string
-	UseSudo      bool
 	InstanceName string
+	Stats        []string
 	Timeout      internal.Duration
-
-	filter filter.Filter
-	run    runner
+	UseSudo      bool
 }
 
 var defaultStats = []string{"MAIN.cache_hit", "MAIN.cache_miss", "MAIN.uptime"}

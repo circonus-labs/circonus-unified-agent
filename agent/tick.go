@@ -31,12 +31,12 @@ type Ticker interface {
 // no maximum sleep, when using large intervals alignment is not corrected
 // until the next tick.
 type AlignedTicker struct {
+	wg          sync.WaitGroup
+	ch          chan time.Time
+	cancel      context.CancelFunc
 	interval    time.Duration
 	jitter      time.Duration
 	minInterval time.Duration
-	ch          chan time.Time
-	cancel      context.CancelFunc
-	wg          sync.WaitGroup
 }
 
 func NewAlignedTicker(now time.Time, interval, jitter time.Duration) *AlignedTicker {
@@ -118,11 +118,11 @@ func (t *AlignedTicker) Stop() {
 //
 // Ticks are dropped for slow consumers.
 type UnalignedTicker struct {
-	interval time.Duration
-	jitter   time.Duration
+	wg       sync.WaitGroup
 	ch       chan time.Time
 	cancel   context.CancelFunc
-	wg       sync.WaitGroup
+	interval time.Duration
+	jitter   time.Duration
 }
 
 func NewUnalignedTicker(interval, jitter time.Duration) *UnalignedTicker {
@@ -211,11 +211,11 @@ func (t *UnalignedTicker) Stop() {
 //
 // Ticks are dropped for slow consumers.
 type RollingTicker struct {
-	interval time.Duration
-	jitter   time.Duration
+	wg       sync.WaitGroup
 	ch       chan time.Time
 	cancel   context.CancelFunc
-	wg       sync.WaitGroup
+	interval time.Duration
+	jitter   time.Duration
 }
 
 func NewRollingTicker(interval, jitter time.Duration) *RollingTicker {

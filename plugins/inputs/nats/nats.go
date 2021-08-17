@@ -1,3 +1,4 @@
+//go:build !freebsd || (freebsd && cgo)
 // +build !freebsd freebsd,cgo
 
 package nats
@@ -19,10 +20,9 @@ import (
 )
 
 type Nats struct {
+	client          *http.Client
 	Server          string
 	ResponseTimeout internal.Duration
-
-	client *http.Client
 }
 
 var sampleConfig = `

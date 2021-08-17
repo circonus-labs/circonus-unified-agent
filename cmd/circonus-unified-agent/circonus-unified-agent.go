@@ -1,4 +1,5 @@
-// +build go1.16
+//go:build go1.17
+// +build go1.17
 
 package main
 
@@ -140,6 +141,7 @@ func runAgent(ctx context.Context,
 		if err != nil {
 			return fmt.Errorf("loaddir (%s): %w", *fConfigDirectory, err)
 		}
+		log.Printf("I! Completed loading configs from %s", *fConfigDirectory)
 	}
 
 	// mgm: add default plugins and agent plugins

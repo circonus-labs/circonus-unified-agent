@@ -16,13 +16,12 @@ import (
 )
 
 type File struct {
-	Files             []string `toml:"files"`
+	parser            parsers.Parser
+	decoder           *encoding.Decoder
 	FileTag           string   `toml:"file_tag"`
 	CharacterEncoding string   `toml:"character_encoding"`
-	parser            parsers.Parser
-
-	filenames []string
-	decoder   *encoding.Decoder
+	Files             []string `toml:"files"`
+	filenames         []string
 }
 
 const sampleConfig = `

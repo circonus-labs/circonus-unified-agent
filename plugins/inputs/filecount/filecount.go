@@ -53,18 +53,17 @@ const sampleConfig = `
 `
 
 type FileCount struct {
-	Directory      string // deprecated in 1.9
-	Directories    []string
+	Fs             fileSystem
+	Log            cua.Logger
 	Name           string
+	Directories    []string
+	globPaths      []globpath.GlobPath
+	fileFilters    []fileFilterFunc
+	Size           internal.Size
+	MTime          internal.Duration `toml:"mtime"`
 	Recursive      bool
 	RegularOnly    bool
 	FollowSymlinks bool
-	Size           internal.Size
-	MTime          internal.Duration `toml:"mtime"`
-	fileFilters    []fileFilterFunc
-	globPaths      []globpath.GlobPath
-	Fs             fileSystem
-	Log            cua.Logger
 }
 
 func (*FileCount) Description() string {
@@ -277,10 +276,6 @@ func (fc *FileCount) getDirs() []string {
 		dirs[i] = filepath.Clean(dir)
 	}
 
-	if fc.Directory != "" {
-		dirs = append(dirs, filepath.Clean(fc.Directory))
-	}
-
 	return dirs
 }
 
@@ -299,7 +294,6 @@ func (fc *FileCount) initGlobPaths(acc cua.Accumulator) {
 
 func NewFileCount() *FileCount {
 	return &FileCount{
-		Directory:      "",
 		Directories:    []string{},
 		Name:           "*",
 		Recursive:      true,

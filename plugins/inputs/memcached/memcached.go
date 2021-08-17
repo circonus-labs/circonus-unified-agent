@@ -15,9 +15,9 @@ import (
 
 // Memcached is a memcached plugin
 type Memcached struct {
+	lastVerSend *time.Time
 	Servers     []string
 	UnixSockets []string
-	lastVerSend *time.Time
 }
 
 var sampleConfig = `

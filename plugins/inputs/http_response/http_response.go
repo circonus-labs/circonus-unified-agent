@@ -29,31 +29,26 @@ const (
 
 // HTTPResponse struct
 type HTTPResponse struct {
-	Address         string   // deprecated in 1.12
-	URLs            []string `toml:"urls"`
-	HTTPProxy       string   `toml:"http_proxy"`
-	Body            string
-	Method          string
-	ResponseTimeout internal.Duration
-	HTTPHeaderTags  map[string]string `toml:"http_header_tags"`
-	Headers         map[string]string
-	FollowRedirects bool
-	// Absolute path to file with Bearer token
-	BearerToken         string        `toml:"bearer_token"`
-	ResponseBodyField   string        `toml:"response_body_field"`
-	ResponseBodyMaxSize internal.Size `toml:"response_body_max_size"`
-	ResponseStringMatch string
-	ResponseStatusCode  int
-	Interface           string
-	// HTTP Basic Auth Credentials
-	Username string `toml:"username"`
-	Password string `toml:"password"`
-	tls.ClientConfig
-
-	Log cua.Logger
-
+	Log                 cua.Logger
 	compiledStringMatch *regexp.Regexp
 	client              *http.Client
+	Headers             map[string]string
+	HTTPHeaderTags      map[string]string `toml:"http_header_tags"`
+	Interface           string
+	Method              string
+	Body                string
+	Password            string `toml:"password"`     // HTTP Basic Auth Credentials
+	BearerToken         string `toml:"bearer_token"` // Absolute path to file with Bearer token
+	HTTPProxy           string `toml:"http_proxy"`
+	Username            string `toml:"username"` // HTTP Basic Auth Credentials
+	ResponseStringMatch string
+	ResponseBodyField   string `toml:"response_body_field"`
+	tls.ClientConfig
+	URLs                []string      `toml:"urls"`
+	ResponseBodyMaxSize internal.Size `toml:"response_body_max_size"`
+	ResponseTimeout     internal.Duration
+	ResponseStatusCode  int
+	FollowRedirects     bool
 }
 
 // Description returns the plugin Description
@@ -426,12 +421,7 @@ func (h *HTTPResponse) Gather(ctx context.Context, acc cua.Accumulator) error {
 	}
 
 	if len(h.URLs) == 0 {
-		if h.Address == "" {
-			h.URLs = []string{"http://localhost"}
-		} else {
-			h.Log.Warn("'address' deprecated, please use 'urls'")
-			h.URLs = []string{h.Address}
-		}
+		h.URLs = []string{"http://localhost"}
 	}
 
 	if h.client == nil {

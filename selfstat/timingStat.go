@@ -5,14 +5,13 @@ import (
 )
 
 type timingStat struct {
-	measurement string
-	field       string
+	mu          sync.Mutex
 	tags        map[string]string
-	// key         uint64
-	v     int64
-	prev  int64
-	count int64
-	mu    sync.Mutex
+	field       string
+	measurement string
+	v           int64
+	prev        int64
+	count       int64
 }
 
 func (s *timingStat) Incr(v int64) {

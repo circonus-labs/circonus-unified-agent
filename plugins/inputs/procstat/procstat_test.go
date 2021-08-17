@@ -58,8 +58,8 @@ ExecMainPID=11408
 }
 
 type testPgrep struct {
-	pids []PID
 	err  error
+	pids []PID
 }
 
 func pidFinder(pids []PID, err error) func() (PIDFinder, error) { //nolint:unparam
@@ -92,8 +92,8 @@ func (pg *testPgrep) FullPattern(pattern string) ([]PID, error) {
 }
 
 type testProc struct {
-	pid  PID
 	tags map[string]string
+	pid  PID
 }
 
 func newTestProc(pid PID) (Process, error) {

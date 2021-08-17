@@ -67,18 +67,17 @@ func NewRunningAggregator(aggregator cua.Aggregator, config *AggregatorConfig) *
 
 // AggregatorConfig is the common config for all aggregators.
 type AggregatorConfig struct {
-	Name         string
-	Alias        string
-	DropOriginal bool
-	Period       time.Duration
-	Delay        time.Duration
-	Grace        time.Duration
-
+	Tags              map[string]string
+	Name              string
+	Alias             string
+	MeasurementSuffix string
 	NameOverride      string
 	MeasurementPrefix string
-	MeasurementSuffix string
-	Tags              map[string]string
 	Filter            Filter
+	Grace             time.Duration
+	Period            time.Duration
+	Delay             time.Duration
+	DropOriginal      bool
 }
 
 func (r *RunningAggregator) LogName() string {

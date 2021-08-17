@@ -20,10 +20,10 @@ import (
 // it's converted to an http.Request.
 type request struct {
 	pw        *io.PipeWriter
-	reqID     uint16
 	params    map[string]string
-	buf       [1024]byte
 	rawParams []byte
+	reqID     uint16
+	buf       [1024]byte
 	keepConn  bool
 }
 

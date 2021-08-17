@@ -6,8 +6,8 @@ import (
 )
 
 type DMCache struct {
-	PerDevice        bool `toml:"per_device"`
 	getCurrentStatus func() ([]string, error)
+	PerDevice        bool `toml:"per_device"`
 }
 
 var sampleConfig = `

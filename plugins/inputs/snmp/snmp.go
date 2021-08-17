@@ -152,7 +152,7 @@ func (s *Snmp) init() error {
 		}
 
 		s.metricDestination = dest
-		s.Log.Info("using Direct Metrics mode")
+		// s.Log.Info("using Direct Metrics mode")
 
 		if s.FlushDelay != "" {
 			fd, err := time.ParseDuration(s.FlushDelay)
@@ -398,11 +398,13 @@ func (s *Snmp) Gather(ctx context.Context, acc cua.Accumulator) error {
 	}
 
 	var wg sync.WaitGroup
+	topDMTags := make(map[string]string)
 	for i, agent := range s.Agents {
 		wg.Add(1)
 		go func(i int, agent string) {
 			defer wg.Done()
 			gs, err := s.getConnection(i)
+
 			if err != nil {
 				acc.AddError(fmt.Errorf("agent %s: %w", agent, err))
 				return
@@ -421,6 +423,7 @@ func (s *Snmp) Gather(ctx context.Context, acc cua.Accumulator) error {
 			if err := s.gatherTable(acc, gs, t, topTags, false); err != nil {
 				acc.AddError(fmt.Errorf("agent %s: %w", agent, err))
 			}
+			topDMTags = topTags
 
 			if isDone(ctx) {
 				return
@@ -442,6 +445,10 @@ func (s *Snmp) Gather(ctx context.Context, acc cua.Accumulator) error {
 	stats := map[string]interface{}{"dur_snmp_get": time.Since(gstart).Seconds()}
 	stags := map[string]string{"units": "seconds"}
 	dmtags := trapmetrics.Tags{trapmetrics.Tag{Category: "units", Value: "seconds"}}
+	for k, v := range topDMTags {
+		dmtags = append(dmtags, trapmetrics.Tag{Category: k, Value: v})
+		stags[k] = v
+	}
 
 	if s.DirectMetrics && s.metricDestination != nil {
 		_ = s.metricDestination.GaugeSet("dur_snmp_get", dmtags, time.Since(gstart).Seconds(), nil)
@@ -464,23 +471,11 @@ func (s *Snmp) Gather(ctx context.Context, acc cua.Accumulator) error {
 	}
 
 	if s.DirectMetrics && s.metricDestination != nil {
-		_ = s.metricDestination.GaugeSet("dur_last_gather", trapmetrics.Tags{}, time.Since(gstart).Seconds(), nil)
+		_ = s.metricDestination.GaugeSet("dur_last_gather", dmtags, time.Since(gstart).Seconds(), nil)
 	} else {
 		stats["dur_gather"] = time.Since(gstart).Seconds()
+		acc.AddFields("snmp", stats, stags, time.Now())
 	}
-
-	// gatherDur := time.Since(gstart)
-
-	// if gatherDur >= 1*time.Minute {
-	// 	msg := "snmp get: " + gdur.String()
-	// 	if fdur != "" {
-	// 		msg += " - flush: " + fdur
-	// 	}
-	// 	msg += " - total: " + gatherDur.String()
-	// 	s.Log.Warn(msg)
-	// }
-
-	acc.AddFields("snmp", stats, stags, time.Now())
 
 	return nil
 }

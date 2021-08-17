@@ -1,3 +1,4 @@
+//go:build !windows
 // +build !windows
 
 package intelrdt
@@ -14,11 +15,10 @@ import (
 type Publisher struct {
 	acc               cua.Accumulator
 	Log               cua.Logger
-	shortenedMetrics  bool
 	BufferChanProcess chan processMeasurement
 	BufferChanCores   chan string
 	errChan           chan error
-	// stopChan          chan bool
+	shortenedMetrics  bool
 }
 
 func NewPublisher(acc cua.Accumulator, log cua.Logger, shortenedMetrics bool) Publisher {

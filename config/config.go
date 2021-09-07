@@ -416,7 +416,7 @@ var agentConfig = `
     ## Broker
     ## Optional
     ## Explicit broker id or blank (default blank, auto select)
-    # broker = "/broker/35"
+    # broker = "35"
 
     ## Cache check configurations
     ## Optional

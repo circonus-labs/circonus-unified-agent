@@ -41,7 +41,7 @@ check configuration click [here][docs].
   ## Broker
   ## Optional: explicit broker id or blank (default blank, auto select)
   ## example:
-  # broker = "/broker/35"
+  # broker = "35"
 ```
 
 ### Configuration Options

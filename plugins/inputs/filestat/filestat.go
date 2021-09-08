@@ -29,13 +29,10 @@ const sampleConfig = `
 `
 
 type FileStat struct {
-	SHA256 bool
+	Log    cua.Logger
+	globs  map[string]*globpath.GlobPath // maps full file paths to globmatch obj
 	Files  []string
-
-	Log cua.Logger
-
-	// maps full file paths to globmatch obj
-	globs map[string]*globpath.GlobPath
+	SHA256 bool
 }
 
 func NewFileStat() *FileStat {

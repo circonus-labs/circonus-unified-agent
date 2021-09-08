@@ -14,6 +14,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode"
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/internal"
@@ -98,38 +99,26 @@ func execCmd(arg0 string, args ...string) ([]byte, error) {
 
 // Snmp holds the configuration for the plugin.
 type Snmp struct {
-	// for direct metrics mode - send directly to circonus (bypassing output)
-	InstanceID    string  `toml:"instance_id"`
-	DirectMetrics bool    `toml:"direct_metrics"`
-	FlushDelay    string  `toml:"flush_delay"`
-	Broker        string  `toml:"broker"`
-	DebugAPI      *bool   `toml:"debug_api"`
-	TraceMetrics  *string `toml:"trace_metrics"`
-
-	// The SNMP agent to query. Format is [SCHEME://]ADDR[:PORT] (e.g.
-	// udp://1.2.3.4:161).  If the scheme is not specified then "udp" is used.
-	Agents []string `toml:"agents"`
-
-	// The tag used to name the agent host
-	AgentHostTag string `toml:"agent_host_tag"`
-
+	Log               cua.Logger
+	metricDestination *trapmetrics.TrapMetrics // direct metrics mode - send directly to circonus (bypassing output)
+	DebugAPI          *bool                    `toml:"debug_api"`     // direct metrics mode - send directly to circonus (bypassing output)
+	TraceMetrics      *string                  `toml:"trace_metrics"` // direct metrics mode - send directly to circonus (bypassing output)
+	FlushDelay        string                   `toml:"flush_delay"`   // direct metrics mode - send directly to circonus (bypassing output)
+	Broker            string                   `toml:"broker"`        // direct metrics mode - send directly to circonus (bypassing output)
+	Name              string                   // Name & Fields are the elements of a Table.
+	AgentHostTag      string                   `toml:"agent_host_tag"` // The tag used to name the agent host
+	InstanceID        string                   `toml:"instance_id"`    // direct metrics mode - send directly to circonus (bypassing output)
+	Tables            []Table                  `toml:"table"`
+	Fields            []Field                  `toml:"field"` // Name & Fields are the elements of a Table. agent chokes if we try to embed a Table. So instead we have to embed the fields of a Table, and construct a Table during runtime.
+	connectionCache   []snmpConnection
+	Agents            []string `toml:"agents"`
+	Tags              map[string]string
 	snmp.ClientConfig
-
-	Tables []Table `toml:"table"`
-
-	// Name & Fields are the elements of a Table.
-	// agent chokes if we try to embed a Table. So instead we have to embed the
-	// fields of a Table, and construct a Table during runtime.
-	Name   string  // deprecated in 1.14; use name_override
-	Fields []Field `toml:"field"`
-
-	Log             cua.Logger
-	connectionCache []snmpConnection
-	initialized     bool
-
-	// direct metrics
-	flushDelay        time.Duration
-	metricDestination *trapmetrics.TrapMetrics
+	flushDelay     time.Duration // direct metrics mode - send directly to circonus (bypassing output)
+	FlushPoolSize  uint          `toml:"flush_pool_size"`
+	FlushQueueSize uint          `toml:"flush_queue_size"`
+	DirectMetrics  bool          `toml:"direct_metrics"` // direct metrics mode - send directly to circonus (bypassing output)
+	initialized    bool
 }
 
 func (s *Snmp) init() error {
@@ -139,12 +128,13 @@ func (s *Snmp) init() error {
 
 	if s.DirectMetrics {
 		opts := &circmgr.MetricDestConfig{
-			PluginID:      "snmp",
-			InstanceID:    s.InstanceID,
-			MetricGroupID: "",
-			Broker:        s.Broker,
-			DebugAPI:      s.DebugAPI,
-			TraceMetrics:  s.TraceMetrics,
+			MetricMeta: circmgr.MetricMeta{
+				PluginID:   "snmp",
+				InstanceID: s.InstanceID,
+			},
+			Broker:       s.Broker,
+			DebugAPI:     s.DebugAPI,
+			TraceMetrics: s.TraceMetrics,
 		}
 		dest, err := circmgr.NewMetricDestination(opts, s.Log)
 		if err != nil {
@@ -152,7 +142,7 @@ func (s *Snmp) init() error {
 		}
 
 		s.metricDestination = dest
-		s.Log.Info("using Direct Metrics mode")
+		// s.Log.Info("using Direct Metrics mode")
 
 		if s.FlushDelay != "" {
 			fd, err := time.ParseDuration(s.FlushDelay)
@@ -161,6 +151,7 @@ func (s *Snmp) init() error {
 			}
 			s.flushDelay = fd
 		}
+		initFlusherPool(s.Log, s.FlushPoolSize, s.FlushQueueSize)
 	}
 
 	s.connectionCache = make([]snmpConnection, len(s.Agents))
@@ -187,23 +178,11 @@ func (s *Snmp) init() error {
 
 // Table holds the configuration for a SNMP table.
 type Table struct {
-	// Name will be the name of the measurement.
-	Name string
-
-	// Which tags to inherit from the top-level config.
-	InheritTags []string
-
-	// Adds each row's table index as a tag.
-	IndexAsTag bool
-
-	// Fields is the tags and values to look up.
-	Fields []Field `toml:"field"`
-
-	// OID for automatic field population.
-	// If provided, init() will populate Fields with all the table columns of the
-	// given OID.
-	Oid string
-
+	Name        string   // Name will be the name of the measurement.
+	Oid         string   // OID for automatic field population. If provided, init() will populate Fields with all the table columns of the given OID.
+	InheritTags []string // Which tags to inherit from the top-level config.
+	Fields      []Field  `toml:"field"` // Fields is the tags and values to look up.
+	IndexAsTag  bool     // Adds each row's table index as a tag.
 	initialized bool
 }
 
@@ -269,22 +248,24 @@ type Field struct {
 	Oid string
 	// OidIndexSuffix is the trailing sub-identifier on a table record OID that will be stripped off to get the record's index.
 	OidIndexSuffix string
-	// OidIndexLength specifies the length of the index in OID path segments. It can be used to remove sub-identifiers that vary in content or length.
-	OidIndexLength int
-	// IsTag controls whether this OID is output as a tag or a value.
-	IsTag bool
-	// TextMetric controls whether this metric (if SYNTAX INTEGER) is sent as both an int and a textual representation
-	TextMetric bool
 	// Conversion controls any type conversion that is done on the value.
 	//  "float"/"float(0)" will convert the value into a float.
 	//  "float(X)" will convert the value into a float, and then move the decimal before Xth right-most digit.
 	//  "int" will conver the value into an integer.
 	//  "hwaddr" will convert a 6-byte string to a MAC address.
 	//  "ipaddr" will convert the value to an IPv4 or IPv6 address.
+	//  "" or "string" byte slice will be returned as string if it contains only printable runes
+	//                 otherwise it will encoded as hex
+	//                 if it is not a byte slice, it will be returned as-is
 	Conversion string
+	// OidIndexLength specifies the length of the index in OID path segments. It can be used to remove sub-identifiers that vary in content or length.
+	OidIndexLength int
+	// IsTag controls whether this OID is output as a tag or a value.
+	IsTag bool
+	// TextMetric controls whether this metric (if SYNTAX INTEGER) is sent as both an int and a textual representation
+	TextMetric bool
 	// Translate tells if the value of the field should be snmptranslated
-	Translate bool
-
+	Translate   bool
 	initialized bool
 }
 
@@ -398,11 +379,21 @@ func (s *Snmp) Gather(ctx context.Context, acc cua.Accumulator) error {
 	}
 
 	var wg sync.WaitGroup
+	topDMTags := make(map[string]string)
 	for i, agent := range s.Agents {
 		wg.Add(1)
 		go func(i int, agent string) {
 			defer wg.Done()
 			gs, err := s.getConnection(i)
+
+			// test for not re-using connections
+			defer func(agent string) {
+				err := gs.Close()
+				if err != nil {
+					s.Log.Errorf("closing snmp conn: %s (%s)", err, agent)
+				}
+			}(agent)
+
 			if err != nil {
 				acc.AddError(fmt.Errorf("agent %s: %w", agent, err))
 				return
@@ -418,9 +409,11 @@ func (s *Snmp) Gather(ctx context.Context, acc cua.Accumulator) error {
 				Fields: s.Fields,
 			}
 			topTags := map[string]string{}
+
 			if err := s.gatherTable(acc, gs, t, topTags, false); err != nil {
 				acc.AddError(fmt.Errorf("agent %s: %w", agent, err))
 			}
+			topDMTags = topTags
 
 			if isDone(ctx) {
 				return
@@ -442,45 +435,46 @@ func (s *Snmp) Gather(ctx context.Context, acc cua.Accumulator) error {
 	stats := map[string]interface{}{"dur_snmp_get": time.Since(gstart).Seconds()}
 	stags := map[string]string{"units": "seconds"}
 	dmtags := trapmetrics.Tags{trapmetrics.Tag{Category: "units", Value: "seconds"}}
+	for k, v := range topDMTags {
+		dmtags = append(dmtags, trapmetrics.Tag{Category: k, Value: v})
+		stags[k] = v
+	}
 
 	if s.DirectMetrics && s.metricDestination != nil {
 		_ = s.metricDestination.GaugeSet("dur_snmp_get", dmtags, time.Since(gstart).Seconds(), nil)
+		flusherPool.traps <- trap{
+			name: s.InstanceID,
+			ctx:  ctx,
+			dest: s.metricDestination,
+			tags: dmtags,
+		}
+		// if s.flushDelay > time.Duration(0) {
+		// 	spent := time.Since(gstart)
+		// 	if spent < s.flushDelay {
+		// 		delay := s.flushDelay - spent
+		// 		fd := internal.RandomDuration(delay)
+		// 		s.Log.Debugf("flush delay: %s", fd)
+		// 		select {
+		// 		case <-ctx.Done():
+		// 		case <-time.After(fd):
+		// 		}
+		// 	} else {
+		// 		s.Log.Debugf("flush delay: 0 - snmp get (%s) took longer than %s", spent, s.flushDelay)
+		// 	}
+		// }
+		// fstart := time.Now()
+		// if _, err := s.metricDestination.Flush(ctx); err != nil {
+		// 	s.Log.Warn(err)
+		// }
+		// _ = s.metricDestination.GaugeSet("dur_last_submit", dmtags, time.Since(fstart).Seconds(), nil)
 	}
 
 	if s.DirectMetrics && s.metricDestination != nil {
-		if s.flushDelay > time.Duration(0) {
-			fd := internal.RandomDuration(s.flushDelay)
-			s.Log.Debugf("flush delay: %s", fd)
-			select {
-			case <-ctx.Done():
-			case <-time.After(fd):
-			}
-		}
-		fstart := time.Now()
-		if _, err := s.metricDestination.Flush(ctx); err != nil {
-			s.Log.Warnf("submitting metrics: %s", err)
-		}
-		_ = s.metricDestination.GaugeSet("dur_last_submit", dmtags, time.Since(fstart).Seconds(), nil)
-	}
-
-	if s.DirectMetrics && s.metricDestination != nil {
-		_ = s.metricDestination.GaugeSet("dur_last_gather", trapmetrics.Tags{}, time.Since(gstart).Seconds(), nil)
+		_ = s.metricDestination.GaugeSet("dur_last_gather", dmtags, time.Since(gstart).Seconds(), nil)
 	} else {
 		stats["dur_gather"] = time.Since(gstart).Seconds()
+		acc.AddFields("snmp", stats, stags, time.Now())
 	}
-
-	// gatherDur := time.Since(gstart)
-
-	// if gatherDur >= 1*time.Minute {
-	// 	msg := "snmp get: " + gdur.String()
-	// 	if fdur != "" {
-	// 		msg += " - flush: " + fdur
-	// 	}
-	// 	msg += " - total: " + gatherDur.String()
-	// 	s.Log.Warn(msg)
-	// }
-
-	acc.AddFields("snmp", stats, stags, time.Now())
 
 	return nil
 }
@@ -511,7 +505,7 @@ func (s *Snmp) gatherTable(acc cua.Accumulator, gs snmpConnection, t Table, topT
 
 		if s.DirectMetrics && s.metricDestination != nil {
 			for metricName, val := range tr.Fields {
-				if err := circmgr.AddMetricToDest(s.metricDestination, "snmp_dm", rt.Name, metricName, tr.Tags, val, rt.Time); err != nil {
+				if err := circmgr.AddMetricToDest(s.metricDestination, "snmp_dm", rt.Name, metricName, tr.Tags, s.Tags, val, rt.Time); err != nil {
 					s.Log.Warnf("adding %s: %s", metricName, err)
 				}
 			}
@@ -698,6 +692,7 @@ type snmpConnection interface {
 	// BulkWalkAll(string) ([]gosnmp.SnmpPDU, error)
 	Walk(string, gosnmp.WalkFunc) error
 	Get(oids []string) (*gosnmp.SnmpPacket, error)
+	Close() error
 }
 
 // getConnection creates a snmpConnection (*gosnmp.GoSNMP) object and caches the
@@ -722,7 +717,8 @@ func (s *Snmp) getConnection(idx int) (snmpConnection, error) {
 		return nil, fmt.Errorf("set agent: %w", err)
 	}
 
-	s.connectionCache[idx] = gs
+	// cache connection for reuse
+	// s.connectionCache[idx] = gs
 
 	if err := gs.Connect(); err != nil {
 		return nil, fmt.Errorf("setting up connection: %w", err)
@@ -737,13 +733,19 @@ func (s *Snmp) getConnection(idx int) (snmpConnection, error) {
 //  "int" will convert the value into an integer.
 //  "hwaddr" will convert the value into a MAC address.
 //  "ipaddr" will convert the value into into an IP address.
-//  "" will convert a byte slice into a string.
+//  "" or "string" will convert a byte slice into a string (if all runes are printable, otherwise it will return a hex string)
+//                 if the value is not a byte slice, it is returned as-is
 func fieldConvert(conv string, sv gosnmp.SnmpPDU) (interface{}, error) {
 	v := sv.Value
 
-	if conv == "" {
+	if conv == "" || conv == "string" {
 		if bs, ok := v.([]byte); ok {
-			return hex.EncodeToString(bs), nil
+			for _, b := range bs {
+				if !unicode.IsPrint(rune(b)) {
+					return hex.EncodeToString(bs), nil
+				}
+			}
+			return string(bs), nil
 		}
 		return v, nil
 	}

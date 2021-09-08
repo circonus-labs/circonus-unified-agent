@@ -10,14 +10,14 @@ import (
 )
 
 type metric struct {
-	name           string
-	tags           []*cua.Tag
-	fields         []*cua.Field
 	tm             time.Time
+	name           string
+	originInstance string
+	origin         string
+	fields         []*cua.Field
+	tags           []*cua.Tag
 	tp             cua.ValueType
 	aggregate      bool
-	origin         string
-	originInstance string
 }
 
 func New(

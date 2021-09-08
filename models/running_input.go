@@ -67,18 +67,17 @@ func NewRunningInput(input cua.Input, config *InputConfig) *RunningInput {
 
 // InputConfig is the common config for all inputs.
 type InputConfig struct {
-	Name             string
-	InstanceID       string
-	Alias            string
-	Interval         time.Duration
-	CollectionJitter time.Duration
-	Precision        time.Duration
-
+	Tags              map[string]string
+	Name              string
+	InstanceID        string
+	Alias             string
 	NameOverride      string
 	MeasurementPrefix string
 	MeasurementSuffix string
-	Tags              map[string]string
 	Filter            Filter
+	Precision         time.Duration
+	Interval          time.Duration
+	CollectionJitter  time.Duration
 }
 
 func (r *RunningInput) metricFiltered(metric cua.Metric) {

@@ -36,9 +36,9 @@ type PIDFinder interface {
 }
 
 type Proc struct {
-	hasCPUTimes bool
-	tags        map[string]string
+	tags map[string]string
 	*process.Process
+	hasCPUTimes bool
 }
 
 func NewProc(pid PID) (Process, error) {

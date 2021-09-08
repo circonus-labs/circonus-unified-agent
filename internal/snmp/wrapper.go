@@ -19,6 +19,11 @@ func (gsw GosnmpWrapper) Host() string {
 	return gsw.Target
 }
 
+// Close returns the value of GoSNMP.Target.
+func (gsw GosnmpWrapper) Close() error {
+	return gsw.Conn.Close()
+}
+
 // Walk wraps GoSNMP.Walk() or GoSNMP.BulkWalk(), depending on whether the
 // connection is using SNMPv1 or newer.
 // Also, if any error is encountered, it will just once reconnect and try again.

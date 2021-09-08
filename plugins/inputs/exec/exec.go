@@ -43,14 +43,12 @@ const sampleConfig = `
 const MaxStderrBytes = 512
 
 type Exec struct {
-	Commands []string
+	parser   parsers.Parser
+	runner   Runner
+	Log      cua.Logger `toml:"-"`
 	Command  string
+	Commands []string
 	Timeout  internal.Duration
-
-	parser parsers.Parser
-
-	runner Runner
-	Log    cua.Logger `toml:"-"`
 }
 
 func NewExec() *Exec {

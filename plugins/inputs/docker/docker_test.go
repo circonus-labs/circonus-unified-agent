@@ -286,11 +286,11 @@ func TestDocker_WindowsMemoryContainerStats(t *testing.T) {
 
 func TestContainerLabels(t *testing.T) {
 	var tests = []struct {
+		expected  map[string]string
 		name      string
 		container types.Container
 		include   []string
 		exclude   []string
-		expected  map[string]string
 	}{
 		{
 			name: "Nil filters matches all",
@@ -939,10 +939,10 @@ func TestDockerGatherSwarmInfo(t *testing.T) {
 
 func TestContainerStateFilter(t *testing.T) {
 	var tests = []struct {
+		expected map[string][]string
 		name     string
 		include  []string
 		exclude  []string
-		expected map[string][]string
 	}{
 		{
 			name: "default",

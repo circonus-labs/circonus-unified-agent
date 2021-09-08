@@ -3,6 +3,7 @@
 package circonus
 
 import (
+	"bytes"
 	"runtime/debug"
 	"sync"
 	"time"
@@ -12,6 +13,7 @@ import (
 	inter "github.com/circonus-labs/circonus-unified-agent/internal"
 	circmgr "github.com/circonus-labs/circonus-unified-agent/internal/circonus"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/outputs"
+	"github.com/circonus-labs/go-trapmetrics"
 )
 
 const (
@@ -20,41 +22,32 @@ const (
 )
 
 var (
-	defaultDestination *metricDestination
-	agentDestination   *metricDestination
-	hostDestination    *metricDestination
-	checkmu            sync.Mutex
+	agentDestination *metricDestination
+	hostDestination  *metricDestination
+	checkmu          sync.Mutex
 )
 
 // Circonus values are used to output data to the Circonus platform.
 type Circonus struct {
-	// token and broker can, optionally, override the agent.circonus settings for this output instance
-	APIToken     string  `toml:"api_token"`     // api token
-	Broker       string  `toml:"broker"`        // optional: broker ID - numeric portion of _cid from broker api object (default is selected: enterprise or public httptrap broker)
-	DebugAPI     *bool   `toml:"debug_api"`     // optional: debug circonus api calls
-	TraceMetrics *string `toml:"trace_metrics"` // optional: output json sent to broker (path to write files to or `-` for logger)
-
-	// for backwards compatibility, allow old config options to work
-	// circonus config should be in [agent.circonus] going forward
-	APIURL          string            `toml:"api_url"`           // optional: api url (default: https://api.circonus.com/v2)
-	APIApp          string            `toml:"api_app"`           // optional: api app (default: circonus-unified-agent)
-	APITLSCA        string            `toml:"api_tls_ca"`        // optional: api ca cert file
-	CacheConfigs    bool              `toml:"cache_configs"`     // optional: cache check bundle configurations - efficient for large number of inputs
-	CacheDir        string            `toml:"cache_dir"`         // optional: where to cache the check bundle configurations - must be read/write for user running cua
-	DebugChecks     map[string]string `toml:"debug_checks"`      // optional: use when instructed by circonus support
-	CheckSearchTags []string          `toml:"check_search_tags"` // optional: set of tags to use when searching for checks (default: service:circonus-unified-agentd)
-	//
-	// normal options, for output plugin
-	//
-	PoolSize           int    `toml:"pool_size"`     // size of the processor pool for a given output instance - default 2
-	SubOutput          bool   `toml:"sub_output"`    // a dedicated, special purpose, output, don't send internal cua version, etc.
-	DebugMetrics       bool   `toml:"debug_metrics"` // output the metrics as they are being parsed, use to verify proper parsing/tags/etc.
-	OneCheck           bool   `toml:"one_check"`
-	CheckNamePrefix    string `toml:"check_name_prefix"`
-	metricDestinations map[string]*metricDestination
-	Log                cua.Logger
-	processors         processors
+	startTime time.Time
 	sync.RWMutex
+	Log                cua.Logger
+	DebugAPI           *bool   `toml:"debug_api"`
+	TraceMetrics       *string `toml:"trace_metrics"`
+	processors         processors
+	DebugChecks        map[string]string `toml:"debug_checks"` // optional: use when instructed by circonus support
+	metricDestinations map[string]*metricDestination
+	CacheDir           string   `toml:"cache_dir"`         // optional: where to cache the check bundle configurations - must be read/write for user running cua
+	APITLSCA           string   `toml:"api_tls_ca"`        // optional: override agent.circonus api ca cert file
+	APIApp             string   `toml:"api_app"`           // optional: override agent.circonus api app (default: circonus-unified-agent)
+	APIURL             string   `toml:"api_url"`           // optional: override agent.circonus api url (default: https://api.circonus.com/v2)
+	Broker             string   `toml:"broker"`            // optional: override agent.circonus broker ID - numeric portion of _cid from broker api object (default is selected: enterprise or public httptrap broker)
+	APIToken           string   `toml:"api_token"`         // optional: override agent.circonus api token
+	CheckSearchTags    []string `toml:"check_search_tags"` // optional: set of tags to use when searching for checks (default: service:circonus-unified-agentd)
+	PoolSize           int      `toml:"pool_size"`         // size of the processor pool for a given output instance - default 2
+	DebugMetrics       bool     `toml:"debug_metrics"`     // output the metrics as they are being parsed, use to verify proper parsing/tags/etc.
+	SubOutput          bool     `toml:"sub_output"`        // a dedicated, special purpose, output, don't send internal cua version, etc.
+	CacheConfigs       bool     `toml:"cache_configs"`     // optional: cache check bundle configurations - efficient for large number of inputs
 }
 
 // processors handle incoming batches
@@ -99,9 +92,11 @@ func (c *Circonus) Init() error {
 	for i := 0; i < c.PoolSize; i++ {
 		i := i
 		go func(id int) {
+			var buf bytes.Buffer
 			for m := range c.processors.metrics {
+				buf.Reset()
 				start := time.Now()
-				nm := c.metricProcessor(id, m)
+				nm := c.metricProcessor(id, m, buf)
 				c.Log.Debugf("processor %d, processed %d metrics in %s", id, nm, time.Since(start).String())
 			}
 			c.processors.wg.Done()
@@ -121,10 +116,6 @@ func (p *processors) shutdown() {
 }
 
 var sampleConfig = `
-  ## One check - all metrics go to a single check vs one check per input plugin
-  ## NOTE: this effectively disables automatic dashboards for supported plugins
-  # one_check = false
-  
   ## Pool size - controls the number of batch processors
   ## Optional: mostly applicable to large number of inputs or inputs producing lots (100K+) of metrics
   # pool_size = 2
@@ -136,10 +127,6 @@ var sampleConfig = `
   ## Debug metrics - this will output the metrics as they are being parsed - to verify parsing of names/tags/values
   ## Optional
   # debug_metrics = false
-
-  ## Check name prefix - used in check display name and check target (default: OS hostname, use with containers)
-  ## Optional
-  # check_name_prefix = ""
 `
 
 var description = "Configuration for Circonus output plugin."
@@ -156,29 +143,16 @@ func (c *Circonus) Connect() error {
 		c.Unlock()
 	}
 
-	if defaultDestination == nil {
-		pluginID := "default"
-		instanceID := config.DefaultInstanceID()
-		metricGroupID := ""
-		if err := c.initMetricDestination(pluginID, instanceID, metricGroupID); err != nil {
-			c.Log.Errorf("unable to initialize circonus metric destination (%s)", err)
-			return err
-		}
-		destKey := circmgr.MakeDestinationKey(pluginID, instanceID, metricGroupID)
-		if d, ok := c.metricDestinations[destKey]; ok {
-			defaultDestination = d
-		}
-	}
-
 	if agentDestination == nil {
-		pluginID := "agent"
-		instanceID := config.DefaultInstanceID()
-		metricGroupID := ""
-		if err := c.initMetricDestination(pluginID, instanceID, metricGroupID); err != nil {
+		meta := circmgr.MetricMeta{
+			PluginID:   "agent",
+			InstanceID: config.DefaultInstanceID(),
+		}
+		if err := c.initMetricDestination(meta); err != nil {
 			c.Log.Errorf("unable to initialize circonus metric destination (%s)", err)
 			return err
 		}
-		destKey := circmgr.MakeDestinationKey(pluginID, instanceID, metricGroupID)
+		destKey := meta.Key()
 		if d, ok := c.metricDestinations[destKey]; ok {
 			agentDestination = d
 		}
@@ -187,14 +161,15 @@ func (c *Circonus) Connect() error {
 	if !c.SubOutput {
 		if config.DefaultPluginsEnabled() {
 			if hostDestination == nil {
-				pluginID := "host"
-				instanceID := config.DefaultInstanceID()
-				metricGroupID := ""
-				if err := c.initMetricDestination(pluginID, instanceID, metricGroupID); err != nil {
+				meta := circmgr.MetricMeta{
+					PluginID:   "host",
+					InstanceID: config.DefaultInstanceID(),
+				}
+				if err := c.initMetricDestination(meta); err != nil {
 					c.Log.Errorf("unable to initialize circonus metric destination (%s)", err)
 					return err
 				}
-				destKey := circmgr.MakeDestinationKey(pluginID, instanceID, metricGroupID)
+				destKey := meta.Key()
 				if d, ok := c.metricDestinations[destKey]; ok {
 					hostDestination = d
 				}
@@ -203,8 +178,14 @@ func (c *Circonus) Connect() error {
 		c.emitAgentVersion()
 		go func() {
 			for range time.NewTicker(5 * time.Minute).C {
-				debug.FreeOSMemory()
 				c.emitAgentVersion()
+				debug.FreeOSMemory()
+			}
+		}()
+		go func() {
+			for range time.NewTicker(1 * time.Minute).C {
+				c.emitRuntime()
+				// runtime.GC()
 			}
 		}()
 	}
@@ -217,6 +198,14 @@ func (c *Circonus) emitAgentVersion() {
 	if agentDestination != nil {
 		ts := time.Now()
 		_ = agentDestination.metrics.TextSet("cua_version", nil, agentVersion, &ts)
+		agentDestination.queuedMetrics++
+	}
+}
+
+func (c *Circonus) emitRuntime() {
+	if agentDestination != nil {
+		ts := time.Now()
+		_ = agentDestination.metrics.GaugeSet("cua_runtime", trapmetrics.Tags{{Category: "units", Value: "seconds"}}, time.Since(c.startTime).Seconds(), &ts)
 		agentDestination.queuedMetrics++
 	}
 }
@@ -246,6 +235,8 @@ func (c *Circonus) Close() error {
 
 func init() {
 	outputs.Add("circonus", func() cua.Output {
-		return &Circonus{}
+		return &Circonus{
+			startTime: time.Now(),
+		}
 	})
 }

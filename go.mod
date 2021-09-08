@@ -26,8 +26,8 @@ require (
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869
 	github.com/cenkalti/backoff v2.0.0+incompatible // indirect
 	github.com/circonus-labs/go-apiclient v0.7.15
-	github.com/circonus-labs/go-trapcheck v0.0.5
-	github.com/circonus-labs/go-trapmetrics v0.0.5
+	github.com/circonus-labs/go-trapcheck v0.0.7
+	github.com/circonus-labs/go-trapmetrics v0.0.7
 	github.com/cisco-ie/nx-telemetry-proto v0.0.0-20190531143454-82441e232cf6
 	github.com/cockroachdb/apd v1.1.0 // indirect
 	github.com/containerd/containerd v1.4.1 // indirect
@@ -65,6 +65,7 @@ require (
 	github.com/harlow/kinesis-consumer v0.3.1-0.20181230152818-2f58b136fee0
 	github.com/hashicorp/consul v1.2.1
 	github.com/hashicorp/go-msgpack v0.5.5 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.0
 	github.com/hashicorp/go-rootcerts v0.0.0-20160503143440-6bb64b370b90 // indirect
 	github.com/hashicorp/go-version v1.3.0
 	github.com/hashicorp/memberlist v0.1.5 // indirect
@@ -104,7 +105,7 @@ require (
 	github.com/riemann/riemann-go-client v0.5.0
 	github.com/safchain/ethtool v0.0.0-20200218184317-f459e2d13664
 	github.com/samuel/go-zookeeper v0.0.0-20180130194729-c4fab1ac1bec // indirect
-	github.com/shirou/gopsutil/v3 v3.21.6
+	github.com/shirou/gopsutil/v3 v3.21.8
 	github.com/shopspring/decimal v0.0.0-20200105231215-408a2507e114 // indirect
 	github.com/sirupsen/logrus v1.4.2
 	github.com/streadway/amqp v0.0.0-20180528204448-e5adc2ada8b8
@@ -126,7 +127,7 @@ require (
 	golang.org/x/net v0.0.0-20210525063256-abc453219eb5
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys v0.0.0-20210608053332-aa57babbf139
+	golang.org/x/sys v0.0.0-20210816074244-15123e1e1f71
 	golang.org/x/text v0.3.6
 	golang.org/x/tools v0.0.0-20200317043434-63da46f3035e // indirect
 	golang.zx2c4.com/wireguard v0.0.0-20210604143328-f9b48a961cd2 // indirect

@@ -116,26 +116,20 @@ func NewConfig() *Config {
 
 // AgentConfig defines configuration that will be used by the agent
 type AgentConfig struct {
-	// Interval at which to gather information
-	Interval internal.Duration
+	// Name of the file to be logged to when using the "file" logtarget.  If set to
+	// the empty string then logs are written to stderr.
+	Logfile string `toml:"logfile"`
 
-	// RoundInterval rounds collection interval to 'interval'.
-	//     ie, if Interval=10s then always collect on :00, :10, :20, etc.
-	RoundInterval bool
+	// It is !!important!! to set the hostname when using containers to prevent
+	// a unique check being created every time the container starts.
+	Hostname string
 
-	// By default or when set to "0s", precision will be set to the same
-	// timestamp order as the collection interval, with the maximum being 1s.
-	//   ie, when interval = "10s", precision will be "1s"
-	//       when interval = "250ms", precision will be "1ms"
-	// Precision will NOT be used for service inputs. It is up to each individual
-	// service input to set the timestamp at the appropriate precision.
-	Precision internal.Duration
+	// Log target controls the destination for logs and can be one of "file",
+	// "stderr" or, on Windows, "eventlog".  When set to "file", the output file
+	// is determined by the "logfile" setting.
+	LogTarget string `toml:"logtarget"`
 
-	// CollectionJitter is used to jitter the collection by a random amount.
-	// Each plugin will sleep for a random time within jitter before collecting.
-	// This can be used to avoid many plugins querying things like sysfs at the
-	// same time, which can have a measurable effect on the system.
-	CollectionJitter internal.Duration
+	Circonus CirconusConfig `toml:"circonus"`
 
 	// FlushInterval is the Interval at which to flush data
 	FlushInterval internal.Duration
@@ -146,9 +140,11 @@ type AgentConfig struct {
 	// ie, a jitter of 5s and interval 10s means flushes will happen every 10-15s
 	FlushJitter internal.Duration
 
-	// MetricBatchSize is the maximum number of metrics that is wrote to an
-	// output plugin in one call.
-	MetricBatchSize int
+	// CollectionJitter is used to jitter the collection by a random amount.
+	// Each plugin will sleep for a random time within jitter before collecting.
+	// This can be used to avoid many plugins querying things like sysfs at the
+	// same time, which can have a measurable effect on the system.
+	CollectionJitter internal.Duration
 
 	// MetricBufferLimit is the max number of metrics that each output plugin
 	// will cache. The buffer is cleared when a successful write occurs. When
@@ -157,63 +153,74 @@ type AgentConfig struct {
 	// not be less than 2 times MetricBatchSize.
 	MetricBufferLimit int
 
-	// FlushBufferWhenFull tells circonus-unified-agent to flush the metric buffer whenever
-	// it fills up, regardless of FlushInterval. Setting this option to true
-	// does _not_ deactivate FlushInterval.
-	FlushBufferWhenFull bool // deprecated in 0.13; has no effect
-
-	// TODO(cam): Remove UTC and parameter, they are no longer
-	// valid for the agent config. Leaving them here for now for backwards-
-	// compatibility
-	UTC bool `toml:"utc"` // deprecated in 1.0.0; has no effect
-
-	// Debug is the option for running in debug mode
-	Debug bool `toml:"debug"`
-
-	// Quiet is the option for running in quiet mode
-	Quiet bool `toml:"quiet"`
-
-	// Log target controls the destination for logs and can be one of "file",
-	// "stderr" or, on Windows, "eventlog".  When set to "file", the output file
-	// is determined by the "logfile" setting.
-	LogTarget string `toml:"logtarget"`
-
-	// Name of the file to be logged to when using the "file" logtarget.  If set to
-	// the empty string then logs are written to stderr.
-	Logfile string `toml:"logfile"`
-
-	// The file will be rotated after the time interval specified.  When set
-	// to 0 no time based rotation is performed.
-	LogfileRotationInterval internal.Duration `toml:"logfile_rotation_interval"`
+	// Maximum number of rotated archives to keep, any older logs are deleted.
+	// If set to -1, no archives are removed.
+	LogfileRotationMaxArchives int `toml:"logfile_rotation_max_archives"`
 
 	// The logfile will be rotated when it becomes larger than the specified
 	// size.  When set to 0 no size based rotation is performed.
 	LogfileRotationMaxSize internal.Size `toml:"logfile_rotation_max_size"`
 
-	// Maximum number of rotated archives to keep, any older logs are deleted.
-	// If set to -1, no archives are removed.
-	LogfileRotationMaxArchives int `toml:"logfile_rotation_max_archives"`
+	// By default or when set to "0s", precision will be set to the same
+	// timestamp order as the collection interval, with the maximum being 1s.
+	//   ie, when interval = "10s", precision will be "1s"
+	//       when interval = "250ms", precision will be "1ms"
+	// Precision will NOT be used for service inputs. It is up to each individual
+	// service input to set the timestamp at the appropriate precision.
+	Precision internal.Duration
 
-	Hostname     string
+	// The file will be rotated after the time interval specified.  When set
+	// to 0 no time based rotation is performed.
+	LogfileRotationInterval internal.Duration `toml:"logfile_rotation_interval"`
+
+	// MetricBatchSize is the maximum number of metrics that is wrote to an
+	// output plugin in one call.
+	MetricBatchSize int
+
+	// Interval at which to gather information
+	Interval internal.Duration
+
+	// Quiet is the option for running in quiet mode
+	Quiet bool `toml:"quiet"`
+
+	// RoundInterval rounds collection interval to 'interval'.
+	//     ie, if Interval=10s then always collect on :00, :10, :20, etc.
+	RoundInterval bool
+
+	// DEPRECATED - hostname will no longer be added as a tag to every metric
 	OmitHostname bool
 
-	Circonus CirconusConfig `toml:"circonus"`
+	// Debug is the option for running in debug mode
+	Debug bool `toml:"debug"`
 }
 
+// CirconusConfig configures circonus check management
+// Broker          - optional: broker ID - numeric portion of _cid from broker api object (default is selected: enterprise or public httptrap broker)
+// APIURL          - optional: api url (default: https://api.circonus.com/v2)
+// APIToken        - REQUIRED: api token
+// APIApp          - optional: api app (default: circonus-unified-agent)
+// APITLSCA        - optional: api ca cert file
+// CacheConfigs    - optional: cache check bundle configurations - efficient for large number of inputs
+// CacheDir        - optional: where to cache the check bundle configurations - must be read/write for user running cua
+// CacheNoVerify   - optional: don't verify checks loaded from cache, just use them
+// DebugAPI        - optional: debug circonus api calls
+// TraceMetrics    - optional: output json sent to broker (path to write files to or `-` for logger)
+// DebugChecks     - optional: use when instructed by circonus support
+// CheckSearchTags - optional: set of tags to use when searching for checks (default: service:circonus-unified-agentd)
 type CirconusConfig struct {
-	Broker          string            `toml:"broker"`            // optional: broker ID - numeric portion of _cid from broker api object (default is selected: enterprise or public httptrap broker)
-	APIURL          string            `toml:"api_url"`           // optional: api url (default: https://api.circonus.com/v2)
-	APIToken        string            `toml:"api_token"`         // api token (REQUIRED)
-	APIApp          string            `toml:"api_app"`           // optional: api app (default: circonus-unified-agent)
-	APITLSCA        string            `toml:"api_tls_ca"`        // optional: api ca cert file
-	CacheConfigs    bool              `toml:"cache_configs"`     // optional: cache check bundle configurations - efficient for large number of inputs
-	CacheDir        string            `toml:"cache_dir"`         // optional: where to cache the check bundle configurations - must be read/write for user running cua
-	CacheNoVerify   bool              `toml:"cache_no_verify"`   // optional: don't verify checks loaded from cache, just use them
-	DebugAPI        bool              `toml:"debug_api"`         // optional: debug circonus api calls
-	TraceMetrics    string            `toml:"trace_metrics"`     // optional: output json sent to broker (path to write files to or `-` for logger)
-	DebugChecks     map[string]string `toml:"debug_checks"`      // optional: use when instructed by circonus support
-	CheckSearchTags []string          `toml:"check_search_tags"` // optional: set of tags to use when searching for checks (default: service:circonus-unified-agentd)
-	CheckNamePrefix string            `toml:"check_name_prefix"` // optional: used in check display name and check target (default: OS hostname, use with containers)
+	DebugChecks     map[string]string `toml:"debug_checks"`
+	TraceMetrics    string            `toml:"trace_metrics"`
+	APIURL          string            `toml:"api_url"`
+	APIToken        string            `toml:"api_token"`
+	APIApp          string            `toml:"api_app"`
+	APITLSCA        string            `toml:"api_tls_ca"`
+	CacheDir        string            `toml:"cache_dir"`
+	Broker          string            `toml:"broker"`
+	Hostname        string            `toml:"-"`
+	CheckSearchTags []string          `toml:"check_search_tags"`
+	DebugAPI        bool              `toml:"debug_api"`
+	CacheNoVerify   bool              `toml:"cache_no_verify"`
+	CacheConfigs    bool              `toml:"cache_configs"`
 }
 
 // InputNames returns a list of strings of the configured inputs.
@@ -314,6 +321,11 @@ var globalTagsConfig = `
 var agentConfig = `
 # Configuration for circonus-unified-agent
 [agent]
+  ## Override default hostname, if empty use os.Hostname()
+  ## It is !!important!! to set the hostname when using containers to prevent
+  ## a unique check being created every time the container starts.
+  hostname = ""
+
   ## Default data collection interval for all inputs
   interval = "10s"
   ## Rounds collection interval to 'interval'
@@ -380,11 +392,6 @@ var agentConfig = `
   ## If set to -1, no archives are removed.
   # logfile_rotation_max_archives = 5
 
-  ## Override default hostname, if empty use os.Hostname()
-  hostname = ""
-  ## If set to true, do no set the "host" tag in the circonus-unified-agent.
-  omit_hostname = false
-
   [agent.circonus]
     ## Circonus API token must be provided to use this plugin
     ## REQUIRED
@@ -402,16 +409,6 @@ var agentConfig = `
     ## Optional
     ## Use for internal deployments with private certificates
     # api_tls_ca = "/opt/circonus/unified-agent/etc/circonus_api_ca.pem"
-
-    ## Check name prefix
-    ## Optional
-    ## Unique prefix to use for all checks created by this instance.
-    ## Default is the hostname from the OS. If set, "host" tag on metrics will be 
-    ## overridden with this value. For containers, use omit_hostname=true in agent section
-    ## and set this value, so that the plugin will be able to predictively find the check 
-    ## for this instance. Otherwise, the container's os.Hostname() will be used
-    ## (resulting in a new check being created every time the container starts).
-    # check_name_prefix = "example"
 
     ## Broker
     ## Optional
@@ -840,18 +837,24 @@ func (c *Config) LoadConfigData(data []byte) error {
 		}
 	}
 
-	if !c.Agent.OmitHostname {
-		if c.Agent.Hostname == "" {
-			hostname, err := os.Hostname()
-			if err != nil {
-				return fmt.Errorf("hostname: %w", err)
-			}
-
-			c.Agent.Hostname = hostname
+	// mgm: hard set the agent.hostname and circonus.checknameprefix
+	if c.Agent.Hostname == "" {
+		hostname, err := os.Hostname()
+		if err != nil {
+			return fmt.Errorf("hostname: %w", err)
+		} else if hostname == "" {
+			return fmt.Errorf("invalid hostname from OS (blank) - must be set in agent.hostname or OS")
 		}
-
-		c.Tags["host"] = c.Agent.Hostname
+		c.Agent.Hostname = hostname
 	}
+	if c.Agent.Circonus.Hostname == "" {
+		c.Agent.Circonus.Hostname = c.Agent.Hostname
+	}
+
+	// mgm: ignore omit hostname - do not set host:hostname tag on each metric
+	// if !c.Agent.OmitHostname {
+	// 	c.Tags["host"] = c.Agent.Hostname
+	// }
 
 	if len(c.UnusedFields) > 0 {
 		return fmt.Errorf("line %d: configuration specified the fields %q, but they weren't used", tbl.Line, keys(c.UnusedFields))
@@ -1691,8 +1694,8 @@ type unwrappable interface {
 //   default - which are enabled for "hosts" (disabled in docker containers)
 //
 type circonusPlugin struct {
-	Enabled bool
 	Data    []byte
+	Enabled bool
 }
 
 func DefaultPluginsEnabled() bool {
@@ -1724,7 +1727,8 @@ var agentPluginList = map[string]circonusPlugin{
 		Enabled: true,
 		Data: []byte(`
 instance_id="` + defaultInstanceID + `"
-collect_memstats = true`),
+collect_memstats = true
+collect_selfstats = true`),
 	},
 }
 

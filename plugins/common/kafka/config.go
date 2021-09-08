@@ -2,7 +2,6 @@ package kafka
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/Shopify/sarama"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/common/tls"
@@ -44,22 +43,15 @@ func (k *WriteConfig) SetConfig(config *sarama.Config) error {
 
 // Config common to all Kafka clients.
 type Config struct {
-	SASLAuth
 	tls.ClientConfig
-
-	Version          string `toml:"version"`
-	ClientID         string `toml:"client_id"`
-	CompressionCodec int    `toml:"compression_codec"`
-
-	// EnableTLS deprecated
-	EnableTLS *bool `toml:"enable_tls"`
+	Version  string `toml:"version"`
+	ClientID string `toml:"client_id"`
+	SASLAuth
+	CompressionCodec int `toml:"compression_codec"`
 }
 
 // SetConfig on the sarama.Config object from the Config struct.
 func (k *Config) SetConfig(config *sarama.Config) error {
-	if k.EnableTLS != nil {
-		log.Printf("W! [kafka] enable_tls is deprecated, and the setting does nothing, you can safely remove it from the config")
-	}
 	if k.Version != "" {
 		version, err := sarama.ParseKafkaVersion(k.Version)
 		if err != nil {

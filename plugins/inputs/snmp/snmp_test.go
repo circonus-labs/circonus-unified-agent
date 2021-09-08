@@ -30,6 +30,10 @@ func (tsc *testSNMPConnection) Host() string {
 	return tsc.host
 }
 
+func (tsc *testSNMPConnection) Close() error {
+	return nil
+}
+
 func (tsc *testSNMPConnection) Get(oids []string) (*gosnmp.SnmpPacket, error) {
 	sp := &gosnmp.SnmpPacket{}
 	for _, oid := range oids {

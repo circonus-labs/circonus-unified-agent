@@ -22,22 +22,22 @@ const (
 
 // LogConfig contains the log configuration settings
 type LogConfig struct {
-	// will set the log level to DEBUG
-	Debug bool
-	// will set the log level to ERROR
-	Quiet bool
 	// stderr, stdout, file or eventlog (Windows only)
 	LogTarget string
 	// will direct the logging output to a file. Empty string is
 	// interpreted as stderr. If there is an error opening the file the
 	// logger will fallback to stderr
 	Logfile string
+	// maximum rotated files to keep (older ones will be deleted)
+	RotationMaxArchives int
 	// will rotate when current file at the specified time interval
 	RotationInterval internal.Duration
 	// will rotate when current file size exceeds this parameter.
 	RotationMaxSize internal.Size
-	// maximum rotated files to keep (older ones will be deleted)
-	RotationMaxArchives int
+	// will set the log level to ERROR
+	Quiet bool
+	// will set the log level to DEBUG
+	Debug bool
 }
 
 type Creator interface {

@@ -25,10 +25,10 @@ func newTrackingID() cua.TrackingID {
 
 // Metric defines a single point measurement
 type Metric struct {
-	Measurement string
+	Time        time.Time
 	Tags        map[string]string
 	Fields      map[string]interface{}
-	Time        time.Time
+	Measurement string
 	Type        cua.ValueType
 }
 
@@ -40,15 +40,13 @@ func (p *Metric) String() string {
 type Accumulator struct {
 	sync.Mutex
 	*sync.Cond
-
+	TimeFunc  func() time.Time
+	delivered chan cua.DeliveryInfo
+	Errors    []error
 	Metrics   []*Metric
 	nMetrics  uint64
 	Discard   bool
-	Errors    []error
 	debug     bool
-	delivered chan cua.DeliveryInfo
-
-	TimeFunc func() time.Time
 }
 
 func (a *Accumulator) NMetrics() uint64 {

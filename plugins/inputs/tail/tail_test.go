@@ -427,10 +427,10 @@ func TestCharacterEncoding(t *testing.T) {
 	}
 
 	tests := []struct {
-		name     string
 		plugin   *Tail
-		offset   int64
+		name     string
 		expected []cua.Metric
+		offset   int64
 	}{
 		{
 			name: "utf-8",

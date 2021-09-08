@@ -15,15 +15,15 @@ type MultilineMatchWhichLine int
 
 type Multiline struct {
 	config        *MultilineConfig
-	enabled       bool
 	patternRegexp *regexp.Regexp
+	enabled       bool
 }
 
 type MultilineConfig struct {
+	Timeout        *internal.Duration
 	Pattern        string
 	MatchWhichLine MultilineMatchWhichLine `toml:"match_which_line"`
 	InvertMatch    bool
-	Timeout        *internal.Duration
 }
 
 const (

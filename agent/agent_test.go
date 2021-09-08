@@ -118,12 +118,12 @@ func TestWindow(t *testing.T) {
 	}
 
 	tests := []struct {
-		name          string
 		start         time.Time
-		roundInterval bool
-		period        time.Duration
 		since         time.Time
 		until         time.Time
+		name          string
+		period        time.Duration
+		roundInterval bool
 	}{
 		{
 			name:          "round with exact alignment",

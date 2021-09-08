@@ -26,8 +26,8 @@ type Tag struct {
 
 // Field represents a single field key and value.
 type Field struct {
-	Key   string
 	Value interface{}
+	Key   string
 }
 
 // Metric is the type of data that is processed by the agent.  Input plugins,

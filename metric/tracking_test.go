@@ -70,9 +70,9 @@ func TestNewTrackingID(t *testing.T) {
 
 func TestTracking(t *testing.T) {
 	tests := []struct {
-		name      string
 		metric    cua.Metric
 		actions   func(metric cua.Metric)
+		name      string
 		delivered bool
 	}{
 		{
@@ -174,9 +174,9 @@ func TestTracking(t *testing.T) {
 
 func TestGroupTracking(t *testing.T) {
 	tests := []struct {
+		actions   func(metrics []cua.Metric)
 		name      string
 		metrics   []cua.Metric
-		actions   func(metrics []cua.Metric)
 		delivered bool
 	}{
 		{

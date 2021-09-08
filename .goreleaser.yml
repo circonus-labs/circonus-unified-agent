@@ -25,6 +25,8 @@ builds:
                 goarch: 386
             - goos: openbsd
               goarch: arm64
+            - goos: windows
+              goarch: arm64
         ldflags:
             - -s
             - -w

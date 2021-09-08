@@ -1,3 +1,4 @@
+//go:build !windows
 // +build !windows
 
 package ping
@@ -369,11 +370,11 @@ func TestFatalPingGather(t *testing.T) {
 
 func TestErrorWithHostNamePingGather(t *testing.T) {
 	params := []struct {
-		out   string
 		error error
+		out   string
 	}{
-		{"", errors.New("host www.amazon.com: So very bad")},
-		{"so bad", errors.New("host www.amazon.com: so bad, So very bad")},
+		{out: "", error: errors.New("host www.amazon.com: So very bad")},
+		{out: "so bad", error: errors.New("host www.amazon.com: so bad, So very bad")},
 	}
 
 	for _, param := range params {

@@ -7,21 +7,17 @@ import (
 )
 
 type SASLAuth struct {
-	SASLUsername  string `toml:"sasl_username"`
-	SASLPassword  string `toml:"sasl_password"`
-	SASLMechanism string `toml:"sasl_mechanism"`
-	SASLVersion   *int   `toml:"sasl_version"`
-
-	// GSSAPI config
-	SASLGSSAPIServiceName        string `toml:"sasl_gssapi_service_name"`
-	SASLGSSAPIAuthType           string `toml:"sasl_gssapi_auth_type"`
-	SASLGSSAPIDisablePAFXFAST    bool   `toml:"sasl_gssapi_disable_pafxfast"`
-	SASLGSSAPIKerberosConfigPath string `toml:"sasl_gssapi_kerberos_config_path"`
-	SASLGSSAPIKeyTabPath         string `toml:"sasl_gssapi_key_tab_path"`
-	SASLGSSAPIRealm              string `toml:"sasl_gssapi_realm"`
-
-	// OAUTHBEARER config. experimental. undoubtedly this is not good enough.
-	SASLAccessToken string `toml:"sasl_access_token"`
+	SASLVersion                  *int   `toml:"sasl_version"`
+	SASLUsername                 string `toml:"sasl_username"`
+	SASLPassword                 string `toml:"sasl_password"`
+	SASLMechanism                string `toml:"sasl_mechanism"`
+	SASLGSSAPIServiceName        string `toml:"sasl_gssapi_service_name"`         // GSSAPI config
+	SASLGSSAPIAuthType           string `toml:"sasl_gssapi_auth_type"`            // GSSAPI config
+	SASLGSSAPIKerberosConfigPath string `toml:"sasl_gssapi_kerberos_config_path"` // GSSAPI config
+	SASLGSSAPIKeyTabPath         string `toml:"sasl_gssapi_key_tab_path"`         // GSSAPI config
+	SASLGSSAPIRealm              string `toml:"sasl_gssapi_realm"`                // GSSAPI config
+	SASLAccessToken              string `toml:"sasl_access_token"`                // OAUTHBEARER config. experimental. undoubtedly this is not good enough.
+	SASLGSSAPIDisablePAFXFAST    bool   `toml:"sasl_gssapi_disable_pafxfast"`     // GSSAPI config
 }
 
 // SetSASLConfig configures SASL for kafka (sarama)

@@ -50,12 +50,12 @@ type fakeFileSystem struct {
 
 //nolint:unused
 type fakeFileInfo struct {
+	modtime  time.Time
+	sys      interface{}
 	name     string
 	size     int64
 	filemode uint32
-	modtime  time.Time
 	isdir    bool
-	sys      interface{}
 }
 
 func (f fakeFileInfo) Name() string       { return f.name }                  //nolint:unused

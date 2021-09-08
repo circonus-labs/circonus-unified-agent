@@ -8,9 +8,9 @@ import (
 
 // Contains helpers for direct metric input plugins
 
-func AddMetricToDest(dest *trapmetrics.TrapMetrics, pluginID, metricGroup, metricName string, metricTags map[string]string, value interface{}, ts time.Time) error {
+func AddMetricToDest(dest *trapmetrics.TrapMetrics, pluginID, metricGroup, metricName string, metricTags, staticInputTags map[string]string, value interface{}, ts time.Time) error {
 
-	tags := ConvertTags(pluginID, metricGroup, metricTags)
+	tags := ConvertTags(pluginID, metricGroup, metricTags, staticInputTags)
 
 	switch v := value.(type) {
 	case string:
@@ -26,10 +26,10 @@ func AddMetricToDest(dest *trapmetrics.TrapMetrics, pluginID, metricGroup, metri
 	return nil
 }
 
-func ConvertTags(pluginID, metricGroup string, tags map[string]string) trapmetrics.Tags {
+func ConvertTags(pluginID, metricGroup string, tags, staticTags map[string]string) trapmetrics.Tags {
 	var ctags trapmetrics.Tags
 
-	if len(tags) == 0 && pluginID == "" {
+	if len(tags) == 0 && len(staticTags) == 0 && pluginID == "" {
 		return ctags
 	}
 	if metricGroup == "" {
@@ -43,6 +43,11 @@ func ConvertTags(pluginID, metricGroup string, tags map[string]string) trapmetri
 		if key == "input_metric_group" {
 			haveInputMetricGroup = true
 		}
+		ctags = append(ctags, trapmetrics.Tag{Category: key, Value: val})
+	}
+
+	// add static input plugin tags
+	for key, val := range staticTags {
 		ctags = append(ctags, trapmetrics.Tag{Category: key, Value: val})
 	}
 

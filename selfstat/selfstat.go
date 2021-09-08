@@ -110,8 +110,8 @@ func Metrics() []cua.Metric {
 }
 
 type Registry struct {
-	stats map[uint64]map[string]Stat
 	mu    sync.Mutex
+	stats map[uint64]map[string]Stat
 }
 
 func (r *Registry) register(measurement, field string, tags map[string]string) Stat {

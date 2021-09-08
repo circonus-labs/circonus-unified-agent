@@ -21,12 +21,11 @@ func newDecoder(t transform.Transformer) *Decoder {
 // error per se. Each byte that cannot be transcoded will be represented in the
 // output by the UTF-8 encoding of '\uFFFD', the replacement rune.
 type Decoder struct {
-	transform.Transformer
-
 	// This forces external creators of Decoders to use names in struct
 	// initializers, allowing for future extendibility without having to break
 	// code.
 	_ struct{}
+	transform.Transformer
 }
 
 // Bytes converts the given encoded bytes to UTF-8. It returns the converted
@@ -62,17 +61,16 @@ type Reader struct {
 	r   io.Reader
 	t   transform.Transformer
 	err error
-
 	// dst[dst0:dst1] contains bytes that have been transformed by t but
 	// not yet copied out via Read.
-	dst        []byte
-	dst0, dst1 int
-
+	dst []byte
 	// src[src0:src1] contains bytes that have been read from r but not
 	// yet transformed through t.
-	src        []byte
-	src0, src1 int
-
+	src  []byte
+	dst0 int
+	dst1 int
+	src0 int
+	src1 int
 	// transformComplete is whether the transformation is complete,
 	// regardless of whether or not it was successful.
 	transformComplete bool

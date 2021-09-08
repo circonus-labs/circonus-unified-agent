@@ -36,14 +36,13 @@ type sMap map[string]map[int]string // "https" == services["tcp"][443]
 var services sMap
 
 type PortName struct {
-	SourceTag       string `toml:"tag"`
-	SourceField     string `toml:"field"`
-	Dest            string `toml:"dest"`
-	DefaultProtocol string `toml:"default_protocol"`
-	ProtocolTag     string `toml:"protocol_tag"`
-	ProtocolField   string `toml:"protocol_field"`
-
-	Log cua.Logger `toml:"-"`
+	Log             cua.Logger `toml:"-"`
+	SourceField     string     `toml:"field"`
+	Dest            string     `toml:"dest"`
+	DefaultProtocol string     `toml:"default_protocol"`
+	ProtocolTag     string     `toml:"protocol_tag"`
+	ProtocolField   string     `toml:"protocol_field"`
+	SourceTag       string     `toml:"tag"`
 }
 
 func (d *PortName) SampleConfig() string {

@@ -1,3 +1,4 @@
+//go:build !windows
 // +build !windows
 
 /*
@@ -29,11 +30,9 @@ type tags struct {
 // Lustre proc files can change between versions, so we want to future-proof
 // by letting people choose what to look at.
 type Lustre2 struct {
-	OstProcfiles []string `toml:"ost_procfiles"`
-	MdsProcfiles []string `toml:"mds_procfiles"`
-
-	// allFields maps and OST name to the metric fields associated with that OST
-	allFields map[tags]map[string]interface{}
+	allFields    map[tags]map[string]interface{} // allFields maps and OST name to the metric fields associated with that OST
+	OstProcfiles []string                        `toml:"ost_procfiles"`
+	MdsProcfiles []string                        `toml:"mds_procfiles"`
 }
 
 var sampleConfig = `
@@ -52,14 +51,16 @@ var sampleConfig = `
 `
 
 /* The wanted fields would be a []string if not for the
-lines that start with read_bytes/write_bytes and contain
+   lines that start with read_bytes/write_bytes and contain
    both the byte count and the function call count
-*/
-type mapping struct {
 	inProc   string // What to look for at the start of a line in /proc/fs/lustre/*
 	field    uint32 // which field to extract from that line
 	reportAs string // What measurement name to use
-	// tag      string // Additional tag to add for this metric
+*/
+type mapping struct {
+	inProc   string
+	reportAs string
+	field    uint32
 }
 
 var wantedOstFfields = []*mapping{

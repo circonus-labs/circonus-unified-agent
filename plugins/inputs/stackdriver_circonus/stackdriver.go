@@ -12,6 +12,7 @@ import (
 	monitoring "cloud.google.com/go/monitoring/apiv3"
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/internal"
+	circmgr "github.com/circonus-labs/circonus-unified-agent/internal/circonus"
 	"github.com/circonus-labs/circonus-unified-agent/internal/limiter"
 	cuametric "github.com/circonus-labs/circonus-unified-agent/metric"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs" // Imports the Stackdriver Monitoring client package.
@@ -108,80 +109,75 @@ var (
 	defaultDelay    = internal.Duration{Duration: 5 * time.Minute}
 )
 
-type (
-	// Stackdriver is the Google Stackdriver config info.
-	Stackdriver struct {
-		Project                         string                `toml:"project"`
-		RateLimit                       int                   `toml:"rate_limit"`
-		Window                          internal.Duration     `toml:"window"`
-		Delay                           internal.Duration     `toml:"delay"`
-		CacheTTL                        internal.Duration     `toml:"cache_ttl"`
-		MetricTypePrefixInclude         []string              // `toml:"metric_type_prefix_include"`
-		MetricTypePrefixExclude         []string              // `toml:"metric_type_prefix_exclude"`
-		GatherRawDistributionBuckets    bool                  `toml:"gather_raw_distribution_buckets"`
-		DistributionAggregationAligners []string              `toml:"distribution_aggregation_aligners"`
-		Filter                          *ListTimeSeriesFilter `toml:"filter"`
+// Stackdriver is the Google Stackdriver config info.
+type Stackdriver struct {
+	prevEnd                         time.Time
+	client                          metricClient
+	Log                             cua.Logger
+	timeSeriesConfCache             *timeSeriesConfCache
+	Filter                          *ListTimeSeriesFilter `toml:"filter"`
+	Project                         string                `toml:"project"`
+	MetricTypePrefixExclude         []string
+	MetricTypePrefixInclude         []string
+	DistributionAggregationAligners []string          `toml:"distribution_aggregation_aligners"`
+	CacheTTL                        internal.Duration `toml:"cache_ttl"`
+	Delay                           internal.Duration `toml:"delay"`
+	Window                          internal.Duration `toml:"window"`
+	RateLimit                       int               `toml:"rate_limit"`
+	GatherRawDistributionBuckets    bool              `toml:"gather_raw_distribution_buckets"`
+}
 
-		Log cua.Logger
+// ListTimeSeriesFilter contains resource labels and metric labels
+type ListTimeSeriesFilter struct {
+	ResourceLabels []*Label `json:"resource_labels"`
+	MetricLabels   []*Label `json:"metric_labels"`
+}
 
-		client              metricClient
-		timeSeriesConfCache *timeSeriesConfCache
-		prevEnd             time.Time
-	}
+// Label contains key and value
+type Label struct {
+	Key   string `toml:"key"`
+	Value string `toml:"value"`
+}
 
-	// ListTimeSeriesFilter contains resource labels and metric labels
-	ListTimeSeriesFilter struct {
-		ResourceLabels []*Label `json:"resource_labels"`
-		MetricLabels   []*Label `json:"metric_labels"`
-	}
+// TimeSeriesConfCache caches generated timeseries configurations
+type timeSeriesConfCache struct {
+	Generated       time.Time
+	TimeSeriesConfs []*timeSeriesConf
+	TTL             time.Duration
+}
 
-	// Label contains key and value
-	Label struct {
-		Key   string `toml:"key"`
-		Value string `toml:"value"`
-	}
+// Internal structure which holds our configuration for a particular GCP time series.
+type timeSeriesConf struct {
+	// The GCP API request that we'll use to fetch data for this time series.
+	listTimeSeriesRequest *monitoringpb.ListTimeSeriesRequest
+	// The influx measurement name this time series maps to
+	measurement string
+	// The prefix to use before any influx field names that we'll write for
+	// this time series. (Or, if we only decide to write one field name, this
+	// field just holds the value of the field name.)
+	fieldKey string
+}
 
-	// TimeSeriesConfCache caches generated timeseries configurations
-	timeSeriesConfCache struct {
-		TTL             time.Duration
-		Generated       time.Time
-		TimeSeriesConfs []*timeSeriesConf
-	}
+// stackdriverMetricClient is a metric client for stackdriver
+type stackdriverMetricClient struct {
+	log  cua.Logger
+	conn *monitoring.MetricClient
 
-	// Internal structure which holds our configuration for a particular GCP time
-	// series.
-	timeSeriesConf struct {
-		// The influx measurement name this time series maps to
-		measurement string
-		// The prefix to use before any influx field names that we'll write for
-		// this time series. (Or, if we only decide to write one field name, this
-		// field just holds the value of the field name.)
-		fieldKey string
-		// The GCP API request that we'll use to fetch data for this time series.
-		listTimeSeriesRequest *monitoringpb.ListTimeSeriesRequest
-	}
+	listMetricDescriptorsCalls selfstat.Stat
+	listTimeSeriesCalls        selfstat.Stat
+}
 
-	// stackdriverMetricClient is a metric client for stackdriver
-	stackdriverMetricClient struct {
-		log  cua.Logger
-		conn *monitoring.MetricClient
+// metricClient is convenient for testing
+type metricClient interface {
+	ListMetricDescriptors(ctx context.Context, req *monitoringpb.ListMetricDescriptorsRequest) (<-chan *metricpb.MetricDescriptor, error)
+	ListTimeSeries(ctx context.Context, req *monitoringpb.ListTimeSeriesRequest) (<-chan *monitoringpb.TimeSeries, error)
+	Close() error
+}
 
-		listMetricDescriptorsCalls selfstat.Stat
-		listTimeSeriesCalls        selfstat.Stat
-	}
-
-	// metricClient is convenient for testing
-	metricClient interface {
-		ListMetricDescriptors(ctx context.Context, req *monitoringpb.ListMetricDescriptorsRequest) (<-chan *metricpb.MetricDescriptor, error)
-		ListTimeSeries(ctx context.Context, req *monitoringpb.ListTimeSeriesRequest) (<-chan *monitoringpb.TimeSeries, error)
-		Close() error
-	}
-
-	lockedSeriesGrouper struct {
-		sync.Mutex
-		*cuametric.SeriesGrouper
-	}
-)
+type lockedSeriesGrouper struct {
+	sync.Mutex
+	*cuametric.SeriesGrouper
+}
 
 func (g *lockedSeriesGrouper) Add(
 	measurement string,
@@ -616,6 +612,7 @@ func (s *Stackdriver) gatherTimeSeries(
 	for tsDesc := range tsRespChan {
 		tags := map[string]string{
 			"resource_type": tsDesc.Resource.Type,
+			"project_id":    s.Project,
 		}
 		for k, v := range tsDesc.Resource.Labels {
 			tags[k] = v
@@ -813,68 +810,10 @@ func (s *Stackdriver) done(ctx context.Context) bool {
 func init() {
 	f := func() cua.Input {
 		return &Stackdriver{
-			CacheTTL:  defaultCacheTTL,
-			RateLimit: defaultRateLimit,
-			Delay:     defaultDelay,
-			MetricTypePrefixInclude: []string{
-				"actions.googleapis.com/",              // Google Assistant Smart Home
-				"aiplatform.googleapis.com/",           // AI Platform (Unified)
-				"apigateway.googleapis.com/",           // API Gateway
-				"apigee.googleapis.com/",               // Apigee
-				"appengine.googleapis.com/",            // App Engine
-				"autoscaler.googleapis.com/",           // Compute Engine Autoscaler
-				"bigquery.googleapis.com/",             // BigQuery
-				"bigquerybiengine.googleapis.com/",     // BigQuery BI Engine
-				"bigquerydatatransfer.googleapis.com/", // BigQuery Data Transfer Service
-				"bigtable.googleapis.com/",             // Cloud BigTable
-				"cloudfunctions.googleapis.com/",       // Cloud Functions
-				"cloudiot.googleapis.com/",             // IoT Core
-				"cloudsql.googleapis.com/",             // Cloud SQL
-				"cloudtasks.googleapis.com/",           // Cloud Tasks (formerly App Engine Task Queue)
-				"cloudtrace.googleapis.com/",           // Cloud Trace
-				"composer.googleapis.com/",             // Cloud Composer
-				"compute.googleapis.com/",              // Compute Engine
-				"dataflow.googleapis.com/",             // Dataflow
-				"dataproc.googleapis.com/",             // Dataproc
-				"datastore.googleapis.com/",            // Datastore
-				"dlp.googleapis.com/",                  // Cloud Data Loss Prevention
-				"dns.googleapis.com/",                  // Cloud DNS
-				"file.googleapis.com/",                 // Filestore
-				"firebaseappcheck.googleapis.com/",     // Firebase (1 metric: verdicts from performing Firebase App Check verifications)
-				"firebasedatabase.googleapis.com/",     // Firebase (database metrics)
-				"firebasehosting.googleapis.com/",      // Firebase (general hosting)
-				"firebasestorage.googleapis.com/",      // Cloud Storage for Firebase
-				"firestore.googleapis.com/",            // Firestore
-				"firewallinsights.googleapis.com/",     // Firewall Insights
-				"healthcare.googleapis.com/",           // Cloud Healthcare API
-				"iam.googleapis.com/",                  // Identity & Access Management
-				"interconnect.googleapis.com/",         // Cloud Interconnect
-				"loadbalancing.googleapis.com/",        // Cloud Load Balancing
-				"logging.googleapis.com/",              // Cloud Logging
-				"managedidentities.googleapis.com/",    // Managed Service for Microsoft Active Directory
-				"memcache.googleapis.com/",             // Memorystore for Memcached
-				"metastore.googleapis.com/",            // Dataproc Metastore
-				"ml.googleapis.com/",                   // AI Platform (formerly Cloud Machine Learning)
-				"monitoring.googleapis.com/",           // Cloud Monitoring
-				"networking.googleapis.com/",           // Network Topology
-				"networksecurity.googleapis.com/",      // Google Cloud Armor
-				"privateca.googleapis.com/",            // Certificate Authority Service
-				"pubsub.googleapis.com/",               // Pub/Sub
-				"pubsublite.googleapis.com/",           // Pub/Sub Lite
-				"recaptchaenterprise.googleapis.com/",  // reCAPTCHA Enterprise
-				"recommendationengine.googleapis.com/", // Recommendations AI
-				"redis.googleapis.com/",                // Memorystore for Redis
-				"router.googleapis.com/",               // Cloud Router
-				"run.googleapis.com/",                  // Cloud Run
-				"serviceruntime.googleapis.com/",       // all Google Cloud APIs & Cloud Endpoints
-				"spanner.googleapis.com/",              // Cloud Spanner
-				"storage.googleapis.com/",              // Cloud Storage
-				"storagetransfer.googleapis.com/",      // Storage Transfer Service for on-premises data
-				"tpu.googleapis.com/",                  // Cloud TPU
-				"vpcaccess.googleapis.com/",            // Virtual Private Cloud (VPC)
-				"vpn.googleapis.com/",                  // Cloud VPN
-				"workflows.googleapis.com/",            // Workflows
-			},
+			CacheTTL:                        defaultCacheTTL,
+			RateLimit:                       defaultRateLimit,
+			Delay:                           defaultDelay,
+			MetricTypePrefixInclude:         circmgr.GCPMetricTypePrefixInclude(),
 			MetricTypePrefixExclude:         []string{},
 			GatherRawDistributionBuckets:    true,
 			DistributionAggregationAligners: []string{},

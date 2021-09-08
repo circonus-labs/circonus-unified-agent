@@ -1,3 +1,4 @@
+//go:build !windows
 // +build !windows
 
 package exec
@@ -77,9 +78,9 @@ var crTests = []CarriageReturnTest{
 }
 
 type runnerMock struct {
+	err    error
 	out    []byte
 	errout []byte
-	err    error
 }
 
 func newRunnerMock(out []byte, errout []byte, err error) Runner {
@@ -208,9 +209,9 @@ func TestExecCommandWithoutGlobAndPath(t *testing.T) {
 
 func TestTruncate(t *testing.T) {
 	tests := []struct {
-		name string
 		bufF func() *bytes.Buffer
 		expF func() *bytes.Buffer
+		name string
 	}{
 		{
 			name: "should not truncate",

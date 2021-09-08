@@ -25,8 +25,8 @@ func (rp RunningProcessors) Less(i, j int) bool { return rp[i].Config.Order < rp
 type ProcessorConfig struct {
 	Name   string
 	Alias  string
-	Order  int64
 	Filter Filter
+	Order  int64
 }
 
 func NewRunningProcessor(processor cua.StreamingProcessor, config *ProcessorConfig) *RunningProcessor {

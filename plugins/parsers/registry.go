@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
-	circjson "github.com/circonus-labs/circonus-unified-agent/plugins/parsers/circ_json"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/parsers/collectd"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/parsers/csv"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/parsers/dropwizard"
@@ -156,8 +155,6 @@ func NewParser(config *Config) (Parser, error) {
 	var err error
 	var parser Parser
 	switch config.DataFormat {
-	case "circjson":
-		parser, err = circjson.New(&circjson.Config{})
 	case "json":
 		parser, err = json.New(
 			&json.Config{

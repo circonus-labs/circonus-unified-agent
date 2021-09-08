@@ -1,6 +1,7 @@
 package circonus
 
 import (
+	"bytes"
 	"context"
 	"strconv"
 	"strings"
@@ -11,7 +12,7 @@ import (
 	"github.com/circonus-labs/go-trapmetrics"
 )
 
-func (c *Circonus) metricProcessor(id int, metrics []cua.Metric) int64 {
+func (c *Circonus) metricProcessor(id int, metrics []cua.Metric, buf bytes.Buffer) int64 {
 
 	c.Log.Debugf("processor %d, received %d batches", id, len(metrics))
 
@@ -70,7 +71,7 @@ func (c *Circonus) metricProcessor(id int, metrics []cua.Metric) int64 {
 			defer wg.Done()
 			subStart := time.Now()
 			d.queuedMetrics = int64(0)
-			result, err := d.metrics.Flush(ctx)
+			result, err := d.metrics.FlushWithBuffer(ctx, buf)
 			if err != nil {
 				c.Log.Warnf("submitting metrics (%s): %s", d.id, err)
 				return
@@ -263,6 +264,15 @@ func (c *Circonus) getMetricGroupTag(m cua.Metric) string {
 		// what the plugin identifies a subgroup of metrics as, some have multiple names
 		// e.g. internal, smart, aws, etc.
 		return m.Name()
+	}
+	return ""
+}
+
+func (c *Circonus) getMetricProjectTag(m cua.Metric) string {
+	for _, t := range m.TagList() {
+		if t.Key == "project_id" {
+			return t.Value
+		}
 	}
 	return ""
 }

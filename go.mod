@@ -105,7 +105,7 @@ require (
 	github.com/riemann/riemann-go-client v0.5.0
 	github.com/safchain/ethtool v0.0.0-20200218184317-f459e2d13664
 	github.com/samuel/go-zookeeper v0.0.0-20180130194729-c4fab1ac1bec // indirect
-	github.com/shirou/gopsutil/v3 v3.21.6
+	github.com/shirou/gopsutil/v3 v3.21.8
 	github.com/shopspring/decimal v0.0.0-20200105231215-408a2507e114 // indirect
 	github.com/sirupsen/logrus v1.4.2
 	github.com/streadway/amqp v0.0.0-20180528204448-e5adc2ada8b8
@@ -127,7 +127,7 @@ require (
 	golang.org/x/net v0.0.0-20210525063256-abc453219eb5
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys v0.0.0-20210608053332-aa57babbf139
+	golang.org/x/sys v0.0.0-20210816074244-15123e1e1f71
 	golang.org/x/text v0.3.6
 	golang.org/x/tools v0.0.0-20200317043434-63da46f3035e // indirect
 	golang.zx2c4.com/wireguard v0.0.0-20210604143328-f9b48a961cd2 // indirect

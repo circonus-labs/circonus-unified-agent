@@ -743,23 +743,23 @@ func TestParse_TemplateFields(t *testing.T) {
 
 	counterTests := []struct {
 		name  string
-		value int64
 		field string
+		value int64
 	}{
 		{
-			"my_counter",
-			2,
-			"f1",
+			name:  "my_counter",
+			value: 2,
+			field: "f1",
 		},
 		{
-			"my_counter",
-			1,
-			"f2",
+			name:  "my_counter",
+			value: 1,
+			field: "f2",
 		},
 		{
-			"my_counter",
-			110,
-			"f3",
+			name:  "my_counter",
+			value: 110,
+			field: "f3",
 		},
 	}
 	// Validate counters
@@ -772,18 +772,18 @@ func TestParse_TemplateFields(t *testing.T) {
 
 	gaugeTests := []struct {
 		name  string
-		value float64
 		field string
+		value float64
 	}{
 		{
-			"my_gauge",
-			0.9,
-			"f1",
+			name:  "my_gauge",
+			value: 0.9,
+			field: "f1",
 		},
 		{
-			"my_gauge",
-			10.1,
-			"f2",
+			name:  "my_gauge",
+			value: 10.1,
+			field: "f2",
 		},
 	}
 	// Validate gauges
@@ -796,18 +796,18 @@ func TestParse_TemplateFields(t *testing.T) {
 
 	setTests := []struct {
 		name  string
-		value int64
 		field string
+		value int64
 	}{
 		{
-			"my_set",
-			2,
-			"f1",
+			name:  "my_set",
+			value: 2,
+			field: "f1",
 		},
 		{
-			"my_set",
-			1,
-			"f2",
+			name:  "my_set",
+			value: 1,
+			field: "f2",
 		},
 	}
 	// Validate sets
@@ -831,29 +831,29 @@ func TestParse_Tags(t *testing.T) {
 	s := NewTestStatsd()
 
 	tests := []struct {
+		tags   map[string]string
 		bucket string
 		name   string
-		tags   map[string]string
 	}{
 		{
-			"cpu.idle,host=localhost",
-			"cpu_idle",
-			map[string]string{
+			bucket: "cpu.idle,host=localhost",
+			name:   "cpu_idle",
+			tags: map[string]string{
 				"host": "localhost",
 			},
 		},
 		{
-			"cpu.idle,host=localhost,region=west",
-			"cpu_idle",
-			map[string]string{
+			bucket: "cpu.idle,host=localhost,region=west",
+			name:   "cpu_idle",
+			tags: map[string]string{
 				"host":   "localhost",
 				"region": "west",
 			},
 		},
 		{
-			"cpu.idle,host=localhost,color=red,region=west",
-			"cpu_idle",
-			map[string]string{
+			bucket: "cpu.idle,host=localhost,color=red,region=west",
+			name:   "cpu_idle",
+			tags: map[string]string{
 				"host":   "localhost",
 				"region": "west",
 				"color":  "red",

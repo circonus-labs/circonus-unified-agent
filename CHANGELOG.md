@@ -1,3 +1,64 @@
+# v0.0.35
+
+* upd: gopsutil/v3 3.21.6->3.21.8
+* add: circ_http_json input plugin
+* upd: (outcirc) reusable bytes.Buffer for metric handling/flushing
+* dep: (outcirc) default destination (drop no dest metrics)
+* add: (outcirc) `project_id` awareness for metrics coming from stackdriver_circonus
+* add: (outcirc) `project_id` to metric meta when metrics come from stackdriver_circonus
+* upd: (outcirc) struct alignment
+* upd: (outcirc) use bytes.Buffer for metric flushing
+* dep: (outcirc) `one_check`
+* dep: (outcirc) "default" check (don't create anymore, just drop metrics with no discernable destination)
+* dep: (outcirc) `check_name_prefix` - using `agent.hostname` globally
+* upd: (outcirc) use metric meta struct
+* add: (outcirc) `cua_runtime` metric every minute
+* upd: (statsd) use metric meta data struct for DM
+* upd: (statsd) struct alignment
+* add: (stackdriver_circ) project_id as metric tag
+* upd: (stackdriver_circ) pull default list of services from circmgr
+* upd: (stackdriver_circ) struct align
+* add: (snmp) Tags to config so DM can use them
+* upd: (snmp) struct align
+* upd: (snmp) use metric meta struct
+* upd: (snmp) use flush pool for DM
+* upd: (snmp) don't cache snmp connections use and close (memory)
+* upd: (snmp) add static tags when using DM
+* add: (snmp) Close to snmp interface
+* upd: (snmp) fieldConvert to handle non-printable chars as encoded hex otherwise encode as string (text metric)
+* add: (snmp) close to mock snmp conn to satisfy interface
+* add: (snmp) flush handling pool for DM
+* upd: (ping) struct alignment and add Tags, so DM will see them
+* upd: (ping) use metric meta struct
+* upd: (ping) add static tags if configured on input
+* add: (internal) flag to control selfstat collection - with large number of plugin instances thousands of metrics can be generated
+* upd: (circmgr) move log msg re cache usage from info to debug
+* add: (circmgr) break out metric meta data (plugin,instance,group,project) (due to stackdriver_circonus special handling)
+* add: (circmgr) handling of project_id (stackdriver_circonus)
+* upd: (circmgr) remove service from search tags
+* upd: (circmgr) service check tag to _service
+* upd: (circmgr) use hostname vs checkNamePrefix
+* add: (circmgr) special handling for check type and display name for (stackdriver_circonus)
+* upd: (circmgr) cache tls config when loading checks from cache
+* upd: (circmgr) move dest key to MetricMeta struct method (stackdriver_circonus)
+* add: (circmgr) static tags param to AddMetricToDest for input plugin Tags attribute
+* add: (circmgr) stackdriver_circonus helper for vanity check display_name and single source of truth for gcp services
+* add: (intsnmp) conn.Close exposed as Close on wrapper
+* upd: (intsnmp) lint struct align
+* upd: (install) add `--ver` option to install_linux
+* upd: (config) eliminate global host tag
+* upd: (config) use single hostname setting from agent
+* add: (config) controlling of selfstats for internal plugin (can turn off for large number of plugin instances)
+* upd: (exconf) deprecate check_name_prefix for agent.circonus
+* upd: (exconf) clarify hostname setting and its affects
+* upd: (exconf) clarify broker setting and where to find broker ID
+* upd: go-trapcheck v0.0.7, go-trapmetrics v0.0.7
+* upd: v1.42 (lint)
+* upd: ignore windows arm64 due to OLE errors
+* upd: struct layout + go1.17
+* upd: (docker) remove deprecated option from config
+* upd: (docker) switch include source tag option to true in config, readme and example
+
 # v0.0.34
 
 * fix: location of binary for rpm/deb

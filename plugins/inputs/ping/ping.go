@@ -39,22 +39,23 @@ type Ping struct {
 	nativePingFunc    NativePingFunc
 	Privileged        *bool // Privileged mode
 	sourceAddress     string
-	Broker            string        `toml:"broker"`
-	Binary            string        // Ping executable binary
-	Method            string        // Method defines how to ping (native or exec)
-	Interface         string        // Interface or source address to send ping from (ping -I/-S <INTERFACE/SRC_ADDR>)
-	InstanceID        string        `toml:"instance_id"`
-	Urls              []string      // URLs to ping
-	Percentiles       []int         // Calculate the given percentiles when using native method
-	Arguments         []string      // Arguments for ping command. When arguments is not empty, system binary will be used and other options (ping_interval, timeout, etc) will be ignored
-	Deadline          int           // Ping deadline, in seconds. 0 means no deadline. (ping -w <DEADLINE>)
-	Count             int           // Number of pings to send (ping -c <COUNT>)
-	PingInterval      float64       `toml:"ping_interval"` // Interval at which to ping (ping -i <INTERVAL>)
-	calcTimeout       time.Duration // Pre-calculated timeout
-	Timeout           float64       // Per-ping timeout, in seconds. 0 means no timeout (ping -W <TIMEOUT>)
-	calcInterval      time.Duration // Pre-calculated interval
-	DirectMetrics     bool          `toml:"direct_metrics"` // enable direct metrics
-	IPv6              bool          // Whether to resolve addresses using ipv6 or not.
+	Broker            string            `toml:"broker"`
+	Binary            string            // Ping executable binary
+	Method            string            // Method defines how to ping (native or exec)
+	Interface         string            // Interface or source address to send ping from (ping -I/-S <INTERFACE/SRC_ADDR>)
+	InstanceID        string            `toml:"instance_id"`
+	Tags              map[string]string // need static inpupt tags for direct metrics
+	Urls              []string          // URLs to ping
+	Percentiles       []int             // Calculate the given percentiles when using native method
+	Arguments         []string          // Arguments for ping command. When arguments is not empty, system binary will be used and other options (ping_interval, timeout, etc) will be ignored
+	Deadline          int               // Ping deadline, in seconds. 0 means no deadline. (ping -w <DEADLINE>)
+	Count             int               // Number of pings to send (ping -c <COUNT>)
+	PingInterval      float64           `toml:"ping_interval"` // Interval at which to ping (ping -i <INTERVAL>)
+	calcTimeout       time.Duration     // Pre-calculated timeout
+	Timeout           float64           // Per-ping timeout, in seconds. 0 means no timeout (ping -W <TIMEOUT>)
+	calcInterval      time.Duration     // Pre-calculated interval
+	DirectMetrics     bool              `toml:"direct_metrics"` // enable direct metrics
+	IPv6              bool              // Whether to resolve addresses using ipv6 or not.
 }
 
 func (*Ping) Description() string {
@@ -212,7 +213,7 @@ func (p *Ping) addStats(acc cua.Accumulator, fields map[string]interface{}, tags
 	}
 
 	ts := time.Now()
-	mtags := circmgr.ConvertTags("ping", "", tags)
+	mtags := circmgr.ConvertTags("ping", "", tags, p.Tags)
 	for metricName, val := range fields {
 		switch v := val.(type) {
 		case string:
@@ -382,10 +383,11 @@ func (p *Ping) Init() error {
 
 	if p.DirectMetrics {
 		opts := &circmgr.MetricDestConfig{
-			PluginID:      "ping",
-			InstanceID:    p.InstanceID,
-			MetricGroupID: "",
-			Broker:        p.Broker,
+			MetricMeta: circmgr.MetricMeta{
+				PluginID:   "ping",
+				InstanceID: p.InstanceID,
+			},
+			Broker: p.Broker,
 		}
 		dest, err := circmgr.NewMetricDestination(opts, p.Log)
 		if err != nil {

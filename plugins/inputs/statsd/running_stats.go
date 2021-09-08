@@ -8,30 +8,47 @@ import (
 
 const defaultPercentileLimit = 1000
 
+// // RunningStats calculates a running mean, variance, standard deviation,
+// // lower bound, upper bound, count, and can calculate estimated percentiles.
+// // It is based on the incremental algorithm described here:
+// //    https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
+// type RunningStats struct {
+// 	k   float64
+// 	n   int64
+// 	ex  float64
+// 	ex2 float64
+
+// 	// Array used to calculate estimated percentiles
+// 	// We will store a maximum of PercLimit values, at which point we will start
+// 	// randomly replacing old values, hence it is an estimated percentile.
+// 	perc      []float64
+// 	PercLimit int
+
+// 	sum float64
+
+// 	lower float64
+// 	upper float64
+
+// 	// cache if we have sorted the list so that we never re-sort a sorted list,
+// 	// which can have very bad performance.
+// 	sorted bool
+// }
+
 // RunningStats calculates a running mean, variance, standard deviation,
 // lower bound, upper bound, count, and can calculate estimated percentiles.
 // It is based on the incremental algorithm described here:
 //    https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
 type RunningStats struct {
-	k   float64
-	n   int64
-	ex  float64
-	ex2 float64
-
-	// Array used to calculate estimated percentiles
-	// We will store a maximum of PercLimit values, at which point we will start
-	// randomly replacing old values, hence it is an estimated percentile.
 	perc      []float64
+	k         float64
+	n         int64
+	ex        float64
+	ex2       float64
 	PercLimit int
-
-	sum float64
-
-	lower float64
-	upper float64
-
-	// cache if we have sorted the list so that we never re-sort a sorted list,
-	// which can have very bad performance.
-	sorted bool
+	sum       float64
+	lower     float64
+	upper     float64
+	sorted    bool
 }
 
 func (rs *RunningStats) AddValue(v float64) {

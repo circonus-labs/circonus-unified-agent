@@ -78,5 +78,8 @@ elif [[ -f /etc/os-release ]]; then
     elif [[ "$NAME" = "Solus" ]]; then
         # Solus logic
         install_systemd /usr/lib/systemd/system/circonus-unified-agent.service
+    elif [[ "$NAME" = "SLES" ]]; then
+        # SuSE
+        install_systemd /usr/lib/systemd/system/circonus-unified-agent.service
     fi
 fi

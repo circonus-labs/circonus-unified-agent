@@ -37,5 +37,8 @@ elif [[ -f /etc/os-release ]]; then
         fi
     elif [[ "$NAME" = "Solus" ]]; then
         disable_systemd /usr/lib/systemd/system/circonus-unified-agent.service
+    elif [[ "$NAME" = "SLES" ]]; then
+        # SuSE
+        disable_systemd /usr/lib/systemd/system/circonus-unified-agent.service
     fi
 fi

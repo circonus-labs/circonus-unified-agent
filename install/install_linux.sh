@@ -94,7 +94,7 @@ __cua_init() {
     done
 
     # detect package installation command
-    cmd_list="yum dpkg"
+    cmd_list="yum dpkg rpm"
     for cmd in $cmd_list; do
         pkg_cmd=$(type -P $cmd)
         if [[ $? -eq 0 ]]; then
@@ -102,6 +102,10 @@ __cua_init() {
             (yum)
                 pkg_ext=".rpm"
                 pkg_args="localinstall -y"
+                ;;
+            (rpm)
+                pkg_ext=".rpm"
+                pkg_args="-iv"
                 ;;
             (dpkg)
                 pkg_ext=".deb"

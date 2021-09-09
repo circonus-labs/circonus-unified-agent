@@ -137,7 +137,6 @@ archives:
           - LICENSE
           - README.md
           - CHANGELOG.md
-          - etc/*
           - etc/**/*
           - service/*
 

@@ -1,5 +1,6 @@
 # v0.0.35
 
+* add: support SuSE variants (sles,suse,opensuse)
 * upd: gopsutil/v3 3.21.6->3.21.8
 * add: circ_http_json input plugin
 * upd: (outcirc) reusable bytes.Buffer for metric handling/flushing

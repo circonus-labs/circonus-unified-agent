@@ -137,6 +137,8 @@ archives:
           - LICENSE
           - README.md
           - CHANGELOG.md
+          - etc/example-circonus-unified-agent.conf
+          - etc/example-circonus-unified-agent_windows.conf
           - etc/**/*
           - service/*
 

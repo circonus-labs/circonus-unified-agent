@@ -1,3 +1,7 @@
+# v0.0.36
+
+* fix: ensure example configs included in base archives
+
 # v0.0.35
 
 * add: support SuSE variants (sles,suse,opensuse)

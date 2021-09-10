@@ -1,6 +1,6 @@
 # v0.0.36
 
-* fix: ensure example configs included in base archives
+* fix: ensure example configs included in base os build archives
 
 # v0.0.35
 

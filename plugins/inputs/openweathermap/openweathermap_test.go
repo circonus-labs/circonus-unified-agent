@@ -103,6 +103,7 @@ const sampleStatusResponse = `
 }
 `
 
+//nolint:gosec
 const groupWeatherResponse = `
 {
     "cnt": 1,

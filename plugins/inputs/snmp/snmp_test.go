@@ -702,9 +702,9 @@ func TestGather_host(t *testing.T) {
 
 func TestFieldConvert(t *testing.T) {
 	testTable := []struct {
-		input    gosnmp.SnmpPDU
 		expected interface{}
 		conv     string
+		input    gosnmp.SnmpPDU
 	}{
 		{input: gosnmp.SnmpPDU{Value: []byte("foo")}, conv: "", expected: string("foo")},
 		{input: gosnmp.SnmpPDU{Value: "0.123"}, conv: "float", expected: float64(0.123)},

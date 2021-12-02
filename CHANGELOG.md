@@ -1,3 +1,11 @@
+# v0.0.37
+
+* fix: deprecated syntax rpm/deb
+* fix: lint issues
+* upd: default collection interval 10s
+* upd: build(deps): bump github.com/shirou/gopsutil/v3 from 3.21.8 to 3.21.11
+* upd: build(deps): bump github.com/gosnmp/gosnmp from 1.32.0 to 1.34.0
+
 # v0.0.36
 
 * fix: ensure example configs included in base os build archives

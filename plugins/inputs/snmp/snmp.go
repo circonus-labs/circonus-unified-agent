@@ -1110,9 +1110,11 @@ func snmpTranslateCall(oid string) *TranslateItem {
 				if len(obj) == 0 {
 					continue
 				}
-				if i := strings.Index(obj, "("); i != -1 {
+				i := strings.Index(obj, "(")
+				j := strings.Index(obj, ")")
+				if i != -1 && j != -1 {
 					obj = obj[i+1:]
-					stc.oidNum += "." + obj[:strings.Index(obj, ")")]
+					stc.oidNum += "." + obj[:j]
 				} else {
 					stc.oidNum += "." + obj
 				}

@@ -93,8 +93,6 @@ nfpms:
         - deb
         - rpm
       bindir: /opt/circonus/unified-agent/sbin
-      empty_folders:
-        - /opt/circonus/unified-agent/etc/config.d
       contents:
         - src: "LICENSE"
           dst: "/opt/circonus/unified-agent/LICENSE"
@@ -109,6 +107,8 @@ nfpms:
         - src: "etc/example-circonus-unified-agent.conf" 
           dst: "/opt/circonus/unified-agent/etc/circonus-unified-agent.conf"
           type: "config|noreplace"
+        - dst: "/opt/circonus/unified-agent/etc/config.d"
+          type: "dir"
       overrides:
         deb:
           scripts:

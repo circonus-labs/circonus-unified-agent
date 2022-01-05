@@ -1,5 +1,6 @@
 # v0.0.38
 
+* build(deps): bump github.com/shirou/gopsutil/v3 from 3.21.11 to 3.21.12
 * fix: goreleaser-nfpm stuttering sbin dir
 
 # v0.0.37

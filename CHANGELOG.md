@@ -1,3 +1,7 @@
+# v0.0.38
+
+* fix: goreleaser-nfpm stuttering sbin dir
+
 # v0.0.37
 
 * fix: deprecated syntax rpm/deb

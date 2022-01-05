@@ -92,7 +92,7 @@ nfpms:
       formats:
         - deb
         - rpm
-      bindir: /opt/circonus/unified-agent/sbin
+      bindir: /opt/circonus/unified-agent
       contents:
         - src: "LICENSE"
           dst: "/opt/circonus/unified-agent/LICENSE"

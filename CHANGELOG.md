@@ -1,3 +1,7 @@
+# v0.0.39
+
+* add: input plugin to pull circonus httptrap stream tag formatted metrics [CIRC-7530]
+
 # v0.0.38
 
 * build(deps): bump github.com/shirou/gopsutil/v3 from 3.21.11 to 3.21.12

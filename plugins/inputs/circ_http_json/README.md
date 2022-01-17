@@ -1,6 +1,6 @@
 # Circonus HTTP JSON
 
-This input plugin provides the ability to fetch [Circonus HTTPTrap stream tag and structured format metrics](https://docs.circonus.com/circonus/integrations/library/httptrap/#httptrap-json-format) and forward them to a Circonus Unified Agent check.
+This input plugin provides the ability to fetch [Circonus HTTPTrap stream tag and structured format metrics](https://docs.circonus.com/circonus/integrations/library/json-push-httptrap/#stream-tags) and forward them to a Circonus Unified Agent check.
 
 ## Configuration
 
@@ -10,21 +10,17 @@ This input plugin provides the ability to fetch [Circonus HTTPTrap stream tag an
 [[inputs.circ_http_json]]
   instance_id = "idb_stats"
   url = "http://127.0.0.1:8112/stats.json?format=tagged"
-
-[[inputs.circ_http_json]]
-  instance_id = "idb_mtev"
-  url = "http://127.0.0.1:8112/mtev/stats.json?format=tagged"
 ```
 
-Note the addition of `?format=tagged` use for these endpoints to ensure stream tagged, structured metric format.
+Note the addition of `?format=tagged` query argument -- use for these ironDB endpoints to ensure stream tagged, structured metric format.
 
 ## Example Metric Format
 
 ```json
  {
    "foo|ST[env:prod,app:web]": { "_type": "n", "_value": 12 },
-   "foo|ST[env:qa,app:web]":   { "_type": "n", "_value": 0 },
-   "foo|ST[b\"fihiYXIp\":b\"PHF1dXg+\"]": { "_type": "n", "_value": 3 }
+   "foo|ST[env:qa,app:web]":   { "_type": "I", "_value": 0 },
+   "foo|ST[b\"fihiYXIp\":b\"PHF1dXg+\"]": { "_type": "L", "_value": 3 }
  }
 ```
 

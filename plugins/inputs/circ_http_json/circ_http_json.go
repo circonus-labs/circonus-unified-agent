@@ -1,10 +1,10 @@
 package circhttpjson
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -20,40 +20,18 @@ import (
 	"github.com/hashicorp/go-retryablehttp"
 )
 
-// Collect HTTPTrap JSON payloads and forward to circonus broker
-//
-// 1. Use HTTP to GET metrics in valid httptrap stream tagged, structured metric format.
-//  {
-//    "foo|ST[env:prod,app:web]": { "_type": "n", "_value": 12 },
-//    "foo|ST[env:qa,app:web]":   { "_type": "n", "_value": 0 },
-//    "foo|ST[b\"fihiYXIp\":b\"PHF1dXg+\"]": { "_type": "n", "_value": 3 }
-//  }
-//  _type must be a valid httptrap (reconnoiter) metric type i=int,I=uint,l=int64,L=uint64,n=double,s=text,hH=histograms
-//  see: https://docs.circonus.com/circonus/integrations/library/httptrap/#httptrap-json-format for more
-//       information - note, metrics must use stream tag, structured formatting not arbitrary json formatting.
-//
-// 2. Verify metrics are formatted correctly (json.Marshal)
-//
-// 3. Forward to httptrap check
-//
-// Note: this input only supports direct metrics - they do NOT go through a regular output plugin
-
-type Metric struct {
-	Value     interface{} `json:"_value"`
-	Timestamp *uint64     `json:"_ts,omitempty"`
-	Type      string      `json:"_type"`
-}
-
-type Metrics map[string]Metric
+// NOTE: this input only supports direct metrics - they do NOT go through a regular output plugin
 
 type CHJ struct {
 	Log        cua.Logger
 	dest       *trapmetrics.TrapMetrics
 	tlsCfg     *tls.Config
+	instLogger *Logshim
+	TLSCN      string
 	InstanceID string `json:"instance_id"`
 	URL        string
 	TLSCAFile  string
-	TLSCN      string
+	Debug      bool
 }
 
 func (chj *CHJ) Init() error {
@@ -84,6 +62,12 @@ func (chj *CHJ) Init() error {
 
 	chj.dest = dest
 
+	// this is needed for retryablehttp to work...
+	chj.instLogger = &Logshim{
+		logh:  chj.Log,
+		debug: chj.Debug,
+	}
+
 	return nil
 }
 
@@ -96,6 +80,10 @@ func (*CHJ) SampleConfig() string {
 instance_id = "" # required
 url = "" # required
 
+## optional, turn on debugging for the *metric fetch* phase of the plugin
+## metric submission, to the broker, will output via regular agent debug setting.
+debug = false
+
 ## Optional: tls ca cert file and common name to use
 ## pass if URL is https and not using a public ca
 # tls_ca_cert_file = ""
@@ -104,27 +92,32 @@ url = "" # required
 }
 
 func (chj *CHJ) Gather(ctx context.Context, _ cua.Accumulator) error {
-	if chj.dest != nil {
-		data, err := chj.getURL(ctx)
-		if err != nil {
-			return err
-		}
-
-		if err := chj.verifyJSON(data); err != nil {
-			return err
-		}
-
-		if _, err := chj.dest.FlushRawJSON(ctx, data); err != nil {
-			return err
-		}
+	if chj.dest == nil {
+		return fmt.Errorf("instance_id: %s -- no metric destination configured", chj.InstanceID)
 	}
+
+	data, err := chj.getURL(ctx)
+	if err != nil {
+		return fmt.Errorf("instance_id: %s -- fetching metrics from %s: %w", chj.InstanceID, chj.URL, err)
+	}
+
+	if err := chj.hasStreamtags(data); err != nil {
+		return fmt.Errorf("instance_id: %s -- no streamtags found in metrics", chj.InstanceID)
+	}
+
+	// if err := chj.verifyJSON(data); err != nil {
+	// 	return fmt.Errorf("instance_id: %s -- invalid json from %s: %w", chj.InstanceID, chj.URL, err)
+	// }
+
+	if _, err := chj.dest.FlushRawJSON(ctx, data); err != nil {
+		return fmt.Errorf("instance_id: %s -- flushing metrics: %w", chj.InstanceID, err)
+	}
+
 	return nil
 }
 
-// getURL fetches the raw json from an endpoint, the JSON must:
-//   1. use streamtag metric names
-//   2. adhere to circonus httptrap formatting
-//
+// getURL fetches the raw json from an endpoint, the JSON must adhere to circonus httptrap formatting
+// can handle tagged or un-tagged json formats -- the plugin just forwards the JSON it gets to the broker
 func (chj *CHJ) getURL(ctx context.Context) ([]byte, error) {
 	var client *http.Client
 
@@ -175,7 +168,7 @@ func (chj *CHJ) getURL(ctx context.Context) ([]byte, error) {
 
 	retryClient := retryablehttp.NewClient()
 	retryClient.HTTPClient = client
-	retryClient.Logger = chj.Log
+	retryClient.Logger = chj.instLogger
 	defer retryClient.HTTPClient.CloseIdleConnections()
 
 	resp, err := retryClient.Do(req)
@@ -186,24 +179,33 @@ func (chj *CHJ) getURL(ctx context.Context) ([]byte, error) {
 		return nil, fmt.Errorf("making request: %w", err)
 	}
 
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("response status: %d", resp.StatusCode)
+	}
+
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("reading response body: %w", err)
 	}
 
+	if len(body) == 0 {
+		return nil, fmt.Errorf("empty response body")
+	}
+
 	return body, nil
 }
 
-// verifyJSON simply unmarshals a []byte into a metrics struct (defined above)
-// if it works it is considered valid
-func (chj *CHJ) verifyJSON(data []byte) error {
+// hasStreamtags return true if there is at least one tagged metric
+func (chj *CHJ) hasStreamtags(data []byte) error {
+
 	if len(data) == 0 {
-		return fmt.Errorf("invalid JSON (empty)")
+		return fmt.Errorf("empty json")
 	}
-	var m Metrics
-	if err := json.Unmarshal(data, &m); err != nil {
-		return fmt.Errorf("json unmarshal: %w", err)
+
+	if !bytes.Contains(data, []byte("|ST[")) {
+		return fmt.Errorf("no streamtags found")
 	}
+
 	return nil
 }
 
@@ -259,3 +261,58 @@ func init() {
 		return &CHJ{}
 	})
 }
+
+//
+// use the simple validation in hasStreamtags, the method below is very expensive and should be used with caution
+//
+
+// type Metric struct {
+// 	Value     interface{} `json:"_value"`
+// 	Timestamp *uint64     `json:"_ts,omitempty"`
+// 	Type      string      `json:"_type"`
+// }
+
+// type Metrics map[string]Metric
+
+// // verifyJSON simply unmarshals a []byte into a metrics struct (defined above)
+// // if it works it is considered valid -- valid JSON formatting:
+// // https://docs.circonus.com/circonus/integrations/library/json-push-httptrap/#stream-tags
+// func (chj *CHJ) verifyJSON(data []byte) error {
+// 	if len(data) == 0 {
+// 		return fmt.Errorf("empty json")
+// 	}
+
+// 	// short circuit if a tagged metric found
+// 	if bytes.Contains(data, []byte("|ST[")) {
+// 		return nil
+// 	}
+
+// 	var d1 bytes.Buffer
+// 	if err := json.Compact(&d1, data); err != nil {
+// 		return fmt.Errorf("json compact: %w", err)
+// 	}
+
+// 	if d1.Len() == 0 {
+// 		return fmt.Errorf("invalid JSON (empty)")
+// 	}
+
+// 	var m Metrics
+// 	if err := json.Unmarshal(d1.Bytes(), &m); err != nil {
+// 		return fmt.Errorf("json unmarshal: %w", err)
+// 	}
+
+// 	if len(m) == 0 {
+// 		return fmt.Errorf("invalid JSON (no metrics)")
+// 	}
+
+// 	d2, err := json.Marshal(m)
+// 	if err != nil {
+// 		return fmt.Errorf("json marshal: %w", err)
+// 	}
+
+// 	if d1.Len() != len(d2) {
+// 		return fmt.Errorf("json invalid parse len: d1:%d != d2:%d", d1.Len(), len(d2))
+// 	}
+
+// 	return nil
+// }

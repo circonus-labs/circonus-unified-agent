@@ -1,0 +1,14 @@
+{
+    "foo|ST[env:prod,app:web]": {
+        "_type": "n",
+        "_value": 12
+    },
+    "foo|ST[env:qa,app:web]": {
+        "_type": "I",
+        "_value": 0
+    },
+    "foo|ST[b\"fihiYXIp\":b\"PHF1dXg+\"]": {
+        "_type": "L",
+        "_value": 3
+    }
+}

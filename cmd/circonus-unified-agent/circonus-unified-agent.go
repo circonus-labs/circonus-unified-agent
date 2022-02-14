@@ -230,7 +230,7 @@ func runAgent(ctx context.Context,
 }
 
 func usageExit(rc int) {
-	fmt.Println(internal.Usage)
+	fmt.Println(internal.Usage) //nolint
 	os.Exit(rc)
 }
 

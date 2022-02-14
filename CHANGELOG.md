@@ -1,3 +1,11 @@
+# v0.0.40
+
+* fix(snmp): bad slice indexing for oid components
+* add(snmp): oid to snmp get error messages
+* fix(lint): force local config file
+* fix: lint issues
+* build(deps): bump github.com/shirou/gopsutil/v3 from 3.21.12 to 3.22.1
+
 # v0.0.39
 
 * add: input plugin to pull circonus httptrap stream tag formatted metrics [CIRC-7530]
@@ -109,8 +117,8 @@
 * upd: switch trap packages to circonus-labs
 * fix: (config, example confs) win perf registry quota counter name
 * feat: ping direct metric mode
-  * add: units tag to rtt histogram
-  * upd: default privileged to true
+    * add: units tag to rtt histogram
+    * upd: default privileged to true
 * upd: (example confs) cache and trace paths
 * fix: (circmgr) don't use empty metric group for tag
 * doc: add linux support mention back into readme

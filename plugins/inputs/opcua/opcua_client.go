@@ -334,7 +334,7 @@ func (o *OpcUA) getData() error {
 	o.ReadSuccess++
 	for i, d := range resp.Results {
 		if d.Status != ua.StatusOK {
-			return fmt.Errorf("Status not OK: %v", d.Status)
+			return fmt.Errorf("Status not OK: %v", d.Status) //nolint:errorlint
 		}
 		o.NodeData[i].TagName = o.NodeList[i].Name
 		if d.Value != nil {

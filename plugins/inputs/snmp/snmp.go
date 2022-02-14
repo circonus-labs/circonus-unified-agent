@@ -550,7 +550,7 @@ func (t Table) Build(gs snmpConnection, walk bool) (*RTable, error) {
 			// empty string. This results in all the non-table fields sharing the same
 			// index, and being added on the same row.
 			if pkt, err := gs.Get([]string{oid}); err != nil {
-				return nil, fmt.Errorf("performing get on field %s: %w", f.Name, err)
+				return nil, fmt.Errorf("performing get on field %s (oid:%s): %w", f.Name, oid, err)
 			} else if pkt != nil && len(pkt.Variables) > 0 && pkt.Variables[0].Type != gosnmp.NoSuchObject && pkt.Variables[0].Type != gosnmp.NoSuchInstance {
 				ent := pkt.Variables[0]
 				fv, err := fieldConvert(f.Conversion, ent)
@@ -1113,8 +1113,8 @@ func snmpTranslateCall(oid string) *TranslateItem {
 				i := strings.Index(obj, "(")
 				j := strings.Index(obj, ")")
 				if i != -1 && j != -1 {
-					obj = obj[i+1:]
-					stc.oidNum += "." + obj[:j]
+					elem := obj[i+1 : j]
+					stc.oidNum += "." + elem
 				} else {
 					stc.oidNum += "." + obj
 				}

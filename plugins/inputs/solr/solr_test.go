@@ -1,3 +1,4 @@
+//nolint
 package solr
 
 import (
@@ -113,13 +114,13 @@ func createMockServer() *httptest.Server {
 		switch {
 		case strings.Contains(r.URL.Path, "/solr/admin/cores"):
 			w.WriteHeader(http.StatusOK)
-			fmt.Fprintln(w, statusResponse)
+			fmt.Fprintln(w, statusResponse) //nolint:govet
 		case strings.Contains(r.URL.Path, "solr/main/admin"):
 			w.WriteHeader(http.StatusOK)
-			fmt.Fprintln(w, mBeansMainResponse)
+			fmt.Fprintln(w, mBeansMainResponse) //nolint:govet
 		case strings.Contains(r.URL.Path, "solr/core1/admin"):
 			w.WriteHeader(http.StatusOK)
-			fmt.Fprintln(w, mBeansCore1Response)
+			fmt.Fprintln(w, mBeansCore1Response) //nolint:govet
 		default:
 			w.WriteHeader(http.StatusNotFound)
 			fmt.Fprintln(w, "nope")

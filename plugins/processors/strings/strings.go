@@ -8,6 +8,8 @@ import (
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/processors"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 type Strings struct {
@@ -241,7 +243,7 @@ func (s *Strings) initOnce() {
 		s.converters = append(s.converters, c)
 	}
 	for _, c := range s.Titlecase {
-		c.fn = strings.Title
+		c.fn = cases.Title(language.Und, cases.NoLower).String
 		s.converters = append(s.converters, c)
 	}
 	for _, c := range s.Trim {

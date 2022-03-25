@@ -1,3 +1,9 @@
+# v0.0.41
+
+* add: --apiurl argument to installer [CIRC-7756]
+* add: processor support (amd64,x86_64,aarch64,arm64) [CIRC-7877]
+* fix: handle booleans as numerics [CIRC-7781]
+
 # v0.0.40
 
 * fix(snmp): bad slice indexing for oid components

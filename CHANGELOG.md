@@ -4,6 +4,7 @@
 * add: processor support (amd64,x86_64,aarch64,arm64) [CIRC-7877]
 * fix: handle booleans as numerics [CIRC-7781]
 * upd: on windows, check for config in "C:\Program Files\Circonus\Circonus-Unified-Agent\etc\circonus-unified-agent.conf" [CIRC-7980]
+* doc: update doc/WINDOWS_SERVICE.md to reflect where installer is actually putting the files [CIRC-7980]
 
 # v0.0.40
 

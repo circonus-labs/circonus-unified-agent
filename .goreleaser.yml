@@ -109,6 +109,8 @@ nfpms:
           type: "config|noreplace"
         - dst: "/opt/circonus/unified-agent/etc/config.d"
           type: "dir"
+        - src: "external_plugins"
+          dst: "/opt/circonus/unified-agent/external_plugins"
       overrides:
         deb:
           scripts:
@@ -141,6 +143,7 @@ archives:
           - etc/example-circonus-unified-agent_windows.conf
           - etc/**/*
           - service/*
+          - external_plugins/**/*
 
 release:
     github:

@@ -762,7 +762,9 @@ func (c *Config) LoadDirectory(path string) error {
 // Try to find a default config file at these locations (in order):
 //   1. $CUA_CONFIG_PATH
 //   2. $HOME/.circonus/unified-agent/circonus-unified-agent.conf
-//   3. /opt/circonus/unified-agent/etc/circonus-unified-agent.conf
+//   3. os specific:
+//      default: /opt/circonus/unified-agent/etc/circonus-unified-agent.conf
+//      windows: "C:\Program Files\Circonus\Circonus-Unified-Agent\etc\circonus-unified-agent.conf"
 //
 func getDefaultConfigPath() (string, error) {
 	envfile := os.Getenv("CUA_CONFIG_PATH")
@@ -773,7 +775,7 @@ func getDefaultConfigPath() (string, error) {
 		if programFiles == "" { // Should never happen
 			programFiles = `C:\Program Files`
 		}
-		etcfile = programFiles + `\Circonus-unified-agent\circonus-unified-agent.conf`
+		etcfile = programFiles + `\Circonus\Circonus-Unified-Agent\etc\circonus-unified-agent.conf`
 	}
 	for _, path := range []string{envfile, homefile, etcfile} {
 		if _, err := os.Stat(path); err == nil {

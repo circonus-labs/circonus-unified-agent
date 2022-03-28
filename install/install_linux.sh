@@ -14,7 +14,10 @@ BOLD=$(tput bold)
 set -e
 
 cua_version=""
-pkg_arch="amd64" # currently: only amd64
+# amd64 or arm64
+# (note, x86_64 will be aliased to amd64)
+# (note, aarch64 will be aliased to arm64)
+pkg_arch="amd64" # default
 pkg_ext=""       # currently: rpm or deb
 pkg_cmd=""       # currently: yum or dpkg
 pkg_args=""
@@ -22,6 +25,7 @@ pkg_file=""
 pkg_url=""
 cua_api_key=""
 cua_api_app=""
+cua_api_url=""
 cua_conf_file="/opt/circonus/unified-agent/etc/circonus-unified-agent.conf"
 
 usage() {
@@ -35,6 +39,8 @@ Options
 
   --key           Circonus API key/token **${BOLD}REQUIRED${NORMAL}**
   [--app]         Circonus API app name (authorized w/key) Default: circonus-unified-agent
+  [--apiurl]      Circonus API URL (e.g. https://api.circonus.com/v2) Default: https://api.circonus.com/v2
+  [--arch]        Circonus package architecture (amd64, arm64) Default: return from 'uname -m'
   [--ver]         Install specific version (use semver tag from repository releases - e.g. v0.0.32)
   [--help]        This message
 
@@ -70,6 +76,21 @@ __parse_parameters() {
                 fail "--app must be followed by an api app."
             fi
             ;;
+        (--apiurl)
+            if [[ -n "${1:-}" ]]; then
+                cua_api_url="$1"
+                shift
+            else
+                fail "--url must be followed by an api url."
+            fi
+        (--arch)
+            if [[ -n "${1:-}" ]]; then
+                pkg_arch="$1"
+                shift
+            else
+                fail "--arch must be followed by an architecture."
+            fi
+            ;;
         (--ver)
             if [[ -n "${1:-}" ]]; then
                 ver="$1"
@@ -79,12 +100,33 @@ __parse_parameters() {
                 fail "--ver must be followed by a valid semver (e.g. v0.0.32)."
             fi
             ;;
+        (--help)
+            usage
+            exit 0
+            ;;
+        (*)
+            fail "Unknown parameter: $token"
+            ;;
         esac
     done
 }
 
 __cua_init() {
     set +o errexit
+
+    # set the package architecture
+    # (note, an explicit --arch parameter will override this)
+    case "$(uname -m)" in
+    (amd64|x86_64)
+        pkg_arch="amd64"
+        ;;
+    (arm64|aarch64)
+        pkg_arch="arm64"
+        ;;
+    (*)
+        fail "Unsupported architecture: $os_arch"
+        ;;
+    esac    
     
     # trigger error if needed commands are not found...
     local cmd_list="cat curl sed uname mkdir systemctl basename"
@@ -164,13 +206,19 @@ __configure_agent() {
     [[ -f $cua_conf_file ]] || fail "config file (${cua_conf_file}) not found"
 
     log "\tSetting Circonus API key in configuration"
-    \sed -i -e "s/  api_token = \"\"/  api_token = \"${cua_api_key}\"/" $cua_conf_file
+    \sed -i -e "s/    api_token = \"\"/    api_token = \"${cua_api_key}\"/" $cua_conf_file
     [[ $? -eq 0 ]] || fail "updating ${cua_conf_file} with api key"
 
     if [[ -n "${cua_api_app}" ]]; then
         log "\tSetting Circonus API app name in configuration"
-        \sed -i -e "s/  api_app = \"\"/  api_app = \"${cua_api_app}\"/" $cua_conf_file
+        \sed -i -e "s/    # api_app = \"circonus-unified-agent\"/    api_app = \"${cua_api_app}\"/" $cua_conf_file
         [[ $? -eq 0 ]] || fail "updating ${cua_conf_file} with api app"
+    fi
+
+    if [[ -n "${cua_api_url}" ]]; then
+        log "\tSetting Circonus API URL in configuration"
+        \sed -i -e "s/    # api_url = \"https://api.circonus.com/\"/    api_url = \"${cua_api_url}\"/" $cua_conf_file
+        [[ $? -eq 0 ]] || fail "updating ${cua_conf_file} with api url"
     fi
 
     log "Restarting circonus-unified-agent service"

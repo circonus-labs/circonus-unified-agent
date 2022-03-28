@@ -1,3 +1,13 @@
+# v0.0.41
+
+* add: --apiurl argument to installer [CIRC-7756]
+* add: processor support (amd64,x86_64,aarch64,arm64) oracle linux on arm specifically [CIRC-7730]
+* fix: handle booleans as numerics [CIRC-7781]
+* upd: on windows, check for config in "C:\Program Files\Circonus\Circonus-Unified-Agent\etc\circonus-unified-agent.conf" [CIRC-7980]
+* doc: update doc/WINDOWS_SERVICE.md to reflect where installer is actually putting the files [CIRC-7980]
+* add: external plugin support
+* add: external plugin for oracle metrics [CIRC-7877]
+
 # v0.0.40
 
 * fix(snmp): bad slice indexing for oid components

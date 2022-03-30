@@ -2,11 +2,13 @@
 
 This plugin gather queues, topics & subscribers metrics using ActiveMQ Console API.
 
-### Configuration:
+### Configuration
 
 ```toml
 # Description
 [[inputs.activemq]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+  
   ## ActiveMQ WebConsole URL
   url = "http://127.0.0.1:8161"
 
@@ -38,41 +40,43 @@ This plugin gather queues, topics & subscribers metrics using ActiveMQ Console A
 Every effort was made to preserve the names based on the XML response from the ActiveMQ Console API.
 
 - activemq_queues
-  - tags:
-    - name
-    - source
-    - port
-  - fields:
-    - size
-    - consumer_count
-    - enqueue_count
-    - dequeue_count
+    - tags:
+        - name
+        - source
+        - port
+    - fields:
+        - size
+        - consumer_count
+        - enqueue_count
+        - dequeue_count
+
 + activemq_topics
-  - tags:
-    - name
-    - source
-    - port
-  - fields:
-    - size
-    - consumer_count
-    - enqueue_count
-    - dequeue_count
+    - tags:
+        - name
+        - source
+        - port
+    - fields:
+        - size
+        - consumer_count
+        - enqueue_count
+        - dequeue_count
+
 - activemq_subscribers
-  - tags:
-    - client_id
-    - subscription_name
-    - connection_id
-    - destination_name
-    - selector
-    - active
-    - source
-    - port
-  - fields:
-    - pending_queue_size
-    - dispatched_queue_size
-    - dispatched_counter
-    - enqueue_counter
-    - dequeue_counter
+    - tags:
+        - client_id
+        - subscription_name
+        - connection_id
+        - destination_name
+        - selector
+        - active
+        - source
+        - port
+    - fields:
+        - pending_queue_size
+        - dispatched_queue_size
+        - dispatched_counter
+        - enqueue_counter
+        - dequeue_counter
 
 ### Example Output
 

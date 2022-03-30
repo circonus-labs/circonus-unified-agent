@@ -294,6 +294,8 @@ func init() {
 }
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Required. Name of Google Cloud Platform (GCP) Project that owns
   ## the given PubSub subscription.
   project = "my-project"

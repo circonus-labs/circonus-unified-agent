@@ -17,7 +17,11 @@ func (*Stats) Description() string {
 	return "Read metrics about swap memory usage"
 }
 
-func (*Stats) SampleConfig() string { return "" }
+func (*Stats) SampleConfig() string {
+	return `
+  instance_id = "" # unique instance identifier (REQUIRED)
+`
+}
 
 func (s *Stats) Gather(ctx context.Context, acc cua.Accumulator) error {
 	swap, err := s.ps.SwapStat()

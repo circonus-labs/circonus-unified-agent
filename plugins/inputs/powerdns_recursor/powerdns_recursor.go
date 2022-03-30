@@ -29,6 +29,8 @@ type PowerdnsRecursor struct {
 var defaultTimeout = 5 * time.Second
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Path to the Recursor control socket.
   unix_sockets = ["/var/run/pdns_recursor.controlsocket"]
 

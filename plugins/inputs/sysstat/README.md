@@ -6,11 +6,13 @@ package installed.
 This plugin collects system metrics with the sysstat collector utility `sadc` and parses
 the created binary data file with the `sadf` utility.
 
-### Configuration:
+### Configuration
 
 ```toml
 # Sysstat metrics collector
 [[inputs.sysstat]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Path to the sadc command.
   #
   ## On Debian and Arch Linux the default path is /usr/lib/sa/sadc whereas
@@ -61,8 +63,10 @@ the created binary data file with the `sadf` utility.
   #  vg = "rootvg"
 ```
 
-### Measurements & Fields:
+### Measurements & Fields
+
 #### If group=true
+
 - cpu
     - pct_idle (float)
     - pct_iowait (float)
@@ -83,6 +87,7 @@ the created binary data file with the `sadf` utility.
 And much more, depending on the options you configure.
 
 #### If group=false
+
 - cpu_pct_idle
     - value (float)
 - cpu_pct_iowait
@@ -112,15 +117,17 @@ And much more, depending on the options you configure.
 
 And much more, depending on the options you configure.
 
-### Tags:
+### Tags
 
 - All measurements have the following tags:
     - device
 
 And more if you define some `device_tags`.
-### Example Output:
+
+### Example Output
 
 With the configuration below:
+
 ```toml
 [[inputs.sysstat]]
   sadc_path = "/usr/lib/sa/sadc" # required
@@ -148,6 +155,7 @@ With the configuration below:
 ```
 
 you get the following output:
+
 ```
 $ circonus-unified-agent --config circonus-unified-agent.conf --input-filter sysstat --test
 * Plugin: sysstat, Collection 1
@@ -189,6 +197,7 @@ $ circonus-unified-agent --config circonus-unified-agent.conf --input-filter sys
 ```
 
 If you change the group value to false like below:
+
 ```toml
 [[inputs.sysstat]]
   sadc_path = "/usr/lib/sa/sadc" # required
@@ -216,6 +225,7 @@ If you change the group value to false like below:
 ```
 
 you get the following output:
+
 ```
 $ circonus-unified-agent -config circonus-unified-agent.conf -input-filter sysstat -test
 * Plugin: sysstat, Collection 1

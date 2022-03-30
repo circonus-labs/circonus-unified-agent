@@ -29,8 +29,7 @@ const (
 	defaultRateLimit = 14
 	description      = "Gather timeseries from Google Cloud Platform v3 monitoring API"
 	sampleConfig     = `
-  # Instance ID is required
-  instance_id = ""
+  instance_id = "" # unique instance identifier (REQUIRED)
 
   ## GCP Project
   project = "erudite-bloom-151019"

@@ -54,6 +54,8 @@ const objTypeServices = "services"
 type ObjectType string
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Required Icinga2 server address
   # server = "https://localhost:5665"
   

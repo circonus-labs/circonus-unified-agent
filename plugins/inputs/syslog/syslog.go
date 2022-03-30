@@ -65,6 +65,8 @@ type Syslog struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Specify an ip or hostname with port - eg., tcp://localhost:6514, tcp://10.0.0.1:6514
   ## Protocol, address and port to host the syslog receiver.
   ## If no host is specified, then localhost is used.

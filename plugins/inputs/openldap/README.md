@@ -2,12 +2,14 @@
 
 This plugin gathers metrics from OpenLDAP's cn=Monitor backend.
 
-### Configuration:
+### Configuration
 
 To use this plugin you must enable the [slapd monitoring](https://www.openldap.org/devel/admin/monitoringslapd.html) backend.
 
 ```toml
 [[inputs.openldap]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   host = "localhost"
   port = 389
 
@@ -31,7 +33,7 @@ To use this plugin you must enable the [slapd monitoring](https://www.openldap.o
   reverse_metric_names = true
 ```
 
-### Measurements & Fields:
+### Measurements & Fields
 
 All **monitorCounter**, **monitoredInfo**, **monitorOpInitiated**, and **monitorOpCompleted** attributes are gathered based on this LDAP query:
 
@@ -46,50 +48,50 @@ Metrics for the **monitorOp*** attributes have **_initiated** and **_completed**
 An OpenLDAP 2.4 server will provide these metrics:
 
 - openldap
-	- connections_current
-	- connections_max_file_descriptors
-	- connections_total
-	- operations_abandon_completed
-	- operations_abandon_initiated
-	- operations_add_completed
-	- operations_add_initiated
-	- operations_bind_completed
-	- operations_bind_initiated
-	- operations_compare_completed
-	- operations_compare_initiated
-	- operations_delete_completed
-	- operations_delete_initiated
-	- operations_extended_completed
-	- operations_extended_initiated
-	- operations_modify_completed
-	- operations_modify_initiated
-	- operations_modrdn_completed
-	- operations_modrdn_initiated
-	- operations_search_completed
-	- operations_search_initiated
-	- operations_unbind_completed
-	- operations_unbind_initiated
-	- statistics_bytes
-	- statistics_entries
-	- statistics_pdu
-	- statistics_referrals
-	- threads_active
-	- threads_backload
-	- threads_max
-	- threads_max_pending
-	- threads_open
-	- threads_pending
-	- threads_starting
-	- time_uptime
-	- waiters_read
-	- waiters_write
+    - connections_current
+    - connections_max_file_descriptors
+    - connections_total
+    - operations_abandon_completed
+    - operations_abandon_initiated
+    - operations_add_completed
+    - operations_add_initiated
+    - operations_bind_completed
+    - operations_bind_initiated
+    - operations_compare_completed
+    - operations_compare_initiated
+    - operations_delete_completed
+    - operations_delete_initiated
+    - operations_extended_completed
+    - operations_extended_initiated
+    - operations_modify_completed
+    - operations_modify_initiated
+    - operations_modrdn_completed
+    - operations_modrdn_initiated
+    - operations_search_completed
+    - operations_search_initiated
+    - operations_unbind_completed
+    - operations_unbind_initiated
+    - statistics_bytes
+    - statistics_entries
+    - statistics_pdu
+    - statistics_referrals
+    - threads_active
+    - threads_backload
+    - threads_max
+    - threads_max_pending
+    - threads_open
+    - threads_pending
+    - threads_starting
+    - time_uptime
+    - waiters_read
+    - waiters_write
 
-### Tags:
+### Tags
 
 - server= # value from config
 - port= # value from config
 
-### Example Output:
+### Example Output
 
 ```
 $ circonus-unified-agent -config circonus-unified-agent.conf -input-filter openldap -test --debug

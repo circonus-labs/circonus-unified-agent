@@ -11,6 +11,8 @@ More information about the meaning of these metrics can be found in the
 
 ```toml
 [[inputs.pgbouncer]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## specify address via a url matching:
   ##   postgres://[pqgotest[:password]]@host:port[/dbname]\
   ##       ?sslmode=[disable|verify-ca|verify-full]
@@ -40,39 +42,39 @@ This dbname is just for instantiating a connection with the server and doesn't r
 ### Metrics
 
 - pgbouncer
-  - tags:
-    - db
-    - server
-  - fields:
-    - avg_query_count
-    - avg_query_time
-    - avg_wait_time
-    - avg_xact_count
-    - avg_xact_time
-    - total_query_count
-    - total_query_time
-    - total_received
-    - total_sent
-    - total_wait_time
-    - total_xact_count
-    - total_xact_time
+    - tags:
+        - db
+        - server
+    - fields:
+        - avg_query_count
+        - avg_query_time
+        - avg_wait_time
+        - avg_xact_count
+        - avg_xact_time
+        - total_query_count
+        - total_query_time
+        - total_received
+        - total_sent
+        - total_wait_time
+        - total_xact_count
+        - total_xact_time
 
-+ pgbouncer_pools
-  - tags:
-    - db
-    - pool_mode
-    - server
-    - user
-  - fields:
-    - cl_active
-    - cl_waiting
-    - maxwait
-    - maxwait_us
-    - sv_active
-    - sv_idle
-    - sv_login
-    - sv_tested
-    - sv_used
+- pgbouncer_pools
+    - tags:
+        - db
+        - pool_mode
+        - server
+        - user
+    - fields:
+        - cl_active
+        - cl_waiting
+        - maxwait
+        - maxwait_us
+        - sv_active
+        - sv_idle
+        - sv_login
+        - sv_tested
+        - sv_used
 
 ### Example Output
 

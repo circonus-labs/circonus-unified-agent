@@ -30,6 +30,8 @@ type Consul struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Consul server address
   # address = "localhost:8500"
 

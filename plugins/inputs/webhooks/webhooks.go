@@ -47,6 +47,8 @@ func NewWebhooks() *Webhooks {
 
 func (*Webhooks) SampleConfig() string {
 	return `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Address and port to host Webhook listener on
   service_address = ":1619"
 

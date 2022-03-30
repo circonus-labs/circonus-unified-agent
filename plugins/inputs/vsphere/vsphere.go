@@ -69,6 +69,8 @@ type VSphere struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## List of vCenter URLs to be monitored. These three lines must be uncommented
   ## and edited for the plugin to work.
   vcenters = [ "https://vcenter.local/sdk" ]

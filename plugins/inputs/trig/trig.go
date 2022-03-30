@@ -14,6 +14,8 @@ type Trig struct {
 }
 
 var TrigConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Set the amplitude
   amplitude = 10.0
 `

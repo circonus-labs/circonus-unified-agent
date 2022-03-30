@@ -18,6 +18,8 @@ type MailChimp struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## MailChimp API key
   ## get from https://admin.mailchimp.com/account/api/
   api_key = "" # required

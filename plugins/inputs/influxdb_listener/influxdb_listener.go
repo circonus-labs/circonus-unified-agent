@@ -62,6 +62,8 @@ type InfluxDBListener struct {
 }
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Address and port to host InfluxDB listener on
   service_address = ":8186"
 

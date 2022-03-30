@@ -13,6 +13,8 @@ import (
 )
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Files to gather stats about.
   ## These accept standard unix glob matching rules, but with the addition of
   ## ** as a "super asterisk". ie:

@@ -9,6 +9,8 @@ stats output to, and processes the incoming data to fit agent's format.
 
 ```toml
 [[inputs.suricata]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Data sink for Suricata stats log.
   # This is expected to be a filename of a
   # unix socket to be created for listening.
@@ -23,77 +25,77 @@ stats output to, and processes the incoming data to fit agent's format.
 
 Fields in the 'suricata' measurement follow the JSON format used by Suricata's
 stats output.
-See http://suricata.readthedocs.io/en/latest/performance/statistics.html for
+See <http://suricata.readthedocs.io/en/latest/performance/statistics.html> for
 more information.
 
 All fields are numeric.
-- suricata
-  - tags:
-    - thread: `Global` for global statistics (if enabled), thread IDs (e.g. `W#03-enp0s31f6`) for thread-specific statistics
-  - fields:
-    - app_layer_flow_dcerpc_udp
-    - app_layer_flow_dns_tcp
-    - app_layer_flow_dns_udp
-    - app_layer_flow_enip_udp
-    - app_layer_flow_failed_tcp
-    - app_layer_flow_failed_udp
-    - app_layer_flow_http
-    - app_layer_flow_ssh
-    - app_layer_flow_tls
-    - app_layer_tx_dns_tcp
-    - app_layer_tx_dns_udp
-    - app_layer_tx_enip_udp
-    - app_layer_tx_http
-    - app_layer_tx_smtp
-    - capture_kernel_drops
-    - capture_kernel_packets
-    - decoder_avg_pkt_size
-    - decoder_bytes
-    - decoder_ethernet
-    - decoder_gre
-    - decoder_icmpv4
-    - decoder_icmpv4_ipv4_unknown_ver
-    - decoder_icmpv6
-    - decoder_invalid
-    - decoder_ipv4
-    - decoder_ipv6
-    - decoder_max_pkt_size
-    - decoder_pkts
-    - decoder_tcp
-    - decoder_tcp_hlen_too_small
-    - decoder_tcp_invalid_optlen
-    - decoder_teredo
-    - decoder_udp
-    - decoder_vlan
-    - detect_alert
-    - dns_memcap_global
-    - dns_memuse
-    - flow_memuse
-    - flow_mgr_closed_pruned
-    - flow_mgr_est_pruned
-    - flow_mgr_flows_checked
-    - flow_mgr_flows_notimeout
-    - flow_mgr_flows_removed
-    - flow_mgr_flows_timeout
-    - flow_mgr_flows_timeout_inuse
-    - flow_mgr_new_pruned
-    - flow_mgr_rows_checked
-    - flow_mgr_rows_empty
-    - flow_mgr_rows_maxlen
-    - flow_mgr_rows_skipped
-    - flow_spare
-    - flow_tcp_reuse
-    - http_memuse
-    - tcp_memuse
-    - tcp_pseudo
-    - tcp_reassembly_gap
-    - tcp_reassembly_memuse
-    - tcp_rst
-    - tcp_sessions
-    - tcp_syn
-    - tcp_synack
-    - ...
 
+- suricata
+    - tags:
+        - thread: `Global` for global statistics (if enabled), thread IDs (e.g. `W#03-enp0s31f6`) for thread-specific statistics
+    - fields:
+        - app_layer_flow_dcerpc_udp
+        - app_layer_flow_dns_tcp
+        - app_layer_flow_dns_udp
+        - app_layer_flow_enip_udp
+        - app_layer_flow_failed_tcp
+        - app_layer_flow_failed_udp
+        - app_layer_flow_http
+        - app_layer_flow_ssh
+        - app_layer_flow_tls
+        - app_layer_tx_dns_tcp
+        - app_layer_tx_dns_udp
+        - app_layer_tx_enip_udp
+        - app_layer_tx_http
+        - app_layer_tx_smtp
+        - capture_kernel_drops
+        - capture_kernel_packets
+        - decoder_avg_pkt_size
+        - decoder_bytes
+        - decoder_ethernet
+        - decoder_gre
+        - decoder_icmpv4
+        - decoder_icmpv4_ipv4_unknown_ver
+        - decoder_icmpv6
+        - decoder_invalid
+        - decoder_ipv4
+        - decoder_ipv6
+        - decoder_max_pkt_size
+        - decoder_pkts
+        - decoder_tcp
+        - decoder_tcp_hlen_too_small
+        - decoder_tcp_invalid_optlen
+        - decoder_teredo
+        - decoder_udp
+        - decoder_vlan
+        - detect_alert
+        - dns_memcap_global
+        - dns_memuse
+        - flow_memuse
+        - flow_mgr_closed_pruned
+        - flow_mgr_est_pruned
+        - flow_mgr_flows_checked
+        - flow_mgr_flows_notimeout
+        - flow_mgr_flows_removed
+        - flow_mgr_flows_timeout
+        - flow_mgr_flows_timeout_inuse
+        - flow_mgr_new_pruned
+        - flow_mgr_rows_checked
+        - flow_mgr_rows_empty
+        - flow_mgr_rows_maxlen
+        - flow_mgr_rows_skipped
+        - flow_spare
+        - flow_tcp_reuse
+        - http_memuse
+        - tcp_memuse
+        - tcp_pseudo
+        - tcp_reassembly_gap
+        - tcp_reassembly_memuse
+        - tcp_rst
+        - tcp_sessions
+        - tcp_syn
+        - tcp_synack
+        - ...
 
 #### Suricata configuration
 
@@ -113,16 +115,14 @@ output in the Suricata configuration file:
 
 #### FreeBSD tuning
 
-
-Under FreeBSD it is necessary to increase the localhost buffer space to at least 16384, default is 8192 
-otherwise messages from Suricata are truncated as they exceed the default available buffer space, 
+Under FreeBSD it is necessary to increase the localhost buffer space to at least 16384, default is 8192
+otherwise messages from Suricata are truncated as they exceed the default available buffer space,
 consequently no statistics are processed by the plugin.
 
 ```text
 sysctl -w net.local.stream.recvspace=16384
 sysctl -w net.local.stream.sendspace=16384
 ```
-
 
 ### Example Output
 

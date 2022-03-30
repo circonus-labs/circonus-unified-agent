@@ -2,11 +2,13 @@
 
 This plugin gathers statistics data from a Memcached server.
 
-### Configuration:
+### Configuration
 
 ```toml
 # Read metrics from one or many memcached servers.
 [[inputs.memcached]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   # An array of address to gather stats about. Specify an ip on hostname
   # with optional port. ie localhost, 10.0.0.1:11211, etc.
   servers = ["localhost:11211"]
@@ -14,7 +16,7 @@ This plugin gathers statistics data from a Memcached server.
   # unix_sockets = ["/var/run/memcached.sock"]
 ```
 
-### Measurements & Fields:
+### Measurements & Fields
 
 The fields from this plugin are gathered in the *memcached* measurement.
 
@@ -63,12 +65,12 @@ Fields:
 
 Description of gathered fields taken from [here](https://github.com/memcached/memcached/blob/master/doc/protocol.txt).
 
-### Tags:
+### Tags
 
 * Memcached measurements have the following tags:
-    - server (the host name from which metrics are gathered)
+    * server (the host name from which metrics are gathered)
 
-### Sample Queries:
+### Sample Queries
 
 You can use the following query to get the average get hit and miss ratio, as well as the total average size of cached items, number of cached items and average connection counts per server.
 
@@ -76,7 +78,7 @@ You can use the following query to get the average get hit and miss ratio, as we
 SELECT mean(get_hits) / mean(cmd_get) as get_ratio, mean(get_misses) / mean(cmd_get) as get_misses_ratio, mean(bytes), mean(curr_items), mean(curr_connections) FROM memcached WHERE time > now() - 1h GROUP BY server
 ```
 
-### Example Output:
+### Example Output
 
 ```
 $ ./circonus-unified-agent --config circonus-unified-agent.conf --input-filter memcached --test

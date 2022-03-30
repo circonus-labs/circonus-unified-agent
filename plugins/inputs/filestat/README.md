@@ -2,11 +2,13 @@
 
 The filestat plugin gathers metrics about file existence, size, and other stats.
 
-### Configuration:
+### Configuration
 
 ```toml
 # Read stats about given file(s)
 [[inputs.filestat]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Files to gather stats about.
   ## These accept standard unix glob matching rules, but with the addition of
   ## ** as a "super asterisk". See https://github.com/gobwas/glob.
@@ -16,7 +18,7 @@ The filestat plugin gathers metrics about file existence, size, and other stats.
   md5 = false
 ```
 
-### Measurements & Fields:
+### Measurements & Fields
 
 - filestat
     - exists (int, 0 | 1)
@@ -24,12 +26,12 @@ The filestat plugin gathers metrics about file existence, size, and other stats.
     - modification_time (int, unix time nanoseconds)
     - md5 (optional, string)
 
-### Tags:
+### Tags
 
 - All measurements have the following tags:
     - file (the path the to file, as specified in the config)
 
-### Example Output:
+### Example Output
 
 ```
 $ circonus-unified-agent --config /etc/circonus-unified-agent/circonus-unified-agent.conf --input-filter filestat --test

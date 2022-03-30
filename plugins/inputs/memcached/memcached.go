@@ -21,6 +21,8 @@ type Memcached struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## An array of address to gather stats about. Specify an ip on hostname
   ## with optional port. ie localhost, 10.0.0.1:11211, etc.
   servers = ["localhost:11211"]

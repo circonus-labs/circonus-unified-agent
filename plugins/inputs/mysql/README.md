@@ -22,6 +22,8 @@ This plugin gathers the statistic data from MySQL server
 
 ```toml
 [[inputs.mysql]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## specify servers via a url matching:
   ##  [username[:password]@][protocol[(address)]]/[?tls=[true|false|skip-verify|custom]]
   ##  see https://github.com/go-sql-driver/mysql#dsn-data-source-name
@@ -115,6 +117,7 @@ InfluxDB due to the change of types.  For this reason, you should keep the
 
 If preserving your old data is not required you may wish to drop conflicting
 measurements:
+
 ```sql
 DROP SERIES from mysql
 DROP SERIES from mysql_variables
@@ -126,16 +129,22 @@ Otherwise, migration can be performed using the following steps:
 1. Duplicate your `mysql` plugin configuration and add a `name_suffix` and
 `metric_version = 2`, this will result in collection using both the old and new
 style concurrently:
+
    ```toml
    [[inputs.mysql]]
+     instance_id = "" # unique instance identifier (REQUIRED)
+
      servers = ["tcp(127.0.0.1:3306)/"]
 
    [[inputs.mysql]]
+     instance_id = "" # unique instance identifier (REQUIRED)
+
      name_suffix = "_v2"
      metric_version = 2
 
      servers = ["tcp(127.0.0.1:3306)/"]
    ```
+
 1. Update charts, alerts, and other supporting code to the new format.
 1. You can now remove the old `mysql` plugin configuration and remove old
    measurements.
@@ -145,18 +154,25 @@ historical data to the default name.  Do this only after retiring the old
 measurement name.
 
 1. Use the technique described above to write to multiple locations:
+
    ```toml
    [[inputs.mysql]]
+     instance_id = "" # unique instance identifier (REQUIRED)
+
      servers = ["tcp(127.0.0.1:3306)/"]
      metric_version = 2
 
    [[inputs.mysql]]
+     instance_id = "" # unique instance identifier (REQUIRED)
+
      name_suffix = "_v2"
      metric_version = 2
 
      servers = ["tcp(127.0.0.1:3306)/"]
    ```
+
 2. Create a TICKScript to copy the historical data:
+
    ```
    dbrp "circonus"."autogen"
 
@@ -171,17 +187,23 @@ measurement name.
                    .retentionPolicy('autogen')
                    .measurement('mysql')
    ```
+
 3. Define a task for your script:
+
    ```sh
    kapacitor define copy-measurement -tick copy-measurement.task
    ```
+
 4. Run the task over the data you would like to migrate:
+
    ```sh
    kapacitor replay-live batch -start 2018-03-30T20:00:00Z -stop 2018-04-01T12:00:00Z -rec-time -task copy-measurement
    ```
+
 5. Verify copied data and repeat for other measurements.
 
-### Metrics:
+### Metrics
+
 * Global statuses - all numeric and boolean values of `SHOW GLOBAL STATUSES`
 * Global variables - all numeric and boolean values of `SHOW GLOBAL VARIABLES`
 * Slave status - metrics from `SHOW SLAVE STATUS` the metrics are gathered when
@@ -285,6 +307,7 @@ The unit of fields varies by the tags.
     * info_schema_table_version(float, number)
 
 ## Tags
+
 * All measurements has following tags
     * server (the host name from which the metrics are gathered)
 * Process list measurement has following tags

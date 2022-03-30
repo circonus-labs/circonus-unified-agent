@@ -5,13 +5,14 @@ It uses the output of the command "ipset save".
 Ipsets created without the "counters" option are ignored.
 
 Results are tagged with:
+
 - ipset name
 - ipset entry
 
 There are 3 ways to grant the agent the right to run ipset:
-* Run as root (strongly discouraged)
-* Use sudo
-* Configure systemd to run the agent with CAP_NET_ADMIN and CAP_NET_RAW capabilities.
+- Run as root (strongly discouraged)
+- Use sudo
+- Configure systemd to run the agent with CAP_NET_ADMIN and CAP_NET_RAW capabilities.
 
 ### Using systemd capabilities
 
@@ -26,12 +27,16 @@ AmbientCapabilities=CAP_NET_RAW CAP_NET_ADMIN
 ### Using sudo
 
 You will need the following in your config:
+
 ```toml
 [[inputs.ipset]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   use_sudo = true
 ```
 
 You will also need to update your sudoers file:
+
 ```bash
 $ visudo
 # Add the following line:

@@ -2,7 +2,7 @@
 
 The [Jolokia](http://jolokia.org) _agent_ and _proxy_ input plugins collect JMX metrics from an HTTP endpoint using Jolokia's [JSON-over-HTTP protocol](https://jolokia.org/reference/html/protocol.html).
 
-### Configuration:
+### Configuration
 
 #### Jolokia Agent Configuration
 
@@ -10,6 +10,8 @@ The `jolokia2_agent` input plugin reads JMX metrics from one or more [Jolokia ag
 
 ```toml
 [[inputs.jolokia2_agent]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   urls = ["http://agent:8080/jolokia"]
 
   [[inputs.jolokia2_agent.metric]]
@@ -22,6 +24,8 @@ Optionally, specify TLS options for communicating with agents:
 
 ```toml
 [[inputs.jolokia2_agent]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   urls = ["https://agent:8080/jolokia"]
   tls_ca   = "/var/private/ca.pem"
   tls_cert = "/var/private/client.pem"
@@ -40,6 +44,8 @@ The `jolokia2_proxy` input plugin reads JMX metrics from one or more _targets_ b
 
 ```toml
 [[inputs.jolokia2_proxy]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   url = "http://proxy:8080/jolokia"
 
   #default_target_username = ""
@@ -59,6 +65,8 @@ Optionally, specify TLS options for communicating with proxies:
 
 ```toml
 [[inputs.jolokia2_proxy]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   url = "https://proxy:8080/jolokia"
 
   tls_ca   = "/var/private/ca.pem"
@@ -170,7 +178,7 @@ Both `jolokia2_agent` and `jolokia2_proxy` plugins support default configuration
 | `default_field_prefix`    | _None_        | A string to prepend to the field names produced by all `metric` declarations. |
 | `default_tag_prefix`      | _None_        | A string to prepend to the tag names produced by all `metric` declarations. |
 
-### Example Configurations:
+### Example Configurations
 
 - [ActiveMQ](/plugins/inputs/jolokia2/examples/activemq.conf)
 - [BitBucket](/plugins/inputs/jolokia2/examples/bitbucket.conf)

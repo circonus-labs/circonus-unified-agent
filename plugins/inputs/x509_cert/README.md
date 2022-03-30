@@ -3,12 +3,13 @@
 This plugin provides information about X509 certificate accessible via local
 file or network connection.
 
-
 ### Configuration
 
 ```toml
 # Reads metrics from a SSL certificate
 [[inputs.x509_cert]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## List certificate sources
   sources = ["/etc/ssl/certs/ssl-cert-snakeoil.pem", "https://example.org:443"]
 
@@ -25,32 +26,30 @@ file or network connection.
   # tls_key = "/etc/circonus-unified-agent/key.pem"
 ```
 
-
 ### Metrics
 
 - x509_cert
-  - tags:
-    - source - source of the certificate
-    - organization
-    - organizational_unit
-    - country
-    - province
-    - locality
-    - verification
-    - serial_number
-    - signature_algorithm
-    - public_key_algorithm
-    - issuer_common_name
-    - issuer_serial_number
-    - san
-  - fields:
-    - verification_code (int)
-    - verification_error (string)
-    - expiry (int, seconds)
-    - age (int, seconds)
-    - startdate (int, seconds)
-    - enddate (int, seconds)
-
+    - tags:
+        - source - source of the certificate
+        - organization
+        - organizational_unit
+        - country
+        - province
+        - locality
+        - verification
+        - serial_number
+        - signature_algorithm
+        - public_key_algorithm
+        - issuer_common_name
+        - issuer_serial_number
+        - san
+    - fields:
+        - verification_code (int)
+        - verification_error (string)
+        - expiry (int, seconds)
+        - age (int, seconds)
+        - startdate (int, seconds)
+        - enddate (int, seconds)
 
 ### Example output
 

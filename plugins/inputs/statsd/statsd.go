@@ -242,8 +242,7 @@ func (*Statsd) Description() string {
 }
 
 const sampleConfig = `
-  ## Instance ID -- required
-  instance_id = ""
+  instance_id = "" # unique instance identifier (REQUIRED)
 
   ## Protocol, must be "tcp", "udp", "udp4" or "udp6" (default=udp)
   protocol = "udp"

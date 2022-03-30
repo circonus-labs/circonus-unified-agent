@@ -9,6 +9,8 @@ generate it using `circonus-unified-agent --usage rethinkdb`.
 
 ```toml
 [[inputs.rethinkdb]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## An array of URI to gather stats about. Specify an ip or hostname
   ## with optional port add password. ie,
   ##   rethinkdb://user:auth_key@10.10.3.30:28105,
@@ -28,34 +30,34 @@ generate it using `circonus-unified-agent --usage rethinkdb`.
 ### Metrics
 
 - rethinkdb
-  - tags:
-    - type
-    - ns
-    - rethinkdb_host
-    - rethinkdb_hostname
-  - fields:
-    - cache_bytes_in_use (integer, bytes)
-    - disk_read_bytes_per_sec (integer, reads)
-    - disk_read_bytes_total (integer, bytes)
-    - disk_written_bytes_per_sec (integer, bytes)
-    - disk_written_bytes_total (integer, bytes)
-    - disk_usage_data_bytes (integer, bytes)
-    - disk_usage_garbage_bytes (integer, bytes)
-    - disk_usage_metadata_bytes (integer, bytes)
-    - disk_usage_preallocated_bytes (integer, bytes)
+    - tags:
+        - type
+        - ns
+        - rethinkdb_host
+        - rethinkdb_hostname
+    - fields:
+        - cache_bytes_in_use (integer, bytes)
+        - disk_read_bytes_per_sec (integer, reads)
+        - disk_read_bytes_total (integer, bytes)
+        - disk_written_bytes_per_sec (integer, bytes)
+        - disk_written_bytes_total (integer, bytes)
+        - disk_usage_data_bytes (integer, bytes)
+        - disk_usage_garbage_bytes (integer, bytes)
+        - disk_usage_metadata_bytes (integer, bytes)
+        - disk_usage_preallocated_bytes (integer, bytes)
 
-+ rethinkdb_engine
-  - tags:
-    - type
-    - ns
-    - rethinkdb_host
-    - rethinkdb_hostname
-  - fields:
-    - active_clients (integer, clients)
-    - clients (integer, clients)
-    - queries_per_sec (integer, queries)
-    - total_queries (integer, queries)
-    - read_docs_per_sec (integer, reads)
-    - total_reads (integer, reads)
-    - written_docs_per_sec (integer, writes)
-    - total_writes (integer, writes)
+- rethinkdb_engine
+    - tags:
+        - type
+        - ns
+        - rethinkdb_host
+        - rethinkdb_hostname
+    - fields:
+        - active_clients (integer, clients)
+        - clients (integer, clients)
+        - queries_per_sec (integer, queries)
+        - total_queries (integer, queries)
+        - read_docs_per_sec (integer, reads)
+        - total_reads (integer, reads)
+        - written_docs_per_sec (integer, writes)
+        - total_writes (integer, writes)

@@ -12,6 +12,8 @@ type Wireless struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Sets 'proc' directory path
   ## If not specified, then default is /proc
   # host_proc = "/proc"

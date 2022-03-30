@@ -3,11 +3,13 @@
 The Salesforce plugin gathers metrics about the limits in your Salesforce organization and the remaining usage.
 It fetches its data from the [limits endpoint](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_limits.htm) of Salesforce's REST API.
 
-### Configuration:
+### Configuration
 
 ```toml
 # Gather Metrics about Salesforce limits and remaining usage
 [[inputs.salesforce]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   username = "your_username"
   password = "your_password"
   ## (Optional) security token
@@ -19,7 +21,7 @@ It fetches its data from the [limits endpoint](https://developer.salesforce.com/
   # version = "39.0"
 ```
 
-### Measurements & Fields:
+### Measurements & Fields
 
 Salesforce provide one measurement named "salesforce".
 Each entry is converted to snake\_case and 2 fields are created.
@@ -32,14 +34,13 @@ Each entry is converted to snake\_case and 2 fields are created.
     - \<key\>_remaining (int)
     - (...)
 
-### Tags:
+### Tags
 
 - All measurements have the following tags:
     - host
     - organization_id (t18 char organisation ID)
 
-
-### Example Output:
+### Example Output
 
 ```
 $./circonus-unified-agent --config circonus-unified-agent.conf --input-filter salesforce --test

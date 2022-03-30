@@ -8,6 +8,7 @@ The VMware vSphere plugin uses the vSphere API to gather metrics from multiple v
 * Datastores
 
 ## Supported versions of vSphere
+
 This plugin supports vSphere version 5.5 through 6.7.
 
 ## Configuration
@@ -22,6 +23,8 @@ vm_metric_exclude = [ "*" ]
 ```toml
 # Read metrics from one or many vCenters
 [[inputs.vsphere]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
     ## List of vCenter URLs to be monitored. These three lines must be uncommented
   ## and edited for the plugin to work.
   vcenters = [ "https://vcenter.local/sdk" ]
@@ -227,6 +230,7 @@ For setting up concurrency, modify `collect_concurrency` and `discover_concurren
 ```
 
 ### Inventory Paths
+
 Resources to be monitored can be selected using Inventory Paths. This treats the vSphere inventory as a tree structure similar
 to a file system. A vSphere inventory has a structure similar to this:
 
@@ -256,6 +260,7 @@ to a file system. A vSphere inventory has a structure similar to this:
 ```
 
 #### Using Inventory Paths
+
 Using familiar UNIX-style paths, one could select e.g. VM2 with the path ```/DC0/vm/VM2```.
 
 Often, we want to select a group of resource, such as all the VMs in a folder. We could use the path ```/DC0/vm/Folder1/*``` for that.
@@ -265,9 +270,11 @@ Another possibility is to select objects using a partial name, such as ```/DC0/v
 Finally, due to the arbitrary nesting of the folder structure, we need a "recursive wildcard" for traversing multiple folders. We use the "**" symbol for that. If we want to look for a VM with a name starting with "hadoop" in any folder, we could use the following path: ```/DC0/vm/**/hadoop*```
 
 #### Multiple paths to VMs
+
 As we can see from the example tree above, VMs appear both in its on folder under the datacenter, as well as under the hosts. This is useful when you like to select VMs on a specific host. For example, ```/DC0/host/Cluster1/Host1/hadoop*``` selects all VMs with a name starting with "hadoop" that are running on Host1.
 
 We can extend this to looking at a cluster level: ```/DC0/host/Cluster1/*/hadoop*```. This selects any VM matching "hadoop*" on any host in Cluster1.
+
 ## Performance Considerations
 
 ### Realtime vs. historical metrics
@@ -277,7 +284,7 @@ vCenter keeps two different kinds of metrics, known as realtime and historical m
 * Realtime metrics: Available at a 20 second granularity. These metrics are stored in memory and are very fast and cheap to query. Our tests have shown that a complete set of realtime metrics for 7000 virtual machines can be obtained in less than 20 seconds. Realtime metrics are only available on **ESXi hosts** and **virtual machine** resources. Realtime metrics are only stored for 1 hour in vCenter.
 * Historical metrics: Available at a 5 minute, 30 minutes, 2 hours and 24 hours rollup levels. The vSphere agent plugin only uses the 5 minute rollup. These metrics are stored in the vCenter database and can be expensive and slow to query. Historical metrics are the only type of metrics available for **clusters**, **datastores** and **datacenters**.
 
-For more information, refer to the vSphere documentation here: https://pubs.vmware.com/vsphere-50/index.jsp?topic=%2Fcom.vmware.wssdk.pg.doc_50%2FPG_Ch16_Performance.18.2.html
+For more information, refer to the vSphere documentation here: <https://pubs.vmware.com/vsphere-50/index.jsp?topic=%2Fcom.vmware.wssdk.pg.doc_50%2FPG_Ch16_Performance.18.2.html>
 
 This distinction has an impact on how agent collects metrics. A single instance of an input plugin can have one and only one collection interval, which means that you typically set the collection interval based on the most frequently collected metric. Let's assume you set the collection interval to 1 minute. All realtime metrics will be collected every minute. Since the historical metrics are only available on a 5 minute interval, the vSphere agent plugin automatically skips four out of five collection cycles for these metrics. This works fine in many cases. Problems arise when the collection of historical metrics takes longer than the collection interval. This will cause error messages similar to this to appear in the agent logs:
 
@@ -288,6 +295,8 @@ This will disrupt the metric collection and can result in missed samples. The be
 ```toml
 ## Realtime instance
 [[inputs.vsphere]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   interval = "60s"
   vcenters = [ "https://someaddress/sdk" ]
   username = "someuser@vsphere.local"
@@ -306,6 +315,7 @@ This will disrupt the metric collection and can result in missed samples. The be
 
 # Historical instance
 [[inputs.vsphere]]
+  instance_id = "" # unique instance identifier (REQUIRED)
 
   interval = "300s"
 
@@ -337,12 +347,14 @@ Cluster metrics are handled a bit differently by vCenter. They are aggregated fr
 ```2018-11-02T13:37:11Z E! Error in plugin [inputs.vsphere]: ServerFaultCode: This operation is restricted by the administrator - 'vpxd.stats.maxQueryMetrics'. Contact your system administrator```
 
 There are two ways of addressing this:
+
 * Ask your vCenter administrator to set ```config.vpxd.stats.maxQueryMetrics``` to a number that's higher than the total number of virtual machines managed by a vCenter instance.
 * Exclude the cluster metrics and use either the basicstats aggregator to calculate sums and averages per cluster or use queries in the visualization tool to obtain the same result.
 
 ### Concurrency settings
 
 The vSphere plugin allows you to specify two concurrency settings:
+
 * ```collect_concurrency```: The maximum number of simultaneous queries for performance metrics allowed per resource type.
 * ```discover_concurrency```: The  maximum number of simultaneous queries for resource discovery allowed.
 
@@ -350,69 +362,69 @@ While a higher level of concurrency typically has a positive impact on performan
 
 ## Measurements &amp; Fields
 
-- Cluster Stats
-	- Cluster services: CPU, memory, failover
-	- CPU: total, usage
-	- Memory: consumed, total, vmmemctl
-	- VM operations: # changes, clone, create, deploy, destroy, power, reboot, reconfigure, register, reset, shutdown, standby, vmotion
-- Host Stats:
-	- CPU: total, usage, cost, mhz
-	- Datastore: iops, latency, read/write bytes, # reads/writes
-	- Disk: commands, latency, kernel reads/writes, # reads/writes, queues
-	- Memory: total, usage, active, latency, swap, shared, vmmemctl
-	- Network: broadcast, bytes, dropped, errors, multicast, packets, usage
-	- Power: energy, usage, capacity
-	- Res CPU: active, max, running
-	- Storage Adapter: commands, latency, # reads/writes
-	- Storage Path: commands, latency, # reads/writes
-	- System Resources: cpu active, cpu max, cpu running, cpu usage, mem allocated, mem consumed, mem shared, swap
-	- System: uptime
-	- Flash Module: active VMDKs
-- VM Stats:
-	- CPU: demand, usage, readiness, cost, mhz
-	- Datastore: latency, # reads/writes
-	- Disk: commands, latency, # reads/writes, provisioned, usage
-	- Memory: granted, usage, active, swap, vmmemctl
-	- Network: broadcast, bytes, dropped, multicast, packets, usage
-	- Power: energy, usage
-	- Res CPU: active, max, running
-	- System: operating system uptime, uptime
-	- Virtual Disk: seeks, # reads/writes, latency, load
-- Datastore stats:
-	- Disk: Capacity, provisioned, used
+* Cluster Stats
+    * Cluster services: CPU, memory, failover
+    * CPU: total, usage
+    * Memory: consumed, total, vmmemctl
+    * VM operations: # changes, clone, create, deploy, destroy, power, reboot, reconfigure, register, reset, shutdown, standby, vmotion
+* Host Stats:
+    * CPU: total, usage, cost, mhz
+    * Datastore: iops, latency, read/write bytes, # reads/writes
+    * Disk: commands, latency, kernel reads/writes, # reads/writes, queues
+    * Memory: total, usage, active, latency, swap, shared, vmmemctl
+    * Network: broadcast, bytes, dropped, errors, multicast, packets, usage
+    * Power: energy, usage, capacity
+    * Res CPU: active, max, running
+    * Storage Adapter: commands, latency, # reads/writes
+    * Storage Path: commands, latency, # reads/writes
+    * System Resources: cpu active, cpu max, cpu running, cpu usage, mem allocated, mem consumed, mem shared, swap
+    * System: uptime
+    * Flash Module: active VMDKs
+* VM Stats:
+    * CPU: demand, usage, readiness, cost, mhz
+    * Datastore: latency, # reads/writes
+    * Disk: commands, latency, # reads/writes, provisioned, usage
+    * Memory: granted, usage, active, swap, vmmemctl
+    * Network: broadcast, bytes, dropped, multicast, packets, usage
+    * Power: energy, usage
+    * Res CPU: active, max, running
+    * System: operating system uptime, uptime
+    * Virtual Disk: seeks, # reads/writes, latency, load
+* Datastore stats:
+    * Disk: Capacity, provisioned, used
 
 For a detailed list of commonly available metrics, please refer to [METRICS.md](METRICS.md)
 
 ## Tags
 
-- all metrics
-	- vcenter (vcenter url)
-- all host metrics
-	- cluster (vcenter cluster)
-- all vm metrics
-	- cluster (vcenter cluster)
-	- esxhost (name of ESXi host)
-	- guest (guest operating system id)
-- cpu stats for Host and VM
-	- cpu (cpu core - not all CPU fields will have this tag)
-- datastore stats for Host and VM
-	- datastore (id of datastore)
-- disk stats for Host and VM
-	- disk (name of disk)
-- disk.used.capacity for Datastore
-	- disk (type of disk)
-- net stats for Host and VM
-	- interface (name of network interface)
-- storageAdapter stats for Host
-	- adapter (name of storage adapter)
-- storagePath stats for Host
-	- path (id of storage path)
-- sys.resource* stats for Host
-	- resource (resource type)
-- vflashModule stats for Host
-	- module (name of flash module)
-- virtualDisk stats for VM
-	- disk (name of virtual disk)
+* all metrics
+    * vcenter (vcenter url)
+* all host metrics
+    * cluster (vcenter cluster)
+* all vm metrics
+    * cluster (vcenter cluster)
+    * esxhost (name of ESXi host)
+    * guest (guest operating system id)
+* cpu stats for Host and VM
+    * cpu (cpu core - not all CPU fields will have this tag)
+* datastore stats for Host and VM
+    * datastore (id of datastore)
+* disk stats for Host and VM
+    * disk (name of disk)
+* disk.used.capacity for Datastore
+    * disk (type of disk)
+* net stats for Host and VM
+    * interface (name of network interface)
+* storageAdapter stats for Host
+    * adapter (name of storage adapter)
+* storagePath stats for Host
+    * path (id of storage path)
+* sys.resource* stats for Host
+    * resource (resource type)
+* vflashModule stats for Host
+    * module (name of flash module)
+* virtualDisk stats for VM
+    * disk (name of virtual disk)
 
 ## Sample output
 

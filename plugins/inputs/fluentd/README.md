@@ -7,6 +7,7 @@ You might need to adjust your fluentd configuration, in order to reduce series c
 According to [fluentd documentation](https://docs.fluentd.org/configuration/config-file#common-plugin-parameter), you are able to add `@id`  parameter for each plugin to avoid this behaviour and define custom `plugin_id`.
 
 example configuration with `@id` parameter for http plugin:
+
 ```
 <source>
   @type http
@@ -15,11 +16,13 @@ example configuration with `@id` parameter for http plugin:
 </source>
 ```
 
-### Configuration:
+### Configuration
 
 ```toml
 # Read metrics exposed by fluentd in_monitor plugin
 [[inputs.fluentd]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## This plugin reads information exposed by fluentd (using /api/plugins.json endpoint).
   ##
   ## Endpoint:
@@ -34,7 +37,7 @@ example configuration with `@id` parameter for http plugin:
   ]
 ```
 
-### Measurements & Fields:
+### Measurements & Fields
 
 Fields may vary depending on the plugin type
 
@@ -43,14 +46,14 @@ Fields may vary depending on the plugin type
     - buffer_queue_length     (float, unit)
     - buffer_total_queued_size (float, unit)
 
-### Tags:
+### Tags
 
 - All measurements have the following tags:
-	- plugin_id        (unique plugin id)
-	- plugin_type      (type of the plugin e.g. s3)
+    - plugin_id        (unique plugin id)
+    - plugin_type      (type of the plugin e.g. s3)
     - plugin_category  (plugin category e.g. output)
 
-### Example Output:
+### Example Output
 
 ```
 $ circonus-unified-agent --config fluentd.conf --input-filter fluentd --test

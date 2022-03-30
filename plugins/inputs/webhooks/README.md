@@ -3,21 +3,22 @@
 This is a service plugin that start an http server and register multiple webhook listeners.
 
 ```sh
-$ circonus-unified-agent config -input-filter webhooks -output-filter circonus > config.conf.new
+circonus-unified-agent config -input-filter webhooks -output-filter circonus > config.conf.new
 ```
 
 Change the config file to point to add Circonus API token key you are using and adjust the settings to match your environment. Once that is complete:
 
 ```sh
-$ cp config.conf.new /etc/circonus-unified-agent/circonus-unified-agent.conf
-$ sudo service circonus-unified-agent start
+cp config.conf.new /etc/circonus-unified-agent/circonus-unified-agent.conf
+sudo service circonus-unified-agent start
 ```
 
-
-### Configuration:
+### Configuration
 
 ```toml
 [[inputs.webhooks]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Address and port to host Webhook listener on
   service_address = ":1619"
 
@@ -41,7 +42,6 @@ $ sudo service circonus-unified-agent start
     path = "/particle"
 ```
 
-
 ### Available webhooks
 
 - [Filestack](filestack/)
@@ -50,7 +50,6 @@ $ sudo service circonus-unified-agent start
 - [Rollbar](rollbar/)
 - [Papertrail](papertrail/)
 - [Particle](particle/)
-
 
 ### Adding new webhooks plugin
 

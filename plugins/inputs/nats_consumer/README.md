@@ -6,10 +6,12 @@ creates metrics using one of the supported [input data formats][].
 A [Queue Group][queue group] is used when subscribing to subjects so multiple
 instances of circonus-unified-agent can read from a NATS cluster in parallel.
 
-### Configuration:
+### Configuration
 
 ```toml
 [[inputs.nats_consumer]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## urls of NATS servers
   servers = ["nats://localhost:4222"]
 

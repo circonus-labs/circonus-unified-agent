@@ -50,6 +50,8 @@ func (*InfluxDB) Description() string {
 
 func (*InfluxDB) SampleConfig() string {
 	return `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Works with InfluxDB debug endpoints out of the box,
   ## but other services can use this format too.
   ## See the influxdb plugin's README for more details.

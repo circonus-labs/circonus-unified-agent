@@ -48,6 +48,8 @@ type Handler interface {
 }
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   # path = "/api/v1/spans" # URL path for span data
   # port = 9411            # Port on which agent listens
 `

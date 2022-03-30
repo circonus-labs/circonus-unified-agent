@@ -8,6 +8,8 @@ Hddtemp should be installed and its daemon running.
 
 ```toml
 [[inputs.hddtemp]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## By default, the agent gathers temps data from all disks detected by the
   ## hddtemp.
   ##
@@ -22,15 +24,14 @@ Hddtemp should be installed and its daemon running.
 ### Metrics
 
 - hddtemp
-  - tags:
-    - device
-    - model
-    - unit
-    - status
-    - source
-  - fields:
-    - temperature
-
+    - tags:
+        - device
+        - model
+        - unit
+        - status
+        - source
+    - fields:
+        - temperature
 
 ### Example output
 

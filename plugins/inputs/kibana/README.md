@@ -10,6 +10,8 @@ The `kibana` plugin queries the [Kibana][] API to obtain the service status.
 
 ```toml
 [[inputs.kibana]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Specify a list of one or more Kibana servers
   servers = ["http://localhost:5601"]
 
@@ -31,21 +33,21 @@ The `kibana` plugin queries the [Kibana][] API to obtain the service status.
 ### Metrics
 
 - kibana
-  - tags:
-    - name (Kibana reported name)
-    - source (Kibana server hostname or IP)
-    - status (Kibana health: green, yellow, red)
-    - version (Kibana version)
-  - fields:
-    - status_code (integer, green=1 yellow=2 red=3 unknown=0)
-    - heap_total_bytes (integer)
-    - heap_max_bytes (integer; deprecated in 1.13.3: use `heap_total_bytes` field)
-    - heap_used_bytes (integer)
-    - uptime_ms (integer)
-    - response_time_avg_ms (float)
-    - response_time_max_ms (integer)
-    - concurrent_connections (integer)
-    - requests_per_sec (float)
+    - tags:
+        - name (Kibana reported name)
+        - source (Kibana server hostname or IP)
+        - status (Kibana health: green, yellow, red)
+        - version (Kibana version)
+    - fields:
+        - status_code (integer, green=1 yellow=2 red=3 unknown=0)
+        - heap_total_bytes (integer)
+        - heap_max_bytes (integer; deprecated in 1.13.3: use `heap_total_bytes` field)
+        - heap_used_bytes (integer)
+        - uptime_ms (integer)
+        - response_time_avg_ms (float)
+        - response_time_max_ms (integer)
+        - concurrent_connections (integer)
+        - requests_per_sec (float)
 
 ### Example Output
 

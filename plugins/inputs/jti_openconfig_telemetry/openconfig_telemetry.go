@@ -44,6 +44,8 @@ var (
 	// Regex to match and extract data points from path value in received key
 	keyPathRegex = regexp.MustCompile(`\/([^\/]*)\[([A-Za-z0-9\-\/]*\=[^\[]*)\]"`)
 	sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## List of device addresses to collect telemetry from
   servers = ["localhost:1883"]
 

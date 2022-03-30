@@ -279,6 +279,8 @@ func (rsl *RiemannSocketListener) Description() string {
 
 func (rsl *RiemannSocketListener) SampleConfig() string {
 	return `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## URL to listen on. 
   ## Default is "tcp://:5555"
   # service_address = "tcp://:8094"

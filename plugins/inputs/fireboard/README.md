@@ -8,6 +8,8 @@ the [Fireboard REST API](https://docs.fireboard.io/reference/restapi.html).
 
 ```toml
 [[inputs.fireboard]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Specify auth token for your account
   auth_token = "invalidAuthToken"
   ## You can override the fireboard server URL if necessary
@@ -39,13 +41,13 @@ currently this input only returns the real time temperatures. Temperature
 values are included if they are less than a minute old.
 
 - fireboard
-  - tags:
-    - channel
-    - scale (Celcius; Farenheit)
-    - title (name of the Fireboard)
-    - uuid (UUID of the Fireboard)
-  - fields:
-    - temperature (float, unit)
+    - tags:
+        - channel
+        - scale (Celcius; Farenheit)
+        - title (name of the Fireboard)
+        - uuid (UUID of the Fireboard)
+    - fields:
+        - temperature (float, unit)
 
 ### Example Output
 

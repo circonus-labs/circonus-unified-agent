@@ -34,17 +34,18 @@ KEY0 VAL0\n
 KEY1 VAL1\n
 ```
 
-
-### Tags:
+### Tags
 
 All measurements have the following tags:
-  - path
 
+* path
 
-### Configuration:
+### Configuration
 
 ```toml
 # [[inputs.cgroup]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   # paths = [
   #   "/sys/fs/cgroup/memory",           # root cgroup
   #   "/sys/fs/cgroup/memory/child1",    # container cgroup
@@ -53,10 +54,12 @@ All measurements have the following tags:
   # files = ["memory.*usage*", "memory.limit_in_bytes"]
 ```
 
-### usage examples:
+### usage examples
 
 ```toml
 # [[inputs.cgroup]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   # paths = [
   #   "/sys/fs/cgroup/cpu",              # root cgroup
   #   "/sys/fs/cgroup/cpu/*",            # all container cgroups
@@ -65,6 +68,8 @@ All measurements have the following tags:
   # files = ["cpuacct.usage", "cpu.cfs_period_us", "cpu.cfs_quota_us"]
 
 # [[inputs.cgroup]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   # paths = [
   #   "/sys/fs/cgroup/unified/*",        # root cgroup
   # ]

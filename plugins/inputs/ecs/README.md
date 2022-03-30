@@ -19,6 +19,8 @@ present in the metadata/stats endpoints.
 ```toml
 # Read metrics about ECS containers
 [[inputs.ecs]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## ECS metadata url.
   ## Metadata v2 API is used if set explicitly. Otherwise,
   ## v3 metadata endpoint API is used if available.
@@ -79,149 +81,148 @@ present in the metadata/stats endpoints.
 ### Metrics
 
 - ecs_task
-  - tags:
-    - cluster
-    - task_arn
-    - family
-    - revision
-    - id
-    - name
-  - fields:
-    - revision (string)
-    - desired_status (string)
-    - known_status (string)
-    - limit_cpu (float)
-    - limit_mem (float)
+    - tags:
+        - cluster
+        - task_arn
+        - family
+        - revision
+        - id
+        - name
+    - fields:
+        - revision (string)
+        - desired_status (string)
+        - known_status (string)
+        - limit_cpu (float)
+        - limit_mem (float)
 
-+ ecs_container_mem
-  - tags:
-    - cluster
-    - task_arn
-    - family
-    - revision
-    - id
-    - name
-  - fields:
-    - container_id
-    - active_anon
-    - active_file
-    - cache
-    - hierarchical_memory_limit
-    - inactive_anon
-    - inactive_file
-    - mapped_file
-    - pgfault
-    - pgmajfault
-    - pgpgin
-    - pgpgout
-    - rss
-    - rss_huge
-    - total_active_anon
-    - total_active_file
-    - total_cache
-    - total_inactive_anon
-    - total_inactive_file
-    - total_mapped_file
-    - total_pgfault
-    - total_pgmajfault
-    - total_pgpgin
-    - total_pgpgout
-    - total_rss
-    - total_rss_huge
-    - total_unevictable
-    - total_writeback
-    - unevictable
-    - writeback
-    - fail_count
-    - limit
-    - max_usage
-    - usage
-    - usage_percent
+- ecs_container_mem
+    - tags:
+        - cluster
+        - task_arn
+        - family
+        - revision
+        - id
+        - name
+    - fields:
+        - container_id
+        - active_anon
+        - active_file
+        - cache
+        - hierarchical_memory_limit
+        - inactive_anon
+        - inactive_file
+        - mapped_file
+        - pgfault
+        - pgmajfault
+        - pgpgin
+        - pgpgout
+        - rss
+        - rss_huge
+        - total_active_anon
+        - total_active_file
+        - total_cache
+        - total_inactive_anon
+        - total_inactive_file
+        - total_mapped_file
+        - total_pgfault
+        - total_pgmajfault
+        - total_pgpgin
+        - total_pgpgout
+        - total_rss
+        - total_rss_huge
+        - total_unevictable
+        - total_writeback
+        - unevictable
+        - writeback
+        - fail_count
+        - limit
+        - max_usage
+        - usage
+        - usage_percent
 
 - ecs_container_cpu
-  - tags:
-    - cluster
-    - task_arn
-    - family
-    - revision
-    - id
-    - name
-    - cpu
-  - fields:
-    - container_id
-    - usage_total
-    - usage_in_usermode
-    - usage_in_kernelmode
-    - usage_system
-    - throttling_periods
-    - throttling_throttled_periods
-    - throttling_throttled_time
-    - usage_percent
-    - usage_total
+    - tags:
+        - cluster
+        - task_arn
+        - family
+        - revision
+        - id
+        - name
+        - cpu
+    - fields:
+        - container_id
+        - usage_total
+        - usage_in_usermode
+        - usage_in_kernelmode
+        - usage_system
+        - throttling_periods
+        - throttling_throttled_periods
+        - throttling_throttled_time
+        - usage_percent
+        - usage_total
 
-+ ecs_container_net
-  - tags:
-    - cluster
-    - task_arn
-    - family
-    - revision
-    - id
-    - name
-    - network
-  - fields:
-    - container_id
-    - rx_packets
-    - rx_dropped
-    - rx_bytes
-    - rx_errors
-    - tx_packets
-    - tx_dropped
-    - tx_bytes
-    - tx_errors
+- ecs_container_net
+    - tags:
+        - cluster
+        - task_arn
+        - family
+        - revision
+        - id
+        - name
+        - network
+    - fields:
+        - container_id
+        - rx_packets
+        - rx_dropped
+        - rx_bytes
+        - rx_errors
+        - tx_packets
+        - tx_dropped
+        - tx_bytes
+        - tx_errors
 
 - ecs_container_blkio
-  - tags:
-    - cluster
-    - task_arn
-    - family
-    - revision
-    - id
-    - name
-    - device
-  - fields:
-    - container_id
-    - io_service_bytes_recursive_async
-    - io_service_bytes_recursive_read
-    - io_service_bytes_recursive_sync
-    - io_service_bytes_recursive_total
-    - io_service_bytes_recursive_write
-    - io_serviced_recursive_async
-    - io_serviced_recursive_read
-    - io_serviced_recursive_sync
-    - io_serviced_recursive_total
-    - io_serviced_recursive_write
+    - tags:
+        - cluster
+        - task_arn
+        - family
+        - revision
+        - id
+        - name
+        - device
+    - fields:
+        - container_id
+        - io_service_bytes_recursive_async
+        - io_service_bytes_recursive_read
+        - io_service_bytes_recursive_sync
+        - io_service_bytes_recursive_total
+        - io_service_bytes_recursive_write
+        - io_serviced_recursive_async
+        - io_serviced_recursive_read
+        - io_serviced_recursive_sync
+        - io_serviced_recursive_total
+        - io_serviced_recursive_write
 
-+ ecs_container_meta
-  - tags:
-    - cluster
-    - task_arn
-    - family
-    - revision
-    - id
-    - name
-  - fields:
-    - container_id
-    - docker_name
-    - image
-    - image_id
-    - desired_status
-    - known_status
-    - limit_cpu
-    - limit_mem
-    - created_at
-    - started_at
-    - type
-
+- ecs_container_meta
+    - tags:
+        - cluster
+        - task_arn
+        - family
+        - revision
+        - id
+        - name
+    - fields:
+        - container_id
+        - docker_name
+        - image
+        - image_id
+        - desired_status
+        - known_status
+        - limit_cpu
+        - limit_mem
+        - created_at
+        - started_at
+        - type
 
 ### Example Output
 
@@ -243,4 +244,4 @@ ecs_container_meta,cluster=test,com.amazonaws.ecs.cluster=test,com.amazonaws.ecs
 
 [docker-input]: /plugins/inputs/docker/README.md
 [task-metadata-endpoint-v2]: https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-metadata-endpoint-v2.html
-[task-metadata-endpoint-v3] https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-metadata-endpoint-v3.html
+[task-metadata-endpoint-v3] <https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-metadata-endpoint-v3.html>

@@ -9,13 +9,14 @@ Enable TLS by specifying the file names of a service TLS certificate and key.
 
 Enable mutually authenticated TLS and authorize client connections by signing certificate authority by including a list of allowed CA certificate file names in `tls_allowed_cacerts`.
 
-
-### Configuration:
+### Configuration
 
 This is a sample configuration for the plugin.
 
 ```toml
 [[inputs.cloud_pubsub_push]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Address and port to host HTTP listener on
   service_address = ":8080"
 

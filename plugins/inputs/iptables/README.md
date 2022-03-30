@@ -29,8 +29,11 @@ Since the agent will fork a process to run iptables, `AmbientCapabilities` is re
 ### Using sudo
 
 You will need the following in your config:
+
 ```toml
 [[inputs.iptables]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   use_sudo = true
 ```
 
@@ -48,9 +51,11 @@ Defaults!IPTABLESSHOW !logfile, !syslog, !pam_session
 
 Defining multiple instances of this plugin in circonus-unified-agent.conf can lead to concurrent IPtables access resulting in "ERROR in input [inputs.iptables]: exit status 4" messages in the log and missing metrics. Setting 'use_lock = true' in the plugin configuration will run IPtables with the '-w' switch, allowing a lock usage to prevent this error.
 
-### Configuration:
+### Configuration
 
 ```toml
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   # use sudo to run iptables
   use_sudo = false
   # run iptables with the lock option
@@ -63,23 +68,22 @@ Defining multiple instances of this plugin in circonus-unified-agent.conf can le
   chains = [ "INPUT" ]
 ```
 
-### Measurements & Fields:
+### Measurements & Fields
 
+* iptables
+    * pkts (integer, count)
+    * bytes (integer, bytes)
 
-- iptables
-    - pkts (integer, count)
-    - bytes (integer, bytes)
+### Tags
 
-### Tags:
-
-- All measurements have the following tags:
-    - table
-    - chain
-    - ruleid
+* All measurements have the following tags:
+    * table
+    * chain
+    * ruleid
 
 The `ruleid` is the comment associated to the rule.
 
-### Example Output:
+### Example Output
 
 ```
 $ iptables -nvL INPUT

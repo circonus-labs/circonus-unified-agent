@@ -19,6 +19,8 @@ import (
 )
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## The URL of the exposed Logstash API endpoint.
   url = "http://127.0.0.1:9600"
 

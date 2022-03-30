@@ -38,6 +38,8 @@ func (wg *Wireguard) Description() string {
 
 func (wg *Wireguard) SampleConfig() string {
 	return `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Optional list of Wireguard device/interface names to query.
   ## If omitted, all Wireguard interfaces are queried.
   # devices = ["wg0"]

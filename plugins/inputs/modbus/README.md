@@ -7,6 +7,8 @@ Registers via Modbus TCP or Modbus RTU/ASCII.
 
 ```toml
 [[inputs.modbus]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Connection Configuration
   ##
   ## The plugin supports connections to PLCs via MODBUS/TCP or
@@ -96,7 +98,7 @@ Metric are custom and configured using the `discrete_inputs`, `coils`,
 
 The field `data_type` defines the representation of the data value on input from the modbus registers.
 The input values are then converted from the given `data_type` to a type that is apropriate when
-sending the value to the output plugin. These output types are usually one of string, 
+sending the value to the output plugin. These output types are usually one of string,
 integer or floating-point-number. The size of the output type is assumed to be large enough
 for all supported input types. The mapping from the input type to the output type is fixed
 and cannot be configured.
@@ -114,7 +116,7 @@ always include the sign and therefore there exists no variant.
 
 These types are handled as an integer type on input, but are converted to floating point representation
 for further processing (e.g. scaling). Use one of these types when the input value is a decimal fixed point
-representation of a non-integer value. 
+representation of a non-integer value.
 
 Select the type `UFIXED` when the input type is declared to hold unsigned integer values, which cannot
 be negative. The documentation of your modbus device should indicate this by a term like

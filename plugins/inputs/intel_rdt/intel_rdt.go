@@ -73,6 +73,8 @@ func (*IntelRDT) Description() string {
 
 func (*IntelRDT) SampleConfig() string {
 	return `
+    instance_id = "" # unique instance identifier (REQUIRED)
+
 	## Optionally set sampling interval to Nx100ms. 
 	## This value is propagated to pqos tool. Interval format is defined by pqos itself.
 	## If not provided or provided 0, will be set to 10 = 10x100ms = 1s.

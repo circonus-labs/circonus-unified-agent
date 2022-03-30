@@ -76,6 +76,8 @@ func NewTail() *Tail {
 }
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## File names or a pattern to tail.
   ## These accept standard unix glob matching rules, but with the addition of
   ## ** as a "super asterisk". ie:

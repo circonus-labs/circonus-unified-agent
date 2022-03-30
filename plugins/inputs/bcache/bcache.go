@@ -24,6 +24,8 @@ type Bcache struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Bcache sets path
   ## If not specified, then default is:
   bcachePath = "/sys/fs/bcache"

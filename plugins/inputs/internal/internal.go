@@ -23,6 +23,8 @@ func NewSelf() cua.Input {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## If true, collect cua memory stats.
   # collect_memstats = true
 

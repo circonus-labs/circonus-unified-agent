@@ -26,6 +26,8 @@ type Openldap struct {
 }
 
 const sampleConfig string = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   host = "localhost"
   port = 389
 

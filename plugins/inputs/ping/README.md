@@ -25,7 +25,7 @@ native Go by the agent process, eliminating the need to execute the system
 
 ```toml
 [[inputs.ping]]
-  instance_id = "" ## REQUIRED
+  instance_id = "" # unique instance identifier (REQUIRED)
 
   ## Hosts to send ping packets to.
   urls = ["example.org"]
@@ -153,21 +153,21 @@ sockets and the `ping_group_range` setting.
 ### Metrics
 
 - ping
-  - tags:
-    - url
-  - fields:
-    - packets_transmitted (integer)
-    - packets_received (integer)
-    - percent_packet_loss (float)
-    - ttl (integer, Not available on Windows)
-    - average_response_ms (integer)
-    - minimum_response_ms (integer)
-    - maximum_response_ms (integer)
-    - standard_deviation_ms (integer, Available on Windows only with native ping)
-    - errors (float, Windows only)
-    - reply_received (integer, Windows with method = "exec" only)
-    - percent_reply_loss (float, Windows with method = "exec" only)
-    - result_code (int, success = 0, no such host = 1, ping error = 2)
+    - tags:
+        - url
+    - fields:
+        - packets_transmitted (integer)
+        - packets_received (integer)
+        - percent_packet_loss (float)
+        - ttl (integer, Not available on Windows)
+        - average_response_ms (integer)
+        - minimum_response_ms (integer)
+        - maximum_response_ms (integer)
+        - standard_deviation_ms (integer, Available on Windows only with native ping)
+        - errors (float, Windows only)
+        - reply_received (integer, Windows with method = "exec" only)
+        - percent_reply_loss (float, Windows with method = "exec" only)
+        - result_code (int, success = 0, no such host = 1, ping error = 2)
 
 #### reply_received vs packets_received
 
@@ -176,8 +176,8 @@ On Windows systems with `method = "exec"`, the "Destination net unreachable" rep
 ##### ttl
 
 There is currently no support for TTL on windows with `"native"`; track
-progress at https://github.com/golang/go/issues/7175 and
-https://github.com/golang/go/issues/7174
+progress at <https://github.com/golang/go/issues/7175> and
+<https://github.com/golang/go/issues/7174>
 
 ### Example Output
 

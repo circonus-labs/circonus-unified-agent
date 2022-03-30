@@ -16,6 +16,8 @@ import (
 )
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Address to listen for sFlow packets.
   ##   example: service_address = "udp://:6343"
   ##            service_address = "udp4://:6343"

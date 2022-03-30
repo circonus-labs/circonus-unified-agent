@@ -50,6 +50,8 @@ var allMetrics = map[Role][]string{
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Timeout, in ms.
   timeout = 100
 

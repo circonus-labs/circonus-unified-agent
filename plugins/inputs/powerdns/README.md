@@ -2,11 +2,13 @@
 
 The powerdns plugin gathers metrics about PowerDNS using unix socket.
 
-### Configuration:
+### Configuration
 
 ```toml
 # Description
 [[inputs.powerdns]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   # An array of sockets to gather stats about.
   # Specify a path to unix socket.
   #
@@ -20,57 +22,58 @@ Agent will need read access to the powerdns control socket.
 
 On many systems this can be accomplished by adding the `cua` user to the
 `pdns` group:
+
 ```
 usermod cua -a -G pdns
 ```
 
-### Measurements & Fields:
+### Measurements & Fields
 
 - powerdns
-  - corrupt-packets
-  - deferred-cache-inserts
-  - deferred-cache-lookup
-  - dnsupdate-answers
-  - dnsupdate-changes
-  - dnsupdate-queries
-  - dnsupdate-refused
-  - packetcache-hit
-  - packetcache-miss
-  - packetcache-size
-  - query-cache-hit
-  - query-cache-miss
-  - rd-queries
-  - recursing-answers
-  - recursing-questions
-  - recursion-unanswered
-  - security-status
-  - servfail-packets
-  - signatures
-  - tcp-answers
-  - tcp-queries
-  - timedout-packets
-  - udp-answers
-  - udp-answers-bytes
-  - udp-do-queries
-  - udp-queries
-  - udp4-answers
-  - udp4-queries
-  - udp6-answers
-  - udp6-queries
-  - key-cache-size
-  - latency
-  - meta-cache-size
-  - qsize-q
-  - signature-cache-size
-  - sys-msec
-  - uptime
-  - user-msec
+    - corrupt-packets
+    - deferred-cache-inserts
+    - deferred-cache-lookup
+    - dnsupdate-answers
+    - dnsupdate-changes
+    - dnsupdate-queries
+    - dnsupdate-refused
+    - packetcache-hit
+    - packetcache-miss
+    - packetcache-size
+    - query-cache-hit
+    - query-cache-miss
+    - rd-queries
+    - recursing-answers
+    - recursing-questions
+    - recursion-unanswered
+    - security-status
+    - servfail-packets
+    - signatures
+    - tcp-answers
+    - tcp-queries
+    - timedout-packets
+    - udp-answers
+    - udp-answers-bytes
+    - udp-do-queries
+    - udp-queries
+    - udp4-answers
+    - udp4-queries
+    - udp6-answers
+    - udp6-queries
+    - key-cache-size
+    - latency
+    - meta-cache-size
+    - qsize-q
+    - signature-cache-size
+    - sys-msec
+    - uptime
+    - user-msec
 
-### Tags:
+### Tags
 
 - tags: `server=socket`
 
-### Example Output:
+### Example Output
 
 ```
 $ ./circonus-unified-agent --config circonus-unified-agent.conf --input-filter powerdns --test

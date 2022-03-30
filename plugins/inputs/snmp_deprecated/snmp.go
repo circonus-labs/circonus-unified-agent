@@ -25,6 +25,8 @@ import (
 
 const description = `Retrieves SNMP values from remote agents`
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Agent addresses to retrieve values from.
   ##   example: agents = ["udp://127.0.0.1:161"]
   ##            agents = ["tcp://127.0.0.1:161"]

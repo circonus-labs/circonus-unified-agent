@@ -8,6 +8,8 @@ The `RAS` plugin gathers and counts errors provided by [RASDaemon](https://githu
 
 ```toml
 [[inputs.ras]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Optional path to RASDaemon sqlite3 database.
   ## Default: /var/lib/rasdaemon/ras-mc_event.db
   # db_path = ""
@@ -18,28 +20,29 @@ In addition `RASDaemon` runs, by default, with `--enable-sqlite3` flag. In case 
 ### Metrics
 
 - ras
-  - tags:
-    - socket_id
-  - fields:
-    - memory_read_corrected_errors
-    - memory_read_uncorrectable_errors
-    - memory_write_corrected_errors
-    - memory_write_uncorrectable_errors
-    - cache_l0_l1_errors
-    - tlb_instruction_errors
-    - cache_l2_errors
-    - upi_errors
-    - processor_base_errors
-    - processor_bus_errors
-    - internal_timer_errors
-    - smm_handler_code_access_violation_errors
-    - internal_parity_errors
-    - frc_errors
-    - external_mce_errors
-    - microcode_rom_parity_errors
-    - unclassified_mce_errors
+    - tags:
+        - socket_id
+    - fields:
+        - memory_read_corrected_errors
+        - memory_read_uncorrectable_errors
+        - memory_write_corrected_errors
+        - memory_write_uncorrectable_errors
+        - cache_l0_l1_errors
+        - tlb_instruction_errors
+        - cache_l2_errors
+        - upi_errors
+        - processor_base_errors
+        - processor_bus_errors
+        - internal_timer_errors
+        - smm_handler_code_access_violation_errors
+        - internal_parity_errors
+        - frc_errors
+        - external_mce_errors
+        - microcode_rom_parity_errors
+        - unclassified_mce_errors
 
 Please note that `processor_base_errors` is aggregate counter measuring the following MCE events:
+
 - internal_timer_errors
 - smm_handler_code_access_violation_errors
 - internal_parity_errors

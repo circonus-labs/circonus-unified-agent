@@ -23,6 +23,8 @@ type AzureStorageQueue struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Required Azure Storage Account name
   account_name = "mystorageaccount"
 

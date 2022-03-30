@@ -10,6 +10,8 @@ Agent should have Administrator permissions to subscribe for some of the Windows
 
 ```toml
 [[inputs.win_eventlog]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Agent should have Administrator permissions to subscribe for some Windows Events channels
   ## (System log, for example)
 

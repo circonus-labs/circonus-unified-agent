@@ -1,11 +1,10 @@
 # Kernel VMStat Input Plugin
 
-The kernel_vmstat plugin gathers virtual memory statistics 
-by reading /proc/vmstat. For a full list of available fields see the 
+The kernel_vmstat plugin gathers virtual memory statistics
+by reading /proc/vmstat. For a full list of available fields see the
 /proc/vmstat section of the [proc man page](http://man7.org/linux/man-pages/man5/proc.5.html).
-For a better idea of what each field represents, see the 
+For a better idea of what each field represents, see the
 [vmstat man page](http://linux.die.net/man/8/vmstat).
-
 
 ```
 /proc/vmstat
@@ -109,15 +108,17 @@ pgrotated 3781
 nr_bounce 0
 ```
 
-### Configuration:
+### Configuration
 
 ```toml
 # Get kernel statistics from /proc/vmstat
 [[inputs.kernel_vmstat]]
-  # no configuration
+  instance_id = "" # unique instance identifier (REQUIRED)
+
+  # no other configuration
 ```
 
-### Measurements & Fields:
+### Measurements & Fields
 
 - kernel_vmstat
     - nr_free_pages (integer, `nr_free_pages`)
@@ -212,11 +213,11 @@ nr_bounce 0
     - thp_collapse_alloc_failed (integer, `thp_collapse_alloc_failed`)
     - thp_split (integer, `thp_split`)
 
-### Tags:
+### Tags
 
 None
 
-### Example Output:
+### Example Output
 
 ```
 $ circonus-unified-agent --config ~/ws/circonus-unified-agent.conf --input-filter kernel_vmstat --test

@@ -24,17 +24,20 @@ from the server console, or over an RCON connection.
 
 When getting started pick an easy to test objective.  This command will add an
 objective that counts the number of times a player has jumped:
+
 ```
 /scoreboard objectives add jumps minecraft.custom:minecraft.jump
 ```
 
 Once a player has triggered the event they will be added to the scoreboard,
 you can then list all players with recorded scores:
+
 ```
 /scoreboard players list
 ```
 
 View the current scores with a command, substituting your player name:
+
 ```
 /scoreboard players list Etho
 ```
@@ -43,6 +46,8 @@ View the current scores with a command, substituting your player name:
 
 ```toml
 [[inputs.minecraft]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Address of the Minecraft server.
   # server = "localhost"
 
@@ -56,22 +61,24 @@ View the current scores with a command, substituting your player name:
 ### Metrics
 
 - minecraft
-  - tags:
-    - player
-    - port (port of the server)
-    - server (hostname:port, deprecated in 1.11; use `source` and `port` tags)
-    - source (hostname of the server)
-  - fields:
-    - `<objective_name>` (integer, count)
+    - tags:
+        - player
+        - port (port of the server)
+        - server (hostname:port, deprecated in 1.11; use `source` and `port` tags)
+        - source (hostname of the server)
+    - fields:
+        - `<objective_name>` (integer, count)
 
-### Sample Queries:
+### Sample Queries
 
 Get the number of jumps per player in the last hour:
+
 ```sql
 SELECT SPREAD("jumps") FROM "minecraft" WHERE time > now() - 1h GROUP BY "player"
 ```
 
-### Example Output:
+### Example Output
+
 ```
 minecraft,player=notch,source=127.0.0.1,port=25575 jumps=178i 1498261397000000000
 minecraft,player=dinnerbone,source=127.0.0.1,port=25575 deaths=1i,jumps=1999i,cow_kills=1i 1498261397000000000

@@ -37,6 +37,8 @@ type Ipmi struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## optionally specify the path to the ipmitool executable
   # path = "/usr/bin/ipmitool"
   ##

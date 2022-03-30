@@ -7,13 +7,16 @@ Metrics are read from a topic exchange using the configured queue and binding_ke
 Message payload should be formatted in one of the [Data Formats](https://github.com/circonus-labs/circonus-unified-agent/blob/master/docs/DATA_FORMATS_INPUT.md).
 
 For an introduction to AMQP see:
-- https://www.rabbitmq.com/tutorials/amqp-concepts.html
-- https://www.rabbitmq.com/getstarted.html
+
+- <https://www.rabbitmq.com/tutorials/amqp-concepts.html>
+- <https://www.rabbitmq.com/getstarted.html>
 
 The following defaults are known to work with RabbitMQ:
 
 ```toml
 [[inputs.amqp_consumer]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Broker to consume from.
   ##   deprecated in 1.7; use the brokers option
   # url = "amqp://localhost:5672/influxdb"

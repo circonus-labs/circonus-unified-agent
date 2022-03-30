@@ -514,27 +514,29 @@ func (c *CiscoTelemetryMDT) Stop() {
 }
 
 const sampleConfig = `
- ## Telemetry transport can be "tcp" or "grpc".  TLS is only supported when
- ## using the grpc transport.
- transport = "grpc"
+  instance_id = "" # unique instance identifier (REQUIRED)
 
- ## Address and port to host telemetry listener
- service_address = ":57000"
+  ## Telemetry transport can be "tcp" or "grpc".  TLS is only supported when
+  ## using the grpc transport.
+  transport = "grpc"
 
- ## Enable TLS; grpc transport only.
- # tls_cert = "/etc/circonus-unified-agent/cert.pem"
- # tls_key = "/etc/circonus-unified-agent/key.pem"
+  ## Address and port to host telemetry listener
+  service_address = ":57000"
 
- ## Enable TLS client authentication and define allowed CA certificates; grpc
- ##  transport only.
- # tls_allowed_cacerts = ["/etc/circonus-unified-agent/clientca.pem"]
+  ## Enable TLS; grpc transport only.
+  # tls_cert = "/etc/circonus-unified-agent/cert.pem"
+  # tls_key = "/etc/circonus-unified-agent/key.pem"
 
- ## Define (for certain nested telemetry measurements with embedded tags) which fields are tags
- # embedded_tags = ["Cisco-IOS-XR-qos-ma-oper:qos/interface-table/interface/input/service-policy-names/service-policy-instance/statistics/class-stats/class-name"]
+  ## Enable TLS client authentication and define allowed CA certificates; grpc
+  ##  transport only.
+  # tls_allowed_cacerts = ["/etc/circonus-unified-agent/clientca.pem"]
 
- ## Define aliases to map telemetry encoding paths to simple measurement names
- [inputs.cisco_telemetry_mdt.aliases]
-   ifstats = "ietf-interfaces:interfaces-state/interface/statistics"
+  ## Define (for certain nested telemetry measurements with embedded tags) which fields are tags
+  # embedded_tags = ["Cisco-IOS-XR-qos-ma-oper:qos/interface-table/interface/input/service-policy-names/service-policy-instance/statistics/class-stats/class-name"]
+
+  ## Define aliases to map telemetry encoding paths to simple measurement names
+  [inputs.cisco_telemetry_mdt.aliases]
+    ifstats = "ietf-interfaces:interfaces-state/interface/statistics"
 `
 
 // SampleConfig of plugin

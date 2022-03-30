@@ -3,11 +3,13 @@
 The input plugin test UDP/TCP connections response time and can optional
 verify text in the response.
 
-### Configuration:
+### Configuration
 
 ```toml
 # Collect response time of a TCP or UDP connection
 [[inputs.net_response]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Protocol, must be "tcp" or "udp"
   ## NOTE: because the "udp" protocol does not respond to requests, it requires
   ## a send/expect string pair (see below).
@@ -33,21 +35,21 @@ verify text in the response.
   # fielddrop = ["result_type", "string_found"]
 ```
 
-### Metrics:
+### Metrics
 
 - net_response
-  - tags:
-    - server
-    - port
-    - protocol
-    - result
-  - fields:
-    - response_time (float, seconds)
-    - result_code (int, success = 0, timeout = 1, connection_failed = 2, read_failed = 3, string_mismatch = 4)
-    - result_type (string) **DEPRECATED in 1.7; use result tag**
-    - string_found (boolean) **DEPRECATED in 1.4; use result tag**
+    - tags:
+        - server
+        - port
+        - protocol
+        - result
+    - fields:
+        - response_time (float, seconds)
+        - result_code (int, success = 0, timeout = 1, connection_failed = 2, read_failed = 3, string_mismatch = 4)
+        - result_type (string) **DEPRECATED in 1.7; use result tag**
+        - string_found (boolean) **DEPRECATED in 1.4; use result tag**
 
-### Example Output:
+### Example Output
 
 ```
 net_response,port=8086,protocol=tcp,result=success,server=localhost response_time=0.000092948,result_code=0i,result_type="success" 1525820185000000000

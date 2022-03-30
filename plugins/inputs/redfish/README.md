@@ -6,6 +6,8 @@ The `redfish` plugin gathers metrics and status information about CPU temperatur
 
 ```toml
 [[inputs.redfish]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Redfish API Base URL.
   address = "https://127.0.0.1:5000"
 
@@ -30,80 +32,76 @@ The `redfish` plugin gathers metrics and status information about CPU temperatur
 ### Metrics
 
 - redfish_thermal_temperatures
-  - tags:
-    - source
-    - address
-    - name
-    - datacenter (available only if location data is found)
-    - rack (available only if location data is found)
-    - room (available only if location data is found)
-    - row (available only if location data is found)
-    - state
-    - health
-  - fields:
-    - reading_celsius
-    - upper_threshold_critical
-    - upper_threshold_fatal
-    - lower_threshold_critical
-    - lower_threshold_fatal
+    - tags:
+        - source
+        - address
+        - name
+        - datacenter (available only if location data is found)
+        - rack (available only if location data is found)
+        - room (available only if location data is found)
+        - row (available only if location data is found)
+        - state
+        - health
+    - fields:
+        - reading_celsius
+        - upper_threshold_critical
+        - upper_threshold_fatal
+        - lower_threshold_critical
+        - lower_threshold_fatal
 
-
-+ redfish_thermal_fans
-  - tags:
-    - source
-    - address
-    - name
-    - datacenter (available only if location data is found)
-    - rack (available only if location data is found)
-    - room (available only if location data is found)
-    - row (available only if location data is found)
-    - state
-    - health
-  - fields:
-    - reading_rpm (or) reading_percent
-    - upper_threshold_critical
-    - upper_threshold_fatal
-    - lower_threshold_critical
-    - lower_threshold_fatal
-
+- redfish_thermal_fans
+    - tags:
+        - source
+        - address
+        - name
+        - datacenter (available only if location data is found)
+        - rack (available only if location data is found)
+        - room (available only if location data is found)
+        - row (available only if location data is found)
+        - state
+        - health
+    - fields:
+        - reading_rpm (or) reading_percent
+        - upper_threshold_critical
+        - upper_threshold_fatal
+        - lower_threshold_critical
+        - lower_threshold_fatal
 
 - redfish_power_powersupplies
-  - tags:
-    - source
-    - address
-    - name
-    - datacenter (available only if location data is found)
-    - rack (available only if location data is found)
-    - room (available only if location data is found)
-    - row (available only if location data is found)
-    - state
-    - health
-  - fields:
-    - last_power_output_watts
-    - line_input_voltage
-    - power_capacity_watts
-    - power_input_watts
-    - power_output_watts
-
+    - tags:
+        - source
+        - address
+        - name
+        - datacenter (available only if location data is found)
+        - rack (available only if location data is found)
+        - room (available only if location data is found)
+        - row (available only if location data is found)
+        - state
+        - health
+    - fields:
+        - last_power_output_watts
+        - line_input_voltage
+        - power_capacity_watts
+        - power_input_watts
+        - power_output_watts
 
 - redfish_power_voltages (available only if voltage data is found)
-  - tags:
-    - source
-    - address
-    - name
-    - datacenter (available only if location data is found)
-    - rack (available only if location data is found)
-    - room (available only if location data is found)
-    - row (available only if location data is found)
-    - state
-    - health
-  - fields:
-    - reading_volts
-    - upper_threshold_critical
-    - upper_threshold_fatal
-    - lower_threshold_critical
-    - lower_threshold_fatal
-
+    - tags:
+        - source
+        - address
+        - name
+        - datacenter (available only if location data is found)
+        - rack (available only if location data is found)
+        - room (available only if location data is found)
+        - row (available only if location data is found)
+        - state
+        - health
+    - fields:
+        - reading_volts
+        - upper_threshold_critical
+        - upper_threshold_fatal
+        - lower_threshold_critical
+        - lower_threshold_fatal
 
 ### Example Output
 

@@ -18,6 +18,8 @@ type Twemproxy struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Twemproxy stats address and port (no scheme)
   addr = "localhost:22222"
   ## Monitor pool name

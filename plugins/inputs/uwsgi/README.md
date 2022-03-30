@@ -6,6 +6,8 @@ The uWSGI input plugin gathers metrics about uWSGI using its [Stats Server](http
 
 ```toml
 [[inputs.uwsgi]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## List with urls of uWSGI Stats servers. Url must match pattern:
   ## scheme://address[:port]
   ##
@@ -17,71 +19,69 @@ The uWSGI input plugin gathers metrics about uWSGI using its [Stats Server](http
   # timeout = "5s"
 ```
 
+### Metrics
 
-### Metrics:
-
- - uwsgi_overview
-  - tags:
+- uwsgi_overview
+- tags:
     - source
     - uid
     - gid
     - version
-  - fields:
+- fields:
     - listen_queue
     - listen_queue_errors
     - signal_queue
     - load
     - pid
 
-+ uwsgi_workers
-  - tags:
-    - worker_id
-    - source
-  - fields:
-    - requests
-    - accepting
-    - delta_request
-    - exceptions
-    - harakiri_count
-    - pid
-    - signals
-    - signal_queue
-    - status
-    - rss
-    - vsz
-    - running_time
-    - last_spawn
-    - respawn_count
-    - tx
-    - avg_rt
+- uwsgi_workers
+    - tags:
+        - worker_id
+        - source
+    - fields:
+        - requests
+        - accepting
+        - delta_request
+        - exceptions
+        - harakiri_count
+        - pid
+        - signals
+        - signal_queue
+        - status
+        - rss
+        - vsz
+        - running_time
+        - last_spawn
+        - respawn_count
+        - tx
+        - avg_rt
 
 - uwsgi_apps
-  - tags:
-    - app_id
-    - worker_id
-    - source
-  - fields:
-    - modifier1
-    - requests
-    - startup_time
-    - exceptions
+    - tags:
+        - app_id
+        - worker_id
+        - source
+    - fields:
+        - modifier1
+        - requests
+        - startup_time
+        - exceptions
 
-+ uwsgi_cores
-  - tags:
-    - core_id
-    - worker_id
-    - source
-  - fields:
-    - requests
-    - static_requests
-    - routed_requests
-    - offloaded_requests
-    - write_errors
-    - read_errors
-    - in_request 
+- uwsgi_cores
+    - tags:
+        - core_id
+        - worker_id
+        - source
+    - fields:
+        - requests
+        - static_requests
+        - routed_requests
+        - offloaded_requests
+        - write_errors
+        - read_errors
+        - in_request
 
-
-### Example Output:
+### Example Output
 
 ```
 uwsgi_overview,gid=0,uid=0,source=172.17.0.2,version=2.0.18 listen_queue=0i,listen_queue_errors=0i,load=0i,pid=1i,signal_queue=0i 1564441407000000000
@@ -89,4 +89,3 @@ uwsgi_workers,source=172.17.0.2,worker_id=1 accepting=1i,avg_rt=0i,delta_request
 uwsgi_apps,app_id=0,worker_id=1,source=172.17.0.2 exceptions=0i,modifier1=0i,requests=0i,startup_time=0i 1564441407000000000
 uwsgi_cores,core_id=0,worker_id=1,source=172.17.0.2 in_request=0i,offloaded_requests=0i,read_errors=0i,requests=0i,routed_requests=0i,static_requests=0i,write_errors=0i 1564441407000000000
 ```
-

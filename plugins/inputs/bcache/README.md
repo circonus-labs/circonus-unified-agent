@@ -56,7 +56,9 @@ cache_readaheads
 Using this configuration:
 
 ```toml
-[bcache]
+[[inputs.bcache]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Bcache sets path
   ## If not specified, then default is:
   bcachePath = "/sys/fs/bcache"

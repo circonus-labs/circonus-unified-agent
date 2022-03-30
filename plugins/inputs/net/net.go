@@ -26,6 +26,8 @@ func (*IOStats) Description() string {
 }
 
 var netSampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## By default, agent gathers stats from any up interface (excluding loopback)
   ## Setting interfaces will tell it to gather these explicit interfaces,
   ## regardless of status.

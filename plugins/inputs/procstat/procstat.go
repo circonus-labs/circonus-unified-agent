@@ -42,6 +42,8 @@ type Procstat struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## PID file to monitor process
   pid_file = "/var/run/nginx.pid"
   ## executable name (ie, pgrep <exe>)

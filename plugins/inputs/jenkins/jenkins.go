@@ -46,6 +46,8 @@ type Jenkins struct {
 }
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## The Jenkins URL in the format "schema://host:port"
   url = "http://my-jenkins-instance:8080"
   # username = "admin"

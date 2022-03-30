@@ -17,6 +17,8 @@ import (
 )
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## An URL where Nginx Upstream check module is enabled
   ## It should be set to return a JSON formatted response
   url = "http://127.0.0.1/status?format=json"

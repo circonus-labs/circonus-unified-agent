@@ -14,7 +14,7 @@ inaccessible files.
 - `--lines=0` means that it will start at the end of the file (unless
 the `from_beginning` option is set).
 
-see http://man7.org/linux/man-pages/man1/tail.1.html for more details.
+see <http://man7.org/linux/man-pages/man1/tail.1.html> for more details.
 
 The plugin expects messages in one of the
 [Input Data Formats](https://github.com/circonus-labs/circonus-unified-agent/blob/master/docs/DATA_FORMATS_INPUT.md).
@@ -23,6 +23,8 @@ The plugin expects messages in one of the
 
 ```toml
 [[inputs.tail]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## File names or a pattern to tail.
   ## These accept standard unix glob matching rules, but with the addition of
   ## ** as a "super asterisk". ie:

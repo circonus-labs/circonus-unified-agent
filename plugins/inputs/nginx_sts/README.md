@@ -1,7 +1,7 @@
 # Nginx Stream STS Input Plugin
 
 This plugin gathers Nginx status using external virtual host traffic status
-module -  https://github.com/vozlt/nginx-module-sts. This is an Nginx module
+module -  <https://github.com/vozlt/nginx-module-sts>. This is an Nginx module
 that provides access to stream host status information. It contains the current
 status such as servers, upstreams, caches. This is similar to the live activity
 monitoring of Nginx plus.  For module configuration details please see its
@@ -11,6 +11,8 @@ monitoring of Nginx plus.  For module configuration details please see its
 
 ```toml
 [[inputs.nginx_sts]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## An array of ngx_http_status_module or status URI to gather stats.
   urls = ["http://localhost/status"]
 
@@ -28,83 +30,83 @@ monitoring of Nginx plus.  For module configuration details please see its
 ### Metrics
 
 - nginx_sts_connections
-  - tags:
-    - source
-    - port
-  - fields:
-    - active
-    - reading
-    - writing
-    - waiting
-    - accepted
-    - handled
-    - requests
+    - tags:
+        - source
+        - port
+    - fields:
+        - active
+        - reading
+        - writing
+        - waiting
+        - accepted
+        - handled
+        - requests
 
-+ nginx_sts_server
-  - tags:
-    - source
-    - port
-    - zone
-  - fields:
-    - connects
-    - in_bytes
-    - out_bytes
-    - response_1xx_count
-    - response_2xx_count
-    - response_3xx_count
-    - response_4xx_count
-    - response_5xx_count
-    - session_msec_counter
-    - session_msec
+- nginx_sts_server
+    - tags:
+        - source
+        - port
+        - zone
+    - fields:
+        - connects
+        - in_bytes
+        - out_bytes
+        - response_1xx_count
+        - response_2xx_count
+        - response_3xx_count
+        - response_4xx_count
+        - response_5xx_count
+        - session_msec_counter
+        - session_msec
 
 - nginx_sts_filter
-  - tags:
-    - source
-    - port
-    - filter_name
-    - filter_key
-  - fields:
-    - connects
-    - in_bytes
-    - out_bytes
-    - response_1xx_count
-    - response_2xx_count
-    - response_3xx_count
-    - response_4xx_count
-    - response_5xx_count
-    - session_msec_counter
-    - session_msec
+    - tags:
+        - source
+        - port
+        - filter_name
+        - filter_key
+    - fields:
+        - connects
+        - in_bytes
+        - out_bytes
+        - response_1xx_count
+        - response_2xx_count
+        - response_3xx_count
+        - response_4xx_count
+        - response_5xx_count
+        - session_msec_counter
+        - session_msec
 
-+ nginx_sts_upstream
-  - tags:
-    - source
-    - port
-    - upstream
-    - upstream_address
-  - fields:
-    - connects
-    - in_bytes
-    - out_bytes
-    - response_1xx_count
-    - response_2xx_count
-    - response_3xx_count
-    - response_4xx_count
-    - response_5xx_count
-    - session_msec_counter
-    - session_msec
-    - upstream_session_msec_counter
-    - upstream_session_msec
-    - upstream_connect_msec_counter
-    - upstream_connect_msec
-    - upstream_firstbyte_msec_counter
-    - upstream_firstbyte_msec
-    - weight
-    - max_fails
-    - fail_timeout
-    - backup
-    - down
+- nginx_sts_upstream
+    - tags:
+        - source
+        - port
+        - upstream
+        - upstream_address
+    - fields:
+        - connects
+        - in_bytes
+        - out_bytes
+        - response_1xx_count
+        - response_2xx_count
+        - response_3xx_count
+        - response_4xx_count
+        - response_5xx_count
+        - session_msec_counter
+        - session_msec
+        - upstream_session_msec_counter
+        - upstream_session_msec
+        - upstream_connect_msec_counter
+        - upstream_connect_msec
+        - upstream_firstbyte_msec_counter
+        - upstream_firstbyte_msec
+        - weight
+        - max_fails
+        - fail_timeout
+        - backup
+        - down
 
-### Example Output:
+### Example Output
 
 ```
 nginx_sts_upstream,host=localhost,port=80,source=127.0.0.1,upstream=backend_cluster,upstream_address=1.2.3.4:8080 upstream_connect_msec_counter=0i,out_bytes=0i,down=false,connects=0i,session_msec=0i,upstream_session_msec=0i,upstream_session_msec_counter=0i,upstream_connect_msec=0i,upstream_firstbyte_msec_counter=0i,response_3xx_count=0i,session_msec_counter=0i,weight=1i,max_fails=1i,backup=false,upstream_firstbyte_msec=0i,in_bytes=0i,response_1xx_count=0i,response_2xx_count=0i,response_4xx_count=0i,response_5xx_count=0i,fail_timeout=10i 1584699180000000000

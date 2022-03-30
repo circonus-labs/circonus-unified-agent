@@ -6,7 +6,7 @@ To use this plugin you will need an [api key][] (app_id).
 
 City identifiers can be found in the [city list][]. Alternately you
 can [search][] by name; the `city_id` can be found as the last digits
-of the URL: https://openweathermap.org/city/2643743. Language
+of the URL: <https://openweathermap.org/city/2643743>. Language
 identifiers can be found in the [lang list][]. Documentation for
 condition ID, icon, and main is at [weather conditions][].
 
@@ -14,6 +14,8 @@ condition ID, icon, and main is at [weather conditions][].
 
 ```toml
 [[inputs.openweathermap]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## OpenWeatherMap API key.
   app_id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
@@ -47,25 +49,24 @@ condition ID, icon, and main is at [weather conditions][].
 ### Metrics
 
 - weather
-  - tags:
-    - city_id
-    - forecast
-    - condition_id
-    - condition_main
-  - fields:
-    - cloudiness (int, percent)
-    - humidity (int, percent)
-    - pressure (float, atmospheric pressure hPa)
-    - rain (float, rain volume for the last 1-3 hours (depending on API response) in mm)
-    - sunrise (int, nanoseconds since unix epoch)
-    - sunset (int, nanoseconds since unix epoch)
-    - temperature (float, degrees)
-    - visibility (int, meters, not available on forecast data)
-    - wind_degrees (float, wind direction in degrees)
-    - wind_speed (float, wind speed in meters/sec or miles/sec)
-    - condition_description (string, localized long description)
-    - condition_icon
-
+    - tags:
+        - city_id
+        - forecast
+        - condition_id
+        - condition_main
+    - fields:
+        - cloudiness (int, percent)
+        - humidity (int, percent)
+        - pressure (float, atmospheric pressure hPa)
+        - rain (float, rain volume for the last 1-3 hours (depending on API response) in mm)
+        - sunrise (int, nanoseconds since unix epoch)
+        - sunset (int, nanoseconds since unix epoch)
+        - temperature (float, degrees)
+        - visibility (int, meters, not available on forecast data)
+        - wind_degrees (float, wind direction in degrees)
+        - wind_speed (float, wind speed in meters/sec or miles/sec)
+        - condition_description (string, localized long description)
+        - condition_icon
 
 ### Example Output
 

@@ -19,6 +19,8 @@ import (
 )
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Postfix queue directory. If not provided, agent will try to use
   ## 'postconf -h queue_directory' to determine it.
   # queue_directory = "/var/spool/postfix"

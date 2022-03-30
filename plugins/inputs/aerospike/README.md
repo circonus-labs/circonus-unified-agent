@@ -9,10 +9,13 @@ The metric names, to make it less complicated in querying, have replaced all `-`
 
 All metrics are attempted to be cast to integers, then booleans, then strings.
 
-### Configuration:
+### Configuration
+
 ```toml
 # Read stats from aerospike server(s)
 [[inputs.aerospike]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Aerospike servers to connect to (with port)
   ## This plugin will query all namespaces the aerospike
   ## server has configured and get stats for them.
@@ -56,7 +59,7 @@ All metrics are attempted to be cast to integers, then booleans, then strings.
 
 ```
 
-### Measurements:
+### Measurements
 
 The aerospike metrics are under a few measurement names:
 
@@ -112,7 +115,7 @@ is available from the aerospike `histogram:namespace=<namespace_name>;[set=<set_
         ...
       ```
 
-### Tags:
+### Tags
 
 All measurements have tags:
 
@@ -129,11 +132,12 @@ Set metrics have tags:
 - set_name
 
 Histogram metrics have tags:
+
 - namespace_name
 - set_name (optional)
 - type
 
-### Example Output:
+### Example Output
 
 ```
 % circonus-unified-agent --input-filter aerospike --test

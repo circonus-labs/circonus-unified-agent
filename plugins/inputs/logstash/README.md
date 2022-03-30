@@ -9,6 +9,8 @@ Logstash 5 and later is supported.
 
 ```toml
 [[inputs.logstash]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## The URL of the exposed Logstash API endpoint.
   url = "http://127.0.0.1:9600"
 
@@ -43,104 +45,104 @@ Logstash 5 and later is supported.
 ### Metrics
 
 - logstash_jvm
-  - tags:
-    - node_id
-    - node_name
-    - node_host
-    - node_version
-  - fields:
-    - threads_peak_count
-    - mem_pools_survivor_peak_max_in_bytes
-    - mem_pools_survivor_max_in_bytes
-    - mem_pools_old_peak_used_in_bytes
-    - mem_pools_young_used_in_bytes
-    - mem_non_heap_committed_in_bytes
-    - threads_count
-    - mem_pools_old_committed_in_bytes
-    - mem_pools_young_peak_max_in_bytes
-    - mem_heap_used_percent
-    - gc_collectors_young_collection_time_in_millis
-    - mem_pools_survivor_peak_used_in_bytes
-    - mem_pools_young_committed_in_bytes
-    - gc_collectors_old_collection_time_in_millis
-    - gc_collectors_old_collection_count
-    - mem_pools_survivor_used_in_bytes
-    - mem_pools_old_used_in_bytes
-    - mem_pools_young_max_in_bytes
-    - mem_heap_max_in_bytes
-    - mem_non_heap_used_in_bytes
-    - mem_pools_survivor_committed_in_bytes
-    - mem_pools_old_max_in_bytes
-    - mem_heap_committed_in_bytes
-    - mem_pools_old_peak_max_in_bytes
-    - mem_pools_young_peak_used_in_bytes
-    - mem_heap_used_in_bytes
-    - gc_collectors_young_collection_count
-    - uptime_in_millis
+    - tags:
+        - node_id
+        - node_name
+        - node_host
+        - node_version
+    - fields:
+        - threads_peak_count
+        - mem_pools_survivor_peak_max_in_bytes
+        - mem_pools_survivor_max_in_bytes
+        - mem_pools_old_peak_used_in_bytes
+        - mem_pools_young_used_in_bytes
+        - mem_non_heap_committed_in_bytes
+        - threads_count
+        - mem_pools_old_committed_in_bytes
+        - mem_pools_young_peak_max_in_bytes
+        - mem_heap_used_percent
+        - gc_collectors_young_collection_time_in_millis
+        - mem_pools_survivor_peak_used_in_bytes
+        - mem_pools_young_committed_in_bytes
+        - gc_collectors_old_collection_time_in_millis
+        - gc_collectors_old_collection_count
+        - mem_pools_survivor_used_in_bytes
+        - mem_pools_old_used_in_bytes
+        - mem_pools_young_max_in_bytes
+        - mem_heap_max_in_bytes
+        - mem_non_heap_used_in_bytes
+        - mem_pools_survivor_committed_in_bytes
+        - mem_pools_old_max_in_bytes
+        - mem_heap_committed_in_bytes
+        - mem_pools_old_peak_max_in_bytes
+        - mem_pools_young_peak_used_in_bytes
+        - mem_heap_used_in_bytes
+        - gc_collectors_young_collection_count
+        - uptime_in_millis
 
-+ logstash_process
-  - tags:
-    - node_id
-    - node_name
-    - source
-    - node_version
-  - fields:
-    - open_file_descriptors
-    - cpu_load_average_1m
-    - cpu_load_average_5m
-    - cpu_load_average_15m
-    - cpu_total_in_millis
-    - cpu_percent
-    - peak_open_file_descriptors
-    - max_file_descriptors
-    - mem_total_virtual_in_bytes
-    - mem_total_virtual_in_bytes
+- logstash_process
+    - tags:
+        - node_id
+        - node_name
+        - source
+        - node_version
+    - fields:
+        - open_file_descriptors
+        - cpu_load_average_1m
+        - cpu_load_average_5m
+        - cpu_load_average_15m
+        - cpu_total_in_millis
+        - cpu_percent
+        - peak_open_file_descriptors
+        - max_file_descriptors
+        - mem_total_virtual_in_bytes
+        - mem_total_virtual_in_bytes
 
 - logstash_events
-  - tags:
-    - node_id
-    - node_name
-    - source
-    - node_version
-    - pipeline (for Logstash 6+)
-  - fields:
-    - queue_push_duration_in_millis
-    - duration_in_millis
-    - in
-    - filtered
-    - out
+    - tags:
+        - node_id
+        - node_name
+        - source
+        - node_version
+        - pipeline (for Logstash 6+)
+    - fields:
+        - queue_push_duration_in_millis
+        - duration_in_millis
+        - in
+        - filtered
+        - out
 
-+ logstash_plugins
-  - tags:
-    - node_id
-    - node_name
-    - source
-    - node_version
-    - pipeline (for Logstash 6+)
-    - plugin_id
-    - plugin_name
-    - plugin_type
-  - fields:
-    - queue_push_duration_in_millis (for input plugins only)
-    - duration_in_millis
-    - in
-    - out
+- logstash_plugins
+    - tags:
+        - node_id
+        - node_name
+        - source
+        - node_version
+        - pipeline (for Logstash 6+)
+        - plugin_id
+        - plugin_name
+        - plugin_type
+    - fields:
+        - queue_push_duration_in_millis (for input plugins only)
+        - duration_in_millis
+        - in
+        - out
 
 - logstash_queue
-  - tags:
-    - node_id
-    - node_name
-    - source
-    - node_version
-    - pipeline (for Logstash 6+)
-    - queue_type
-  - fields:
-    - events
-    - free_space_in_bytes
-    - max_queue_size_in_bytes
-    - max_unread_events
-    - page_capacity_in_bytes
-    - queue_size_in_bytes
+    - tags:
+        - node_id
+        - node_name
+        - source
+        - node_version
+        - pipeline (for Logstash 6+)
+        - queue_type
+    - fields:
+        - events
+        - free_space_in_bytes
+        - max_queue_size_in_bytes
+        - max_unread_events
+        - page_capacity_in_bytes
+        - queue_size_in_bytes
 
 ### Example Output
 

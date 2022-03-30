@@ -17,6 +17,8 @@ const (
 	measurement  = "fluentd"
 	description  = "Read metrics exposed by fluentd in_monitor plugin"
 	sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## This plugin reads information exposed by fluentd (using /api/plugins.json endpoint).
   ##
   ## Endpoint:

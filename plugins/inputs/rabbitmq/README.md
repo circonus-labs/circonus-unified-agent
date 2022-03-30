@@ -11,6 +11,8 @@ For additional details reference the [RabbitMQ Management HTTP Stats][management
 
 ```toml
 [[inputs.rabbitmq]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Management Plugin url. (default: http://localhost:15672)
   # url = "http://localhost:15672"
   ## Credentials
@@ -61,153 +63,153 @@ For additional details reference the [RabbitMQ Management HTTP Stats][management
 ### Metrics
 
 - rabbitmq_overview
-  - tags:
-    - url
-    - name
-  - fields:
-    - channels (int, channels)
-    - connections (int, connections)
-    - consumers (int, consumers)
-    - exchanges (int, exchanges)
-    - messages (int, messages)
-    - messages_acked (int, messages)
-    - messages_delivered (int, messages)
-    - messages_delivered_get (int, messages)
-    - messages_published (int, messages)
-    - messages_ready (int, messages)
-    - messages_unacked (int, messages)
-    - queues (int, queues)
-    - clustering_listeners (int, cluster nodes)
-    - amqp_listeners (int, amqp nodes up)
-    - return_unroutable (int, number of unroutable messages)
-    - return_unroutable_rate (float, number of unroutable messages per second)
+    - tags:
+        - url
+        - name
+    - fields:
+        - channels (int, channels)
+        - connections (int, connections)
+        - consumers (int, consumers)
+        - exchanges (int, exchanges)
+        - messages (int, messages)
+        - messages_acked (int, messages)
+        - messages_delivered (int, messages)
+        - messages_delivered_get (int, messages)
+        - messages_published (int, messages)
+        - messages_ready (int, messages)
+        - messages_unacked (int, messages)
+        - queues (int, queues)
+        - clustering_listeners (int, cluster nodes)
+        - amqp_listeners (int, amqp nodes up)
+        - return_unroutable (int, number of unroutable messages)
+        - return_unroutable_rate (float, number of unroutable messages per second)
 
-+ rabbitmq_node
-  - tags:
-    - url
-    - node
-    - url
-  - fields:
-    - disk_free (int, bytes)
-    - disk_free_limit (int, bytes)
-    - disk_free_alarm (int, disk alarm)
-    - fd_total (int, file descriptors)
-    - fd_used (int, file descriptors)
-    - mem_limit (int, bytes)
-    - mem_used (int, bytes)
-    - mem_alarm (int, memory a)
-    - proc_total (int, erlang processes)
-    - proc_used (int, erlang processes)
-    - run_queue (int, erlang processes)
-    - sockets_total (int, sockets)
-    - sockets_used (int, sockets)
-    - running (int, node up)
-    - uptime (int, milliseconds)
-    - mnesia_disk_tx_count (int, number of disk transaction)
-    - mnesia_ram_tx_count (int, number of ram transaction)
-    - mnesia_disk_tx_count_rate (float, number of disk transaction per second)
-    - mnesia_ram_tx_count_rate (float, number of ram transaction per second)
-    - gc_num (int, number of garbage collection)
-    - gc_bytes_reclaimed (int, bytes)
-    - gc_num_rate (float, number of garbage collection per second)
-    - gc_bytes_reclaimed_rate (float, bytes per second)
-    - io_read_avg_time (float, number of read operations)
-    - io_read_avg_time_rate (int, number of read operations per second)
-    - io_read_bytes (int, bytes)
-    - io_read_bytes_rate (float, bytes per second)
-    - io_write_avg_time (int, milliseconds)
-    - io_write_avg_time_rate (float, milliseconds per second)
-    - io_write_bytes (int, bytes)
-    - io_write_bytes_rate (float, bytes per second)
-    - mem_connection_readers (int, bytes)
-    - mem_connection_writers (int, bytes)
-    - mem_connection_channels (int, bytes)
-    - mem_connection_other (int, bytes)
-    - mem_queue_procs (int, bytes)
-    - mem_queue_slave_procs (int, bytes)
-    - mem_plugins (int, bytes)
-    - mem_other_proc (int, bytes)
-    - mem_metrics (int, bytes)
-    - mem_mgmt_db (int, bytes)
-    - mem_mnesia (int, bytes)
-    - mem_other_ets (int, bytes)
-    - mem_binary (int, bytes)
-    - mem_msg_index (int, bytes)
-    - mem_code (int, bytes)
-    - mem_atom (int, bytes)
-    - mem_other_system (int, bytes)
-    - mem_allocated_unused (int, bytes)
-    - mem_reserved_unallocated (int, bytes)
-    - mem_total (int, bytes)
+- rabbitmq_node
+    - tags:
+        - url
+        - node
+        - url
+    - fields:
+        - disk_free (int, bytes)
+        - disk_free_limit (int, bytes)
+        - disk_free_alarm (int, disk alarm)
+        - fd_total (int, file descriptors)
+        - fd_used (int, file descriptors)
+        - mem_limit (int, bytes)
+        - mem_used (int, bytes)
+        - mem_alarm (int, memory a)
+        - proc_total (int, erlang processes)
+        - proc_used (int, erlang processes)
+        - run_queue (int, erlang processes)
+        - sockets_total (int, sockets)
+        - sockets_used (int, sockets)
+        - running (int, node up)
+        - uptime (int, milliseconds)
+        - mnesia_disk_tx_count (int, number of disk transaction)
+        - mnesia_ram_tx_count (int, number of ram transaction)
+        - mnesia_disk_tx_count_rate (float, number of disk transaction per second)
+        - mnesia_ram_tx_count_rate (float, number of ram transaction per second)
+        - gc_num (int, number of garbage collection)
+        - gc_bytes_reclaimed (int, bytes)
+        - gc_num_rate (float, number of garbage collection per second)
+        - gc_bytes_reclaimed_rate (float, bytes per second)
+        - io_read_avg_time (float, number of read operations)
+        - io_read_avg_time_rate (int, number of read operations per second)
+        - io_read_bytes (int, bytes)
+        - io_read_bytes_rate (float, bytes per second)
+        - io_write_avg_time (int, milliseconds)
+        - io_write_avg_time_rate (float, milliseconds per second)
+        - io_write_bytes (int, bytes)
+        - io_write_bytes_rate (float, bytes per second)
+        - mem_connection_readers (int, bytes)
+        - mem_connection_writers (int, bytes)
+        - mem_connection_channels (int, bytes)
+        - mem_connection_other (int, bytes)
+        - mem_queue_procs (int, bytes)
+        - mem_queue_slave_procs (int, bytes)
+        - mem_plugins (int, bytes)
+        - mem_other_proc (int, bytes)
+        - mem_metrics (int, bytes)
+        - mem_mgmt_db (int, bytes)
+        - mem_mnesia (int, bytes)
+        - mem_other_ets (int, bytes)
+        - mem_binary (int, bytes)
+        - mem_msg_index (int, bytes)
+        - mem_code (int, bytes)
+        - mem_atom (int, bytes)
+        - mem_other_system (int, bytes)
+        - mem_allocated_unused (int, bytes)
+        - mem_reserved_unallocated (int, bytes)
+        - mem_total (int, bytes)
 
 - rabbitmq_queue
-  - tags:
-    - url
-    - queue
-    - vhost
-    - node
-    - durable
-    - auto_delete
-  - fields:
-    - consumer_utilisation (float, percent)
-    - consumers (int, int)
-    - idle_since (string, time - e.g., "2006-01-02 15:04:05")
-    - memory (int, bytes)
-    - message_bytes (int, bytes)
-    - message_bytes_persist (int, bytes)
-    - message_bytes_ram (int, bytes)
-    - message_bytes_ready (int, bytes)
-    - message_bytes_unacked (int, bytes)
-    - messages (int, count)
-    - messages_ack (int, count)
-    - messages_ack_rate (float, messages per second)
-    - messages_deliver (int, count)
-    - messages_deliver_rate (float, messages per second)
-    - messages_deliver_get (int, count)
-    - messages_deliver_get_rate (float, messages per second)
-    - messages_publish (int, count)
-    - messages_publish_rate (float, messages per second)
-    - messages_ready (int, count)
-    - messages_redeliver (int, count)
-    - messages_redeliver_rate (float, messages per second)
-    - messages_unack (int, count)
-    - slave_nodes (int, count)
-    - synchronised_slave_nodes (int, count)
+    - tags:
+        - url
+        - queue
+        - vhost
+        - node
+        - durable
+        - auto_delete
+    - fields:
+        - consumer_utilisation (float, percent)
+        - consumers (int, int)
+        - idle_since (string, time - e.g., "2006-01-02 15:04:05")
+        - memory (int, bytes)
+        - message_bytes (int, bytes)
+        - message_bytes_persist (int, bytes)
+        - message_bytes_ram (int, bytes)
+        - message_bytes_ready (int, bytes)
+        - message_bytes_unacked (int, bytes)
+        - messages (int, count)
+        - messages_ack (int, count)
+        - messages_ack_rate (float, messages per second)
+        - messages_deliver (int, count)
+        - messages_deliver_rate (float, messages per second)
+        - messages_deliver_get (int, count)
+        - messages_deliver_get_rate (float, messages per second)
+        - messages_publish (int, count)
+        - messages_publish_rate (float, messages per second)
+        - messages_ready (int, count)
+        - messages_redeliver (int, count)
+        - messages_redeliver_rate (float, messages per second)
+        - messages_unack (int, count)
+        - slave_nodes (int, count)
+        - synchronised_slave_nodes (int, count)
 
-+ rabbitmq_exchange
-  - tags:
-    - url
-    - exchange
-    - type
-    - vhost
-    - internal
-    - durable
-    - auto_delete
-  - fields:
-    - messages_publish_in (int, count)
-    - messages_publish_in_rate (int, messages per second)
-    - messages_publish_out (int, count)
-    - messages_publish_out_rate (int, messages per second)
+- rabbitmq_exchange
+    - tags:
+        - url
+        - exchange
+        - type
+        - vhost
+        - internal
+        - durable
+        - auto_delete
+    - fields:
+        - messages_publish_in (int, count)
+        - messages_publish_in_rate (int, messages per second)
+        - messages_publish_out (int, count)
+        - messages_publish_out_rate (int, messages per second)
 
 - rabbitmq_federation
-  - tags:
-    - url
-    - vhost
-    - type
-    - upstream
-    - exchange
-    - upstream_exchange
-    - queue
-    - upstream_queue
-  - fields:
-    - acks_uncommitted (int, count)
-    - consumers (int, count)
-    - messages_unacknowledged (int, count)
-    - messages_uncommitted (int, count)
-    - messages_unconfirmed (int, count)
-    - messages_confirm (int, count)
-    - messages_publish (int, count)
-    - messages_return_unroutable (int, count)
+    - tags:
+        - url
+        - vhost
+        - type
+        - upstream
+        - exchange
+        - upstream_exchange
+        - queue
+        - upstream_queue
+    - fields:
+        - acks_uncommitted (int, count)
+        - consumers (int, count)
+        - messages_unacknowledged (int, count)
+        - messages_uncommitted (int, count)
+        - messages_unconfirmed (int, count)
+        - messages_confirm (int, count)
+        - messages_publish (int, count)
+        - messages_return_unroutable (int, count)
 
 ### Sample Queries
 

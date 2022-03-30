@@ -43,6 +43,8 @@ type OpenWeatherMap struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## OpenWeatherMap API key.
   app_id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 

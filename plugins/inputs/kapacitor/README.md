@@ -2,10 +2,12 @@
 
 The Kapacitor plugin collects metrics from the given Kapacitor instances.
 
-### Configuration:
+### Configuration
 
 ```toml
 [[inputs.kapacitor]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Multiple URLs from which to read Kapacitor-formatted JSON
   ## Default is "http://localhost:9092/kapacitor/v1/debug/vars".
   urls = [
@@ -30,13 +32,13 @@ The Kapacitor plugin collects metrics from the given Kapacitor instances.
     - [num_subscriptions](#num_subscriptions) _(integer)_
     - [num_tasks](#num_tasks) _(integer)_
 - [kapacitor_alert](#kapacitor_alert)
-	- [notification_dropped](#notification_dropped) _(integer)_
-	- [primary-handle-count](#primary-handle-count) _(integer)_
-	- [secondary-handle-count](#secondary-handle-count) _(integer)_
+    - [notification_dropped](#notification_dropped) _(integer)_
+    - [primary-handle-count](#primary-handle-count) _(integer)_
+    - [secondary-handle-count](#secondary-handle-count) _(integer)_
 - (Kapacitor Enterprise only) [kapacitor_cluster](#kapacitor_cluster) _(integer)_
-	- [dropped_member_events](#dropped_member_events) _(integer)_
-	- [dropped_user_events](#dropped_user_events) _(integer)_
-	- [query_handler_errors](#query_handler_errors) _(integer)_
+    - [dropped_member_events](#dropped_member_events) _(integer)_
+    - [dropped_user_events](#dropped_user_events) _(integer)_
+    - [query_handler_errors](#query_handler_errors) _(integer)_
 - [kapacitor_edges](#kapacitor_edges)
     - [collected](#collected) _(integer)_
     - [emitted](#emitted) _(integer)_
@@ -85,219 +87,277 @@ The Kapacitor plugin collects metrics from the given Kapacitor instances.
 - [kapacitor_topics](#kapacitor_topics)
     - [collected](#collected) _(integer)_
 
-
 ---
 
 ### kapacitor
+
 The `kapacitor` measurement stores fields with information related to
 [Kapacitor tasks](https://docs.influxdata.com/kapacitor/latest/introduction/getting-started/#kapacitor-tasks)
 and [subscriptions](https://docs.influxdata.com/kapacitor/latest/administration/subscription-management/).
 
 #### num_enabled_tasks
+
 The number of enabled Kapacitor tasks.
 
 #### num_subscriptions
+
 The number of Kapacitor/InfluxDB subscriptions.
 
 #### num_tasks
+
 The total number of Kapacitor tasks.
 
 ---
 
 ### kapacitor_alert
+
 The `kapacitor_alert` measurement stores fields with information related to
 [Kapacitor alerts](https://docs.influxdata.com/kapacitor/v1.5/working/alerts/).
 
 #### notification-dropped
+
 The number of internal notifications dropped because they arrive too late from another Kapacitor node.
 If this count is increasing, Kapacitor Enterprise nodes aren't able to communicate fast enough
 to keep up with the volume of alerts.
 
 #### primary-handle-count
+
 The number of times this node handled an alert as the primary. This count should increase under normal conditions.
 
 #### secondary-handle-count
+
 The number of times this node handled an alert as the secondary. An increase in this counter indicates that the primary is failing to handle alerts in a timely manner.
 
 ---
 
 ### kapacitor_cluster
+
 The `kapacitor_cluster` measurement reflects the ability of [Kapacitor nodes to communicate](https://docs.influxdata.com/enterprise_kapacitor/v1.5/administration/configuration/#cluster-communications) with one another. Specifically, these metrics track the gossip communication between the Kapacitor nodes.
 
 #### dropped_member_events
+
 The number of gossip member events that were dropped.
 
 #### dropped_user_events
+
 The number of gossip user events that were dropped.
 
 ---
 
 ### kapacitor_edges
+
 The `kapacitor_edges` measurement stores fields with information related to
 [edges](https://docs.influxdata.com/kapacitor/latest/tick/introduction/#pipelines)
 in Kapacitor TICKscripts.
 
 #### collected
+
 The number of messages collected by TICKscript edges.
 
 #### emitted
+
 The number of messages emitted by TICKscript edges.
 
 ---
 
 ### kapacitor_ingress
+
 The `kapacitor_ingress` measurement stores fields with information related to data
 coming into Kapacitor.
 
 #### points_received
+
 The number of points received by Kapacitor.
 
 ---
 
 ### kapacitor_load
+
 The `kapacitor_load` measurement stores fields with information related to the
 [Kapacitor Load Directory service](https://docs.influxdata.com/kapacitor/latest/guides/load_directory/).
 
 #### errors
+
 The number of errors reported from the load directory service.
 
 ---
 
 ### kapacitor_memstats
+
 The `kapacitor_memstats` measurement stores fields related to Kapacitor memory usage.
 
 #### alloc_bytes
+
 The number of bytes of memory allocated by Kapacitor that are still in use.
 
 #### buck_hash_sys_bytes
+
 The number of bytes of memory used by the profiling bucket hash table.
 
 #### frees
+
 The number of heap objects freed.
 
 #### gc_sys_bytes
+
 The number of bytes of memory used for garbage collection system metadata.
 
 #### gc_cpu_fraction
+
 The fraction of Kapacitor's available CPU time used by garbage collection since
 Kapacitor started.
 
 #### heap_alloc_bytes
+
 The number of reachable and unreachable heap objects garbage collection has
 not freed.
 
 #### heap_idle_bytes
+
 The number of heap bytes waiting to be used.
 
 #### heap_in_use_bytes
+
 The number of heap bytes in use.
 
 #### heap_objects
+
 The number of allocated objects.
 
 #### heap_released_bytes
+
 The number of heap bytes released to the operating system.
 
 #### heap_sys_bytes
+
 The number of heap bytes obtained from `system`.
 
 #### last_gc_ns
+
 The nanosecond epoch time of the last garbage collection.
 
 #### lookups
+
 The total number of pointer lookups.
 
 #### mallocs
+
 The total number of mallocs.
 
 #### mcache_in_use_bytes
+
 The number of bytes in use by mcache structures.
 
 #### mcache_sys_bytes
+
 The number of bytes used for mcache structures obtained from `system`.
 
 #### mspan_in_use_bytes
+
 The number of bytes in use by mspan structures.
 
 #### mspan_sys_bytes
+
 The number of bytes used for mspan structures obtained from `system`.
 
 #### next_gc_ns
+
 The nanosecond epoch time of the next garbage collection.
 
 #### num_gc
+
 The number of completed garbage collection cycles.
 
 #### other_sys_bytes
+
 The number of bytes used for other system allocations.
 
 #### pause_total_ns
+
 The total number of nanoseconds spent in garbage collection "stop-the-world"
 pauses since Kapacitor started.
 
 #### stack_in_use_bytes
+
 The number of bytes in use by the stack allocator.
 
 #### stack_sys_bytes
+
 The number of bytes obtained from `system` for stack allocator.
 
 #### sys_bytes
+
 The number of bytes of memory obtained from `system`.
 
 #### total_alloc_bytes
+
 The total number of bytes allocated, even if freed.
 
 ---
 
 ### kapacitor_nodes
+
 The `kapacitor_nodes` measurement stores fields related to events that occur in
 [TICKscript nodes](https://docs.influxdata.com/kapacitor/latest/nodes/).
 
 #### alerts_inhibited
+
 The total number of alerts inhibited by TICKscripts.
 
 #### alerts_triggered
+
 The total number of alerts triggered by TICKscripts.
 
 #### avg_exec_time_ns
+
 The average execution time of TICKscripts in nanoseconds.
 
 #### crits_triggered
+
 The number of critical (`crit`) alerts triggered by TICKscripts.
 
 #### errors
+
 The number of errors caused caused by TICKscripts.
 
 #### infos_triggered
+
 The number of info (`info`) alerts triggered by TICKscripts.
 
 #### oks_triggered
+
 The number of ok (`ok`) alerts triggered by TICKscripts.
 
 #### points_written
+
 The number of points written to InfluxDB or back to Kapacitor.
 
 #### warns_triggered
+
 The number of warning (`warn`) alerts triggered by TICKscripts.
 
 #### working_cardinality
+
 The total number of unique series processed.
 
 #### write_errors
+
 The number of errors that occurred when writing to InfluxDB or other write endpoints.
 
 ---
 
 ### kapacitor_topics
+
 The `kapacitor_topics` measurement stores fields related to
-Kapacitor topics](https://docs.influxdata.com/kapacitor/latest/working/using_alert_topics/).
+Kapacitor topics](<https://docs.influxdata.com/kapacitor/latest/working/using_alert_topics/>).
 
 #### collected
+
 The number of events collected by Kapacitor topics.
 
 ---
 
-*Note:* The Kapacitor variables `host`, `cluster_id`, and `server_id`
+_Note:_ The Kapacitor variables `host`, `cluster_id`, and `server_id`
 are currently not recorded due to the potential high cardinality of
 these values.
 

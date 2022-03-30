@@ -29,6 +29,8 @@ type Apache struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## An array of URLs to gather from, must be directed at the machine
   ## readable version of the mod_status page including the auto query string.
   ## Default is "http://localhost/server-status?auto".

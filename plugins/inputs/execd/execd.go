@@ -18,6 +18,8 @@ import (
 )
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Program to run as daemon
   command = ["cua-smartctl", "-d", "/dev/sda"]
 

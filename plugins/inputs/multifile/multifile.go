@@ -29,6 +29,8 @@ type File struct {
 }
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Base directory where agent will look for files.
   ## Omit this option to use absolute paths.
   base_dir = "/sys/bus/i2c/devices/1-0076/iio:device0"

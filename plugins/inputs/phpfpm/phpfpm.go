@@ -46,6 +46,8 @@ type phpfpm struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## An array of addresses to gather stats about. Specify an ip or hostname
   ## with optional port and path
   ##

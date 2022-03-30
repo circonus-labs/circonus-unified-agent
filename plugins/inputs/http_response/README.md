@@ -2,11 +2,13 @@
 
 This input plugin checks HTTP/HTTPS connections.
 
-### Configuration:
+### Configuration
 
 ```toml
 # HTTP/HTTPS request given an address a method and a timeout
 [[inputs.http_response]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## address is Deprecated in 1.12, use 'urls'
 
   ## List of urls to query.
@@ -77,22 +79,22 @@ This input plugin checks HTTP/HTTPS connections.
   # interface = "eth0"
 ```
 
-### Metrics:
+### Metrics
 
 - http_response
-  - tags:
-    - server (target URL)
-    - method (request method)
-    - status_code (response status code)
-    - result ([see below](#result--result_code))
-  - fields:
-    - response_time (float, seconds)
-    - content_length (int, response body length)
-    - response_string_match (int, 0 = mismatch / body read error, 1 = match)
-    - response_status_code_match (int, 0 = mismatch, 1 = match)
-    - http_response_code (int, response status code)
-	- result_type (string, deprecated in 1.6: use `result` tag and `result_code` field)
-    - result_code (int, [see below](#result--result_code))
+    - tags:
+        - server (target URL)
+        - method (request method)
+        - status_code (response status code)
+        - result ([see below](#result--result_code))
+    - fields:
+        - response_time (float, seconds)
+        - content_length (int, response body length)
+        - response_string_match (int, 0 = mismatch / body read error, 1 = match)
+        - response_status_code_match (int, 0 = mismatch, 1 = match)
+        - http_response_code (int, response status code)
+        - result_type (string, deprecated in 1.6: use `result` tag and `result_code` field)
+        - result_code (int, [see below](#result--result_code))
 
 #### `result` / `result_code`
 
@@ -110,8 +112,7 @@ This tag is used to expose network and plugin errors. HTTP errors are considered
 |dns_error                     | 5                       |There was a DNS error while attempting to connect to the host|
 |response_status_code_mismatch | 6                       |The option `response_status_code_match` was used, and the status code of the response didn't match the value.|
 
-
-### Example Output:
+### Example Output
 
 ```
 http_response,method=GET,result=success,server=http://github.com,status_code=200 content_length=87878i,http_response_code=200i,response_time=0.937655534,result_code=0i,result_type="success" 1565839598000000000

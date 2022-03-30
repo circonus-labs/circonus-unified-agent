@@ -11,6 +11,8 @@ from the same topic in parallel.
 ```toml
 # Read metrics from Kafka topic(s)
 [[inputs.kafka_consumer]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## topic(s) to consume
   topics = ["circonus"]
 

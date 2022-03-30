@@ -33,6 +33,8 @@ func (*DiskIO) Description() string {
 }
 
 var diskIOsampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## By default, the agent will gather stats for all devices including
   ## disk partitions.
   ## Setting devices will restrict the stats to the specified devices.

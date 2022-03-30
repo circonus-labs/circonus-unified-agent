@@ -20,6 +20,8 @@ manage your series cardinality:
 ```toml
 # Read metrics of passenger using passenger-status
 [[inputs.passenger]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Path of passenger-status.
   ##
   ## Plugin gather metric via parsing XML output of passenger-status
@@ -31,66 +33,66 @@ manage your series cardinality:
   command = "passenger-status -v --show=xml"
 ```
 
-#### Permissions:
+#### Permissions
 
 Agent must have permission to execute the `passenger-status` command.  On most systems, agent runs as the `cua` user.
 
-### Metrics:
+### Metrics
 
 - passenger
-  - tags:
-    - passenger_version
-  - fields:
-    - process_count
-    - max
-    - capacity_used
-    - get_wait_list_size
+    - tags:
+        - passenger_version
+    - fields:
+        - process_count
+        - max
+        - capacity_used
+        - get_wait_list_size
 
 - passenger_supergroup
-  - tags:
-    - name
-  - fields:
-    - get_wait_list_size
-    - capacity_used
+    - tags:
+        - name
+    - fields:
+        - get_wait_list_size
+        - capacity_used
 
 - passenger_group
-  - tags:
-    - name
-    - app_root
-    - app_type
-  - fields:
-    - get_wait_list_size
-    - capacity_used
-    - processes_being_spawned
+    - tags:
+        - name
+        - app_root
+        - app_type
+    - fields:
+        - get_wait_list_size
+        - capacity_used
+        - processes_being_spawned
 
 - passenger_process
-  - tags:
-    - group_name
-    - app_root
-    - supergroup_name
-    - pid
-    - code_revision
-    - life_status
-    - process_group_id
-  - fields:
-    - concurrency
-    - sessions
-    - busyness
-    - processed
-    - spawner_creation_time
-    - spawn_start_time
-    - spawn_end_time
-    - last_used
-    - uptime
-    - cpu
-    - rss
-    - pss
-    - private_dirty
-    - swap
-    - real_memory
-    - vmsize
+    - tags:
+        - group_name
+        - app_root
+        - supergroup_name
+        - pid
+        - code_revision
+        - life_status
+        - process_group_id
+    - fields:
+        - concurrency
+        - sessions
+        - busyness
+        - processed
+        - spawner_creation_time
+        - spawn_start_time
+        - spawn_end_time
+        - last_used
+        - uptime
+        - cpu
+        - rss
+        - pss
+        - private_dirty
+        - swap
+        - real_memory
+        - vmsize
 
-### Example Output:
+### Example Output
 
 ```
 passenger,passenger_version=5.0.17 capacity_used=23i,get_wait_list_size=0i,max=23i,process_count=23i 1452984112799414257

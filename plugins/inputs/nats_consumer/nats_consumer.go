@@ -64,6 +64,8 @@ type natsConsumer struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## urls of NATS servers
   servers = ["nats://localhost:4222"]
 

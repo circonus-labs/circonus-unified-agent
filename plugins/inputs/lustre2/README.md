@@ -10,6 +10,8 @@ This plugin monitors the Lustre file system using its entries in the proc filesy
 ```toml
 # Read metrics from local Lustre service on OST, MDS
 [[inputs.lustre2]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## An array of /proc globs to search for Lustre stats
   ## If not specified, the default will work on Lustre 2.5.x
   ##
@@ -29,90 +31,89 @@ This plugin monitors the Lustre file system using its entries in the proc filesy
 From `/proc/fs/lustre/obdfilter/*/stats` and `/proc/fs/lustre/osd-ldiskfs/*/stats`:
 
 - lustre2
-  - tags:
-    - name
-  - fields:
-    - write_bytes
-    - write_calls
-    - read_bytes
-    - read_calls
-    - cache_hit
-    - cache_miss
-    - cache_access
+    - tags:
+        - name
+    - fields:
+        - write_bytes
+        - write_calls
+        - read_bytes
+        - read_calls
+        - cache_hit
+        - cache_miss
+        - cache_access
 
 From `/proc/fs/lustre/obdfilter/*/job_stats`:
 
 - lustre2
-  - tags:
-    - name
-    - jobid
-  - fields:
-    - jobstats_ost_getattr
-    - jobstats_ost_setattr
-    - jobstats_ost_sync
-    - jobstats_punch
-    - jobstats_destroy
-    - jobstats_create
-    - jobstats_ost_statfs
-    - jobstats_get_info
-    - jobstats_set_info
-    - jobstats_quotactl
-    - jobstats_read_bytes
-    - jobstats_read_calls
-    - jobstats_read_max_size
-    - jobstats_read_min_size
-    - jobstats_write_bytes
-    - jobstats_write_calls
-    - jobstats_write_max_size
-    - jobstats_write_min_size
+    - tags:
+        - name
+        - jobid
+    - fields:
+        - jobstats_ost_getattr
+        - jobstats_ost_setattr
+        - jobstats_ost_sync
+        - jobstats_punch
+        - jobstats_destroy
+        - jobstats_create
+        - jobstats_ost_statfs
+        - jobstats_get_info
+        - jobstats_set_info
+        - jobstats_quotactl
+        - jobstats_read_bytes
+        - jobstats_read_calls
+        - jobstats_read_max_size
+        - jobstats_read_min_size
+        - jobstats_write_bytes
+        - jobstats_write_calls
+        - jobstats_write_max_size
+        - jobstats_write_min_size
 
 From `/proc/fs/lustre/mdt/*/md_stats`:
 
 - lustre2
-  - tags:
-    - name
-  - fields:
-    - open
-    - close
-    - mknod
-    - link
-    - unlink
-    - mkdir
-    - rmdir
-    - rename
-    - getattr
-    - setattr
-    - getxattr
-    - setxattr
-    - statfs
-    - sync
-    - samedir_rename
-    - crossdir_rename
+    - tags:
+        - name
+    - fields:
+        - open
+        - close
+        - mknod
+        - link
+        - unlink
+        - mkdir
+        - rmdir
+        - rename
+        - getattr
+        - setattr
+        - getxattr
+        - setxattr
+        - statfs
+        - sync
+        - samedir_rename
+        - crossdir_rename
 
 From `/proc/fs/lustre/mdt/*/job_stats`:
 
 - lustre2
-  - tags:
-    - name
-    - jobid
-  - fields:
-    - jobstats_close
-    - jobstats_crossdir_rename
-    - jobstats_getattr
-    - jobstats_getxattr
-    - jobstats_link
-    - jobstats_mkdir
-    - jobstats_mknod
-    - jobstats_open
-    - jobstats_rename
-    - jobstats_rmdir
-    - jobstats_samedir_rename
-    - jobstats_setattr
-    - jobstats_setxattr
-    - jobstats_statfs
-    - jobstats_sync
-    - jobstats_unlink
-
+    - tags:
+        - name
+        - jobid
+    - fields:
+        - jobstats_close
+        - jobstats_crossdir_rename
+        - jobstats_getattr
+        - jobstats_getxattr
+        - jobstats_link
+        - jobstats_mkdir
+        - jobstats_mknod
+        - jobstats_open
+        - jobstats_rename
+        - jobstats_rmdir
+        - jobstats_samedir_rename
+        - jobstats_setattr
+        - jobstats_setxattr
+        - jobstats_statfs
+        - jobstats_sync
+        - jobstats_unlink
 
 ### Troubleshooting
 

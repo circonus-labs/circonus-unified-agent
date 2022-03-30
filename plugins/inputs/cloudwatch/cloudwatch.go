@@ -84,6 +84,8 @@ type cloudwatchClient interface {
 // SampleConfig returns the default configuration of the Cloudwatch input plugin.
 func (c *CloudWatch) SampleConfig() string {
 	return `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Amazon Region
   region = "us-east-1"
 

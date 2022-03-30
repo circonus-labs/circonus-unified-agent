@@ -9,6 +9,8 @@ Supported Burrow version: `1.x`
 
 ```toml
 [[inputs.burrow]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Burrow API endpoints in format "schema://host:port".
   ## Default is "http://localhost:8000".
   servers = ["http://localhost:8000"]
@@ -64,39 +66,38 @@ Supported Burrow version: `1.x`
 ### Fields
 
 * `burrow_group` (one event per each consumer group)
-  - status (string, see Partition Status mappings)
-  - status_code (int, `1..6`, see Partition status mappings)
-  - partition_count (int, `number of partitions`)
-  - offset (int64, `total offset of all partitions`)
-  - total_lag (int64, `totallag`)
-  - lag (int64, `maxlag.current_lag || 0`)
-  - timestamp (int64, `end.timestamp`)
+    * status (string, see Partition Status mappings)
+    * status_code (int, `1..6`, see Partition status mappings)
+    * partition_count (int, `number of partitions`)
+    * offset (int64, `total offset of all partitions`)
+    * total_lag (int64, `totallag`)
+    * lag (int64, `maxlag.current_lag || 0`)
+    * timestamp (int64, `end.timestamp`)
 
 * `burrow_partition` (one event per each topic partition)
-  - status (string, see Partition Status mappings)
-  - status_code (int, `1..6`, see Partition status mappings)
-  - lag (int64, `current_lag || 0`)
-  - offset (int64, `end.timestamp`)
-  - timestamp (int64, `end.timestamp`)
+    * status (string, see Partition Status mappings)
+    * status_code (int, `1..6`, see Partition status mappings)
+    * lag (int64, `current_lag || 0`)
+    * offset (int64, `end.timestamp`)
+    * timestamp (int64, `end.timestamp`)
 
 * `burrow_topic` (one event per topic offset)
-  - offset (int64)
-
+    * offset (int64)
 
 ### Tags
 
 * `burrow_group`
-  - cluster (string)
-  - group (string)
+    * cluster (string)
+    * group (string)
 
 * `burrow_partition`
-  - cluster (string)
-  - group (string)
-  - topic (string)
-  - partition (int)
-  - owner (string)
+    * cluster (string)
+    * group (string)
+    * topic (string)
+    * partition (int)
+    * owner (string)
 
 * `burrow_topic`
-  - cluster (string)
-  - topic (string)
-  - partition (int)
+    * cluster (string)
+    * topic (string)
+    * partition (int)

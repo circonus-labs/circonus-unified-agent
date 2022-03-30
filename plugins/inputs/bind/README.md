@@ -14,8 +14,9 @@ default (and only) XML format in BIND 9.10+.
 JSON statistics schema version 1 (BIND 9.10+) is supported. As of writing, some distros still do
 not enable support for JSON statistics in their BIND packages.
 
-### Configuration:
+### Configuration
 
+- **instance_id**: A unique identifier for this instance of the plugin.
 - **urls** []string: List of BIND statistics channel URLs to collect from. Do not include a
   trailing slash in the URL. Default is "http://localhost:8053/xml/v3".
 - **gather_memory_contexts** bool: Report per-context memory statistics.
@@ -26,14 +27,15 @@ version and configured statistics channel.
 
 | BIND Version | Statistics Format | Example URL                   |
 | ------------ | ----------------- | ----------------------------- |
-| 9.6 - 9.8    | XML v2            | http://localhost:8053         |
-| 9.9          | XML v2            | http://localhost:8053/xml/v2  |
-| 9.9+         | XML v3            | http://localhost:8053/xml/v3  |
-| 9.10+        | JSON v1           | http://localhost:8053/json/v1 |
+| 9.6 - 9.8    | XML v2            | <http://localhost:8053>         |
+| 9.9          | XML v2            | <http://localhost:8053/xml/v2>  |
+| 9.9+         | XML v3            | <http://localhost:8053/xml/v3>  |
+| 9.10+        | JSON v1           | <http://localhost:8053/json/v1> |
 
 #### Configuration of BIND Daemon
 
 Add the following to your named.conf if running the agent on the same host as the BIND daemon:
+
 ```
 statistics-channels {
     inet 127.0.0.1 port 8053;
@@ -45,34 +47,34 @@ configure the BIND daemon to listen on that address. Note that you should secure
 channel with an ACL if it is publicly reachable. Consult the BIND Administrator Reference Manual
 for more information.
 
-### Measurements & Fields:
+### Measurements & Fields
 
 - bind_counter
-  - name=value (multiple)
+    - name=value (multiple)
 - bind_memory
-  - total_use
-  - in_use
-  - block_size
-  - context_size
-  - lost
+    - total_use
+    - in_use
+    - block_size
+    - context_size
+    - lost
 - bind_memory_context
-  - total
-  - in_use
+    - total
+    - in_use
 
-### Tags:
+### Tags
 
 - All measurements
-  - url
-  - source
-  - port
+    - url
+    - source
+    - port
 - bind_counter
-  - type
-  - view (optional)
+    - type
+    - view (optional)
 - bind_memory_context
-  - id
-  - name
+    - id
+    - name
 
-### Sample Queries:
+### Sample Queries
 
 These are some useful queries (to generate dashboards or other) to run against data from this
 plugin:

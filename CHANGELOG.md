@@ -1,3 +1,11 @@
+# v0.0.42
+
+* upd: merge PR#47 - update prometheus to not error on success and examples for `instance_id`
+* upd: input plugins to document `instance_id` being required in README and example config in code
+* upd: vsphere plugin README and config code example annotate that `instance_id` is required [CIRC-7979]
+* upd: example config to ensure _all_ input plugins have an annotation that `instance_id` is required
+* upd: vsphere config in example config to annotate that `instance_id` is required [CIRC-7979]
+
 # v0.0.41
 
 * add: --apiurl argument to installer [CIRC-7756]

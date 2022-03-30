@@ -5,6 +5,9 @@
 * upd: vsphere plugin README and config code example annotate that `instance_id` is required [CIRC-7979]
 * upd: example config to ensure _all_ input plugins have an annotation that `instance_id` is required
 * upd: vsphere config in example config to annotate that `instance_id` is required [CIRC-7979]
+* upd: build(deps): bump actions/checkout from 2 to 3
+* upd: build(deps): bump github.com/shirou/gopsutil/v3 from 3.22.1 to 3.22.2
+* upd: build(deps): bump golangci/golangci-lint-action from 2 to 3.1.0
 
 # v0.0.41
 

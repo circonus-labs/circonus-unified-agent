@@ -9,7 +9,7 @@ in Prometheus format.
 # Read metrics from one or many prometheus clients
 [[inputs.prometheus]]
   ## instance_id is a required value on input plugins
-  instance_id = ["prometheus"]
+  instance_id = "prometheus"
   ## An array of urls to scrape metrics from.
   urls = ["http://localhost:9100/metrics"]
 
@@ -108,7 +108,7 @@ If you want to monitor Caddy, you need to use Caddy with its Prometheus plugin:
 ```toml
 [[inputs.prometheus]]
   ## instance_id is a required value on input plugins
-  instance_id = ["caddy"]
+  instance_id = "caddy"
   ## An array of urls to scrape metrics from.
   urls = ["http://localhost:9180/metrics"]
 ```

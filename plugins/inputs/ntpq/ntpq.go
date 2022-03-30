@@ -37,6 +37,8 @@ func (n *NTPQ) Description() string {
 
 func (n *NTPQ) SampleConfig() string {
 	return `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## If false, set the -n ntpq flag. Can reduce metric gather time.
   dns_lookup = true
 `

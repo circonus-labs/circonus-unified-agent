@@ -29,6 +29,8 @@ func (*Chrony) Description() string {
 
 func (*Chrony) SampleConfig() string {
 	return `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## If true, chronyc tries to perform a DNS lookup for the time server.
   # dns_lookup = false
   `

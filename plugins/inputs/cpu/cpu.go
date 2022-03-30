@@ -34,6 +34,8 @@ func (*Stats) Description() string {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Whether to report per-cpu stats or not
   percpu = true
   ## Whether to report total system cpu stats or not

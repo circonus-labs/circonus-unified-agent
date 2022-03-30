@@ -14,6 +14,8 @@ generate it using `circonus-unified-agent --usage <plugin-name>`.
 
 ```toml
 [[inputs.example]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   example_option = "example_value"
 ```
 
@@ -32,22 +34,22 @@ are more metrics than can reasonably be listed, describe how the input is
 mapped to the output.
 
 - measurement1
-  - tags:
-    - tag1 (optional description)
-    - tag2
-  - fields:
-    - field1 (type, unit)
-    - field2 (float, percent)
+    - tags:
+        - tag1 (optional description)
+        - tag2
+    - fields:
+        - field1 (type, unit)
+        - field2 (float, percent)
 
 - measurement2
-  - tags:
-    - tag3
-  - fields:
-    - field3 (integer, bytes)
-    - field4 (integer, green=1 yellow=2 red=3)
-    - field5 (string)
-    - field6 (float)
-    - field7 (boolean)
+    - tags:
+        - tag3
+    - fields:
+        - field3 (integer, bytes)
+        - field4 (integer, green=1 yellow=2 red=3)
+        - field5 (string)
+        - field6 (float)
+        - field7 (boolean)
 
 ### Sample Queries
 

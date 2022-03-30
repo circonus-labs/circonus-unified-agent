@@ -10,8 +10,13 @@ plugin.
 ```toml
 # Collect statistics about itself
 [[inputs.internal]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## If true, collect agent memory stats.
   # collect_memstats = true
+
+  ## if true, collect selfstats (per plugin)
+  # collect_selfstats = true
 ```
 
 ## Measurements & Fields
@@ -19,55 +24,55 @@ plugin.
 memstats are taken from the Go [runtime](https://golang.org/pkg/runtime/#MemStats)
 
 - internal_memstats
-  - alloc_bytes
-  - frees
-  - heap_alloc_bytes
-  - heap_idle_bytes
-  - heap_in_use_bytes
-  - heap_objects_bytes
-  - heap_released_bytes
-  - heap_sys_bytes
-  - mallocs
-  - num_gc
-  - pointer_lookups
-  - sys_bytes
-  - total_alloc_bytes
+    - alloc_bytes
+    - frees
+    - heap_alloc_bytes
+    - heap_idle_bytes
+    - heap_in_use_bytes
+    - heap_objects_bytes
+    - heap_released_bytes
+    - heap_sys_bytes
+    - mallocs
+    - num_gc
+    - pointer_lookups
+    - sys_bytes
+    - total_alloc_bytes
 
 agent stats collect aggregate stats on all plugins.
 
 - internal_agent
-  - gather_errors
-  - metrics_dropped
-  - metrics_gathered
-  - metrics_written
+    - gather_errors
+    - metrics_dropped
+    - metrics_gathered
+    - metrics_written
 
 internal_gather stats collect aggregate stats on all input plugins
 that are of the same input type. They are tagged with `input=<plugin_name>`
 `version=<agent_version>` and `go_version=<go_build_version>`.
 
 - internal_gather
-  - gather_time_ns
-  - metrics_gathered
+    - gather_time_ns
+    - metrics_gathered
 
 internal_write stats collect aggregate stats on all output plugins
 that are of the same input type. They are tagged with `output=<plugin_name>`
 and `version=<agent_version>`.
 
 - internal_write
-  - buffer_limit
-  - buffer_size
-  - metrics_added
-  - metrics_written
-  - metrics_dropped
-  - metrics_filtered
-  - write_time_ns
+    - buffer_limit
+    - buffer_size
+    - metrics_added
+    - metrics_written
+    - metrics_dropped
+    - metrics_filtered
+    - write_time_ns
 
 internal_<plugin_name> are metrics which are defined on a per-plugin basis, and
 usually contain tags which differentiate each instance of a particular type of
 plugin and `version=<agent_version>`.
 
 - internal_<plugin_name>
-  - individual plugin-specific fields, such as requests counts.
+    - individual plugin-specific fields, such as requests counts.
 
 ## Tags
 

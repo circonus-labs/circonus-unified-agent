@@ -41,6 +41,8 @@ func (s *Suricata) Description() string {
 }
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Data sink for Suricata stats log
   # This is expected to be a filename of a
   # unix socket to be created for listening.

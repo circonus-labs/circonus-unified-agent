@@ -4,12 +4,12 @@ This ZFS plugin provides metrics from your ZFS filesystems. It supports ZFS on
 Linux and FreeBSD. It gets ZFS stat from `/proc/spl/kstat/zfs` on Linux and
 from `sysctl`, `zfs`, and `zpool` on FreeBSD.
 
-### Configuration:
+### Configuration
 
 ```toml
 [[inputs.zfs]]
-  ## an instance id is required
-  instance_id  ""
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## By default, gather zpool stats
   poolMetrics = true
 
@@ -37,10 +37,10 @@ from `sysctl`, `zfs`, and `zpool` on FreeBSD.
   # datasetMetrics = false
 ```
 
-### Measurements & Fields:
+### Measurements & Fields
 
 By default this plugin collects metrics about ZFS internals, pool, and dataset.
-These metrics are either counters or measure sizes in bytes. These metrics will be 
+These metrics are either counters or measure sizes in bytes. These metrics will be
 in the `zfs` measurement with the field names listed bellow.
 
 If `poolMetrics` is disabled, the additional metrics will not be gathered for each pool.
@@ -196,51 +196,51 @@ If `datasetMetrics` is enabled then addtional metrics will be gathered for each 
 On Linux (reference: kstat accumulated time and queue length statistics):
 
 - zfs_pool
-  - nread (integer, bytes)
-  - nwritten (integer, bytes)
-  - reads (integer, count)
-  - writes (integer, count)
-  - wtime (integer, nanoseconds)
-  - wlentime (integer, queuelength * nanoseconds)
-  - wupdate (integer, timestamp)
-  - rtime (integer, nanoseconds)
-  - rlentime (integer, queuelength * nanoseconds)
-  - rupdate (integer, timestamp)
-  - wcnt (integer, count)
-  - rcnt (integer, count)
+    - nread (integer, bytes)
+    - nwritten (integer, bytes)
+    - reads (integer, count)
+    - writes (integer, count)
+    - wtime (integer, nanoseconds)
+    - wlentime (integer, queuelength * nanoseconds)
+    - wupdate (integer, timestamp)
+    - rtime (integer, nanoseconds)
+    - rlentime (integer, queuelength * nanoseconds)
+    - rupdate (integer, timestamp)
+    - wcnt (integer, count)
+    - rcnt (integer, count)
 
 On FreeBSD:
 
 - zfs_pool
-  - allocated (integer, bytes)
-  - capacity (integer, bytes)
-  - dedupratio (float, ratio)
-  - free (integer, bytes)
-  - size (integer, bytes)
-  - fragmentation (integer, percent)
+    - allocated (integer, bytes)
+    - capacity (integer, bytes)
+    - dedupratio (float, ratio)
+    - free (integer, bytes)
+    - size (integer, bytes)
+    - fragmentation (integer, percent)
 
 #### Dataset Metrics (optional, only on FreeBSD)
 
 - zfs_dataset
-  - avail (integer, bytes)
-  - used (integer, bytes)
-  - usedsnap (integer, bytes)
-  - usedds (integer, bytes)
+    - avail (integer, bytes)
+    - used (integer, bytes)
+    - usedsnap (integer, bytes)
+    - usedds (integer, bytes)
 
-### Tags:
+### Tags
 
 - ZFS stats (`zfs`) will have the following tag:
-  - pools - A `::` concatenated list of all ZFS pools on the machine.
-  - datasets - A `::` concatenated list of all ZFS datasets on the machine.
+    - pools - A `::` concatenated list of all ZFS pools on the machine.
+    - datasets - A `::` concatenated list of all ZFS datasets on the machine.
 
 - Pool metrics (`zfs_pool`) will have the following tag:
-  - pool - with the name of the pool which the metrics are for.
-  - health - the health status of the pool. (FreeBSD only)
+    - pool - with the name of the pool which the metrics are for.
+    - health - the health status of the pool. (FreeBSD only)
 
 - Dataset metrics (`zfs_dataset`) will have the following tag:
-  - dataset - with the name of the dataset which the metrics are for.
+    - dataset - with the name of the dataset which the metrics are for.
 
-### Example Output:
+### Example Output
 
 ```
 $ ./circonus-unified-agent --config circonus-unified-agent.conf --input-filter zfs --test
@@ -294,8 +294,9 @@ A short description for some of the metrics.
 
 `arcstats_evict_l2_ineligible` We evicted something which cannot be stored in the l2.
  Reasons could be:
- - We have multiple pools, we evicted something from a pool without an l2 device.
- - The zfs property secondary cache.
+
+- We have multiple pools, we evicted something from a pool without an l2 device.
+- The zfs property secondary cache.
 
 `arcstats_c` Arc target size, this is the size the system thinks the arc should have.
 
@@ -320,6 +321,7 @@ A short description for some of the metrics.
 `zfetchstats_stride_hits` Counts the number of cache hits, to items which are in the cache because of the prefetcher (prefetched stride reads)
 
 #### Vdev Cache Stats (FreeBSD only)
+
 note: the vdev cache is deprecated in some ZFS implementations
 
 `vdev_cache_stats_hits` Hits to the vdev (device level) cache.
@@ -327,6 +329,7 @@ note: the vdev cache is deprecated in some ZFS implementations
 `vdev_cache_stats_misses` Misses to the vdev (device level) cache.
 
 #### ABD Stats (Linux Only)
+
 ABD is a linear/scatter dual typed buffer for ARC
 
 `abdstats_linear_cnt` number of linear ABDs which are currently allocated
@@ -350,6 +353,7 @@ ABD is a linear/scatter dual typed buffer for ARC
 `fm_erpt-dropped` counts when an error report cannot be created (eg available memory is too low)
 
 #### ZIL (Linux Only)
+
 note: ZIL measurements are system-wide, neither per-pool nor per-dataset
 
 `zil_commit_count` counts when ZFS transactions are committed to a ZIL

@@ -26,6 +26,8 @@ type Nats struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## The address of the monitoring endpoint of the NATS server
   server = "http://localhost:8222"
 

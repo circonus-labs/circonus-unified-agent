@@ -8,7 +8,9 @@ type Infiniband struct {
 	Log cua.Logger `toml:"-"`
 }
 
-var InfinibandConfig = ``
+var InfinibandConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+`
 
 // SampleConfig example configuration for plugin
 func (*Infiniband) SampleConfig() string {

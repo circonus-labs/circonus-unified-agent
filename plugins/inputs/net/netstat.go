@@ -18,7 +18,9 @@ func (*Stats) Description() string {
 	return "Read TCP metrics such as established, time wait and sockets counts."
 }
 
-var tcpstatSampleConfig = ""
+var tcpstatSampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+`
 
 func (*Stats) SampleConfig() string {
 	return tcpstatSampleConfig

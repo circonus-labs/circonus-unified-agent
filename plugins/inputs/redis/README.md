@@ -5,6 +5,8 @@
 ```toml
 # Read Redis's basic status information
 [[inputs.redis]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## specify servers via a url matching:
   ##  [protocol://][:password]@address[:port]
   ##  e.g.

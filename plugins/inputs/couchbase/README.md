@@ -1,10 +1,12 @@
 # Couchbase Input Plugin
 
-## Configuration:
+## Configuration
 
 ```toml
 # Read per-node and per-bucket metrics from Couchbase
 [[inputs.couchbase]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## specify servers via a url matching:
   ##  [protocol://][:password]@address[:port]
   ##  e.g.
@@ -17,25 +19,29 @@
   servers = ["http://localhost:8091"]
 ```
 
-## Measurements:
+## Measurements
 
 ### couchbase_node
 
 Tags:
+
 - cluster: sanitized string from `servers` configuration field e.g.: `http://user:password@couchbase-0.example.com:8091/endpoint` -> `http://couchbase-0.example.com:8091/endpoint`
 - hostname: Couchbase's name for the node and port, e.g., `172.16.10.187:8091`
 
 Fields:
+
 - memory_free (unit: bytes, example: 23181365248.0)
 - memory_total (unit: bytes, example: 64424656896.0)
 
 ### couchbase_bucket
 
 Tags:
+
 - cluster: whatever you called it in `servers` in the configuration, e.g.: `http://couchbase-0.example.com/`)
 - bucket: the name of the couchbase bucket, e.g., `blastro-df`
 
 Fields:
+
 - quota_percent_used (unit: percent, example: 68.85424936294555)
 - ops_per_sec (unit: count, example: 5686.789686789687)
 - disk_fetches (unit: count, example: 0.0)
@@ -43,7 +49,6 @@ Fields:
 - disk_used (unit: bytes, example: 409178772321.0)
 - data_used (unit: bytes, example: 212179309111.0)
 - mem_used (unit: bytes, example: 202156957464.0)
-
 
 ## Example output
 

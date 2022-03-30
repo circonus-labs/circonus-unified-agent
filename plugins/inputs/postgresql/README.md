@@ -1,6 +1,7 @@
 # PostgreSQL Input Plugin
 
 This postgresql plugin provides metrics for your postgres database. It currently works with postgres versions 8.1+. It uses data from the built in _pg_stat_database_ and pg_stat_bgwriter views. The metrics recorded depend on your version of postgres. See table:
+
 ```
 pg version      9.2+   9.1   8.3-9.0   8.1-8.2   7.4-8.0(unsupported)
 ---             ---    ---   -------   -------   -------
@@ -27,10 +28,10 @@ stats_reset*     x      x
 
 _* value ignored and therefore not recorded._
 
-
 More information about the meaning of these metrics can be found in the [PostgreSQL Documentation](http://www.postgresql.org/docs/9.2/static/monitoring-stats.html#PG-STAT-DATABASE-VIEW)
 
 ## Configuration
+
 Specify address via a postgresql connection string:
 
   `host=localhost port=5432 user=cua database=cua`
@@ -52,13 +53,17 @@ A list of databases to pull metrics about. If not specified, metrics for all dat
 ### TLS Configuration
 
 Add the `sslkey`, `sslcert` and `sslrootcert` options to your DSN:
+
 ```
 host=localhost user=pgotest dbname=app_production sslmode=require sslkey=/etc/circonus-unified-agent/key.pem sslcert=/etc/circonus-unified-agent/cert.pem sslrootcert=/etc/circonus-unified-agent/ca.pem
 ```
 
 ### Configuration example
+
 ```toml
 [[inputs.postgresql]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   address = "postgres://cua@localhost/someDB"
   ignored_databases = ["template0", "template1"]
 ```

@@ -24,6 +24,8 @@ server (RMS of difference of multiple time samples, milliseconds);
 
 ```toml
 [[inputs.openntpd]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Run ntpctl binary with sudo.
   # use_sudo = false
 
@@ -37,17 +39,17 @@ server (RMS of difference of multiple time samples, milliseconds);
 ### Metrics
 
 - ntpctl
-  - tags:
-    - remote
-    - stratum
-  - fields:
-    - delay (float, milliseconds)
-    - jitter (float, milliseconds)
-    - offset (float, milliseconds)
-    - poll (int, seconds)
-    - next (int, seconds)
-    - wt (int)
-    - tl (int)
+    - tags:
+        - remote
+        - stratum
+    - fields:
+        - delay (float, milliseconds)
+        - jitter (float, milliseconds)
+        - offset (float, milliseconds)
+        - poll (int, seconds)
+        - next (int, seconds)
+        - wt (int)
+        - tl (int)
 
 ### Permissions
 
@@ -57,6 +59,7 @@ Depending on the user/group permissions of the user executing this
 plugin, you may need to alter the group membership, set facls, or use sudo.
 
 **Group membership (Recommended)**:
+
 ```bash
 $ groups cua
 cua : cua
@@ -69,12 +72,14 @@ cua : cua ntpd
 
 **Sudo privileges**:
 If you use this method, you will need the following in your circonus-unified-agent config:
+
 ```toml
 [[inputs.openntpd]]
   use_sudo = true
 ```
 
 You will also need to update your sudoers file:
+
 ```bash
 $ visudo
 # Add the following lines:

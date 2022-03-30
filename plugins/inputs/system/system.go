@@ -26,6 +26,8 @@ func (*Stats) Description() string {
 
 func (*Stats) SampleConfig() string {
 	return `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Uncomment to remove deprecated metrics.
   # fielddrop = ["uptime_format"]
 `

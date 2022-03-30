@@ -3,11 +3,13 @@
 This input plugin gathers metrics from Mesos.
 For more information, please check the [Mesos Observability Metrics](http://mesos.apache.org/documentation/latest/monitoring/) page.
 
-### Configuration:
+### Configuration
 
 ```toml
 # plugin for gathering metrics from N Mesos masters
 [[inputs.mesos]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Timeout, in ms.
   timeout = 100
 
@@ -53,7 +55,7 @@ For more information, please check the [Mesos Observability Metrics](http://meso
 By default this plugin is not configured to gather metrics from mesos. Since a mesos cluster can be deployed in numerous ways it does not provide any default
 values. User needs to specify master/slave nodes this plugin will gather metrics from.
 
-### Measurements & Fields:
+### Measurements & Fields
 
 Mesos master metric groups
 
@@ -250,6 +252,7 @@ Mesos master metric groups
     - allocator/resources/mem/total
 
 Mesos slave metric groups
+
 - resources
     - slave/cpus_percent
     - slave/cpus_used
@@ -315,7 +318,7 @@ Mesos slave metric groups
     - slave/valid_framework_messages
     - slave/valid_status_updates
 
-### Tags:
+### Tags
 
 - All master/slave measurements have the following tags:
     - server (network location of server: `host:port`)
@@ -323,9 +326,10 @@ Mesos slave metric groups
     - role (master/slave)
 
 - All master measurements have the extra tags:
-	- state (leader/follower)
+    - state (leader/follower)
 
-### Example Output:
+### Example Output
+
 ```
 $ circonus-unified-agent --config ~/mesos.conf --input-filter mesos --test
 * Plugin: mesos, Collection 1

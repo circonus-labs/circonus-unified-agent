@@ -13,6 +13,8 @@ import (
 )
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Server to collect data from
   server = "localhost:11300"
 

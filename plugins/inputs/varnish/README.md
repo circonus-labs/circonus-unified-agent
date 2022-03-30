@@ -2,10 +2,12 @@
 
 This plugin gathers stats from [Varnish HTTP Cache](https://varnish-cache.org/)
 
-### Configuration:
+### Configuration
 
 ```toml
 [[inputs.varnish]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## If running as a restricted user you can prepend sudo for additional access:
   #use_sudo = false
 
@@ -26,9 +28,9 @@ This plugin gathers stats from [Varnish HTTP Cache](https://varnish-cache.org/)
   # timeout = "1s"
 ```
 
-### Measurements & Fields:
+### Measurements & Fields
 
-This is the full list of stats provided by varnish. Stats will be grouped by their capitalized prefix (eg MAIN, 
+This is the full list of stats provided by varnish. Stats will be grouped by their capitalized prefix (eg MAIN,
 MEMPOOL, etc). In the output, the prefix will be used as a tag, and removed from field names.
 
 - varnish
@@ -326,27 +328,26 @@ MEMPOOL, etc). In the output, the prefix will be used as a tag, and removed from
     - LCK.pipestat.destroy                           (uint64, count,  Destroyed locks)
     - LCK.pipestat.locks                             (uint64, count,  Lock Operations)
 
+### Tags
 
-### Tags:
-
-As indicated above, the  prefix of a varnish stat will be used as it's 'section' tag. So section tag may have one of 
+As indicated above, the  prefix of a varnish stat will be used as it's 'section' tag. So section tag may have one of
 the following values:
-- section:
-  - MAIN
-  - MGT
-  - MEMPOOL
-  - SMA
-  - VBE
-  - LCK
-  
-  
 
-### Permissions:
+- section:
+    - MAIN
+    - MGT
+    - MEMPOOL
+    - SMA
+    - VBE
+    - LCK
+  
+### Permissions
 
 It's important to note that this plugin references varnishstat, which may require additional permissions to execute successfully.
 Depending on the user/group permissions of the agent user executing this plugin, you may need to alter the group membership, set facls, or use sudo.
 
 **Group membership (Recommended)**:
+
 ```bash
 $ groups cua
 cua : cua
@@ -358,6 +359,7 @@ cua : cua varnish
 ```
 
 **Extended filesystem ACL's**:
+
 ```bash
 $ getfacl /var/lib/varnish/<hostname>/_.vsm
 # file: var/lib/varnish/<hostname>/_.vsm
@@ -382,12 +384,14 @@ other::---
 
 **Sudo privileges**:
 If you use this method, you will need the following in your agent config:
+
 ```toml
 [[inputs.varnish]]
   use_sudo = true
 ```
 
 You will also need to update your sudoers file:
+
 ```bash
 $ visudo
 # Add the following line:
@@ -398,7 +402,7 @@ Defaults!VARNISHSTAT !logfile, !syslog, !pam_session
 
 Please use the solution you see as most appropriate.
 
-### Example Output:
+### Example Output
 
 ```
  circonus-unififed-agent --config etc/circonus-unififed-agent.conf --input-filter varnish --test

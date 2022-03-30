@@ -81,6 +81,8 @@ type heap struct {
 }
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Specify a list of one or more Kibana servers
   servers = ["http://localhost:5601"]
 

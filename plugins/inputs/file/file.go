@@ -25,6 +25,8 @@ type File struct {
 }
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Files to parse each interval.  Accept standard unix glob matching rules,
   ## as well as ** to match recursive files and directories.
   files = ["/tmp/metrics.out"]

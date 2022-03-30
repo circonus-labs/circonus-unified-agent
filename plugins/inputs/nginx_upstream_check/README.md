@@ -1,6 +1,6 @@
 # Nginx Upstream Check Input Plugin
 
-Read the status output of the nginx_upstream_check (https://github.com/yaoweibin/nginx_upstream_check_module).
+Read the status output of the nginx_upstream_check (<https://github.com/yaoweibin/nginx_upstream_check_module>).
 This module can periodically check the servers in the Nginx's upstream with configured request and interval to determine
 if the server is still available. If checks are failed the server is marked as "down" and will not receive any requests
 until the check will pass and a server will be marked as "up" again.
@@ -8,9 +8,11 @@ until the check will pass and a server will be marked as "up" again.
 The status page displays the current status of all upstreams and servers as well as number of the failed and successful
 checks. This information can be exported in JSON format and parsed by this input.
 
-### Configuration:
+### Configuration
 
 ```toml
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## An URL where Nginx Upstream check module is enabled
   ## It should be set to return a JSON formatted response
   url = "http://127.0.0.1/status?format=json"
@@ -39,7 +41,7 @@ checks. This information can be exported in JSON format and parsed by this input
   # insecure_skip_verify = false
 ```
 
-### Measurements & Fields:
+### Measurements & Fields
 
 - Measurement
     - fall (The number of failed server check attempts, counter)
@@ -51,7 +53,7 @@ The "status_code" field most likely will be the most useful one because it allow
 state of every server and, possible, add some monitoring to watch over it. InfluxDB can use string values and the
 "status" field can be used instead, but for most other monitoring solutions the integer code will be appropriate.
 
-### Tags:
+### Tags
 
 - All measurements have the following tags:
     - name (The hostname or IP of the upstream server)
@@ -60,14 +62,16 @@ state of every server and, possible, add some monitoring to watch over it. Influ
     - upstream (The name of the upstream block in the Nginx configuration)
     - url (The status url used by circonus-unified-agent)
 
-### Example Output:
+### Example Output
 
 When run with:
+
 ```sh
 ./circonus-unified-agent --config circonus-unified-agent.conf --input-filter nginx_upstream_check --test
 ```
 
 It produces:
+
 ```
 * Plugin: nginx_upstream_check, Collection 1
 > nginx_upstream_check,host=node1,name=192.168.0.1:8080,port=0,type=http,upstream=my_backends,url=http://127.0.0.1:80/status?format\=json fall=0i,rise=100i,status="up",status_code=1i 1529088524000000000

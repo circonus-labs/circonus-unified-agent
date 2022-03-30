@@ -22,6 +22,8 @@ var ignoredColumns = map[string]bool{"user": true, "database": true, "pool_mode"
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## specify address via a url matching:
   ##   postgres://[pqgotest[:password]]@localhost[/dbname]\
   ##       ?sslmode=[disable|verify-ca|verify-full]

@@ -24,16 +24,18 @@ the remote peer or server (RMS, milliseconds);
 - jitter – Mean deviation (jitter) in the time reported for that remote peer or
 server (RMS of difference of multiple time samples, milliseconds);
 
-### Configuration:
+### Configuration
 
 ```toml
 # Get standard NTP query metrics, requires ntpq executable
 [[inputs.ntpq]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## If false, add -n for ntpq command. Can reduce metric gather times.
   dns_lookup = true
 ```
 
-### Measurements & Fields:
+### Measurements & Fields
 
 - ntpq
     - delay (float, milliseconds)
@@ -43,7 +45,7 @@ server (RMS of difference of multiple time samples, milliseconds);
     - reach (int)
     - when (int, seconds)
 
-### Tags:
+### Tags
 
 - All measurements have the following tags:
     - refid
@@ -51,7 +53,7 @@ server (RMS of difference of multiple time samples, milliseconds);
     - type
     - stratum
 
-### Example Output:
+### Example Output
 
 ```sh
 $ circonus-unified-agent --config ~/ws/circonus-unified-agent.conf --input-filter ntpq --test

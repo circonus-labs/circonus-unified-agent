@@ -36,6 +36,8 @@ type Ssl struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## An array of URLs of the form:
   ##   "mongodb://" [user ":" pass "@"] host [ ":" port]
   ## For example:

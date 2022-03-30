@@ -37,6 +37,8 @@ func (ipset *Ipset) Description() string {
 // SampleConfig returns sample configuration options.
 func (ipset *Ipset) SampleConfig() string {
 	return `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## By default, we only show sets which have already matched at least 1 packet.
   ## set include_unmatched_sets = true to gather them all.
   include_unmatched_sets = false

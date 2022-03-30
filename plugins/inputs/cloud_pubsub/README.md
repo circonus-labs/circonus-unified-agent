@@ -3,11 +3,12 @@
 The GCP PubSub plugin ingests metrics from [Google Cloud PubSub][pubsub]
 and creates metrics using one of the supported [input data formats][].
 
-
 ### Configuration
 
 ```toml
 [[inputs.cloud_pubsub]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Required. Name of Google Cloud Platform (GCP) Project that owns
   ## the given PubSub subscription.
   project = "my-project"
@@ -90,8 +91,6 @@ PubSub topic. To learn how to do so, see [how to create a subscription][pubsub c
 Each plugin agent can listen to one subscription at a time, so you will
 need to run multiple instances of the plugin to pull messages from multiple
 subscriptions/topics.
-
-
 
 [pubsub]: https://cloud.google.com/pubsub
 [pubsub create sub]: https://cloud.google.com/pubsub/docs/admin#create_a_pull_subscription

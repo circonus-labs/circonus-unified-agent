@@ -87,6 +87,8 @@ const (
 const description = `Retrieve data from OPCUA devices`
 const sampleConfig = `
 [[inputs.opcua]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Device name
   # name = "localhost"
   #

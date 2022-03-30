@@ -24,6 +24,8 @@ const adminCoresPath = "/solr/admin/cores?action=STATUS&wt=json"
 // }
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## specify a list of one or more Solr servers
   servers = ["http://localhost:8983"]
 

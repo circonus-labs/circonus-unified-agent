@@ -7,6 +7,8 @@ the unix controlsocket.
 
 ```toml
 [[inputs.powerdns_recursor]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Path to the Recursor control socket.
   unix_sockets = ["/var/run/pdns_recursor.controlsocket"]
 
@@ -27,11 +29,13 @@ adapted for other systems.
 
 First change permissions on the controlsocket in the PowerDNS recursor
 configuration, usually in `/etc/powerdns/recursor.conf`:
+
 ```
 socket-mode = 660
 ```
 
 Then place the `cua` user into the `pdns` group:
+
 ```
 usermod cua -a -G pdns
 ```
@@ -39,122 +43,123 @@ usermod cua -a -G pdns
 Since `circonus-unified-agent` cannot write to to the default `/var/run` socket directory,
 create a subdirectory and adjust permissions for this directory so that both
 users can access it.
+
 ```sh
-$ mkdir /var/run/pdns
-$ chown root:pdns /var/run/pdns
-$ chmod 770 /var/run/pdns
+mkdir /var/run/pdns
+chown root:pdns /var/run/pdns
+chmod 770 /var/run/pdns
 ```
 
 ### Metrics
 
 - powerdns_recursor
-  - tags:
-    - server
-  - fields:
-    - all-outqueries
-    - answers-slow
-    - answers0-1
-    - answers1-10
-    - answers10-100
-    - answers100-1000
-    - auth-zone-queries
-    - auth4-answers-slow
-    - auth4-answers0-1
-    - auth4-answers1-10
-    - auth4-answers10-100
-    - auth4-answers100-1000
-    - auth6-answers-slow
-    - auth6-answers0-1
-    - auth6-answers1-10
-    - auth6-answers10-100
-    - auth6-answers100-1000
-    - cache-entries
-    - cache-hits
-    - cache-misses
-    - case-mismatches
-    - chain-resends
-    - client-parse-errors
-    - concurrent-queries
-    - dlg-only-drops
-    - dnssec-queries
-    - dnssec-result-bogus
-    - dnssec-result-indeterminate
-    - dnssec-result-insecure
-    - dnssec-result-nta
-    - dnssec-result-secure
-    - dnssec-validations
-    - dont-outqueries
-    - ecs-queries
-    - ecs-responses
-    - edns-ping-matches
-    - edns-ping-mismatches
-    - failed-host-entries
-    - fd-usage
-    - ignored-packets
-    - ipv6-outqueries
-    - ipv6-questions
-    - malloc-bytes
-    - max-cache-entries
-    - max-mthread-stack
-    - max-packetcache-entries
-    - negcache-entries
-    - no-packet-error
-    - noedns-outqueries
-    - noerror-answers
-    - noping-outqueries
-    - nsset-invalidations
-    - nsspeeds-entries
-    - nxdomain-answers
-    - outgoing-timeouts
-    - outgoing4-timeouts
-    - outgoing6-timeouts
-    - over-capacity-drops
-    - packetcache-entries
-    - packetcache-hits
-    - packetcache-misses
-    - policy-drops
-    - policy-result-custom
-    - policy-result-drop
-    - policy-result-noaction
-    - policy-result-nodata
-    - policy-result-nxdomain
-    - policy-result-truncate
-    - qa-latency
-    - query-pipe-full-drops
-    - questions
-    - real-memory-usage
-    - resource-limits
-    - security-status
-    - server-parse-errors
-    - servfail-answers
-    - spoof-prevents
-    - sys-msec
-    - tcp-client-overflow
-    - tcp-clients
-    - tcp-outqueries
-    - tcp-questions
-    - throttle-entries
-    - throttled-out
-    - throttled-outqueries
-    - too-old-drops
-    - udp-in-errors
-    - udp-noport-errors
-    - udp-recvbuf-errors
-    - udp-sndbuf-errors
-    - unauthorized-tcp
-    - unauthorized-udp
-    - unexpected-packets
-    - unreachables
-    - uptime
-    - user-msec
-    - x-our-latency
-    - x-ourtime-slow
-    - x-ourtime0-1
-    - x-ourtime1-2
-    - x-ourtime16-32
-    - x-ourtime2-4
-    - x-ourtime4-8
-    - x-ourtime8-16
+    - tags:
+        - server
+    - fields:
+        - all-outqueries
+        - answers-slow
+        - answers0-1
+        - answers1-10
+        - answers10-100
+        - answers100-1000
+        - auth-zone-queries
+        - auth4-answers-slow
+        - auth4-answers0-1
+        - auth4-answers1-10
+        - auth4-answers10-100
+        - auth4-answers100-1000
+        - auth6-answers-slow
+        - auth6-answers0-1
+        - auth6-answers1-10
+        - auth6-answers10-100
+        - auth6-answers100-1000
+        - cache-entries
+        - cache-hits
+        - cache-misses
+        - case-mismatches
+        - chain-resends
+        - client-parse-errors
+        - concurrent-queries
+        - dlg-only-drops
+        - dnssec-queries
+        - dnssec-result-bogus
+        - dnssec-result-indeterminate
+        - dnssec-result-insecure
+        - dnssec-result-nta
+        - dnssec-result-secure
+        - dnssec-validations
+        - dont-outqueries
+        - ecs-queries
+        - ecs-responses
+        - edns-ping-matches
+        - edns-ping-mismatches
+        - failed-host-entries
+        - fd-usage
+        - ignored-packets
+        - ipv6-outqueries
+        - ipv6-questions
+        - malloc-bytes
+        - max-cache-entries
+        - max-mthread-stack
+        - max-packetcache-entries
+        - negcache-entries
+        - no-packet-error
+        - noedns-outqueries
+        - noerror-answers
+        - noping-outqueries
+        - nsset-invalidations
+        - nsspeeds-entries
+        - nxdomain-answers
+        - outgoing-timeouts
+        - outgoing4-timeouts
+        - outgoing6-timeouts
+        - over-capacity-drops
+        - packetcache-entries
+        - packetcache-hits
+        - packetcache-misses
+        - policy-drops
+        - policy-result-custom
+        - policy-result-drop
+        - policy-result-noaction
+        - policy-result-nodata
+        - policy-result-nxdomain
+        - policy-result-truncate
+        - qa-latency
+        - query-pipe-full-drops
+        - questions
+        - real-memory-usage
+        - resource-limits
+        - security-status
+        - server-parse-errors
+        - servfail-answers
+        - spoof-prevents
+        - sys-msec
+        - tcp-client-overflow
+        - tcp-clients
+        - tcp-outqueries
+        - tcp-questions
+        - throttle-entries
+        - throttled-out
+        - throttled-outqueries
+        - too-old-drops
+        - udp-in-errors
+        - udp-noport-errors
+        - udp-recvbuf-errors
+        - udp-sndbuf-errors
+        - unauthorized-tcp
+        - unauthorized-udp
+        - unexpected-packets
+        - unreachables
+        - uptime
+        - user-msec
+        - x-our-latency
+        - x-ourtime-slow
+        - x-ourtime0-1
+        - x-ourtime1-2
+        - x-ourtime16-32
+        - x-ourtime2-4
+        - x-ourtime4-8
+        - x-ourtime8-16
 
 ### Example Output
 

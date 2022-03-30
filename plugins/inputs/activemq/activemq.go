@@ -84,6 +84,8 @@ type Stats struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## ActiveMQ WebConsole URL
   url = "http://127.0.0.1:8161"
 

@@ -9,7 +9,7 @@ should configure this plugin to talk to its locally running kubelet.
 To find the ip address of the host you are running on you can issue a command like the following:
 
 ```
-$ curl -s $API_URL/api/v1/namespaces/$POD_NAMESPACE/pods/$HOSTNAME --header "Authorization: Bearer $TOKEN" --insecure | jq -r '.status.hostIP'
+curl -s $API_URL/api/v1/namespaces/$POD_NAMESPACE/pods/$HOSTNAME --header "Authorization: Bearer $TOKEN" --insecure | jq -r '.status.hostIP'
 ```
 
 In this case we used the downward API to pass in the `$POD_NAMESPACE` and `$HOSTNAME` is the hostname of the pod which is set by the kubernetes API.
@@ -33,6 +33,8 @@ avoid cardinality issues:
 
 ```toml
 [[inputs.kubernetes]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## URL for the kubelet
   url = "http://127.0.0.1:10255"
 
@@ -62,70 +64,70 @@ avoid cardinality issues:
 ### Metrics
 
 - kubernetes_node
-  - tags:
-    - node_name
-  - fields:
-    - cpu_usage_nanocores
-    - cpu_usage_core_nanoseconds
-    - memory_available_bytes
-    - memory_usage_bytes
-    - memory_working_set_bytes
-    - memory_rss_bytes
-    - memory_page_faults
-    - memory_major_page_faults
-    - network_rx_bytes
-    - network_rx_errors
-    - network_tx_bytes
-    - network_tx_errors
-    - fs_available_bytes
-    - fs_capacity_bytes
-    - fs_used_bytes
-    - runtime_image_fs_available_bytes
-    - runtime_image_fs_capacity_bytes
-    - runtime_image_fs_used_bytes
+    - tags:
+        - node_name
+    - fields:
+        - cpu_usage_nanocores
+        - cpu_usage_core_nanoseconds
+        - memory_available_bytes
+        - memory_usage_bytes
+        - memory_working_set_bytes
+        - memory_rss_bytes
+        - memory_page_faults
+        - memory_major_page_faults
+        - network_rx_bytes
+        - network_rx_errors
+        - network_tx_bytes
+        - network_tx_errors
+        - fs_available_bytes
+        - fs_capacity_bytes
+        - fs_used_bytes
+        - runtime_image_fs_available_bytes
+        - runtime_image_fs_capacity_bytes
+        - runtime_image_fs_used_bytes
 
-* kubernetes_pod_container
-  - tags:
-    - container_name
-    - namespace
-    - node_name
-    - pod_name
-  - fields:
-    - cpu_usage_nanocores
-    - cpu_usage_core_nanoseconds
-    - memory_usage_bytes
-    - memory_working_set_bytes
-    - memory_rss_bytes
-    - memory_page_faults
-    - memory_major_page_faults
-    - rootfs_available_bytes
-    - rootfs_capacity_bytes
-    - rootfs_used_bytes
-    - logsfs_available_bytes
-    - logsfs_capacity_bytes
-    - logsfs_used_bytes
+- kubernetes_pod_container
+    - tags:
+        - container_name
+        - namespace
+        - node_name
+        - pod_name
+    - fields:
+        - cpu_usage_nanocores
+        - cpu_usage_core_nanoseconds
+        - memory_usage_bytes
+        - memory_working_set_bytes
+        - memory_rss_bytes
+        - memory_page_faults
+        - memory_major_page_faults
+        - rootfs_available_bytes
+        - rootfs_capacity_bytes
+        - rootfs_used_bytes
+        - logsfs_available_bytes
+        - logsfs_capacity_bytes
+        - logsfs_used_bytes
 
 - kubernetes_pod_volume
-  - tags:
-    - volume_name
-    - namespace
-    - node_name
-    - pod_name
-  - fields:
-    - available_bytes
-    - capacity_bytes
-    - used_bytes
+    - tags:
+        - volume_name
+        - namespace
+        - node_name
+        - pod_name
+    - fields:
+        - available_bytes
+        - capacity_bytes
+        - used_bytes
 
-* kubernetes_pod_network
-  - tags:
-    - namespace
-    - node_name
-    - pod_name
-  - fields:
-    - rx_bytes
-    - rx_errors
-    - tx_bytes
-    - tx_errors
+- kubernetes_pod_network
+    - tags:
+        - namespace
+        - node_name
+        - pod_name
+    - fields:
+        - rx_bytes
+        - rx_errors
+        - tx_bytes
+        - tx_errors
 
 ### Example Output
 

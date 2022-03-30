@@ -9,6 +9,8 @@ alternative method for collecting repository information.
 
 ```toml
 [[inputs.github]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## List of repositories to monitor
   repositories = [
 	  "circonus-labs/circonus-unified-agent",
@@ -28,29 +30,29 @@ alternative method for collecting repository information.
 ### Metrics
 
 - github_repository
-  - tags:
-    - name - The repository name
-    - owner - The owner of the repository
-    - language - The primary language of the repository
-    - license - The license set for the repository
-  - fields:
-    - forks (int)
-    - open_issues (int)
-    - networks (int)
-    - size (int)
-    - subscribers (int)
-    - stars (int)
-    - watchers (int)
+    - tags:
+        - name - The repository name
+        - owner - The owner of the repository
+        - language - The primary language of the repository
+        - license - The license set for the repository
+    - fields:
+        - forks (int)
+        - open_issues (int)
+        - networks (int)
+        - size (int)
+        - subscribers (int)
+        - stars (int)
+        - watchers (int)
 
 When the [internal][] input is enabled:
 
-+ internal_github
-  - tags:
-    - access_token - An obfuscated reference to the configured access token or "Unauthenticated"
-  - fields:
-    - limit - How many requests you are limited to (per hour)
-    - remaining - How many requests you have remaining (per hour)
-    - blocks - How many requests have been blocked due to rate limit
+- internal_github
+    - tags:
+        - access_token - An obfuscated reference to the configured access token or "Unauthenticated"
+    - fields:
+        - limit - How many requests you are limited to (per hour)
+        - remaining - How many requests you have remaining (per hour)
+        - blocks - How many requests have been blocked due to rate limit
 
 ### Example Output
 

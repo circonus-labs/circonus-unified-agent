@@ -89,6 +89,8 @@ func (c *Marklogic) Description() string {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Base URL of the MarkLogic HTTP Server.
   url = "http://localhost:8002"
 

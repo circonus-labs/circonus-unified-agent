@@ -89,6 +89,8 @@ const (
 
 func (a *AMQPConsumer) SampleConfig() string {
 	return `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Broker to consume from.
   ##   deprecated in 1.7; use the brokers option
   # url = "amqp://localhost:5672/influxdb"

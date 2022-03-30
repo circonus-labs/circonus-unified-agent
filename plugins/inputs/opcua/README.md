@@ -6,6 +6,8 @@ The `opcua` plugin retrieves data from OPC UA client devices.
 
 ```toml
 [[inputs.opcua]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Device name
   # name = "localhost"
   #

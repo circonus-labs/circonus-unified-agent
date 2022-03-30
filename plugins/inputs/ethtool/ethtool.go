@@ -27,6 +27,8 @@ const (
 	tagDriverName = "driver"    //nolint:deadcode,varcheck
 
 	sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## List of interfaces to pull metrics for
   # interface_include = ["eth0"]
 

@@ -18,7 +18,9 @@ func (t *Temperature) Description() string {
 	return "Read metrics about temperature"
 }
 
-const sampleConfig = ""
+const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+`
 
 func (t *Temperature) SampleConfig() string {
 	return sampleConfig

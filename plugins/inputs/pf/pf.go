@@ -31,6 +31,8 @@ func (pf *PF) Description() string {
 
 func (pf *PF) SampleConfig() string {
 	return `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## PF require root access on most systems.
   ## Setting 'use_sudo' to true will make use of sudo to run pfctl.
   ## Users must configure sudo to allow 'cua' user to run pfctl with no password.

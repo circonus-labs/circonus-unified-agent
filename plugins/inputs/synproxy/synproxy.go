@@ -20,7 +20,9 @@ func (k *Synproxy) Description() string {
 }
 
 func (k *Synproxy) SampleConfig() string {
-	return ""
+	return `
+  instance_id = "" # unique instance identifier (REQUIRED)
+`
 }
 
 func getHostProc() string {

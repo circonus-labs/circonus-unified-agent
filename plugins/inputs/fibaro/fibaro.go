@@ -16,6 +16,8 @@ import (
 const defaultTimeout = 5 * time.Second
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Required Fibaro controller address/hostname.
   ## Note: at the time of writing this plugin, Fibaro only implemented http - no https available
   url = "http://<controller>:80"

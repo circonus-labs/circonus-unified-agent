@@ -484,6 +484,8 @@ func (c *GNMI) Stop() {
 }
 
 const sampleConfig = `
+ instance_id = "" # unique instance identifier (REQUIRED)
+
  ## Address and port of the gNMI GRPC server
  addresses = ["10.49.234.114:57777"]
 

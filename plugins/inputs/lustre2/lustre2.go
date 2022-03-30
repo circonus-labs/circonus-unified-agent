@@ -36,6 +36,8 @@ type Lustre2 struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## An array of /proc globs to search for Lustre stats
   ## If not specified, the default will work on Lustre 2.5.x
   ##

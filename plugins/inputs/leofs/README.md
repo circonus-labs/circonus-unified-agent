@@ -2,17 +2,23 @@
 
 The LeoFS plugin gathers metrics of LeoGateway, LeoManager, and LeoStorage using SNMP. See [LeoFS Documentation / System Administration / System Monitoring](https://leo-project.net/leofs/docs/admin/system_admin/monitoring/).
 
-## Configuration:
+## Configuration
 
 ```toml
 # Sample Config:
 
 [[inputs.leofs]]
-        servers = ["127.0.0.1:4010"]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
+  ## An array of URLs of the form:
+  ##   host [ ":" port]
+  servers = ["127.0.0.1:4010"]
 ```
 
-## Measurements & Fields:
+## Measurements & Fields
+
 ### Statistics specific to the internals of LeoManager
+
 #### Erlang VM
 
 - 1 min Statistics
@@ -33,6 +39,7 @@ The LeoFS plugin gathers metrics of LeoGateway, LeoManager, and LeoStorage using
     - allocated_memory_5min
 
 ### Statistics specific to the internals of LeoStorage
+
 #### Erlang VM
 
 - 1 min Statistics
@@ -103,6 +110,7 @@ Note: The following items are available since LeoFS v1.4.0:
 Note: The all items are available since LeoFS v1.4.0.
 
 ### Statistics specific to the internals of LeoGateway
+
 #### Erlang VM
 
 - 1 min Statistics
@@ -140,15 +148,13 @@ Note: The all items are available since LeoFS v1.4.0.
 - total_of_files
 - total_cached_size
 
-
-### Tags:
+### Tags
 
 All measurements have the following tags:
 
 - node
 
-
-### Example output:
+### Example output
 
 #### LeoManager
 

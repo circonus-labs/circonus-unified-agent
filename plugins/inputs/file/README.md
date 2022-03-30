@@ -6,10 +6,12 @@ the selected [input data format][].
 **Note:** If you wish to parse only newly appended lines use the [tail][] input
 plugin instead.
 
-### Configuration:
+### Configuration
 
 ```toml
 [[inputs.file]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Files to parse each interval.  Accept standard unix glob matching rules,
   ## as well as ** to match recursive files and directories.
   files = ["/tmp/metrics.out"]

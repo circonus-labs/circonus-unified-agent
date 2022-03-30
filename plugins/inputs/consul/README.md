@@ -6,11 +6,13 @@ to query the data. It will not report the
 [telemetry](https://www.consul.io/docs/agent/telemetry.html) but Consul can
 report those stats already using StatsD protocol if needed.
 
-### Configuration:
+### Configuration
 
 ```toml
 # Gather health check statuses from services registered in Consul
 [[inputs.consul]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Consul server address
   # address = "localhost:8500"
 
@@ -48,35 +50,38 @@ report those stats already using StatsD protocol if needed.
   # tag_delimiter = ":"
 ```
 
-### Metrics:
-##### metric_version = 1:
-- consul_health_checks
-  - tags:
-  	- node (node that check/service is registered on)
-  	- service_name
-  	- check_id
-  - fields:
-    - check_name
-    - service_id
-    - status
-    - passing (integer)
-    - critical (integer)
-    - warning (integer)
+### Metrics
 
-##### metric_version = 2:
+##### metric_version = 1
+
 - consul_health_checks
-  - tags:
-  	- node (node that check/service is registered on)
-  	- service_name
-  	- check_id
-  	- check_name
-    - service_id
-    - status
-  - fields:
-    - passing (integer)
-    - critical (integer)
-    - warning (integer)
-    
+    - tags:
+        - node (node that check/service is registered on)
+        - service_name
+        - check_id
+    - fields:
+        - check_name
+        - service_id
+        - status
+        - passing (integer)
+        - critical (integer)
+        - warning (integer)
+
+##### metric_version = 2
+
+- consul_health_checks
+    - tags:
+        - node (node that check/service is registered on)
+        - service_name
+        - check_id
+        - check_name
+        - service_id
+        - status
+    - fields:
+        - passing (integer)
+        - critical (integer)
+        - warning (integer)
+
 `passing`, `critical`, and `warning` are integer representations of the health
 check state. A value of `1` represents that the status was the state of the
 the health check at this sample. `status` is string representation of the same state.

@@ -13,6 +13,8 @@ Syslog messages should be formatted according to
 
 ```toml
 [[inputs.syslog]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Protocol, address and port to host the syslog receiver.
   ## If no host is specified, then localhost is used.
   ## If no port is specified, 6514 is used (RFC5425#section-4.1).
@@ -88,6 +90,7 @@ config file.
 
 Add the following lines to `/etc/rsyslog.d/50-circonus-unified-agent.conf` making
 adjustments to the target address as needed:
+
 ```
 $ActionQueueType LinkedList # use asynchronous processing
 $ActionQueueFileName srvrfwd # set file name, also enables disk mode
@@ -102,6 +105,7 @@ $ActionQueueSaveOnShutdown on # save in-memory data if rsyslog shuts down
 ```
 
 You can alternately use `advanced` format (aka RainerScript):
+
 ```
 # forward over tcp with octet framing according to RFC 5425
 action(type="omfwd" Protocol="tcp" TCP_Framing="octet-counted" Target="127.0.0.1" Port="6514" Template="RSYSLOG_SyslogProtocol23Format")
@@ -115,28 +119,30 @@ To complete TLS setup please refer to [rsyslog docs](https://www.rsyslog.com/doc
 ### Metrics
 
 - syslog
-  - tags
-    - severity (string)
-    - facility (string)
-    - hostname (string)
-    - appname (string)
-  - fields
-    - version (integer)
-    - severity_code (integer)
-    - facility_code (integer)
-    - timestamp (integer): the time recorded in the syslog message
-    - procid (string)
-    - msgid (string)
-    - sdid (bool)
-    - *Structured Data* (string)
-  - timestamp: the time the messages was received
+    - tags
+        - severity (string)
+        - facility (string)
+        - hostname (string)
+        - appname (string)
+    - fields
+        - version (integer)
+        - severity_code (integer)
+        - facility_code (integer)
+        - timestamp (integer): the time recorded in the syslog message
+        - procid (string)
+        - msgid (string)
+        - sdid (bool)
+        - *Structured Data* (string)
+    - timestamp: the time the messages was received
 
 #### Structured Data
 
 Structured data produces field keys by combining the `SD_ID` with the `PARAM_NAME` combined using the `sdparam_separator` as in the following example:
+
 ```
 170 <165>1 2018-10-01:14:15.000Z mymachine.example.com evntslog - ID47 [exampleSDID@32473 iut="3" eventSource="Application" eventID="1011"] An application event log entry...
 ```
+
 ```
 syslog,appname=evntslog,facility=local4,hostname=mymachine.example.com,severity=notice exampleSDID@32473_eventID="1011",exampleSDID@32473_eventSource="Application",exampleSDID@32473_iut="3",facility_code=20i,message="An application event log entry...",msgid="ID47",severity_code=5i,timestamp=1065910455003000000i,version=1i 1538421339749472344
 ```
@@ -156,6 +162,7 @@ echo "<13>1 2018-10-01T12:00:00.0Z example.org root - - - test" | nc -u 127.0.0.
 #### RFC3164
 
 RFC3164 encoded messages are not currently supported.  You may see the following error if a message encoded in this format:
+
 ```
 E! Error in plugin [inputs.syslog]: expecting a version value in the range 1-999 [col 5]
 ```

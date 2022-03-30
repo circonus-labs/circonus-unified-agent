@@ -4,4 +4,8 @@ func (p *Processes) Description() string {
 	return "Get the number of processes and group them by status"
 }
 
-func (p *Processes) SampleConfig() string { return "" }
+func (p *Processes) SampleConfig() string {
+	return `
+  instance_id = "" # unique instance identifier (REQUIRED)
+`
+}

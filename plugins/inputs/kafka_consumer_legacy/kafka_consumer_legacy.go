@@ -48,6 +48,8 @@ type Kafka struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## topic(s) to consume
   topics = ["circonus"]
 

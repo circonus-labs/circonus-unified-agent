@@ -15,6 +15,8 @@ import (
 )
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## API connection configuration. The API token was introduced in Proxmox v6.2. Required permissions for user and token: PVEAuditor role on /.
   base_url = "https://localhost:8006/api2/json"
   api_token = "USER@REALM!TOKENID=UUID"

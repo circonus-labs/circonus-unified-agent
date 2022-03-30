@@ -48,6 +48,8 @@ const (
 )
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## ECS metadata url.
   ## Metadata v2 API is used if set explicitly. Otherwise,
   ## v3 metadata endpoint API is used if available.

@@ -9,6 +9,8 @@ import (
 )
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Address of the Minecraft server.
   # server = "localhost"
 

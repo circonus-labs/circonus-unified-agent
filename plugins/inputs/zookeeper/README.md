@@ -8,6 +8,8 @@ The zookeeper plugin collects variables outputted from the 'mntr' command
 ```toml
 # Reads 'mntr' stats from one or many zookeeper servers
 [[inputs.zookeeper]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## An array of address to gather stats about. Specify an ip or hostname
   ## with port. ie localhost:2181, 10.0.0.1:2181, etc.
 
@@ -27,38 +29,39 @@ The zookeeper plugin collects variables outputted from the 'mntr' command
   # insecure_skip_verify = true
 ```
 
-### Metrics:
+### Metrics
 
 Exact field names are based on Zookeeper response and may vary between
 configuration, platform, and version.
 
 - zookeeper
-  - tags:
-    - server
-    - port
-    - state
-  - fields:
-    - approximate_data_size (integer)
-    - avg_latency (integer)
-    - ephemerals_count (integer)
-    - max_file_descriptor_count (integer)
-    - max_latency (integer)
-    - min_latency (integer)
-    - num_alive_connections (integer)
-    - open_file_descriptor_count (integer)
-    - outstanding_requests (integer)
-    - packets_received (integer)
-    - packets_sent (integer)
-    - version (string)
-    - watch_count (integer)
-    - znode_count (integer)
-    - followers (integer, leader only)
-    - synced_followers (integer, leader only)
-    - pending_syncs (integer, leader only)
+    - tags:
+        - server
+        - port
+        - state
+    - fields:
+        - approximate_data_size (integer)
+        - avg_latency (integer)
+        - ephemerals_count (integer)
+        - max_file_descriptor_count (integer)
+        - max_latency (integer)
+        - min_latency (integer)
+        - num_alive_connections (integer)
+        - open_file_descriptor_count (integer)
+        - outstanding_requests (integer)
+        - packets_received (integer)
+        - packets_sent (integer)
+        - version (string)
+        - watch_count (integer)
+        - znode_count (integer)
+        - followers (integer, leader only)
+        - synced_followers (integer, leader only)
+        - pending_syncs (integer, leader only)
 
-### Debugging:
+### Debugging
 
 If you have any issues please check the direct Zookeeper output using netcat:
+
 ```sh
 $ echo mntr | nc localhost 2181
 zk_version      3.4.9-3--1, built on Thu, 01 Jun 2017 16:26:44 -0700

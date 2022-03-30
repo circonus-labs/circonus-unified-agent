@@ -2,10 +2,13 @@
 
 The DNS plugin gathers dns query times in miliseconds - like [Dig](https://en.wikipedia.org/wiki/Dig_\(command\))
 
-### Configuration:
+### Configuration
+
 ```toml
 # Query given DNS server and gives statistics
 [[inputs.dns_query]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## servers to query
   servers = ["8.8.8.8"]
 
@@ -26,22 +29,22 @@ The DNS plugin gathers dns query times in miliseconds - like [Dig](https://en.wi
   # timeout = 2
 ```
 
-### Metrics:
+### Metrics
 
 - dns_query
-  - tags:
-    - server
-    - domain
-    - record_type
-    - result
-    - rcode
-  - fields:
-    - query_time_ms (float)
-    - result_code (int, success = 0, timeout = 1, error = 2)
-    - rcode_value (int)
-
+    - tags:
+        - server
+        - domain
+        - record_type
+        - result
+        - rcode
+    - fields:
+        - query_time_ms (float)
+        - result_code (int, success = 0, timeout = 1, error = 2)
+        - rcode_value (int)
 
 ### Rcode Descriptions
+
 |rcode_value|rcode|Description|
 |---|-----------|-----------------------------------|
 |0  | NoError   | No Error                          |
@@ -65,8 +68,7 @@ The DNS plugin gathers dns query times in miliseconds - like [Dig](https://en.wi
 |22 | BADTRUNC  | Bad Truncation                    |
 |23 | BADCOOKIE | Bad/missing Server Cookie         |
 
-
-### Example Output:
+### Example Output
 
 ```
 dns_query,domain=google.com,rcode=NOERROR,record_type=A,result=success,server=127.0.0.1 rcode_value=0i,result_code=0i,query_time_ms=0.13746 1550020750001000000

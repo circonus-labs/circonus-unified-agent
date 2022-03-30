@@ -192,6 +192,8 @@ func (m *Monit) Description() string {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Monit HTTPD address
   address = "http://127.0.0.1:2812"
 

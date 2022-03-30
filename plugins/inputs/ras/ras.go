@@ -72,6 +72,8 @@ const (
 // SampleConfig returns sample configuration for this plugin.
 func (r *Ras) SampleConfig() string {
 	return `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Optional path to RASDaemon sqlite3 database.
   ## Default: /var/lib/rasdaemon/ras-mc_event.db
   # db_path = ""

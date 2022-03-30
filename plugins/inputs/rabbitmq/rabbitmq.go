@@ -257,6 +257,8 @@ type gatherFunc func(r *RabbitMQ, acc cua.Accumulator)
 var gatherFunctions = []gatherFunc{gatherOverview, gatherNodes, gatherQueues, gatherExchanges, gatherFederationLinks}
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## an instance id is required
   instance_id  ""
   ## Management Plugin url. (default: http://localhost:15672)

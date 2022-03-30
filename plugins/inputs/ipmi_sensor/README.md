@@ -8,7 +8,9 @@ If no servers are specified, the plugin will query the local machine sensor stat
 ```
 ipmitool sdr
 ```
+
 or with the version 2 schema:
+
 ```
 ipmitool sdr elist
 ```
@@ -24,6 +26,8 @@ ipmitool -I lan -H SERVER -U USERID -P PASSW0RD sdr
 ```toml
 # Read metrics from the bare metal servers via IPMI
 [[inputs.ipmi_sensor]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## optionally specify the path to the ipmitool executable
   # path = "/usr/bin/ipmitool"
   ##
@@ -58,28 +62,30 @@ ipmitool -I lan -H SERVER -U USERID -P PASSW0RD sdr
 ### Measurements
 
 Version 1 schema:
+
 - ipmi_sensor:
-  - tags:
-    - name
-    - unit
-    - host
-    - server (only when retrieving stats from remote servers)
-  - fields:
-    - status (int, 1=ok status_code/0=anything else)
-    - value (float)
+    - tags:
+        - name
+        - unit
+        - host
+        - server (only when retrieving stats from remote servers)
+    - fields:
+        - status (int, 1=ok status_code/0=anything else)
+        - value (float)
 
 Version 2 schema:
+
 - ipmi_sensor:
-  - tags:
-    - name
-    - entity_id (can help uniquify duplicate names)
-    - status_code (two letter code from IPMI documentation)
-    - status_desc (extended status description field)
-    - unit (only on analog values)
-    - host
-    - server (only when retrieving stats from remote)
-  - fields:
-    - value (float)
+    - tags:
+        - name
+        - entity_id (can help uniquify duplicate names)
+        - status_code (two letter code from IPMI documentation)
+        - status_desc (extended status description field)
+        - unit (only on analog values)
+        - host
+        - server (only when retrieving stats from remote)
+    - fields:
+        - value (float)
 
 #### Permissions
 
@@ -91,7 +97,9 @@ ipmi device node.  When using udev you can create the device node giving
 ```
 KERNEL=="ipmi*", MODE="660", GROUP="cua"
 ```
+
 Alternatively, it is possible to use sudo. You will need the following in your config:
+
 ```toml
 [[inputs.ipmi_sensor]]
   use_sudo = true
@@ -110,7 +118,9 @@ Defaults!IPMITOOL !logfile, !syslog, !pam_session
 ### Example Output
 
 #### Version 1 Schema
+
 When retrieving stats from a remote server:
+
 ```
 ipmi_sensor,server=10.20.2.203,name=uid_light value=0,status=1i 1517125513000000000
 ipmi_sensor,server=10.20.2.203,name=sys._health_led status=1i,value=0 1517125513000000000
@@ -120,8 +130,8 @@ ipmi_sensor,server=10.20.2.203,name=power_supplies value=0,status=1i 15171255130
 ipmi_sensor,server=10.20.2.203,name=fan_1,unit=percent status=1i,value=43.12 1517125513000000000
 ```
 
-
 When retrieving stats from the local machine (no server specified):
+
 ```
 ipmi_sensor,name=uid_light value=0,status=1i 1517125513000000000
 ipmi_sensor,name=sys._health_led status=1i,value=0 1517125513000000000
@@ -134,6 +144,7 @@ ipmi_sensor,name=fan_1,unit=percent status=1i,value=43.12 1517125513000000000
 #### Version 2 Schema
 
 When retrieving stats from the local machine (no server specified):
+
 ```
 ipmi_sensor,name=uid_light,entity_id=23.1,status_code=ok,status_desc=ok value=0 1517125474000000000
 ipmi_sensor,name=sys._health_led,entity_id=23.2,status_code=ok,status_desc=ok value=0 1517125474000000000

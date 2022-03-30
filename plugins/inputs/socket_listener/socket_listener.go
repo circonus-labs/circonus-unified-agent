@@ -209,6 +209,8 @@ func (sl *SocketListener) Description() string {
 
 func (sl *SocketListener) SampleConfig() string {
 	return `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## URL to listen on
   # service_address = "tcp://:8094"
   # service_address = "tcp://127.0.0.1:http"

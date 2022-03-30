@@ -64,6 +64,8 @@ func (*NeptuneApex) Description() string {
 // SampleConfig implements Input.SampleConfig
 func (*NeptuneApex) SampleConfig() string {
 	return `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## The Neptune Apex plugin reads the publicly available status.xml data from a local Apex.
   ## Measurements will be logged under "apex".
 

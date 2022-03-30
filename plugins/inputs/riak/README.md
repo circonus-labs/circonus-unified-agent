@@ -2,16 +2,18 @@
 
 The Riak plugin gathers metrics from one or more riak instances.
 
-### Configuration:
+### Configuration
 
 ```toml
 # Description
 [[inputs.riak]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   # Specify a list of one or more riak http servers
   servers = ["http://localhost:8098"]
 ```
 
-### Measurements & Fields:
+### Measurements & Fields
 
 Riak provides one measurement named "riak", with the following fields:
 
@@ -63,14 +65,14 @@ Riak provides one measurement named "riak", with the following fields:
 
 Measurements of time (such as node_get_fsm_time_mean) are measured in nanoseconds.
 
-### Tags:
+### Tags
 
 All measurements have the following tags:
 
 - server (the host:port of the given server address, ex. `127.0.0.1:8087`)
 - nodename (the internal node name received, ex. `riak@127.0.0.1`)
 
-### Example Output:
+### Example Output
 
 ```
 $ ./circonus-unified-agent --config circonus-unified-agent.conf --input-filter riak --test

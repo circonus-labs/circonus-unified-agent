@@ -10,7 +10,9 @@ system. These are the counters that can be found in
 
 ```toml
 [[inputs.infiniband]]
-  # no configuration
+  instance_id = "" # unique instance identifier (REQUIRED)
+
+  # no other configuration
 ```
 
 ### Metrics
@@ -23,33 +25,31 @@ mapping from counter -> counter value.
 [counters]: https://community.mellanox.com/s/article/understanding-mlx5-linux-counters-and-status-parameters
 
 - infiniband
-  - tags:
-    - device
-    - port
-  - fields:
-    - excessive_buffer_overrun_errors (integer)
-    - link_downed (integer)
-    - link_error_recovery (integer)
-    - local_link_integrity_errors (integer)
-    - multicast_rcv_packets (integer)
-    - multicast_xmit_packets (integer)
-    - port_rcv_constraint_errors (integer)
-    - port_rcv_data (integer)
-    - port_rcv_errors (integer)
-    - port_rcv_packets (integer)
-    - port_rcv_remote_physical_errors (integer)
-    - port_rcv_switch_relay_errors (integer)
-    - port_xmit_constraint_errors (integer)
-    - port_xmit_data (integer)
-    - port_xmit_discards (integer)
-    - port_xmit_packets (integer)
-    - port_xmit_wait (integer)
-    - symbol_error (integer)
-    - unicast_rcv_packets (integer)
-    - unicast_xmit_packets (integer)
-    - VL15_dropped (integer)
-
-
+    - tags:
+        - device
+        - port
+    - fields:
+        - excessive_buffer_overrun_errors (integer)
+        - link_downed (integer)
+        - link_error_recovery (integer)
+        - local_link_integrity_errors (integer)
+        - multicast_rcv_packets (integer)
+        - multicast_xmit_packets (integer)
+        - port_rcv_constraint_errors (integer)
+        - port_rcv_data (integer)
+        - port_rcv_errors (integer)
+        - port_rcv_packets (integer)
+        - port_rcv_remote_physical_errors (integer)
+        - port_rcv_switch_relay_errors (integer)
+        - port_xmit_constraint_errors (integer)
+        - port_xmit_data (integer)
+        - port_xmit_discards (integer)
+        - port_xmit_packets (integer)
+        - port_xmit_wait (integer)
+        - symbol_error (integer)
+        - unicast_rcv_packets (integer)
+        - unicast_xmit_packets (integer)
+        - VL15_dropped (integer)
 
 ### Example Output
 

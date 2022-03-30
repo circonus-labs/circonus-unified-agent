@@ -39,15 +39,17 @@ processes 86031
 Number of forks since boot.
 ```
 
-### Configuration:
+### Configuration
 
 ```toml
 # Get kernel statistics from /proc/stat
 [[inputs.kernel]]
-  # no configuration
+  instance_id = "" # unique instance identifier (REQUIRED)
+
+  # no other configuration
 ```
 
-### Measurements & Fields:
+### Measurements & Fields
 
 - kernel
     - boot_time (integer, seconds since epoch, `btime`)
@@ -58,11 +60,11 @@ Number of forks since boot.
     - processes_forked (integer, `processes`)
     - entropy_avail (integer, `entropy_available`)
 
-### Tags:
+### Tags
 
 None
 
-### Example Output:
+### Example Output
 
 ```
 $ circonus-unified-agent --config ~/ws/circonus-unified-agent.conf --input-filter kernel --test

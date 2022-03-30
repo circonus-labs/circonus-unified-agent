@@ -7,6 +7,8 @@ and creates metrics using one of the supported [input data formats][].
 
 ```toml
 [[inputs.mqtt_consumer]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Broker URLs for the MQTT server or cluster.  To connect to multiple
   ## clusters or standalone servers, use a seperate plugin instance.
   ##   example: servers = ["tcp://localhost:1883"]

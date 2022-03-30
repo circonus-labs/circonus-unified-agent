@@ -63,6 +63,8 @@ func (*Ping) Description() string {
 }
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Hosts to send ping packets to.
   urls = ["example.org"]
 

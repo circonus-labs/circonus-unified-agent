@@ -28,6 +28,8 @@ func (*ApcUpsd) Description() string {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   # A list of running apcupsd server to connect to.
   # If not provided will default to tcp://127.0.0.1:3551
   servers = ["tcp://127.0.0.1:3551"]

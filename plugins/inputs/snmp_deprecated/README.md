@@ -19,8 +19,11 @@ location of these files can be configured in the `snmp.conf` or via the
 information.
 
 ### Configuration
+
 ```toml
 [[inputs.snmp]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Agent addresses to retrieve values from.
   ##   example: agents = ["udp://127.0.0.1:161"]
   ##            agents = ["tcp://127.0.0.1:161"]
@@ -202,13 +205,13 @@ DISMAN-EVENT-MIB::sysUpTimeInstance
 Request a top-level field:
 
 ```shell
-$ snmpget -v2c -c public 127.0.0.1 sysUpTime.0
+snmpget -v2c -c public 127.0.0.1 sysUpTime.0
 ```
 
 Request a table:
 
 ```shell
-$ snmptable -v2c -c public 127.0.0.1 ifTable
+snmptable -v2c -c public 127.0.0.1 ifTable
 ```
 
 To collect a packet capture, run this command in the background while running
@@ -216,7 +219,7 @@ agent or one of the above commands.  Adjust the interface, host and port as
 needed:
 
 ```shell
-$ sudo tcpdump -s 0 -i eth0 -w circonus-unified-agent-snmp.pcap host 127.0.0.1 and port 161
+sudo tcpdump -s 0 -i eth0 -w circonus-unified-agent-snmp.pcap host 127.0.0.1 and port 161
 ```
 
 ### Example Output

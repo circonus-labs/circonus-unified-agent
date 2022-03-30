@@ -23,7 +23,9 @@ func (k *KernelVmstat) Description() string {
 }
 
 func (k *KernelVmstat) SampleConfig() string {
-	return ""
+	return `
+  instance_id = "" # unique instance identifier (REQUIRED)
+`
 }
 
 func (k *KernelVmstat) Gather(ctx context.Context, acc cua.Accumulator) error {

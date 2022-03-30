@@ -4,10 +4,12 @@ The Bond input plugin collects network bond interface status for both the
 network bond interface as well as slave interfaces.
 The plugin collects these metrics from `/proc/net/bonding/*` files.
 
-### Configuration:
+### Configuration
 
 ```toml
 [[inputs.bond]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Sets 'proc' directory path
   ## If not specified, then default is /proc
   # host_proc = "/proc"
@@ -18,17 +20,17 @@ The plugin collects these metrics from `/proc/net/bonding/*` files.
   # bond_interfaces = ["bond0"]
 ```
 
-### Measurements & Fields:
+### Measurements & Fields
 
 - bond
-  - active_slave (for active-backup mode)
-  - status
+    - active_slave (for active-backup mode)
+    - status
 
 - bond_slave
-  - failures
-  - status
+    - failures
+    - status
 
-### Description:
+### Description
 
 ```
 active_slave
@@ -41,16 +43,16 @@ failures
   Amount of failures for bond's slave interface.
 ```
 
-### Tags:
+### Tags
 
 - bond
-  - bond
+    - bond
 
 - bond_slave
-  - bond
-  - interface
+    - bond
+    - interface
 
-### Example output:
+### Example output
 
 Configuration:
 

@@ -5,82 +5,84 @@ Nginx Plus is a commercial version of the open source web server Nginx. The use 
 Structures for Nginx Plus have been built based on history of
 [status module documentation](http://nginx.org/en/docs/http/ngx_http_status_module.html)
 
-### Configuration:
+### Configuration
 
 ```toml
 # Read Nginx Plus' advanced status information
 [[inputs.nginx_plus]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## An array of Nginx status URIs to gather stats.
   urls = ["http://localhost/status"]
 ```
 
-### Measurements & Fields:
+### Measurements & Fields
 
 - nginx_plus_processes
-  - respawned
+    - respawned
 - nginx_plus_connections
-  - accepted
-  - dropped
-  - active
-  - idle
+    - accepted
+    - dropped
+    - active
+    - idle
 - nginx_plus_ssl
-  - handshakes
-  - handshakes_failed
-  - session_reuses
+    - handshakes
+    - handshakes_failed
+    - session_reuses
 - nginx_plus_requests
-  - total
-  - current
+    - total
+    - current
 - nginx_plus_upstream, nginx_plus_stream_upstream
-  - keepalive
-  - zombies
+    - keepalive
+    - zombies
 - nginx_plus_upstream_peer, nginx_plus_stream_upstream_peer
-  - requests
-  - unavail
-  - healthchecks_checks
-  - header_time
-  - response_time
-  - state
-  - active
-  - downstart
-  - healthchecks_last_passed
-  - weight
-  - responses_1xx
-  - responses_2xx
-  - responses_3xx
-  - responses_4xx
-  - responses_5xx
-  - received
-  - selected
-  - healthchecks_fails
-  - healthchecks_unhealthy
-  - backup
-  - responses_total
-  - sent
-  - fails
-  - downtime
+    - requests
+    - unavail
+    - healthchecks_checks
+    - header_time
+    - response_time
+    - state
+    - active
+    - downstart
+    - healthchecks_last_passed
+    - weight
+    - responses_1xx
+    - responses_2xx
+    - responses_3xx
+    - responses_4xx
+    - responses_5xx
+    - received
+    - selected
+    - healthchecks_fails
+    - healthchecks_unhealthy
+    - backup
+    - responses_total
+    - sent
+    - fails
+    - downtime
 
-
-### Tags:
+### Tags
 
 - nginx_plus_processes, nginx_plus_connections, nginx_plus_ssl, nginx_plus_requests
-  - server
-  - port
+    - server
+    - port
 
 - nginx_plus_upstream, nginx_plus_stream_upstream
-  - upstream
-  - server
-  - port
+    - upstream
+    - server
+    - port
 
 - nginx_plus_upstream_peer, nginx_plus_stream_upstream_peer
-  - id
-  - upstream
-  - server
-  - port
-  - upstream_address
+    - id
+    - upstream
+    - server
+    - port
+    - upstream_address
 
-### Example Output:
+### Example Output
 
 Using this configuration:
+
 ```toml
 [[inputs.nginx_plus]]
   ## An array of Nginx Plus status URIs to gather stats.
@@ -88,11 +90,13 @@ Using this configuration:
 ```
 
 When run with:
+
 ```sh
 ./circonus-unified-agent -config circonus-unified-agent.conf -input-filter nginx_plus -test
 ```
 
 It produces:
+
 ```
 * Plugin: inputs.nginx_plus, Collection 1
 > nginx_plus_processes,server=localhost,port=12021,host=word.local respawned=0i 1505782513000000000

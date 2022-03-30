@@ -36,6 +36,8 @@ var defaultBinary = "/usr/sbin/unbound-control"
 var defaultTimeout = internal.Duration{Duration: time.Second}
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Address of server to connect to, read from unbound conf default, optionally ':port'
   ## Will lookup IP if given a hostname
   server = "127.0.0.1:8953"

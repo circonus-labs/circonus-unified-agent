@@ -11,6 +11,8 @@ type DMCache struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Whether to report per-device stats or not
   per_device = true
 `

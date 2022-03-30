@@ -20,8 +20,8 @@ type Zfs struct {
 }
 
 var sampleConfig = `
-  ## an instance id is required
-  instance_id  ""
+  instance_id = "" # unique instance identifier (REQUIRED)
+  
   ## By default, gather zpool stats
   poolMetrics = true
 

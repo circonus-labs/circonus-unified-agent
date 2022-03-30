@@ -41,6 +41,8 @@ type Nstat struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## file paths for proc files. If empty default paths will be used:
   ##    /proc/net/netstat, /proc/net/snmp, /proc/net/snmp6
   ## These can also be overridden with env variables, see README.

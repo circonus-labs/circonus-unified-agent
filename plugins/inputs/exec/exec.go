@@ -20,6 +20,8 @@ import (
 )
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Commands array
   commands = [
     "/tmp/test.sh",

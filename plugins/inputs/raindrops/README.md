@@ -3,15 +3,17 @@
 The [raindrops](http://raindrops.bogomips.org/) plugin reads from
 specified raindops [middleware](http://raindrops.bogomips.org/Raindrops/Middleware.html) URI and adds stats to InfluxDB.
 
-### Configuration:
+### Configuration
 
 ```toml
 # Read raindrops stats
 [[inputs.raindrops]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   urls = ["http://localhost:8080/_raindrops"]
 ```
 
-### Measurements & Fields:
+### Measurements & Fields
 
 - raindrops
     - calling (integer, count)
@@ -20,7 +22,7 @@ specified raindops [middleware](http://raindrops.bogomips.org/Raindrops/Middlewa
     - active (integer, bytes)
     - queued (integer, bytes)
 
-### Tags:
+### Tags
 
 - Raindops calling/writing of all the workers:
     - server
@@ -33,7 +35,7 @@ specified raindops [middleware](http://raindrops.bogomips.org/Raindrops/Middlewa
 - raindrops_listen (Unix Socket):
     - socket
 
-### Example Output:
+### Example Output
 
 ```
 $ ./circonus-unified-agent --config circonus-unified-agent.conf --input-filter raindrops --test

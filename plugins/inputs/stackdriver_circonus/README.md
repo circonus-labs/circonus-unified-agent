@@ -12,8 +12,7 @@ costs.
 
 ```toml
 [[inputs.stackdriver]]
-  ## Instance ID is required
-  instance_id = "gcp"
+  instance_id = "" # unique instance identifier (REQUIRED)
 
   ## GCP Project
   project = "erudite-bloom-151019"
@@ -106,11 +105,11 @@ compute.googleapis.com/instance/disk/read_bytes_count
 **Scalar Values:**
 
 - measurement
-  - tags:
-    - resource_labels
-    - metric_labels
-  - fields:
-    - field
+    - tags:
+        - resource_labels
+        - metric_labels
+    - fields:
+        - field
 
 **Distributions:**
 
@@ -119,32 +118,32 @@ tagged with the bucket boundary.  Buckets are cumulative: each bucket
 represents the total number of items less than the `lt` tag.
 
 - measurement
-  - tags:
-    - resource_labels
-    - metric_labels
-  - fields:
-    - field_count
-    - field_mean
-    - field_sum_of_squared_deviation
-    - field_range_min
-    - field_range_max
+    - tags:
+        - resource_labels
+        - metric_labels
+    - fields:
+        - field_count
+        - field_mean
+        - field_sum_of_squared_deviation
+        - field_range_min
+        - field_range_max
 
 - measurement
-  - tags:
-    - resource_labels
-    - metric_labels
-    - lt (less than)
-  - fields:
-    - field_bucket
+    - tags:
+        - resource_labels
+        - metric_labels
+        - lt (less than)
+    - fields:
+        - field_bucket
 
 **Aligned Aggregations:**
 
 - measurement
-  - tags:
-    - resource_labels
-    - metric_labels
-  - fields:
-    - field_alignment_function
+    - tags:
+        - resource_labels
+        - metric_labels
+    - fields:
+        - field_alignment_function
 
 ### Troubleshooting
 

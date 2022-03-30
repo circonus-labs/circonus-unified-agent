@@ -2,11 +2,13 @@
 
 This plugin gathers statistics data from a Mcrouter server.
 
-### Configuration:
+### Configuration
 
 ```toml
 # Read metrics from one or many mcrouter servers.
 [[inputs.mcrouter]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## An array of address to gather stats about. Specify an ip or hostname
   ## with port. ie tcp://localhost:11211, tcp://10.0.0.1:11211, etc.
   servers = ["tcp://localhost:11211", "unix:///var/run/mcrouter.sock"]
@@ -15,7 +17,7 @@ This plugin gathers statistics data from a Mcrouter server.
   # timeout = "5s"
 ```
 
-### Measurements & Fields:
+### Measurements & Fields
 
 The fields from this plugin are gathered in the *mcrouter* measurement.
 
@@ -88,14 +90,12 @@ Fields:
 * cmd_delete_out_all
 * cmd_lease_set_out_all
 
-### Tags:
+### Tags
 
 * Mcrouter measurements have the following tags:
-    - server (the host name from which metrics are gathered)
+    * server (the host name from which metrics are gathered)
 
-
-
-### Example Output:
+### Example Output
 
 ```
 $ ./circonus-unified-agent --config circonus-unified-agent.conf --input-filter mcrouter --test

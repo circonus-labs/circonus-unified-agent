@@ -14,6 +14,8 @@ Acquiring the required permissions can be done using several methods:
 ```toml
 # Read metrics from fail2ban.
 [[inputs.fail2ban]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Use sudo to run fail2ban-client
   use_sudo = false
 ```
@@ -26,13 +28,14 @@ You will also need to update your sudoers file.  It is recommended to modify a
 file in the `/etc/sudoers.d` directory using `visudo`:
 
 ```bash
-$ sudo visudo -f /etc/sudoers.d/circonus-unified-agent
+sudo visudo -f /etc/sudoers.d/circonus-unified-agent
 ```
 
 Add the following lines to the file, these commands allow the `cua` user
 to call `fail2ban-client` without needing to provide a password and disables
 logging of the call in the auth.log.  Consult `man 8 visudo` and `man 5
 sudoers` for details.
+
 ```
 Cmnd_Alias FAIL2BAN = /usr/bin/fail2ban-client status, /usr/bin/fail2ban-client status *
 cua  ALL=(root) NOEXEC: NOPASSWD: FAIL2BAN
@@ -42,11 +45,11 @@ Defaults!FAIL2BAN !logfile, !syslog, !pam_session
 ### Metrics
 
 - fail2ban
-  - tags:
-    - jail
-  - fields:
-    - failed (integer, count)
-    - banned (integer, count)
+    - tags:
+        - jail
+    - fields:
+        - failed (integer, count)
+        - banned (integer, count)
 
 ### Example Output
 

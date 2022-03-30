@@ -16,6 +16,8 @@ import (
 )
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Directory to gather stats about.
   ##   deprecated in 1.9; use the directories option
   # directory = "/var/cache/apt/archives"

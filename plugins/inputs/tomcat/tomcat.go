@@ -72,6 +72,8 @@ type Tomcat struct {
 }
 
 var sampleconfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## URL of the Tomcat server status
   # url = "http://127.0.0.1:8080/manager/status/all?XML=true"
 

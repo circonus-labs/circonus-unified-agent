@@ -37,6 +37,8 @@ var defaultBinary = "/usr/bin/varnishstat"
 var defaultTimeout = internal.Duration{Duration: time.Second}
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## If running as a restricted user you can prepend sudo for additional access:
   #use_sudo = false
 

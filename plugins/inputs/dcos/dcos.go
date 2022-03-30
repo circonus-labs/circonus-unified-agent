@@ -69,6 +69,8 @@ func (d *DCOS) Description() string {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## The DC/OS cluster URL.
   cluster_url = "https://dcos-ee-master-1"
 

@@ -28,6 +28,8 @@ type NginxVTS struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## An array of ngx_http_status_module or status URI to gather stats.
   urls = ["http://localhost/status"]
 

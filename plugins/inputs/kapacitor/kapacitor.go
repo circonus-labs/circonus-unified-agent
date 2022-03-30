@@ -32,6 +32,8 @@ func (*Kapacitor) Description() string {
 
 func (*Kapacitor) SampleConfig() string {
 	return `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Multiple URLs from which to read Kapacitor-formatted JSON
   ## Default is "http://localhost:9092/kapacitor/v1/debug/vars".
   urls = [

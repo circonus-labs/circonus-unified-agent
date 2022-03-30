@@ -22,6 +22,8 @@ import (
 var defaultTimeout = 5 * time.Second
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Username for authorization on ClickHouse server
   ## example: username = "default""
   username = "default"

@@ -25,6 +25,8 @@ func (ts *Teamspeak) Description() string {
 }
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Server address for Teamspeak 3 ServerQuery
   # server = "127.0.0.1:10011"
   ## Username for ServerQuery

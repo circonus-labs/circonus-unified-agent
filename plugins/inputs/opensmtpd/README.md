@@ -2,10 +2,12 @@
 
 This plugin gathers stats from [OpenSMTPD - a FREE implementation of the server-side SMTP protocol](https://www.opensmtpd.org/)
 
-### Configuration:
+### Configuration
 
 ```toml
  [[inputs.opensmtpd]]
+   instance_id = "" # unique instance identifier (REQUIRED)
+
    ## If running as a restricted user you can prepend sudo for additional access:
    #use_sudo = false
 
@@ -16,7 +18,7 @@ This plugin gathers stats from [OpenSMTPD - a FREE implementation of the server-
    #timeout = "1s"
 ```
 
-### Measurements & Fields:
+### Measurements & Fields
 
 This is the full list of stats provided by smtpctl and potentially collected by telegram
 depending of your smtpctl configuration.
@@ -59,12 +61,13 @@ depending of your smtpctl configuration.
     smtp_session_local
     uptime
 
-### Permissions:
+### Permissions
 
 It's important to note that this plugin references smtpctl, which may require additional permissions to execute successfully.
 Depending on the user/group permissions of the user executing this plugin, you may need to alter the group membership, set facls, or use sudo.
 
 **Group membership (Recommended)**:
+
 ```bash
 $ groups cua
 cua : cua
@@ -77,12 +80,14 @@ cua : cua opensmtpd
 
 **Sudo privileges**:
 If you use this method, you will need the following in your circonus-unified-agent config:
+
 ```toml
 [[inputs.opensmtpd]]
   use_sudo = true
 ```
 
 You will also need to update your sudoers file:
+
 ```bash
 $ visudo
 # Add the following line:
@@ -93,7 +98,7 @@ Defaults!SMTPCTL !logfile, !syslog, !pam_session
 
 Please use the solution you see as most appropriate.
 
-### Example Output:
+### Example Output
 
 ```
  circonus-unified-agent --config etc/circonus-unified-agent.conf --input-filter opensmtpd --test

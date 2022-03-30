@@ -6,6 +6,7 @@ This plugin will pull Metric Statistics from Amazon CloudWatch.
 
 This plugin uses a credential chain for Authentication with the CloudWatch
 API endpoint. In the following order the plugin will attempt to authenticate.
+
 1. Assumed credentials via STS if `role_arn` attribute is specified (source credentials are evaluated from subsequent rules)
 2. Explicit credentials from `access_key`, `secret_key`, and `token` attributes
 3. Shared profile from `profile` attribute
@@ -13,10 +14,12 @@ API endpoint. In the following order the plugin will attempt to authenticate.
 5. [Shared Credentials](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#shared-credentials-file)
 6. [EC2 Instance Profile](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html)
 
-### Configuration:
+### Configuration
 
 ```toml
 [[inputs.cloudwatch]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Amazon Region
   region = "us-east-1"
 
@@ -118,6 +121,7 @@ to be retrieved. If specifying >1 dimension, then the metric must contain *all* 
 wildcard dimension is ignored.
 
 Example:
+
 ```
 [[inputs.cloudwatch]]
   period = "1m"
@@ -137,13 +141,14 @@ Example:
 ```
 
 If the following ELBs are available:
+
 - name: `p-example`, availabilityZone: `us-east-1a`
 - name: `p-example`, availabilityZone: `us-east-1b`
 - name: `q-example`, availabilityZone: `us-east-1a`
 - name: `q-example`, availabilityZone: `us-east-1b`
 
-
 Then 2 metrics will be output:
+
 - name: `p-example`, availabilityZone: `us-east-1a`
 - name: `p-example`, availabilityZone: `us-east-1b`
 
@@ -157,28 +162,28 @@ To maximize efficiency and savings, consider making fewer requests by increasing
 - CloudWatch metrics are not available instantly via the CloudWatch API. You should adjust your collection `delay` to account for this lag in metrics availability based on your [monitoring subscription level](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-cloudwatch-new.html)
 - CloudWatch API usage incurs cost - see [GetMetricData Pricing](https://aws.amazon.com/cloudwatch/pricing/)
 
-### Measurements & Fields:
+### Measurements & Fields
 
 Each CloudWatch Namespace monitored records a measurement with fields for each available Metric Statistic.
 Namespace and Metrics are represented in [snake case](https://en.wikipedia.org/wiki/Snake_case)
 
 - cloudwatch_{namespace}
-  - {metric}_sum         (metric Sum value)
-  - {metric}_average     (metric Average value)
-  - {metric}_minimum     (metric Minimum value)
-  - {metric}_maximum     (metric Maximum value)
-  - {metric}_sample_count (metric SampleCount value)
+    - {metric}_sum         (metric Sum value)
+    - {metric}_average     (metric Average value)
+    - {metric}_minimum     (metric Minimum value)
+    - {metric}_maximum     (metric Maximum value)
+    - {metric}_sample_count (metric SampleCount value)
 
-### Tags:
+### Tags
 
 Each measurement is tagged with the following identifiers to uniquely identify the associated metric
 Tag Dimension names are represented in [snake case](https://en.wikipedia.org/wiki/Snake_case)
 
 - All measurements have the following tags:
-  - region           (CloudWatch Region)
-  - {dimension-name} (Cloudwatch Dimension value - one for each metric dimension)
+    - region           (CloudWatch Region)
+    - {dimension-name} (Cloudwatch Dimension value - one for each metric dimension)
 
-### Troubleshooting:
+### Troubleshooting
 
 You can use the aws cli to get a list of available metrics and dimensions:
 
@@ -216,7 +221,7 @@ aws cloudwatch get-metric-data \
 ]'
 ```
 
-### Example Output:
+### Example Output
 
 ```
 $ ./circonus-unified-agent --config circonus-unified-agent.conf --input-filter cloudwatch --test

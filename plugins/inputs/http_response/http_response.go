@@ -57,6 +57,8 @@ func (h *HTTPResponse) Description() string {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Deprecated in 1.12, use 'urls'
   ## Server address (default http://localhost)
   # address = "http://localhost"

@@ -24,6 +24,8 @@ type Bind struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## An array of BIND XML statistics URI to gather stats.
   ## Default is "http://localhost:8053/xml/v3".
   # urls = ["http://localhost:8053/xml/v3"]

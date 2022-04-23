@@ -3,9 +3,11 @@ import cx_Oracle
 import re
 import sys
 
+
 def handle_error(error_message):
     sys.stderr.write("ERROR|" + str(error_message))
     sys.exit(1)
+
 
 class OracleMetrics():
 
@@ -83,14 +85,14 @@ class OracleMetrics():
             from v$eventmetric m,
             v$event_name n
             where m.event_id=n.event_id
-            and n.wait_class <> 'Idle' and m.wait_count > 0 order by 1""")
+            and n.wait_class <> 'Idle' and m.wait_count >= 0 order by 1""")
             for wait in cursor:
                 wait_class = wait[0]
                 wait_name = wait[1]
                 wait_cnt = wait[2]
                 wait_avgms = wait[3]
                 print("oracle_wait_event,instance={0},wait_class={1} {2}_count={3},{2}_latency={4}".format(
-                    self.instance, re.sub(' ', '_', wait_class), re.sub(' ', '_', wait_name), wait_cnt, wait_avgms))
+                    self.instance, re.sub('(?:\s|\,|\:)+', '_', wait_class), re.sub('(?:\s|\,|\:)+', '_', wait_name), wait_cnt, wait_avgms))
         except Exception as e:
             raise
         finally:

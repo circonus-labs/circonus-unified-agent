@@ -64,7 +64,7 @@ class OracleMetrics():
             for metric in cursor:
                 metric_name = metric[0]
                 metric_value = metric[1]
-                print("oracle_sysmetric,instance={0},metric_name={1} metric_value={2}".format(
+                print("oracle_sysmetric,instance={0} {1}={2}".format(
                     self.instance, re.sub(' ', '_', metric_name), metric_value))
         except Exception as e:
             raise
@@ -85,14 +85,14 @@ class OracleMetrics():
             from v$eventmetric m,
             v$event_name n
             where m.event_id=n.event_id
-            and n.wait_class <> 'Idle' and m.wait_count > 0 order by 1""")
+            and n.wait_class <> 'Idle' and m.wait_count >= 0 order by 1""")
             for wait in cursor:
                 wait_class = wait[0]
                 wait_name = wait[1]
                 wait_cnt = wait[2]
                 wait_avgms = wait[3]
-                print("oracle_wait_event,instance={0},wait_class={1},wait_event={2} count={3},latency={4}".format(
-                    self.instance, re.sub(' ', '_', wait_class), re.sub(' ', '_', wait_name), wait_cnt, wait_avgms))
+                print("oracle_wait_event,instance={0},wait_class={1} {2}_count={3},{2}_latency={4}".format(
+                    self.instance, re.sub('(?:\s|\,|\:)+', '_', wait_class), re.sub('(?:\s|\,|\:)+', '_', wait_name), wait_cnt, wait_avgms))
         except Exception as e:
             raise
         finally:
@@ -141,7 +141,7 @@ class OracleMetrics():
             for metric in cursor:
                 metric_name = metric[0]
                 metric_value = metric[1]
-                print("oracle_connectioncount,instance={0},metric_name={1} metric_value={2}".format(
+                print("oracle_connectioncount,instance={0} {1}={2}".format(
                     self.instance, metric_name, metric_value))
 
             query = """SELECT 'instance_status'  metric_name,
@@ -159,7 +159,7 @@ class OracleMetrics():
             for metric in cursor:
                 metric_name = metric[0]
                 metric_value = metric[1]
-                print("oracle_status,instance={0},metric_name={1} metric_value={2}".format(
+                print("oracle_status,instance={0} {1}={2}".format(
                     self.instance, metric_name, metric_value))
         except Exception as e:
             raise

@@ -1,3 +1,12 @@
+# v0.0.43
+
+* upd: go-trapcheck to v0.0.8 [CIRC-8241]
+* CIRC-8110 Normalize metric names
+* build(deps): bump actions/setup-go from 2 to 3
+* build(deps): bump github.com/shirou/gopsutil/v3 from 3.22.2 to 3.22.3
+* Update oracle_metrics.py produced metric names
+* build(deps): bump actions/setup-go from 2 to 3
+
 # v0.0.42
 
 * upd: merge PR#47 - update prometheus to not error on success and examples for `instance_id`

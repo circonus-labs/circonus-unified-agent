@@ -13,7 +13,7 @@ This configuration executes a sidecar powered by python3 to gather metrics from 
 
 2. Oracle database is installed on a Windows host and you are collecting the metrics from CUA that is installed on a remote Linux host.
 
-This configuration executes a sidecar powered by python3 and Oracle Instanct Client to gather metrics from an Orical database. The installation of [python3](https://www.python.org/downloads/) and the [cx_Oracle](https://cx-oracle.readthedocs.io/en/latest/user_guide/installation.html) extension module are required to run the side car.
+This configuration executes a sidecar powered by python3 and Oracle Instant Client to gather metrics from an Orical database. The installation of [python3](https://www.python.org/downloads/) and the [cx_Oracle](https://cx-oracle.readthedocs.io/en/latest/user_guide/installation.html) extension module are required to run the side car.
 
 Install  [Oracle Client](https://www.oracle.com/database/technologies/instant-client/downloads.html). The Oracle Instant Client will require network configurations that are specific to your deployment model to enable remote connectivity. The remote network configuration will requre IP address modification in the client and in the Oracle Databases's `tnsnames.ora` and `listner.ora` files. These files can be found in your Oracle Database directory. Example: `C:\OracleApp\WINDOWS.X64_193000_db_home\network\admin`
 

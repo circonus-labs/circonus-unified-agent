@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"os/exec"
+	"regexp"
 	"sync"
 	"testing"
 	"time"
@@ -707,6 +708,8 @@ func TestFieldConvert(t *testing.T) {
 		input    gosnmp.SnmpPDU
 	}{
 		{input: gosnmp.SnmpPDU{Value: []byte("foo")}, conv: "", expected: string("foo")},
+		{input: gosnmp.SnmpPDU{Value: []byte("foo\u00a0")}, conv: "", expected: string("666f6fc2a0")},
+		{input: gosnmp.SnmpPDU{Value: []byte("foo\u00a0")}, conv: "string", expected: string("foo_")},
 		{input: gosnmp.SnmpPDU{Value: "0.123"}, conv: "float", expected: float64(0.123)},
 		{input: gosnmp.SnmpPDU{Value: []byte("0.123")}, conv: "float", expected: float64(0.123)},
 		{input: gosnmp.SnmpPDU{Value: float32(0.123)}, conv: "float", expected: float64(float32(0.123))},
@@ -747,12 +750,52 @@ func TestFieldConvert(t *testing.T) {
 	}
 
 	for _, tc := range testTable {
-		act, err := fieldConvert(tc.conv, tc.input)
+		act, err := fieldConvert(tc.conv, nil, "", tc.input)
 		if !assert.NoError(t, err, "input=%T(%v) conv=%s expected=%T(%v)", tc.input, tc.input, tc.conv, tc.expected, tc.expected) {
 			continue
 		}
 		assert.EqualValues(t, tc.expected, act, "input=%T(%v) conv=%s expected=%T(%v)", tc.input, tc.input, tc.conv, tc.expected, tc.expected)
 	}
+
+	rxTests := []struct {
+		expected interface{}
+		rx       *regexp.Regexp
+		rt       string
+		input    gosnmp.SnmpPDU
+	}{
+		{
+			input:    gosnmp.SnmpPDU{Value: []byte("foo 62 bar")},
+			rt:       "int",
+			rx:       regexp.MustCompile(`foo (?P<value>[0-9]+)`),
+			expected: int64(62),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: []byte("foo [2000000] bar")},
+			rt:       "uint",
+			rx:       regexp.MustCompile(`\[(?P<value>[0-9]+)\]`),
+			expected: uint64(2000000),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: []byte("foo (62.3) bar")},
+			rt:       "float",
+			rx:       regexp.MustCompile(`((?P<value>[+-]?([0-9]*[.])?[0-9]+))`),
+			expected: float64(62.3),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: "foo bar qux"},
+			rt:       "text",
+			rx:       regexp.MustCompile(`(?P<value>b[a-z]+)`),
+			expected: "bar",
+		},
+	}
+	for _, tst := range rxTests {
+		v, err := fieldConvert("regexp", tst.rx, tst.rt, tst.input)
+		if !assert.NoError(t, err, "input=%T(%v) rxtype=%s expected=%T(%v)", tst.input, tst.input, tst.rt, tst.expected, tst.expected) {
+			continue
+		}
+		assert.EqualValues(t, tst.expected, v, "input=%T(%v) rxtype=%s expected=%T(%v)", tst.input, tst.input, tst.rt, tst.expected, tst.expected)
+	}
+
 }
 
 func TestSnmpTranslateCache_miss(t *testing.T) {

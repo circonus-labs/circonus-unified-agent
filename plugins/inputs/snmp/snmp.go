@@ -10,6 +10,7 @@ import (
 	"math"
 	"net"
 	"os/exec"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -69,6 +70,8 @@ const sampleConfig = `
   ## Privacy password used for encrypted messages.
   # priv_password = ""
 
+  # debug_snmp = false
+
   ## Add fields and tables defining the variables you wish to collect.  This
   ## example collects the system uptime and interface variables.  Reference the
   ## full plugin documentation for configuration details.
@@ -77,16 +80,24 @@ const sampleConfig = `
 // execCommand is so tests can mock out exec.Command usage.
 var execCommand = exec.Command
 
+var (
+	debugSNMPLog cua.Logger
+	debugSNMP    bool
+)
+
 // execCmd executes the specified command, returning the STDOUT content.
 // If command exits with error status, the output is captured into the returned error.
 func execCmd(arg0 string, args ...string) ([]byte, error) {
-	// if wlog.LogLevel() == wlog.DEBUG {
-	// 	quoted := make([]string, 0, len(args))
-	// 	for _, arg := range args {
-	// 		quoted = append(quoted, fmt.Sprintf("%q", arg))
-	// 	}
-	// 	log.Printf("D! [inputs.snmp] executing %q %s", arg0, strings.Join(quoted, " "))
-	// }
+	if debugSNMPLog != nil && debugSNMP {
+		// quoted := make([]string, 0, len(args))
+		// for _, arg := range args {
+		// 	quoted = append(quoted, fmt.Sprintf("%q", arg))
+		// }
+		// debugSNMPLog.Debugf("executing %q %s", arg0, strings.Join(quoted, " "))
+		args2 := make([]string, 0, len(args))
+		args2 = append(args2, args...)
+		debugSNMPLog.Debugf("executing %q", arg0+strings.Join(args2, " "))
+	}
 
 	out, err := execCommand(arg0, args...).Output()
 	if err != nil {
@@ -120,12 +131,19 @@ type Snmp struct {
 	FlushPoolSize  uint          `toml:"flush_pool_size"`
 	FlushQueueSize uint          `toml:"flush_queue_size"`
 	DirectMetrics  bool          `toml:"direct_metrics"` // direct metrics mode - send directly to circonus (bypassing output)
+	DebugSNMP      bool          `toml:"debug_snmp"`     // debug gosnmp
 	initialized    bool
 }
 
 func (s *Snmp) init() error {
 	if s.initialized {
 		return nil
+	}
+
+	if s.DebugSNMP {
+		s.Log.Debug("turning on snmp debugging")
+		debugSNMP = true
+		debugSNMPLog = s.Log
 	}
 
 	if s.DirectMetrics {
@@ -144,7 +162,7 @@ func (s *Snmp) init() error {
 		}
 
 		s.metricDestination = dest
-		// s.Log.Info("using Direct Metrics mode")
+		s.Log.Info("using Direct Metrics mode")
 
 		if s.FlushDelay != "" {
 			fd, err := time.ParseDuration(s.FlushDelay)
@@ -241,6 +259,7 @@ func (t *Table) initBuild() error {
 
 // Field holds the configuration for a Field to look up.
 type Field struct {
+	rx *regexp.Regexp
 	// Name will be the name of the field.
 	Name string
 	// OID is prefix for this field. The plugin will perform a walk through all
@@ -259,7 +278,13 @@ type Field struct {
 	//  "" or "string" byte slice will be returned as string if it contains only printable runes
 	//                 otherwise it will encoded as hex
 	//                 if it is not a byte slice, it will be returned as-is
+	//  "regexp" Use a regular expression to extract a value from the input.
 	Conversion string
+	// Regular expression used to extract value from input.
+	// Must contain a pattern named 'value' e.g. (?P<value>re).
+	Regexp string
+	// Type of the value to be extracted from the input. (float|int|uint|text)
+	RegexpType string
 	// OidIndexLength specifies the length of the index in OID path segments. It can be used to remove sub-identifiers that vary in content or length.
 	OidIndexLength int
 	// IsTag controls whether this OID is output as a tag or a value.
@@ -298,6 +323,23 @@ func (f *Field) init() error {
 		if f.Conversion == "" {
 			f.Conversion = "lookup"
 		}
+	}
+
+	if f.Conversion == "regexp" {
+		if f.RegexpType == "" {
+			return fmt.Errorf("invalid regular expression type (empty)")
+		}
+		if !strings.Contains("text|int|uint|float", f.RegexpType) { //nolint:gocritic
+			return fmt.Errorf("invalid regular expression type (%s)", f.RegexpType)
+		}
+		rx, err := regexp.Compile(f.Regexp)
+		if err != nil {
+			return err
+		}
+		if rx.SubexpIndex("value") == -1 {
+			return fmt.Errorf("regular expression does not contain pattern named 'value': %s", f.Regexp)
+		}
+		f.rx = rx
 	}
 
 	f.initialized = true
@@ -387,19 +429,20 @@ func (s *Snmp) Gather(ctx context.Context, acc cua.Accumulator) error {
 		go func(i int, agent string) {
 			defer wg.Done()
 			gs, err := s.getConnection(i)
-
-			// test for not re-using connections
-			defer func(agent string) {
-				err := gs.Close()
-				if err != nil {
-					s.Log.Errorf("closing snmp conn: %s (%s)", err, agent)
-				}
-			}(agent)
-
 			if err != nil {
 				acc.AddError(fmt.Errorf("agent %s: %w", agent, err))
 				return
 			}
+
+			// not re-using connections (memory footprint for large scale)
+			defer func(agent string) {
+				if gs != nil {
+					err := gs.Close()
+					if err != nil {
+						s.Log.Errorf("closing snmp conn: %s (%s)", err, agent)
+					}
+				}
+			}(agent)
 
 			if isDone(ctx) {
 				return
@@ -555,7 +598,7 @@ func (t Table) Build(gs snmpConnection, walk bool) (*RTable, error) {
 				return nil, fmt.Errorf("performing get on field %s (oid:%s): %w", f.Name, oid, err)
 			} else if pkt != nil && len(pkt.Variables) > 0 && pkt.Variables[0].Type != gosnmp.NoSuchObject && pkt.Variables[0].Type != gosnmp.NoSuchInstance {
 				ent := pkt.Variables[0]
-				fv, err := fieldConvert(f.Conversion, ent)
+				fv, err := fieldConvert(f.Conversion, f.rx, f.RegexpType, ent)
 				if err != nil {
 					return nil, fmt.Errorf("converting %q (OID %s) for field %s: %w", ent.Value, ent.Name, f.Name, err)
 				}
@@ -600,7 +643,7 @@ func (t Table) Build(gs snmpConnection, walk bool) (*RTable, error) {
 				}
 
 				if f.TextMetric && f.Conversion == "lookup" {
-					fv, err := fieldConvert("int", ent)
+					fv, err := fieldConvert("int", nil, "", ent)
 					if err != nil {
 						return &walkError{
 							msg: fmt.Sprintf("converting %q (OID %s) for field %s", ent.Value, ent.Name, f.Name),
@@ -609,7 +652,7 @@ func (t Table) Build(gs snmpConnection, walk bool) (*RTable, error) {
 					}
 					ifv[idx] = fv
 
-					fv, err = fieldConvert(f.Conversion, ent)
+					fv, err = fieldConvert(f.Conversion, f.rx, f.RegexpType, ent)
 					if err != nil {
 						return &walkError{
 							msg: fmt.Sprintf("converting %q (OID %s) for field %s", ent.Value, ent.Name, f.Name),
@@ -619,7 +662,7 @@ func (t Table) Build(gs snmpConnection, walk bool) (*RTable, error) {
 					ifv[idx+"_desc"] = fv
 
 				} else {
-					fv, err := fieldConvert(f.Conversion, ent)
+					fv, err := fieldConvert(f.Conversion, f.rx, f.RegexpType, ent)
 					if err != nil {
 						return &walkError{
 							msg: fmt.Sprintf("converting %q (OID %s) for field %s", ent.Value, ent.Name, f.Name),
@@ -697,6 +740,17 @@ type snmpConnection interface {
 	Close() error
 }
 
+type logShim struct {
+	log cua.Logger
+}
+
+func (ls logShim) Print(args ...interface{}) {
+	ls.log.Debug(args)
+}
+func (ls logShim) Printf(fmt string, args ...interface{}) {
+	ls.log.Debugf(fmt, args)
+}
+
 // getConnection creates a snmpConnection (*gosnmp.GoSNMP) object and caches the
 // result using `agentIndex` as the cache key.  This is done to allow multiple
 // connections to a single address.  It is an error to use a connection in
@@ -726,6 +780,11 @@ func (s *Snmp) getConnection(idx int) (snmpConnection, error) {
 		return nil, fmt.Errorf("setting up connection: %w", err)
 	}
 
+	if s.DebugSNMP {
+		ls := logShim{log: s.Log}
+		gs.Logger = gosnmp.NewLogger(ls)
+	}
+
 	return gs, nil
 }
 
@@ -735,12 +794,15 @@ func (s *Snmp) getConnection(idx int) (snmpConnection, error) {
 //  "int" will convert the value into an integer.
 //  "hwaddr" will convert the value into a MAC address.
 //  "ipaddr" will convert the value into into an IP address.
-//  "" or "string" will convert a byte slice into a string (if all runes are printable, otherwise it will return a hex string)
-//                 if the value is not a byte slice, it is returned as-is
-func fieldConvert(conv string, sv gosnmp.SnmpPDU) (interface{}, error) {
+//  "string" will force convert a byte slice into a string, nonprintable characters will be converted to '_'
+//           if the value is not a byte slice, it is returned as-is
+//  ""       will convert a byte slice into a string (if all runes are printable, otherwise it will return a hex string)
+//           if the value is not a byte slice, it is returned as-is
+//  "regex" will extract a value from the input
+func fieldConvert(conv string, rx *regexp.Regexp, rxtype string, sv gosnmp.SnmpPDU) (interface{}, error) {
 	v := sv.Value
 
-	if conv == "" || conv == "string" {
+	if conv == "" {
 		if bs, ok := v.([]byte); ok {
 			for _, b := range bs {
 				if !unicode.IsPrint(rune(b)) {
@@ -750,6 +812,59 @@ func fieldConvert(conv string, sv gosnmp.SnmpPDU) (interface{}, error) {
 			return string(bs), nil
 		}
 		return v, nil
+	}
+
+	if conv == "string" {
+		if bs, ok := v.([]byte); ok {
+			str := strings.Map(func(r rune) rune {
+				if unicode.IsPrint(r) {
+					return r
+				}
+				return rune('_')
+			}, string(bs))
+			return str, nil
+		}
+		return v, nil
+	}
+
+	if conv == "regexp" {
+		if rx == nil {
+			return "", fmt.Errorf("regexp didn't compile, check log for errors")
+		}
+
+		input := ""
+		switch val := v.(type) {
+		case string:
+			input = val
+		case []byte:
+			input = string(val)
+		default:
+			return "", fmt.Errorf("unknown input type (%T) for regex", v)
+		}
+
+		if rx.MatchString(input) {
+			valIdx := rx.SubexpIndex("value")
+			matches := rx.FindStringSubmatch(input)
+			if len(matches) < valIdx {
+				return "", fmt.Errorf("no match found for regex %q %q", input, rx.String())
+			}
+			match := matches[valIdx]
+			switch rxtype {
+			case "float":
+				fv, err := strconv.ParseFloat(match, 64)
+				return fv, err
+			case "int":
+				iv, err := strconv.ParseInt(match, 10, 64)
+				return iv, err
+			case "uint":
+				uv, err := strconv.ParseUint(match, 10, 64)
+				return uv, err
+			case "text":
+				return match, nil
+			}
+		}
+
+		return "", fmt.Errorf("no value found for regex %q %q", input, rx.String())
 	}
 
 	if conv == "lookup" {

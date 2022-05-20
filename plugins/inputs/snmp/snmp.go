@@ -809,7 +809,7 @@ func fieldConvert(conv string, rx *regexp.Regexp, rxtype string, sv gosnmp.SnmpP
 					return hex.EncodeToString(bs), nil
 				}
 			}
-			return string(bs), nil
+			return strings.TrimSpace(string(bs)), nil
 		}
 		return v, nil
 	}
@@ -821,7 +821,7 @@ func fieldConvert(conv string, rx *regexp.Regexp, rxtype string, sv gosnmp.SnmpP
 					return r
 				}
 				return rune('_')
-			}, string(bs))
+			}, strings.TrimSpace(string(bs)))
 			return str, nil
 		}
 		return v, nil
@@ -835,9 +835,9 @@ func fieldConvert(conv string, rx *regexp.Regexp, rxtype string, sv gosnmp.SnmpP
 		input := ""
 		switch val := v.(type) {
 		case string:
-			input = val
+			input = strings.TrimSpace(val)
 		case []byte:
-			input = string(val)
+			input = strings.TrimSpace(string(val))
 		default:
 			return "", fmt.Errorf("unknown input type (%T) for regex", v)
 		}

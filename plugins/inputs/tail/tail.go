@@ -156,7 +156,10 @@ func (t *Tail) Init() error {
 
 	var err error
 	t.decoder, err = encoding.NewDecoder(t.CharacterEncoding)
-	return fmt.Errorf("new decoder: %w", err)
+	if err != nil {
+		return fmt.Errorf("new decoder: %w", err)
+	}
+	return nil
 }
 
 func (t *Tail) Gather(ctx context.Context, acc cua.Accumulator) error {

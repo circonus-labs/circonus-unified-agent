@@ -144,7 +144,14 @@ option operate similar to the `snmpget` utility.
     ##   int:     Convert the value into an integer.
     ##   hwaddr:  Convert the value to a MAC address.
     ##   ipaddr:  Convert the value to an IP address.
+    ##   string:  Force convert a byte slice to a string (nonprintable characters will be converted to '_').
+    ##   regexp:  Use a regular expression to extract a value from the input.
     # conversion = ""
+    ## Regular expression used to extract value from input. 
+    ## Must contain a pattern named 'value' e.g. (?P<value>re).
+    # regexp = ""
+    ## Type of the value to be extracted from the input. (float|int|uint|text)
+    # regexp_type = ""
 ```
 
 #### Table

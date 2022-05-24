@@ -1,3 +1,15 @@
+# v0.0.44
+
+* upd: go-trapmetrrics v0.0.8
+* CIRC-8110 Oracle plugin fixes / updates
+* build(deps): bump golangci/golangci-lint-action from 3.1.0 to 3.2.0
+* build(deps): bump github.com/shirou/gopsutil/v3 from 3.22.3 to 3.22.4
+* add: (snmp) trim leading/trailing space on strings in field conversion
+* fix: (snmp) panic when connection fails
+* add: (snmp) regexp conversion option
+* add: (snmp) string conversion option
+* doc: (snmp) update readme with new regexp conversion option
+
 # v0.0.43
 
 * upd: go-trapcheck to v0.0.8 [CIRC-8241]

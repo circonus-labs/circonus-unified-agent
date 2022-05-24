@@ -29,6 +29,7 @@ pkg_file=""
 pkg_url=""
 cua_api_key=""
 cua_api_app=""
+cua_config=""
 cua_conf_file="/opt/circonus/unified-agent/etc/circonus-unified-agent.conf"
 cua_bin_file="/opt/circonus/unified-agent/sbin/circonus-unified-agentd"
 cua_service_file="/Library/LaunchDaemons/com.circonus.circonus-unified-agent.plist"
@@ -42,8 +43,9 @@ Usage
 
 Options
 
-  --key           Circonus API key/token **${BOLD}REQUIRED${NORMAL}**
+  [--key]         Circonus API key/token
   [--app]         Circonus API app name (authorized w/key) Default: circonus-unified-agent
+  [--config]      Absolute path to the config file to use for the installation
   [--help]        This message
 
 Note: Provide an authorized app for the key or ensure api 
@@ -74,6 +76,14 @@ __parse_parameters() {
                 fail "--app must be followed by an api app."
             fi
             ;;
+        (--config)
+            if [[ -n "${1:-}" ]]; then
+                cua_config="$1"
+                shift
+            else
+                fail "--config must be followed a path to the config file"
+            fi
+            ;;
         esac
     done
 }
@@ -93,7 +103,10 @@ __cua_init() {
     set -o errexit
 
     __parse_parameters "$@" 
-    [[ -n "${cua_api_key:-}" ]] || fail "Circonus API key is *required*."
+    if [ ${cua_api_key} -eq ""] && [ ${cua_config} -eq "" ]  ; then
+            fail "--key value is required if you do not set --config"
+    fi
+    # [[ -n "${cua_api_key:-}" ]] || fail "Circonus API key is *required*."
 }
 
 __make_circonus_dir() {
@@ -135,13 +148,20 @@ __get_cua_package() {
 __configure_agent() {
     log "Updating configuration: ${cua_conf_file}"
 
-    \cp /opt/circonus/unified-agent/etc/example-circonus-unified-agent.conf ${cua_conf_file}
+    if [[ -n ${cua_config} ]]; then
+        log "\tUsing supplied configuration file"
+        \cp ${cua_config} ${cua_conf_file}
+    else
+        \cp /opt/circonus/unified-agent/etc/example-circonus-unified-agent.conf ${cua_conf_file}
+    fi
 
     [[ -f $cua_conf_file ]] || fail "config file (${cua_conf_file}) not found"
 
-    log "\tSetting Circonus API key in configuration"
-    \sed -i -e "s/  api_token = \"\"/  api_token = \"${cua_api_key}\"/" $cua_conf_file
-    [[ $? -eq 0 ]] || fail "updating ${cua_conf_file} with api key"
+    if [[ -n "${cua_api_key}" ]]; then
+        log "\tSetting Circonus API key in configuration"
+        \sed -i -e "s/  api_token = \"\"/  api_token = \"${cua_api_key}\"/" $cua_conf_file
+        [[ $? -eq 0 ]] || fail "updating ${cua_conf_file} with api key"
+    fi
 
     if [[ -n "${cua_api_app}" ]]; then
         log "\tSetting Circonus API app name in configuration"

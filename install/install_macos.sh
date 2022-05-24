@@ -46,6 +46,7 @@ Options
   [--key]         Circonus API key/token
   [--app]         Circonus API app name (authorized w/key) Default: circonus-unified-agent
   [--config]      Absolute path to the config file to use for the installation
+  [--ver]         Install specific version (use semver tag from repository releases - e.g. v0.0.32)
   [--help]        This message
 
 Note: Provide an authorized app for the key or ensure api 
@@ -84,6 +85,15 @@ __parse_parameters() {
                 fail "--config must be followed a path to the config file"
             fi
             ;;
+        (--ver)
+            if [[ -n "${1:-}" ]]; then
+                ver="$1"
+                [[ $ver =~ ^v?[0-9]+\.[0-9]+\.[0-9]+$ ]] && cua_version=${ver#v} || fail "--ver must be followed by a valid semver (e.g. v0.0.32)."
+                shift                
+            else
+                fail "--ver must be followed by a valid semver (e.g. v0.0.32)."
+            fi
+            ;;
         esac
     done
 }
@@ -103,10 +113,9 @@ __cua_init() {
     set -o errexit
 
     __parse_parameters "$@" 
-    if [ ${cua_api_key} -eq ""] && [ ${cua_config} -eq "" ]  ; then
-            fail "--key value is required if you do not set --config"
+    if [ -z ${cua_api_key} ] && [ -z ${cua_config} ]  ; then
+         fail "--key value is required if you do not set --config"
     fi
-    # [[ -n "${cua_api_key:-}" ]] || fail "Circonus API key is *required*."
 }
 
 __make_circonus_dir() {
@@ -200,9 +209,12 @@ __get_latest_release() {
 }
 
 cua_install() {
-    log "Getting latest release version from repository"
-    tag=$(__get_latest_release)
-    cua_version=${tag#v}
+    __cua_init "$@"
+    if [[ -z "$cua_version" ]]; then
+        log "Getting latest release version from repository"
+        tag=$(__get_latest_release)
+        cua_version=${tag#v}
+    fi
 
     pkg_file="circonus-unified-agent_${cua_version}_${pkg_arch}"
     pkg_url="https://github.com/circonus-labs/circonus-unified-agent/releases/download/v${cua_version}/"
@@ -212,7 +224,7 @@ cua_install() {
     cua_dir="/opt/circonus/unified-agent"
     [[ -d $cua_dir ]] && fail "${cua_dir} previous installation directory found."
 
-    __cua_init "$@"
+
     __make_circonus_dir
     __get_cua_package
     __configure_service

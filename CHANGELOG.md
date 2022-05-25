@@ -1,3 +1,7 @@
+# v0.0.45
+
+* add: (snmp) `timestamp` conversion for OIDs returning date/time strings (requires `timestamp_layout` to be set) [CIRC-8420]
+
 # v0.0.44
 
 * upd: go-trapmetrrics v0.0.8

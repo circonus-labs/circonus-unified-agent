@@ -708,8 +708,8 @@ func TestFieldConvert(t *testing.T) {
 		input    gosnmp.SnmpPDU
 	}{
 		{input: gosnmp.SnmpPDU{Value: []byte("foo")}, conv: "", expected: string("foo")},
-		{input: gosnmp.SnmpPDU{Value: []byte("foo\u00a0")}, conv: "", expected: string("666f6fc2a0")},
-		{input: gosnmp.SnmpPDU{Value: []byte("foo\u00a0")}, conv: "string", expected: string("foo_")},
+		{input: gosnmp.SnmpPDU{Value: []byte("foo\x07")}, conv: "", expected: string("666f6f07")},
+		{input: gosnmp.SnmpPDU{Value: []byte("foo\x07")}, conv: "string", expected: string("foo_")},
 		{input: gosnmp.SnmpPDU{Value: "0.123"}, conv: "float", expected: float64(0.123)},
 		{input: gosnmp.SnmpPDU{Value: []byte("0.123")}, conv: "float", expected: float64(0.123)},
 		{input: gosnmp.SnmpPDU{Value: float32(0.123)}, conv: "float", expected: float64(float32(0.123))},
@@ -750,7 +750,7 @@ func TestFieldConvert(t *testing.T) {
 	}
 
 	for _, tc := range testTable {
-		act, err := fieldConvert(tc.conv, nil, "", tc.input)
+		act, err := fieldConvert(Field{Conversion: tc.conv}, tc.input)
 		if !assert.NoError(t, err, "input=%T(%v) conv=%s expected=%T(%v)", tc.input, tc.input, tc.conv, tc.expected, tc.expected) {
 			continue
 		}
@@ -789,11 +789,69 @@ func TestFieldConvert(t *testing.T) {
 		},
 	}
 	for _, tst := range rxTests {
-		v, err := fieldConvert("regexp", tst.rx, tst.rt, tst.input)
+		v, err := fieldConvert(Field{
+			Conversion: "regexp",
+			rx:         tst.rx,
+			RegexpType: tst.rt,
+		}, tst.input)
 		if !assert.NoError(t, err, "input=%T(%v) rxtype=%s expected=%T(%v)", tst.input, tst.input, tst.rt, tst.expected, tst.expected) {
 			continue
 		}
 		assert.EqualValues(t, tst.expected, v, "input=%T(%v) rxtype=%s expected=%T(%v)", tst.input, tst.input, tst.rt, tst.expected, tst.expected)
+	}
+
+	timestampTests := []struct {
+		expected interface{}
+		layout   string
+		input    gosnmp.SnmpPDU
+		wantErr  bool
+	}{
+		{
+			input:    gosnmp.SnmpPDU{Value: "07/13/2025"}, // CIRC-8420
+			layout:   "01/02/2006",
+			expected: uint64(1752364800),
+			wantErr:  false,
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: "03/03/2022 23:49:22"}, // CIRC-8420
+			layout:   "01/02/2006 15:04:05",
+			expected: uint64(1646351362),
+			wantErr:  false,
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: "03 Mar 22 23:49 MST"},
+			layout:   "02 Jan 06 15:04 MST", // RFC822
+			expected: uint64(1646351340),
+			wantErr:  false,
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: "03 Mar 22 23:49 -0700"},
+			layout:   "02 Jan 06 15:04 -0700", // RFC822Z
+			expected: uint64(1646376540),
+			wantErr:  false,
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: "2022-03-03T23:49:22Z05:00"},
+			layout:   "2006-01-02T15:04:05Z05:00", // RFC339
+			expected: uint64(1646351345),
+			wantErr:  false,
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: "Thu Mar 3 23:48:22 2022"},
+			layout:   "Mon Jan _2 15:04:05 2006", // ANSIC
+			expected: uint64(1646351302),
+			wantErr:  false,
+		},
+	}
+	for _, tst := range timestampTests {
+		v, err := fieldConvert(Field{
+			Conversion:      "timestamp",
+			TimestampLayout: tst.layout,
+		}, tst.input)
+		if !assert.NoError(t, err, "input=%T(%v) layout=%s expected=%T(%v)", tst.input, tst.input, tst.layout, tst.expected, tst.expected) {
+			continue
+		}
+		assert.EqualValues(t, tst.expected, v, "input=%T(%v) layout=%s expected=%T(%v)", tst.input, tst.input, tst.layout, tst.expected, tst.expected)
 	}
 
 }

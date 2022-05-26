@@ -279,12 +279,15 @@ type Field struct {
 	//                 otherwise it will encoded as hex
 	//                 if it is not a byte slice, it will be returned as-is
 	//  "regexp" Use a regular expression to extract a value from the input.
+	//  "timestamp" string treated as a timestamp and parsed into unix epoch based on timestamp_layout pattern
 	Conversion string
 	// Regular expression used to extract value from input.
 	// Must contain a pattern named 'value' e.g. (?P<value>re).
 	Regexp string
 	// Type of the value to be extracted from the input. (float|int|uint|text)
 	RegexpType string
+	// Timestamp layout
+	TimestampLayout string
 	// OidIndexLength specifies the length of the index in OID path segments. It can be used to remove sub-identifiers that vary in content or length.
 	OidIndexLength int
 	// IsTag controls whether this OID is output as a tag or a value.
@@ -598,7 +601,7 @@ func (t Table) Build(gs snmpConnection, walk bool) (*RTable, error) {
 				return nil, fmt.Errorf("performing get on field %s (oid:%s): %w", f.Name, oid, err)
 			} else if pkt != nil && len(pkt.Variables) > 0 && pkt.Variables[0].Type != gosnmp.NoSuchObject && pkt.Variables[0].Type != gosnmp.NoSuchInstance {
 				ent := pkt.Variables[0]
-				fv, err := fieldConvert(f.Conversion, f.rx, f.RegexpType, ent)
+				fv, err := fieldConvert(f, ent)
 				if err != nil {
 					return nil, fmt.Errorf("converting %q (OID %s) for field %s: %w", ent.Value, ent.Name, f.Name, err)
 				}
@@ -643,7 +646,7 @@ func (t Table) Build(gs snmpConnection, walk bool) (*RTable, error) {
 				}
 
 				if f.TextMetric && f.Conversion == "lookup" {
-					fv, err := fieldConvert("int", nil, "", ent)
+					fv, err := fieldConvert(Field{Conversion: "int"}, ent)
 					if err != nil {
 						return &walkError{
 							msg: fmt.Sprintf("converting %q (OID %s) for field %s", ent.Value, ent.Name, f.Name),
@@ -652,7 +655,7 @@ func (t Table) Build(gs snmpConnection, walk bool) (*RTable, error) {
 					}
 					ifv[idx] = fv
 
-					fv, err = fieldConvert(f.Conversion, f.rx, f.RegexpType, ent)
+					fv, err = fieldConvert(f, ent)
 					if err != nil {
 						return &walkError{
 							msg: fmt.Sprintf("converting %q (OID %s) for field %s", ent.Value, ent.Name, f.Name),
@@ -662,7 +665,7 @@ func (t Table) Build(gs snmpConnection, walk bool) (*RTable, error) {
 					ifv[idx+"_desc"] = fv
 
 				} else {
-					fv, err := fieldConvert(f.Conversion, f.rx, f.RegexpType, ent)
+					fv, err := fieldConvert(f, ent)
 					if err != nil {
 						return &walkError{
 							msg: fmt.Sprintf("converting %q (OID %s) for field %s", ent.Value, ent.Name, f.Name),
@@ -799,10 +802,13 @@ func (s *Snmp) getConnection(idx int) (snmpConnection, error) {
 //  ""       will convert a byte slice into a string (if all runes are printable, otherwise it will return a hex string)
 //           if the value is not a byte slice, it is returned as-is
 //  "regex" will extract a value from the input
-func fieldConvert(conv string, rx *regexp.Regexp, rxtype string, sv gosnmp.SnmpPDU) (interface{}, error) {
+//  "timestamp" convert string to unix epoch based on timestamp_layout
+//              see: https://pkg.go.dev/time#pkg-constants and https://pkg.go.dev/time#Parse
+func fieldConvert(f Field, sv gosnmp.SnmpPDU) (interface{}, error) {
+
 	v := sv.Value
 
-	if conv == "" {
+	if f.Conversion == "" {
 		if bs, ok := v.([]byte); ok {
 			for _, b := range bs {
 				if !unicode.IsPrint(rune(b)) {
@@ -814,7 +820,7 @@ func fieldConvert(conv string, rx *regexp.Regexp, rxtype string, sv gosnmp.SnmpP
 		return v, nil
 	}
 
-	if conv == "string" {
+	if f.Conversion == "string" {
 		if bs, ok := v.([]byte); ok {
 			str := strings.Map(func(r rune) rune {
 				if unicode.IsPrint(r) {
@@ -827,8 +833,8 @@ func fieldConvert(conv string, rx *regexp.Regexp, rxtype string, sv gosnmp.SnmpP
 		return v, nil
 	}
 
-	if conv == "regexp" {
-		if rx == nil {
+	if f.Conversion == "regexp" {
+		if f.rx == nil {
 			return "", fmt.Errorf("regexp didn't compile, check log for errors")
 		}
 
@@ -842,14 +848,14 @@ func fieldConvert(conv string, rx *regexp.Regexp, rxtype string, sv gosnmp.SnmpP
 			return "", fmt.Errorf("unknown input type (%T) for regex", v)
 		}
 
-		if rx.MatchString(input) {
-			valIdx := rx.SubexpIndex("value")
-			matches := rx.FindStringSubmatch(input)
+		if f.rx.MatchString(input) {
+			valIdx := f.rx.SubexpIndex("value")
+			matches := f.rx.FindStringSubmatch(input)
 			if len(matches) < valIdx {
-				return "", fmt.Errorf("no match found for regex %q %q", input, rx.String())
+				return "", fmt.Errorf("no match found for regex %q %q", input, f.rx.String())
 			}
 			match := matches[valIdx]
-			switch rxtype {
+			switch f.RegexpType {
 			case "float":
 				fv, err := strconv.ParseFloat(match, 64)
 				return fv, err
@@ -864,10 +870,28 @@ func fieldConvert(conv string, rx *regexp.Regexp, rxtype string, sv gosnmp.SnmpP
 			}
 		}
 
-		return "", fmt.Errorf("no value found for regex %q %q", input, rx.String())
+		return "", fmt.Errorf("no value found for regex %q %q", input, f.rx.String())
 	}
 
-	if conv == "lookup" {
+	if f.Conversion == "timestamp" {
+		if f.TimestampLayout == "" {
+			return "", fmt.Errorf("no timestamp_layout provided for 'timestamp' conversion")
+		}
+
+		vs, isString := v.(string)
+		if !isString {
+			return "", fmt.Errorf("could not convert to string %v", v)
+		}
+
+		ts, err := time.Parse(f.TimestampLayout, vs)
+		if err != nil {
+			return "", fmt.Errorf("converting (%s): %w", vs, err)
+		}
+
+		return ts.UTC().Unix(), nil
+	}
+
+	if f.Conversion == "lookup" {
 		stc := TranslateOID(sv.Name)
 		key := fmt.Sprintf("%d", v)
 		if stc.valMap != nil {
@@ -880,7 +904,7 @@ func fieldConvert(conv string, rx *regexp.Regexp, rxtype string, sv gosnmp.SnmpP
 	}
 
 	var d int
-	if _, err := fmt.Sscanf(conv, "float(%d)", &d); err == nil || conv == "float" {
+	if _, err := fmt.Sscanf(f.Conversion, "float(%d)", &d); err == nil || f.Conversion == "float" {
 		switch vt := v.(type) {
 		case float32:
 			v = float64(vt) / math.Pow10(d)
@@ -916,7 +940,7 @@ func fieldConvert(conv string, rx *regexp.Regexp, rxtype string, sv gosnmp.SnmpP
 		return v, nil
 	}
 
-	if conv == "int" {
+	if f.Conversion == "int" {
 		switch vt := v.(type) {
 		case float32:
 			v = int64(vt)
@@ -950,7 +974,7 @@ func fieldConvert(conv string, rx *regexp.Regexp, rxtype string, sv gosnmp.SnmpP
 		return v, nil
 	}
 
-	if conv == "hwaddr" {
+	if f.Conversion == "hwaddr" {
 		switch vt := v.(type) {
 		case string:
 			v = net.HardwareAddr(vt).String()
@@ -962,7 +986,7 @@ func fieldConvert(conv string, rx *regexp.Regexp, rxtype string, sv gosnmp.SnmpP
 		return v, nil
 	}
 
-	if conv == "ipaddr" {
+	if f.Conversion == "ipaddr" {
 		var ipbs []byte
 
 		switch vt := v.(type) {
@@ -984,7 +1008,7 @@ func fieldConvert(conv string, rx *regexp.Regexp, rxtype string, sv gosnmp.SnmpP
 		return v, nil
 	}
 
-	return nil, fmt.Errorf("invalid conversion type '%s'", conv)
+	return nil, fmt.Errorf("invalid conversion type '%s'", f.Conversion)
 }
 
 type snmpTableCache struct {

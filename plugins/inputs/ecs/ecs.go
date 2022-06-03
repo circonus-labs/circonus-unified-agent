@@ -3,6 +3,7 @@ package ecs
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 	"time"
@@ -162,6 +163,8 @@ func resolveEndpoint(ecs *Ecs) {
 		ecs.metadataVersion = 3
 		return
 	}
+
+	log.Print("I! ECS_CONTAINER_METADATA_URI Environment var is unset, using v2 ecs endpoint")
 
 	// Use v2 endpoint if nothing else is available.
 	ecs.EndpointURL = v2Endpoint

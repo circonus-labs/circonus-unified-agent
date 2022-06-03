@@ -57,6 +57,9 @@ var (
 
 func init() {
 	defaultPluginsEnabled = strings.ToLower(os.Getenv("ENABLE_DEFAULT_PLUGINS")) != "false"
+	if !defaultPluginsEnabled {
+		log.Print("I! Default plugins disabled")
+	}
 }
 
 // Config specifies the URL/user/password for the database that circonus-unified-agent
@@ -772,8 +775,8 @@ func getDefaultConfigPath() (string, error) {
 	etcfile := "/opt/circonus/unified-agent/etc/circonus-unified-agent.conf"
 	if runtime.GOOS == "windows" {
 		programFiles := os.Getenv("ProgramFiles")
-		if programFiles == "" { // Should never happen
-			programFiles = `C:\Program Files`
+		if programFiles == "" {
+			log.Fatal("E! ProgramFiles Environment var is unset")
 		}
 		etcfile = programFiles + `\Circonus\Circonus-Unified-Agent\etc\circonus-unified-agent.conf`
 	}

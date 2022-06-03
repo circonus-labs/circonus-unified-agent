@@ -1,6 +1,7 @@
 package synproxy
 
 import (
+	"log"
 	"os"
 	"path"
 
@@ -30,6 +31,7 @@ func getHostProc() string {
 	if os.Getenv("HOST_PROC") != "" {
 		procPath = os.Getenv("HOST_PROC")
 	}
+	log.Print("I! Using default procPath: " + procPath)
 	return procPath
 }
 

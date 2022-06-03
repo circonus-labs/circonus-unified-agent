@@ -1,6 +1,7 @@
 package testutil
 
 import (
+	"log"
 	"net"
 	"net/url"
 	"os"
@@ -28,6 +29,8 @@ func GetLocalHost() string {
 		}
 
 		return host
+	} else {
+		log.Print("I! DOCKER_HOST Environment var is unset, defaulting to 'localhost'")
 	}
 	return localhost
 }

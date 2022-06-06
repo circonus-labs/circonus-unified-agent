@@ -776,7 +776,8 @@ func getDefaultConfigPath() (string, error) {
 	if runtime.GOOS == "windows" {
 		programFiles := os.Getenv("ProgramFiles")
 		if programFiles == "" {
-			log.Fatal("E! ProgramFiles Environment var is unset")
+			log.Print("I! ProgramFiles Environment var is unset")
+			programFiles = `C:\Program Files`
 		}
 		etcfile = programFiles + `\Circonus\Circonus-Unified-Agent\etc\circonus-unified-agent.conf`
 	}

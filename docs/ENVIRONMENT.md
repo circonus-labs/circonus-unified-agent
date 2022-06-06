@@ -15,5 +15,5 @@
 
 - "ENABLE_DEFAULT_PLUGINS" - if set to "false", disables default plugins
 - "CUA_CONFIG_PATH" - if set, overrides any other config file
-- "ECS_CONTAINER_METADATA_URI" - if set, enables ecs v3 endpoint
+- "ECS_CONTAINER_METADATA_URI" - if set, enables ecs v3 endpoint. if unset, v2 is used.
 - "DOCKER_HOST" - if unset, defaults to "localhost"

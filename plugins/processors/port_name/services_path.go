@@ -12,7 +12,9 @@ import (
 func servicesPath() string {
 	windir := os.Getenv("WINDIR")
 	if windir == "" {
-		log.Fatal("E! WINDIR Environment var is unset"
+		log.Print("I! WINDIR Environment var is unset")
+		// use a sensible default
+		windir = "C:\\Windows"
 	}
 	return filepath.Join(windir, `system32\drivers\etc\services`)
 }

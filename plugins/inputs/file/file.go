@@ -63,7 +63,10 @@ func (f *File) Description() string {
 func (f *File) Init() error {
 	var err error
 	f.decoder, err = encoding.NewDecoder(f.CharacterEncoding)
-	return fmt.Errorf("new decoder: %w", err)
+	if err != nil {
+		return fmt.Errorf("new decoder: %w", err)
+	}
+	return err
 }
 
 func (f *File) Gather(ctx context.Context, acc cua.Accumulator) error {

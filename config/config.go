@@ -1417,7 +1417,7 @@ func (c *Config) getParserConfig(name string, tbl *ast.Table) (*parsers.Config, 
 	c.getFieldBool(tbl, "csv_trim_space", &pc.CSVTrimSpace)
 
 	c.getFieldStringSlice(tbl, "form_urlencoded_tag_keys", &pc.FormUrlencodedTagKeys)
-	//for JSONPath parser
+	// for JSONPath parser
 	if node, ok := tbl.Fields["json_v2"]; ok {
 		if metricConfigs, ok := node.([]*ast.Table); ok {
 			pc.JSONV2Config = make([]parsers.JSONV2Config, len(metricConfigs))

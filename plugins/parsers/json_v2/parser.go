@@ -175,7 +175,7 @@ func (p *Parser) processMetric(input []byte, data []DataSet, tag bool, timestamp
 	}
 
 	p.iterateObjects = false
-	var metrics [][]cua.Metric
+	metrics := [][]cua.Metric{}
 
 	for _, c := range data {
 		if c.Path == "" {
@@ -571,7 +571,8 @@ func (p *Parser) isIncluded(key string, val gjson.Result) bool {
 		return true
 	}
 	// automatically adds tags to included_keys so it does NOT have to be repeated in the config
-	allKeys := append(p.objectConfig.IncludedKeys, p.objectConfig.Tags...)
+	var allKeys = p.objectConfig.IncludedKeys
+	allKeys = append(allKeys, p.objectConfig.Tags...)
 	for _, i := range allKeys {
 		if i == key {
 			return true
@@ -611,25 +612,25 @@ func (p *Parser) convertType(input gjson.Result, desiredType string, name string
 		case "uint":
 			r, err := strconv.ParseUint(inputType, 10, 64)
 			if err != nil {
-				return nil, fmt.Errorf("Unable to convert field '%s' to type uint: %v", name, err)
+				return nil, fmt.Errorf("Unable to convert field '%s' to type uint: %w", name, err)
 			}
 			return r, nil
 		case "int":
 			r, err := strconv.ParseInt(inputType, 10, 64)
 			if err != nil {
-				return nil, fmt.Errorf("Unable to convert field '%s' to type int: %v", name, err)
+				return nil, fmt.Errorf("Unable to convert field '%s' to type int: %w", name, err)
 			}
 			return r, nil
 		case "float":
 			r, err := strconv.ParseFloat(inputType, 64)
 			if err != nil {
-				return nil, fmt.Errorf("Unable to convert field '%s' to type float: %v", name, err)
+				return nil, fmt.Errorf("Unable to convert field '%s' to type float: %w", name, err)
 			}
 			return r, nil
 		case "bool":
 			r, err := strconv.ParseBool(inputType)
 			if err != nil {
-				return nil, fmt.Errorf("Unable to convert field '%s' to type bool: %v", name, err)
+				return nil, fmt.Errorf("Unable to convert field '%s' to type bool: %w", name, err)
 			}
 			return r, nil
 		}
@@ -659,11 +660,12 @@ func (p *Parser) convertType(input gjson.Result, desiredType string, name string
 		case "uint":
 			return input.Uint(), nil
 		case "bool":
-			if inputType == 0 {
+			switch inputType {
+			case 0:
 				return false, nil
-			} else if inputType == 1 {
+			case 1:
 				return true, nil
-			} else {
+			default:
 				return nil, fmt.Errorf("Unable to convert field '%s' to type bool", name)
 			}
 		}

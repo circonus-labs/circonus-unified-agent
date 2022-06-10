@@ -57,7 +57,11 @@ func (r *Processor) Init() error {
 	t, err := template.New("configured_template").Parse(r.Template)
 
 	r.tmpl = t
-	return fmt.Errorf("template new: %w", err)
+	if err != nil {
+		return fmt.Errorf("template new: %w", err)
+	}
+	return err
+
 }
 
 func init() {

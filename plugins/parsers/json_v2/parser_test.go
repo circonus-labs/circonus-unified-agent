@@ -107,7 +107,7 @@ func readMetricFile(path string) ([]cua.Metric, error) {
 			// The timezone needs to be UTC to match the timestamp test results
 			m.SetTime(m.Time().UTC())
 			if err != nil {
-				return nil, fmt.Errorf("unable to parse metric in %q failed: %v", line, err)
+				return nil, fmt.Errorf("unable to parse metric in %q failed: %w", line, err)
 			}
 			metrics = append(metrics, m)
 		}

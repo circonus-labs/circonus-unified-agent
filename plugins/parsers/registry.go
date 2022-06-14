@@ -12,6 +12,7 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/plugins/parsers/grok"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/parsers/influx"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/parsers/json"
+	"github.com/circonus-labs/circonus-unified-agent/plugins/parsers/json_v2"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/parsers/logfmt"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/parsers/nagios"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/parsers/value"
@@ -148,6 +149,9 @@ type Config struct {
 
 	// FormData configuration
 	FormUrlencodedTagKeys []string `toml:"form_urlencoded_tag_keys"`
+
+	// JSONPath configuration
+	JSONV2Config []JSONV2Config `toml:"json_v2"`
 }
 
 // NewParser returns a Parser interface based on the given config.
@@ -232,6 +236,8 @@ func NewParser(config *Config) (Parser, error) {
 			config.DefaultTags,
 			config.FormUrlencodedTagKeys,
 		)
+	case "json_v2":
+		parser, err = NewJSONPathParser(config.JSONV2Config)
 	default:
 		err = fmt.Errorf("Invalid data format: %s", config.DataFormat)
 	}
@@ -337,5 +343,29 @@ func NewFormUrlencodedParser(
 		MetricName:  metricName,
 		DefaultTags: defaultTags,
 		TagKeys:     tagKeys,
+	}, nil
+}
+
+type JSONV2Config struct {
+	json_v2.Config
+}
+
+func NewJSONPathParser(jsonv2config []JSONV2Config) (Parser, error) {
+	configs := make([]json_v2.Config, len(jsonv2config))
+	for i, cfg := range jsonv2config {
+		configs[i].MeasurementName = cfg.MeasurementName
+		configs[i].MeasurementNamePath = cfg.MeasurementNamePath
+
+		configs[i].TimestampPath = cfg.TimestampPath
+		configs[i].TimestampFormat = cfg.TimestampFormat
+		configs[i].TimestampTimezone = cfg.TimestampTimezone
+
+		configs[i].Fields = cfg.Fields
+		configs[i].Tags = cfg.Tags
+
+		configs[i].JSONObjects = cfg.JSONObjects
+	}
+	return &json_v2.Parser{
+		Configs: configs,
 	}, nil
 }

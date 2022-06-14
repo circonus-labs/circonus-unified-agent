@@ -82,6 +82,9 @@ func expandEnvVars(contents []byte) string {
 
 func getEnv(key string) string {
 	v := os.Getenv(key)
+	if v == "" {
+		log.Print("I! Read empty Environment var: " + key)
+	}
 
 	return envVarEscaper.Replace(v)
 }

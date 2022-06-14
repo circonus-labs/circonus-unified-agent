@@ -64,8 +64,11 @@ func (p *program) Stop(s service.Service) error {
 
 func runAsWindowsService(inputFilters, outputFilters, aggregatorFilters, processorFilters []string) {
 	programFiles := os.Getenv("ProgramFiles")
-	if programFiles == "" { // Should never happen
+	if programFiles == "" {
 		programFiles = "C:\\Program Files"
+		log.Print("I! ProgramFiles environment variable is unset")
+	} else {
+		log.Print("I! ProgramFiles found with value: " + programFiles)
 	}
 	svcConfig := &service.Config{
 		Name:        *fServiceName,

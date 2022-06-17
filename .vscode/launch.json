@@ -9,7 +9,10 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${fileDirname}"
+            "program": "${fileDirname}",
+            "args": ["--config",
+                 "/Users/joshuajohnson/Documents/GitHub/circonus-unified-agent/conf.conf"
+            ]
         }
     ]
 }

@@ -16,6 +16,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/internal"
@@ -849,6 +850,10 @@ func (c *Config) LoadConfigData(data []byte) error {
 		}
 		c.Agent.Hostname = hostname
 	}
+	if !isASCII(c.Agent.Hostname) {
+		return fmt.Errorf("hostname must contain only ASCII characters, %s is invalid. You can set the hostname in the CUA config in the [agent] section", c.Agent.Hostname)
+	}
+
 	if c.Agent.Circonus.Hostname == "" {
 		c.Agent.Circonus.Hostname = c.Agent.Hostname
 	}
@@ -965,6 +970,15 @@ func (c *Config) LoadConfigData(data []byte) error {
 	}
 
 	return nil
+}
+
+func isASCII(s string) bool {
+	for i := 0; i < len(s); i++ {
+		if s[i] > unicode.MaxASCII {
+			return false
+		}
+	}
+	return true
 }
 
 // trimBOM trims the Byte-Order-Marks from the beginning of the file.

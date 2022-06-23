@@ -276,3 +276,10 @@ func TestConfig_BadOrdering(t *testing.T) {
 // 	assert.Equal(t, "", azureMonitor.NamespacePrefix)
 // 	assert.Equal(t, true, ok)
 // }
+
+func TestConfig_NonASCIIHostName(t *testing.T) {
+	c := NewConfig()
+	err := c.LoadConfig("./testdata/non-ascii-hostname.toml")
+	require.Error(t, err, "invalid field name")
+	assert.Equal(t, "Error loading config file ./testdata/non-ascii-hostname.toml: hostname must contain only ASCII characters, øøø is invalid. You can set the hostname in the CUA config in the [agent] section", err.Error())
+}

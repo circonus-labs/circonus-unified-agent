@@ -364,6 +364,11 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 		checkTags = append(checkTags, getOSCheckTags()...)
 	}
 
+	if ch.circCfg.CheckTags != "" {
+		confCheckTags := strings.Split(ch.circCfg.CheckTags, ":")
+		checkTags = append(checkTags, confCheckTags...)
+	}
+
 	checkTarget := hostname
 
 	instanceLogger := &Logshim{

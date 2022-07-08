@@ -223,7 +223,7 @@ type CirconusConfig struct {
 	Broker          string            `toml:"broker"`
 	Hostname        string            `toml:"-"`
 	CheckSearchTags []string          `toml:"check_search_tags"`
-	CheckTags       string            `toml:"check_tags"`
+	CheckTags       []string          `toml:"check_tags"`
 	DebugAPI        bool              `toml:"debug_api"`
 	CacheNoVerify   bool              `toml:"cache_no_verify"`
 	CacheConfigs    bool              `toml:"cache_configs"`
@@ -433,9 +433,9 @@ var agentConfig = `
 
     ## Check tags configurations
     ## Optional
-    ## tags to add to the check bundle, in comma-deliminated namespace:tag pairs
-    ## eg: "team:red,team:blue,env:dev,security:pci,security:sox"
-    # check_tags = "foo:bar,baz:buzz"
+    ## tags to add to the check bundle, formatted as an array of namespace:tag pairs
+    ## eg: [ "team:red", "team:blue", "env:dev", "security:pci", "security:sox" ]
+    # check_tags = [ "foo:bar", "baz:buzz" ]
 
     ## Debug circonus api calls and trap submissions
     ## Optional 

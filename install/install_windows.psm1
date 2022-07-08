@@ -65,7 +65,7 @@ Note: Provide an authorized app for the key or ensure api
   function Set-Config-Key {
     param ($token)
     $file = "${installpath}\etc\circonus-unified-agent.conf"
-  (Get-Content $file) -replace '  api_token = ""', "  api_token = `"${token}`"" | Set-Content $file
+  (Get-Content $file) -replace '  api_token = ".*"', "  api_token = `"${token}`"" | Set-Content $file
   }
 
 

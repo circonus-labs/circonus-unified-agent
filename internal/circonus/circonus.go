@@ -478,12 +478,10 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 		saveCheckConfig(destKey, bundle)
 	}
 
-	if pluginID == "host" {
-		if b, err := updateCheckTags(circAPI, bundle, checkTags, logger); err != nil {
-			logger.Warnf("circonus metric destination management moudle: updating check %s", err)
-		} else if b != nil {
-			saveCheckConfig(destKey, b)
-		}
+	if b, err := updateCheckTags(circAPI, bundle, checkTags, logger); err != nil {
+		logger.Warnf("circonus metric destination management moudle: updating check %s", err)
+	} else if b != nil {
+		saveCheckConfig(destKey, b)
 	}
 
 	// if checks are going to a non-public trap

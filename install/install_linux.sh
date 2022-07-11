@@ -224,7 +224,7 @@ __configure_agent() {
 
     if [[ -n "${cua_api_key}" ]]; then
         log "\tSetting Circonus API key in configuration"
-        \sed -i -e "s/  api_token = \"\"/  api_token = \"${cua_api_key}\"/" $cua_conf_file
+        \sed -i -e "s/  api_token = \".*\"/  api_token = \"${cua_api_key}\"/" $cua_conf_file
         [[ $? -eq 0 ]] || fail "updating ${cua_conf_file} with api key"
     fi
 

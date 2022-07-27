@@ -16,3 +16,5 @@ test.conf
 /trace.d
 install/README_backup.md
 tmp/
+.vscode/launch.json
+conf.conf

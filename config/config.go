@@ -16,6 +16,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/internal"
@@ -222,6 +223,7 @@ type CirconusConfig struct {
 	Broker          string            `toml:"broker"`
 	Hostname        string            `toml:"-"`
 	CheckSearchTags []string          `toml:"check_search_tags"`
+	CheckTags       []string          `toml:"check_tags"`
 	DebugAPI        bool              `toml:"debug_api"`
 	CacheNoVerify   bool              `toml:"cache_no_verify"`
 	CacheConfigs    bool              `toml:"cache_configs"`
@@ -428,6 +430,12 @@ var agentConfig = `
     ## Optional (required if cache_configs is true)
     ## Note: cache_dir must be read/write for the user running the cua process
     # cache_dir = "/opt/circonus/etc/cache.d"
+
+    ## Check tags configurations
+    ## Optional
+    ## tags to add to the check bundle, formatted as an array of namespace:tag pairs
+    ## eg: [ "team:red", "team:blue", "env:dev", "security:pci", "security:sox" ]
+    # check_tags = [ "foo:bar", "baz:buzz" ]
 
     ## Debug circonus api calls and trap submissions
     ## Optional 
@@ -854,6 +862,10 @@ func (c *Config) LoadConfigData(data []byte) error {
 		}
 		c.Agent.Hostname = hostname
 	}
+	if !isASCII(c.Agent.Hostname) {
+		return fmt.Errorf("hostname must contain only ASCII characters, %s is invalid. You can set the hostname in the CUA config in the [agent] section", c.Agent.Hostname)
+	}
+
 	if c.Agent.Circonus.Hostname == "" {
 		c.Agent.Circonus.Hostname = c.Agent.Hostname
 	}
@@ -970,6 +982,15 @@ func (c *Config) LoadConfigData(data []byte) error {
 	}
 
 	return nil
+}
+
+func isASCII(s string) bool {
+	for i := 0; i < len(s); i++ {
+		if s[i] > unicode.MaxASCII {
+			return false
+		}
+	}
+	return true
 }
 
 // trimBOM trims the Byte-Order-Marks from the beginning of the file.

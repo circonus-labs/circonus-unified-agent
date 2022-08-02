@@ -1,43 +1,69 @@
-# Oracle Input Plugin
+# Oracle Input Plugin 
 
-The Oracle database Circonus Unified Agent (CUA) input plugin collects metrics from Oracle's RDBMS using dynamic performance views.  This document is oriented around the Oracle database being installed on a Windows host.
+The Oracle database Circonus Unified Agent (CUA) input plugin collects metrics from Oracle's RDBMS using dynamic performance views.  
 
-### Installation
+*This document is oriented around the Oracle database installed on a Windows host.*
 
-There are a couple configuration methods available for an Oracle database installed on a Windows host and, depending on your setup type, you should follow the one that describes your situation.
+### Setup
 
-1. Oracle database is installed on a Windows host and you are collecting the metrics from CUA that is installed on this same host.
+There are a few configuration options available for collecting telemetry from an Oracle data base where the database is installed on a Windows host. A couple examples are listed below to help guide you throught the process.
+
+&nbsp;
+#### 1. Oracle database is installed on a Windows host and you are collecting the metrics from CUA that is installed on this same Windows host.
 
 This configuration executes a sidecar powered by python3 to gather metrics from an Orical database. The installation of [python3](https://www.python.org/downloads/) and the [cx_Oracle](https://cx-oracle.readthedocs.io/en/latest/user_guide/installation.html) extension module are required to run the side car.
 
+##### Configuration
 
-2. Oracle database is installed on a Windows host and you are collecting the metrics from CUA that is installed on a remote Linux host.
+Modify the CUA Oracle input plugin (Windows CUA)
 
-This configuration executes a sidecar powered by python3 and Oracle Instant Client to gather metrics from an Orical database. The installation of [python3](https://www.python.org/downloads/) and the [cx_Oracle](https://cx-oracle.readthedocs.io/en/latest/user_guide/installation.html) extension module are required to run the side car.
-
-Install  [Oracle Client](https://www.oracle.com/database/technologies/instant-client/downloads.html). The Oracle Instant Client will require network configurations that are specific to your deployment model to enable remote connectivity. The remote network configuration will requre IP address modification in the client and in the Oracle Databases's `tnsnames.ora` and `listner.ora` files. These files can be found in your Oracle Database directory. Example: `C:\OracleApp\WINDOWS.X64_193000_db_home\network\admin`
-
-
-
-### Configuration
-
-__Modify Circonus Unified Agent (CUA) input plugin__
 ```toml
-# ##Input Plugin for Oracle Database
+# ##Input Plugin for Oracle Database (Windows CUA)
 [[inputs.exec]]
-  instance_id = "oracle"
-  commands = ['python "C:\Program Files\\Circonus\\Circonus-Unified-Agent\\external_plugins\\oracle\\oracle_metrics.py" --dsn "(DESCRIPTION=(ADDRESS=(PROTOCOL=<TCP or UDP>)(HOST=<hostIp>)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=<serviceName>)))" --user "<userName>" --password "<password>" --instance "<instanceName>"']
+  # Specify an instance_id for the oracle database
+  instance_id = "" # Required
+  commands = ['python "C:\\Program Files\\Circonus\\Circonus-Unified-Agent\\external_plugins\\oracle\\oracle_metrics.py" --dsn "(DESCRIPTION=(ADDRESS=(PROTOCOL=<TCP or UDP>)(HOST=<hostIp>)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=<serviceName>)))" --user "<userName>" --password "<password>" --instance "<instanceName>"']
   timeout = "60s"
   data_format = "influx"
 #  ## Execution interval, can override default interval setting in [agent] section
-  #interval = "60s"
+  interval = "60s"
+```
+* Create an `instance_id` tag value that describes this Oracle database deployment.
+* Modify the [connection string](https://cx-oracle.readthedocs.io/en/latest/user_guide/connection_handling.html#connection-strings) to connect with your database.
+* Create an Oracle username and password with SELECT_CATALOG_ROLE granted, and input those credentials into the connection string above.
+* Define the execution interval that the collection happens on. If left commented out, the execution interval defaults to the current CUA polling interval.
+
+&nbsp;
+#### 2. Oracle database is installed on a Windows host and you are collecting the metrics from CUA that is installed on a remote Linux host.
+
+This configuration executes a sidecar powered by python3 and Oracle Instant Client to gather metrics from an Orical database. The installation of [python3](https://www.python.org/downloads/) and the [cx_Oracle](https://cx-oracle.readthedocs.io/en/latest/user_guide/installation.html) extension module are required to run the side car.
+
+Install  [Oracle Instant Client](https://www.oracle.com/database/technologies/instant-client/downloads.html). The Oracle Instant Client will require network configurations that are specific to your deployment model to enable remote connectivity. The remote network configuration will requre IP address modification in the client and in the Oracle Databases's `tnsnames.ora` and `listner.ora` files. These files can be found in your Oracle Database directory. Example: `C:\OracleApp\WINDOWS.X64_193000_db_home\network\admin`
+
+##### Configuration
+
+Modify the CUA Oracle input plugin (Linux CUA)
+
+```toml
+# ##Input Plugin for Oracle Database (Linux CUA)
+[[inputs.exec]]
+  # Specify an instance_id for the oracle database
+  instance_id = "" # Required
+  commands = ['python3 "/opt/circonus/unified-agent/external_plugins/oracle_metrics.py" --dsn "(DESCRIPTION=(ADDRESS=(PROTOCOL=<TCP or UDP>)(HOST=<hostIp>)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=<serviceName>)))" --user "<userName>" --password "<password>" --instance "<instanceName>"']
+  timeout = "60s"
+  data_format = "influx"
+#  ## Execution interval, can override default interval setting in [agent] section
+  interval = "60s"
+
 ```
 
-   * Modify the [connection string](https://cx-oracle.readthedocs.io/en/latest/user_guide/connection_handling.html#connection-strings) to connect with your database.
-   * Create an Oracle username and password with SELECT_CATALOG_ROLE granted, and input those credentials into the connection string above.
-   * Create an `instance` tag value that describes this Oracle database deployment.
-
-### Metrics pulled by CUA
+* Create an `instance_id` tag value that describes this Oracle database deployment.
+* Modify the [connection string](https://cx-oracle.readthedocs.io/en/latest/user_guide/connection_handling.html#connection-strings) to connect with your database.
+* Create an Oracle username and password with SELECT_CATALOG_ROLE granted, and input those credentials into the connection string above.
+* Define the execution interval that the collection happens on. If left commented out, the execution interval defaults to the current CUA polling interval.
+   
+&nbsp;
+### Metrics queried by CUA
 
 ```
 PS C:\Windows\System32> cd 'C:\Program Files\Circonus\Circonus-Unified-Agent\sbin\'

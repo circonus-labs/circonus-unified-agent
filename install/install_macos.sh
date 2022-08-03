@@ -29,6 +29,7 @@ pkg_file=""
 pkg_url=""
 cua_api_key=""
 cua_api_app=""
+cua_config=""
 cua_conf_file="/opt/circonus/unified-agent/etc/circonus-unified-agent.conf"
 cua_bin_file="/opt/circonus/unified-agent/sbin/circonus-unified-agentd"
 cua_service_file="/Library/LaunchDaemons/com.circonus.circonus-unified-agent.plist"
@@ -42,8 +43,10 @@ Usage
 
 Options
 
-  --key           Circonus API key/token **${BOLD}REQUIRED${NORMAL}**
+  [--key]         Circonus API key/token
   [--app]         Circonus API app name (authorized w/key) Default: circonus-unified-agent
+  [--config]      Absolute path to the config file to use for the installation
+  [--ver]         Install specific version (use semver tag from repository releases - e.g. v0.0.32)
   [--help]        This message
 
 Note: Provide an authorized app for the key or ensure api 
@@ -74,6 +77,23 @@ __parse_parameters() {
                 fail "--app must be followed by an api app."
             fi
             ;;
+        (--config)
+            if [[ -n "${1:-}" ]]; then
+                cua_config="$1"
+                shift
+            else
+                fail "--config must be followed a path to the config file"
+            fi
+            ;;
+        (--ver)
+            if [[ -n "${1:-}" ]]; then
+                ver="$1"
+                [[ $ver =~ ^v?[0-9]+\.[0-9]+\.[0-9]+$ ]] && cua_version=${ver#v} || fail "--ver must be followed by a valid semver (e.g. v0.0.32)."
+                shift                
+            else
+                fail "--ver must be followed by a valid semver (e.g. v0.0.32)."
+            fi
+            ;;
         esac
     done
 }
@@ -93,7 +113,9 @@ __cua_init() {
     set -o errexit
 
     __parse_parameters "$@" 
-    [[ -n "${cua_api_key:-}" ]] || fail "Circonus API key is *required*."
+    if [ -z ${cua_api_key} ] && [ -z ${cua_config} ]  ; then
+         fail "--key value is required if you do not set --config"
+    fi
 }
 
 __make_circonus_dir() {
@@ -135,13 +157,20 @@ __get_cua_package() {
 __configure_agent() {
     log "Updating configuration: ${cua_conf_file}"
 
-    \cp /opt/circonus/unified-agent/etc/example-circonus-unified-agent.conf ${cua_conf_file}
+    if [[ -n ${cua_config} ]]; then
+        log "\tUsing supplied configuration file"
+        \cp ${cua_config} ${cua_conf_file}
+    else
+        \cp /opt/circonus/unified-agent/etc/example-circonus-unified-agent.conf ${cua_conf_file}
+    fi
 
     [[ -f $cua_conf_file ]] || fail "config file (${cua_conf_file}) not found"
 
-    log "\tSetting Circonus API key in configuration"
-    \sed -i -e "s/  api_token = \"\"/  api_token = \"${cua_api_key}\"/" $cua_conf_file
-    [[ $? -eq 0 ]] || fail "updating ${cua_conf_file} with api key"
+    if [[ -n "${cua_api_key}" ]]; then
+        log "\tSetting Circonus API key in configuration"
+        \sed -i -e "s/  api_token = \"\"/  api_token = \"${cua_api_key}\"/" $cua_conf_file
+        [[ $? -eq 0 ]] || fail "updating ${cua_conf_file} with api key"
+    fi
 
     if [[ -n "${cua_api_app}" ]]; then
         log "\tSetting Circonus API app name in configuration"
@@ -180,9 +209,12 @@ __get_latest_release() {
 }
 
 cua_install() {
-    log "Getting latest release version from repository"
-    tag=$(__get_latest_release)
-    cua_version=${tag#v}
+    __cua_init "$@"
+    if [[ -z "$cua_version" ]]; then
+        log "Getting latest release version from repository"
+        tag=$(__get_latest_release)
+        cua_version=${tag#v}
+    fi
 
     pkg_file="circonus-unified-agent_${cua_version}_${pkg_arch}"
     pkg_url="https://github.com/circonus-labs/circonus-unified-agent/releases/download/v${cua_version}/"
@@ -192,7 +224,7 @@ cua_install() {
     cua_dir="/opt/circonus/unified-agent"
     [[ -d $cua_dir ]] && fail "${cua_dir} previous installation directory found."
 
-    __cua_init "$@"
+
     __make_circonus_dir
     __get_cua_package
     __configure_service

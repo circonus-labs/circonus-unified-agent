@@ -1,3 +1,8 @@
+# v0.0.46
+
+* feat(internal/circonus): Check tags are configurable via the `agent.circonus.check_tags` key in the agent config file
+* fix(internal/circonus): Check tags are agent self-managed for all plugins
+
 # v0.0.45
 
 * add: (snmp) `timestamp` conversion for OIDs returning date/time strings (requires `timestamp_layout` to be set) [CIRC-8420]

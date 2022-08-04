@@ -1,4 +1,4 @@
-# Oracle Input Plugin 
+# Oracle Input Plugin
 
 The Oracle database Circonus Unified Agent (CUA) input plugin collects metrics from Oracle's RDBMS using dynamic performance views.  
 

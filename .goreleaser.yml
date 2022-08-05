@@ -77,7 +77,7 @@ docker_manifests:
         - "registry.hub.docker.com/circonus/{{.ProjectName}}:latest-amd64"
         - "registry.hub.docker.com/circonus/{{.ProjectName}}:latest-arm64"
         - "registry.hub.docker.com/circonus/{{.ProjectName}}:latest"
-    - name_template: "circonus/{{.ProjectName}}:{{.Tag}}"
+    - name_template: "registry.hub.docker.com/circonus/{{.ProjectName}}:{{.Tag}}"
       image_templates:
         - "registry.hub.docker.com/circonus/{{.ProjectName}}:{{.Tag}}-amd64"
         - "registry.hub.docker.com/circonus/{{.ProjectName}}:{{.Tag}}-arm64"

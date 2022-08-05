@@ -49,9 +49,15 @@ dockers:
         skip_push: false
         dockerfile: builds/docker/x86_64/Dockerfile
         build_flag_templates:
+            - "--pull"
             - "--label=org.label-schema.schema-version=1.0"
             - "--label=org.label-schema.version={{.Version}}"
             - "--label=org.label-schema.name={{.ProjectName}}"
+            - "--label=org.opencontainers.image.created={{.Date}}"
+            - "--label=org.opencontainers.image.title={{.ProjectName}}"
+            - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+            - "--label=org.opencontainers.image.version={{.Version}}"
+            - "--platform=linux/amd64"
         extra_files:
             - etc/example-circonus-unified-agent.conf
     -
@@ -65,9 +71,15 @@ dockers:
         skip_push: false
         dockerfile: builds/docker/arm64/Dockerfile
         build_flag_templates:
+            - "--pull"
             - "--label=org.label-schema.schema-version=1.0"
             - "--label=org.label-schema.version={{.Version}}"
             - "--label=org.label-schema.name={{.ProjectName}}"
+            - "--label=org.opencontainers.image.created={{.Date}}"
+            - "--label=org.opencontainers.image.title={{.ProjectName}}"
+            - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+            - "--label=org.opencontainers.image.version={{.Version}}"
+            - "--platform=linux/arm64"
         extra_files:
             - etc/example-circonus-unified-agent.conf
 

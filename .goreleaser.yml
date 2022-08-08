@@ -21,8 +21,7 @@ builds:
             - amd64
             - arm64
         ignore:
-            - 
-                goarch: 386
+            - goarch: 386
             - goos: openbsd
               goarch: arm64
             - goos: windows
@@ -43,14 +42,22 @@ dockers:
         goarm: ''
         ids: ['cua']
         image_templates:
-            - "circonus/{{.ProjectName}}:{{.Tag}}-amd64"
-            - "circonus/{{.ProjectName}}:latest-amd64"
+            - "registry.hub.docker.com/circonus/{{.ProjectName}}:{{.Tag}}-amd64"
+            - "registry.hub.docker.com/circonus/{{.ProjectName}}:{{.Tag}}"
+            - "registry.hub.docker.com/circonus/{{.ProjectName}}:latest-amd64"
+            - "registry.hub.docker.com/circonus/{{.ProjectName}}:latest"
         skip_push: false
         dockerfile: builds/docker/x86_64/Dockerfile
         build_flag_templates:
+            - "--pull"
             - "--label=org.label-schema.schema-version=1.0"
             - "--label=org.label-schema.version={{.Version}}"
             - "--label=org.label-schema.name={{.ProjectName}}"
+            - "--label=org.opencontainers.image.created={{.Date}}"
+            - "--label=org.opencontainers.image.title={{.ProjectName}}"
+            - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+            - "--label=org.opencontainers.image.version={{.Version}}"
+            - "--platform=linux/amd64"
         extra_files:
             - etc/example-circonus-unified-agent.conf
     -
@@ -59,26 +66,34 @@ dockers:
         goarm: ''
         ids: ['cua']
         image_templates:
-            - "circonus/{{.ProjectName}}:{{.Tag}}-arm64"
-            - "circonus/{{.ProjectName}}:latest-arm64"
+            - "registry.hub.docker.com/circonus/{{.ProjectName}}:{{.Tag}}-arm64"
+            - "registry.hub.docker.com/circonus/{{.ProjectName}}:latest-arm64"
         skip_push: false
         dockerfile: builds/docker/arm64/Dockerfile
         build_flag_templates:
+            - "--pull"
             - "--label=org.label-schema.schema-version=1.0"
             - "--label=org.label-schema.version={{.Version}}"
             - "--label=org.label-schema.name={{.ProjectName}}"
+            - "--label=org.opencontainers.image.created={{.Date}}"
+            - "--label=org.opencontainers.image.title={{.ProjectName}}"
+            - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+            - "--label=org.opencontainers.image.version={{.Version}}"
+            - "--platform=linux/arm64"
         extra_files:
             - etc/example-circonus-unified-agent.conf
 
 docker_manifests:
-    - name_template: "circonus/{{.ProjectName}}:latest"
+    - name_template: "registry.hub.docker.com/circonus/{{.ProjectName}}:latest"
       image_templates:
-        - "circonus/{{.ProjectName}}:latest-amd64"
-        - "circonus/{{.ProjectName}}:latest-arm64"
-    - name_template: "circonus/{{.ProjectName}}:{{.Tag}}"
+        - "registry.hub.docker.com/circonus/{{.ProjectName}}:latest-amd64"
+        - "registry.hub.docker.com/circonus/{{.ProjectName}}:latest-arm64"
+        - "registry.hub.docker.com/circonus/{{.ProjectName}}:latest"
+    - name_template: "registry.hub.docker.com/circonus/{{.ProjectName}}:{{.Tag}}"
       image_templates:
-        - "circonus/{{.ProjectName}}:{{.Tag}}-amd64"
-        - "circonus/{{.ProjectName}}:{{.Tag}}-arm64"
+        - "registry.hub.docker.com/circonus/{{.ProjectName}}:{{.Tag}}-amd64"
+        - "registry.hub.docker.com/circonus/{{.ProjectName}}:{{.Tag}}-arm64"
+        - "registry.hub.docker.com/circonus/{{.ProjectName}}:{{.Tag}}"
 
 nfpms:
     - vendor: Circonus, Inc.

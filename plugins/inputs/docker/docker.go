@@ -669,7 +669,7 @@ func parseContainerStats(
 	// If we have OnlineCPUs field, then use it to restrict stats gathering to only Online CPUs
 	// (https://github.com/moby/moby/commit/115f91d7575d6de6c7781a96a082f144fd17e400)
 	var percpuusage []uint64
-	if stat.CPUStats.OnlineCPUs > 0 {
+	if stat.CPUStats.OnlineCPUs > 0 && len(stat.CPUStats.CPUUsage.PercpuUsage) > int(stat.CPUStats.OnlineCPUs) {
 		percpuusage = stat.CPUStats.CPUUsage.PercpuUsage[:stat.CPUStats.OnlineCPUs]
 	} else {
 		percpuusage = stat.CPUStats.CPUUsage.PercpuUsage

@@ -13,11 +13,29 @@ NORMAL=$(tput sgr0)
 BOLD=$(tput bold)
 set -e
 
+log()  { printf "%b\n" "$*"; }
+fail() { printf "${RED}" >&2; log "\nERROR: $*\n" >&2; printf "${NORMAL}" >&2; exit 1; }
+pass() { printf "${GREEN}"; log "$*"; printf "${NORMAL}"; }
+
+hw=$(uname -m | tr '[:upper:]' '[:lower:]')
+case "$hw" in
+    amd64)
+        hw="x86_64"
+        ;;
+    aarch64|arm64)
+        hw="arm64"
+        ;;
+    *)
+        fail "Unsupported architecture ${hw} detected"
+        ;;
+esac
+
 cua_version=""
+
 # amd64 or arm64
 # (note, x86_64 will be aliased to amd64)
 # (note, aarch64 will be aliased to arm64)
-pkg_arch="amd64" # default
+pkg_arch="${hw}"
 pkg_ext=""       # currently: rpm or deb
 pkg_cmd=""       # currently: yum or dpkg
 pkg_args=""
@@ -50,10 +68,6 @@ Note: Provide an authorized app for the key or ensure api
       key/token has adequate privileges (default app state:allow)
 "
 }
-
-log()  { printf "%b\n" "$*"; }
-fail() { printf "${RED}" >&2; log "\nERROR: $*\n" >&2; printf "${NORMAL}" >&2; exit 1; }
-pass() { printf "${GREEN}"; log "$*"; printf "${NORMAL}"; }
 
 __parse_parameters() {
     local token=""

@@ -41,6 +41,7 @@ func (s *Serializer) SerializeBatch(metrics []cua.Metric) ([]byte, error) {
 				mt = "n"
 			case string:
 				mt = "s"
+				field.Value = fmt.Sprintf("%q", field.Value)
 			default:
 				mt = "L"
 			}

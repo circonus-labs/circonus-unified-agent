@@ -18,7 +18,9 @@ type SysctlFS struct {
 }
 
 var sysctlFSDescription = `Provides Linux sysctl fs metrics`
-var sysctlFSSampleConfig = ``
+var sysctlFSSampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+`
 
 func (*SysctlFS) Description() string {
 	return sysctlFSDescription

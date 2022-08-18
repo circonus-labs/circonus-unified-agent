@@ -26,6 +26,8 @@ const (
 )
 
 const configSample = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Burrow API endpoints in format "schema://host:port".
   ## Default is "http://localhost:8000".
   servers = ["http://localhost:8000"]

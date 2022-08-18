@@ -1,3 +1,4 @@
+//go:build windows
 // +build windows
 
 package winperfcounters
@@ -15,6 +16,8 @@ import (
 )
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## By default this plugin returns basic CPU and Disk statistics.
   ## See the README file for more examples.
   ## Uncomment examples below or write your own as you see fit. If the system

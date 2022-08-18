@@ -9,22 +9,24 @@ Currently supports Linux and Windows.
 
 ```toml
 [[inputs.temp]]
-  # no configuration
+  instance_id = "" # unique instance identifier (REQUIRED)
+
+  # no other configuration
 ```
 
 ### Metrics
 
 - temp
-  - tags:
-    - sensor
-  - fields:
-    - temp (float, celcius)
-
+    - tags:
+        - sensor
+    - fields:
+        - temp (float, celcius)
 
 ### Troubleshooting
 
 On **Windows**, the plugin uses a WMI call that is can be replicated with the
 following command:
+
 ```
 wmic /namespace:\\root\wmi PATH MSAcpi_ThermalZoneTemperature
 ```

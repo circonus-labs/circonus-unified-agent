@@ -1,104 +1,105 @@
 # Nginx Virtual Host Traffic (VTS) Input Plugin
 
-This plugin gathers Nginx status using external virtual host traffic status module -  https://github.com/vozlt/nginx-module-vts. This is an Nginx module that provides access to virtual host status information. It contains the current status such as servers, upstreams, caches. This is similar to the live activity monitoring of Nginx plus.
+This plugin gathers Nginx status using external virtual host traffic status module -  <https://github.com/vozlt/nginx-module-vts>. This is an Nginx module that provides access to virtual host status information. It contains the current status such as servers, upstreams, caches. This is similar to the live activity monitoring of Nginx plus.
 For module configuration details please see its [documentation](https://github.com/vozlt/nginx-module-vts#synopsis).
 
-### Configuration:
+### Configuration
 
 ```toml
 # Read nginx status information using nginx-module-vts module
 [[inputs.nginx_vts]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## An array of Nginx status URIs to gather stats.
   urls = ["http://localhost/status"]
 ```
 
-### Measurements & Fields:
+### Measurements & Fields
 
 - nginx_vts_connections
-  - active
-  - reading
-  - writing
-  - waiting
-  - accepted
-  - handled
-  - requests
+    - active
+    - reading
+    - writing
+    - waiting
+    - accepted
+    - handled
+    - requests
 - nginx_vts_server, nginx_vts_filter
-  - requests
-  - request_time
-  - in_bytes
-  - out_bytes
-  - response_1xx_count
-  - response_2xx_count
-  - response_3xx_count
-  - response_4xx_count
-  - response_5xx_count
-  - cache_miss
-  - cache_bypass
-  - cache_expired
-  - cache_stale
-  - cache_updating
-  - cache_revalidated
-  - cache_hit
-  - cache_scarce
+    - requests
+    - request_time
+    - in_bytes
+    - out_bytes
+    - response_1xx_count
+    - response_2xx_count
+    - response_3xx_count
+    - response_4xx_count
+    - response_5xx_count
+    - cache_miss
+    - cache_bypass
+    - cache_expired
+    - cache_stale
+    - cache_updating
+    - cache_revalidated
+    - cache_hit
+    - cache_scarce
 - nginx_vts_upstream
-  - requests
-  - request_time
-  - response_time
-  - in_bytes
-  - out_bytes
-  - response_1xx_count
-  - response_2xx_count
-  - response_3xx_count
-  - response_4xx_count
-  - response_5xx_count
-  - weight
-  - max_fails
-  - fail_timeout
-  - backup
-  - down
+    - requests
+    - request_time
+    - response_time
+    - in_bytes
+    - out_bytes
+    - response_1xx_count
+    - response_2xx_count
+    - response_3xx_count
+    - response_4xx_count
+    - response_5xx_count
+    - weight
+    - max_fails
+    - fail_timeout
+    - backup
+    - down
 - nginx_vts_cache
-  - max_bytes
-  - used_bytes
-  - in_bytes
-  - out_bytes
-  - miss
-  - bypass
-  - expired
-  - stale
-  - updating
-  - revalidated
-  - hit
-  - scarce
+    - max_bytes
+    - used_bytes
+    - in_bytes
+    - out_bytes
+    - miss
+    - bypass
+    - expired
+    - stale
+    - updating
+    - revalidated
+    - hit
+    - scarce
 
-
-### Tags:
+### Tags
 
 - nginx_vts_connections
-  - source
-  - port
+    - source
+    - port
 - nginx_vts_server
-  - source
-  - port
-  - zone
+    - source
+    - port
+    - zone
 - nginx_vts_filter
-  - source
-  - port
-  - filter_name
-  - filter_key
+    - source
+    - port
+    - filter_name
+    - filter_key
 - nginx_vts_upstream
-  - source
-  - port
-  - upstream
-  - upstream_address
+    - source
+    - port
+    - upstream
+    - upstream_address
 - nginx_vts_cache
-  - source
-  - port
-  - zone
+    - source
+    - port
+    - zone
 
-
-### Example Output:
+### Example Output
 
 Using this configuration:
+
 ```toml
 [[inputs.nginx_vts]]
   ## An array of Nginx status URIs to gather stats.
@@ -106,11 +107,13 @@ Using this configuration:
 ```
 
 When run with:
+
 ```sh
 ./circonus-unified-agent -config circonus-unified-agent.conf -input-filter nginx_vts -test
 ```
 
 It produces:
+
 ```
 nginx_vts_connections,source=localhost,port=80,host=localhost waiting=30i,accepted=295333i,handled=295333i,requests=6833487i,active=33i,reading=0i,writing=3i 1518341521000000000
 nginx_vts_server,zone=example.com,port=80,host=localhost,source=localhost cache_hit=158915i,in_bytes=1935528964i,out_bytes=6531366419i,response_2xx_count=809994i,response_4xx_count=16664i,cache_bypass=0i,cache_stale=0i,cache_revalidated=0i,requests=2187977i,response_1xx_count=0i,response_3xx_count=1360390i,cache_miss=2249i,cache_updating=0i,cache_scarce=0i,request_time=13i,response_5xx_count=929i,cache_expired=0i 1518341521000000000

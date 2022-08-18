@@ -2,11 +2,12 @@ package printer
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/processors"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/serializers"
-	"github.com/circonus-labs/circonus-unified-agent/plugins/serializers/influx"
+	"github.com/circonus-labs/circonus-unified-agent/plugins/serializers/circonus"
 )
 
 type Printer struct {
@@ -37,8 +38,9 @@ func (p *Printer) Apply(in ...cua.Metric) []cua.Metric {
 
 func init() {
 	processors.Add("printer", func() cua.Processor {
+		s, _ := circonus.NewSerializer(time.Millisecond)
 		return &Printer{
-			serializer: influx.NewSerializer(),
+			serializer: s,
 		}
 	})
 }

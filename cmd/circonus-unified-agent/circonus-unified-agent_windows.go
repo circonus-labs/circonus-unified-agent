@@ -1,3 +1,4 @@
+//go:build windows
 // +build windows
 
 package main
@@ -63,15 +64,18 @@ func (p *program) Stop(s service.Service) error {
 
 func runAsWindowsService(inputFilters, outputFilters, aggregatorFilters, processorFilters []string) {
 	programFiles := os.Getenv("ProgramFiles")
-	if programFiles == "" { // Should never happen
+	if programFiles == "" {
 		programFiles = "C:\\Program Files"
+		log.Print("I! ProgramFiles environment variable is unset")
+	} else {
+		log.Print("I! ProgramFiles found with value: " + programFiles)
 	}
 	svcConfig := &service.Config{
 		Name:        *fServiceName,
 		DisplayName: *fServiceDisplayName,
 		Description: "Collects data using a series of plugins and publishes it to " +
 			"another series of plugins.",
-		Arguments: []string{"--config", programFiles + `\Circonus\circonus-unified-agent.conf`},
+		Arguments: []string{"--config", programFiles + `\Circonus Unified Agent\etc\circonus-unified-agent.conf`},
 	}
 
 	prg := &program{

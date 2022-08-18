@@ -13,6 +13,8 @@ import (
 )
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Files to gather stats about.
   ## These accept standard unix glob matching rules, but with the addition of
   ## ** as a "super asterisk". ie:
@@ -29,13 +31,10 @@ const sampleConfig = `
 `
 
 type FileStat struct {
-	SHA256 bool
+	Log    cua.Logger
+	globs  map[string]*globpath.GlobPath // maps full file paths to globmatch obj
 	Files  []string
-
-	Log cua.Logger
-
-	// maps full file paths to globmatch obj
-	globs map[string]*globpath.GlobPath
+	SHA256 bool
 }
 
 func NewFileStat() *FileStat {

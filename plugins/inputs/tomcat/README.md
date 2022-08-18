@@ -4,11 +4,13 @@ The Tomcat plugin collects statistics available from the tomcat manager status p
 
 See the [Tomcat documentation](https://tomcat.apache.org/tomcat-9.0-doc/manager-howto.html#Server_Status) for details of these statistics.
 
-### Configuration:
+### Configuration
 
 ```toml
 # Gather metrics from the Tomcat server status page.
 [[inputs.tomcat]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## URL of the Tomcat server status
   # url = "http://127.0.0.1:8080/manager/status/all?XML=true"
 
@@ -27,42 +29,42 @@ See the [Tomcat documentation](https://tomcat.apache.org/tomcat-9.0-doc/manager-
   # insecure_skip_verify = false
 ```
 
-### Measurements & Fields:
+### Measurements & Fields
 
 - tomcat_jvm_memory
-  - free
-  - total
-  - max
+    - free
+    - total
+    - max
 - tomcat_jvm_memorypool
-  - max_threads
-  - current_thread_count
-  - current_threads_busy
-  - max_time
-  - processing_time
-  - request_count
-  - error_count
-  - bytes_received
-  - bytes_sent
+    - max_threads
+    - current_thread_count
+    - current_threads_busy
+    - max_time
+    - processing_time
+    - request_count
+    - error_count
+    - bytes_received
+    - bytes_sent
 - tomcat_connector
-  - max_threads
-  - current_thread_count
-  - current_thread_busy
-  - max_time
-  - processing_time
-  - request_count
-  - error_count
-  - bytes_received
-  - bytes_sent
+    - max_threads
+    - current_thread_count
+    - current_thread_busy
+    - max_time
+    - processing_time
+    - request_count
+    - error_count
+    - bytes_received
+    - bytes_sent
 
-### Tags:
+### Tags
 
 - tomcat_jvm_memorypool has the following tags:
-  - name
-  - type
+    - name
+    - type
 - tomcat_connector
-  - name
+    - name
 
-### Example Output:
+### Example Output
 
 ```
 tomcat_jvm_memory,host=N8-MBP free=20014352i,max=127729664i,total=41459712i 1474663361000000000

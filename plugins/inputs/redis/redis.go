@@ -77,6 +77,8 @@ func (r *redisClient) BaseTags() map[string]string {
 var replicationSlaveMetricPrefix = regexp.MustCompile(`^slave\d+`)
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## specify servers via a url matching:
   ##  [protocol://][:password]@address[:port]
   ##  e.g.

@@ -17,6 +17,7 @@ import (
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/ceph"
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/cgroup"
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/chrony"
+	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/circ_http_json"
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/cisco_telemetry_mdt"
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/clickhouse"
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/cloud_pubsub"

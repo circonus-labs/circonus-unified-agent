@@ -1,3 +1,4 @@
+//go:build linux
 // +build linux
 
 package sysstat
@@ -77,6 +78,8 @@ func (*Sysstat) Description() string {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Path to the sadc command.
   #
   ## Common Defaults:

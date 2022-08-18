@@ -6,11 +6,12 @@ in the circonus-unified-agent.conf configuration file.
 
 The [Neptune Apex](https://www.neptunesystems.com/) input plugin collects real-time data from the Apex's status.xml page.
 
-
 ### Configuration
 
 ```toml
 [[inputs.neptune_apex]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## The Neptune Apex plugin reads the publicly available status.xml data from a local Apex.
   ## Measurements will be logged under "apex".
 
@@ -36,41 +37,40 @@ to this plugin. When reasonable and predictable, some tags are derived to make g
 programming. These tags are clearly marked in the list below and should be considered a convenience rather than authoritative.
 
 - neptune_apex (All metrics have this measurement name)
-  - tags:
-    - host (mandatory, string) is the host on which agent runs.
-    - source (mandatory, string) contains the hostname of the apex device. This can be used to differentiate between
+    - tags:
+        - host (mandatory, string) is the host on which agent runs.
+        - source (mandatory, string) contains the hostname of the apex device. This can be used to differentiate between
     different units. By using the source instead of the serial number, replacements units won't disturb graphs.
-    - type (mandatory, string) maps to the different types of data. Values can be "controller" (The Apex controller
+        - type (mandatory, string) maps to the different types of data. Values can be "controller" (The Apex controller
     itself), "probe" for the different input probes, or "output" for any physical or virtual outputs. The Watt and Amp
     probes attached to the physical 120V outlets are aggregated under the output type.
-    - hardware (mandatory, string) controller hardware version
-    - software (mandatory, string) software version
-    - probe_type (optional, string) contains the probe type as reported by the Apex.
-    - name (optional, string) contains the name of the probe or output.
-    - output_id (optional, string) represents the internal unique output ID. This is different from the device_id.
-    - device_id (optional, string) maps to either the aquabus address or the internal reference.
-    - output_type (optional, string) categorizes the output into different categories. This tag is DERIVED from the
+        - hardware (mandatory, string) controller hardware version
+        - software (mandatory, string) software version
+        - probe_type (optional, string) contains the probe type as reported by the Apex.
+        - name (optional, string) contains the name of the probe or output.
+        - output_id (optional, string) represents the internal unique output ID. This is different from the device_id.
+        - device_id (optional, string) maps to either the aquabus address or the internal reference.
+        - output_type (optional, string) categorizes the output into different categories. This tag is DERIVED from the
     device_id. Possible values are: "variable" for the 0-10V signal ports, "outlet" for physical 120V sockets, "alert"
     for alarms (email, sound), "virtual" for user-defined outputs, and "unknown" for everything else.
-  - fields:
-    - value (float, various unit) represents the probe reading.
-    - state (string) represents the output state as defined by the Apex. Examples include "AOF" for Auto (OFF), "TBL"
+    - fields:
+        - value (float, various unit) represents the probe reading.
+        - state (string) represents the output state as defined by the Apex. Examples include "AOF" for Auto (OFF), "TBL"
     for operating according to a table, and "PF*" for different programs.
-    - amp (float, Ampere) is the amount of current flowing through the 120V outlet.
-    - watt (float, Watt) represents the amount of energy flowing through the 120V outlet.
-    - xstatus (string) indicates the xstatus of an outlet. Found on wireless Vortech devices.
-    - power_failed (int64, Unix epoch in ns) when the controller last lost power. Omitted if the apex reports it as "none"
-    - power_restored (int64, Unix epoch in ns) when the controller last powered on. Omitted if the apex reports it as "none"
-    - serial (string, serial number)
-   - time:
-     - The time used for the metric is parsed from the status.xml page. This helps when cross-referencing events with
+        - amp (float, Ampere) is the amount of current flowing through the 120V outlet.
+        - watt (float, Watt) represents the amount of energy flowing through the 120V outlet.
+        - xstatus (string) indicates the xstatus of an outlet. Found on wireless Vortech devices.
+        - power_failed (int64, Unix epoch in ns) when the controller last lost power. Omitted if the apex reports it as "none"
+        - power_restored (int64, Unix epoch in ns) when the controller last powered on. Omitted if the apex reports it as "none"
+        - serial (string, serial number)
+    - time:
+        - The time used for the metric is parsed from the status.xml page. This helps when cross-referencing events with
      the local system of Apex Fusion. Since the Apex uses NTP, this should not matter in most scenarios.
-
 
 ### Sample Queries
 
-
 Get the max, mean, and min for the temperature in the last hour:
+
 ```sql
 SELECT mean("value") FROM "neptune_apex" WHERE ("probe_type" = 'Temp') AND time >= now() - 6h GROUP BY time(20s)
 ```
@@ -78,16 +78,21 @@ SELECT mean("value") FROM "neptune_apex" WHERE ("probe_type" = 'Temp') AND time 
 ### Troubleshooting
 
 #### sendRequest failure
+
 This indicates a problem communicating with the local Apex controller. If on Mac/Linux, try curl:
+
 ```sh
-$ curl apex.local/cgi-bin/status.xml
+curl apex.local/cgi-bin/status.xml
 ```
+
 to isolate the problem.
 
 #### parseXML errors
+
 Ensure the XML being returned is valid. If you get valid XML back, open a bug request.
 
 #### Missing fields/data
+
 The neptune_apex plugin is strict on its input to prevent any conversion errors. If you have fields in the status.xml
 output that are not converted to a metric, open a feature request and paste your whole status.xml
 

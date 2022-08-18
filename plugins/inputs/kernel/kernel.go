@@ -1,3 +1,4 @@
+//go:build linux
 // +build linux
 
 package kernel
@@ -32,7 +33,11 @@ func (k *Kernel) Description() string {
 	return "Get kernel statistics from /proc/stat"
 }
 
-func (k *Kernel) SampleConfig() string { return "" }
+func (k *Kernel) SampleConfig() string {
+	return `
+  instance_id = "" # unique instance identifier (REQUIRED)
+`
+}
 
 func (k *Kernel) Gather(ctx context.Context, acc cua.Accumulator) error {
 

@@ -30,6 +30,8 @@ func NewIRQ(id string) *IRQ {
 }
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## When set to true, cpu metrics are tagged with the cpu.  Otherwise cpu is
   ## stored as a field.
   ##

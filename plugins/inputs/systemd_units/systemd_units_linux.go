@@ -1,3 +1,7 @@
+//go:build linux
+
+// build !linux
+
 package systemdunits
 
 import (
@@ -125,6 +129,8 @@ func (s *SystemdUnits) Description() string {
 // SampleConfig returns sample configuration options.
 func (s *SystemdUnits) SampleConfig() string {
 	return `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Set timeout for systemctl execution
   # timeout = "1s"
   #

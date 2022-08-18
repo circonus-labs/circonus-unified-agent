@@ -16,16 +16,17 @@ import (
 )
 
 type File struct {
-	Files             []string `toml:"files"`
+	parser            parsers.Parser
+	decoder           *encoding.Decoder
 	FileTag           string   `toml:"file_tag"`
 	CharacterEncoding string   `toml:"character_encoding"`
-	parser            parsers.Parser
-
-	filenames []string
-	decoder   *encoding.Decoder
+	Files             []string `toml:"files"`
+	filenames         []string
 }
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Files to parse each interval.  Accept standard unix glob matching rules,
   ## as well as ** to match recursive files and directories.
   files = ["/tmp/metrics.out"]
@@ -62,7 +63,10 @@ func (f *File) Description() string {
 func (f *File) Init() error {
 	var err error
 	f.decoder, err = encoding.NewDecoder(f.CharacterEncoding)
-	return fmt.Errorf("new decoder: %w", err)
+	if err != nil {
+		return fmt.Errorf("new decoder: %w", err)
+	}
+	return err
 }
 
 func (f *File) Gather(ctx context.Context, acc cua.Accumulator) error {

@@ -13,11 +13,11 @@ import (
 )
 
 type metricDiff struct {
+	Time        time.Time
 	Measurement string
 	Tags        []*cua.Tag
 	Fields      []*cua.Field
 	Type        cua.ValueType
-	Time        time.Time
 }
 
 func lessFunc(lhs, rhs *metricDiff) bool {

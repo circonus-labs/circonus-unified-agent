@@ -6,11 +6,13 @@ import (
 )
 
 type DMCache struct {
-	PerDevice        bool `toml:"per_device"`
 	getCurrentStatus func() ([]string, error)
+	PerDevice        bool `toml:"per_device"`
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Whether to report per-device stats or not
   per_device = true
 `

@@ -28,10 +28,12 @@ avoid cardinality issues:
 - Use [metric filtering][] options to exclude unneeded measurements and tags.
 - Add `__rollup:false` tag to limit cardinality and manage retention.
 
-### Configuration:
+### Configuration
 
 ```toml
 [[inputs.kube_inventory]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## URL for the Kubernetes API
   url = "https://127.0.0.1"
 
@@ -124,140 +126,140 @@ subjects:
     namespace: default
 ```
 
-### Metrics:
+### Metrics
 
 - kubernetes_daemonset
-  - tags:
-    - daemonset_name
-    - namespace
-    - selector (\*varies)
-  - fields:
-    - generation
-    - current_number_scheduled
-    - desired_number_scheduled
-    - number_available
-    - number_misscheduled
-    - number_ready
-    - number_unavailable
-    - updated_number_scheduled
+    - tags:
+        - daemonset_name
+        - namespace
+        - selector (\*varies)
+    - fields:
+        - generation
+        - current_number_scheduled
+        - desired_number_scheduled
+        - number_available
+        - number_misscheduled
+        - number_ready
+        - number_unavailable
+        - updated_number_scheduled
 
-* kubernetes_deployment
-  - tags:
-    - deployment_name
-    - namespace
-    - selector (\*varies)
-  - fields:
-    - replicas_available
-    - replicas_unavailable
-    - created
+- kubernetes_deployment
+    - tags:
+        - deployment_name
+        - namespace
+        - selector (\*varies)
+    - fields:
+        - replicas_available
+        - replicas_unavailable
+        - created
 
 - kubernetes_endpoints
-  - tags:
-    - endpoint_name
-    - namespace
-    - hostname
-    - node_name
-    - port_name
-    - port_protocol
-    - kind (\*varies)
-  - fields:
-    - created
-    - generation
-    - ready
-    - port
+    - tags:
+        - endpoint_name
+        - namespace
+        - hostname
+        - node_name
+        - port_name
+        - port_protocol
+        - kind (\*varies)
+    - fields:
+        - created
+        - generation
+        - ready
+        - port
 
-* kubernetes_ingress
-  - tags:
-    - ingress_name
-    - namespace
-    - hostname
-    - ip
-    - backend_service_name
-    - path
-    - host
-  - fields:
-    - created
-    - generation
-    - backend_service_port
-    - tls
+- kubernetes_ingress
+    - tags:
+        - ingress_name
+        - namespace
+        - hostname
+        - ip
+        - backend_service_name
+        - path
+        - host
+    - fields:
+        - created
+        - generation
+        - backend_service_port
+        - tls
 
 - kubernetes_node
-  - tags:
-    - node_name
-  - fields:
-    - capacity_cpu_cores
-    - capacity_memory_bytes
-    - capacity_pods
-    - allocatable_cpu_cores
-    - allocatable_memory_bytes
-    - allocatable_pods
+    - tags:
+        - node_name
+    - fields:
+        - capacity_cpu_cores
+        - capacity_memory_bytes
+        - capacity_pods
+        - allocatable_cpu_cores
+        - allocatable_memory_bytes
+        - allocatable_pods
 
-* kubernetes_persistentvolume
-  - tags:
-    - pv_name
-    - phase
-    - storageclass
-  - fields:
-    - phase_type (int, [see below](#pv-phase_type))
+- kubernetes_persistentvolume
+    - tags:
+        - pv_name
+        - phase
+        - storageclass
+    - fields:
+        - phase_type (int, [see below](#pv-phase_type))
 
 - kubernetes_persistentvolumeclaim
-  - tags:
-    - pvc_name
-    - namespace
-    - phase
-    - storageclass
-    - selector (\*varies)
-  - fields:
-    - phase_type (int, [see below](#pvc-phase_type))
+    - tags:
+        - pvc_name
+        - namespace
+        - phase
+        - storageclass
+        - selector (\*varies)
+    - fields:
+        - phase_type (int, [see below](#pvc-phase_type))
 
-* kubernetes_pod_container
-  - tags:
-    - container_name
-    - namespace
-    - node_name
-    - pod_name
-    - node_selector (\*varies)
-    - state
-    - readiness
-  - fields:
-    - restarts_total
-    - state_code
-    - state_reason
-    - terminated_reason (string, deprecated in 1.15: use `state_reason` instead)
-    - resource_requests_cpu_units
-    - resource_requests_memory_bytes
-    - resource_limits_cpu_units
-    - resource_limits_memory_bytes
+- kubernetes_pod_container
+    - tags:
+        - container_name
+        - namespace
+        - node_name
+        - pod_name
+        - node_selector (\*varies)
+        - state
+        - readiness
+    - fields:
+        - restarts_total
+        - state_code
+        - state_reason
+        - terminated_reason (string, deprecated in 1.15: use `state_reason` instead)
+        - resource_requests_cpu_units
+        - resource_requests_memory_bytes
+        - resource_limits_cpu_units
+        - resource_limits_memory_bytes
 
 - kubernetes_service
-  - tags:
-    - service_name
-    - namespace
-    - port_name
-    - port_protocol
-    - external_name
-    - cluster_ip
-    - selector (\*varies)
-  - fields
-    - created
-    - generation
-    - port
-    - target_port
+    - tags:
+        - service_name
+        - namespace
+        - port_name
+        - port_protocol
+        - external_name
+        - cluster_ip
+        - selector (\*varies)
+    - fields
+        - created
+        - generation
+        - port
+        - target_port
 
-* kubernetes_statefulset
-  - tags:
-    - statefulset_name
-    - namespace
-    - selector (\*varies)
-  - fields:
-    - created
-    - generation
-    - replicas
-    - replicas_current
-    - replicas_ready
-    - replicas_updated
-    - spec_replicas
-    - observed_generation
+- kubernetes_statefulset
+    - tags:
+        - statefulset_name
+        - namespace
+        - selector (\*varies)
+    - fields:
+        - created
+        - generation
+        - replicas
+        - replicas_current
+        - replicas_ready
+        - replicas_updated
+        - spec_replicas
+        - observed_generation
 
 #### pv `phase_type`
 
@@ -283,7 +285,7 @@ The persistentvolumeclaim "phase" is saved in the `phase` tag with a correlated 
 | pending   | 2                         |
 | unknown   | 3                         |
 
-### Example Output:
+### Example Output
 
 ```
 kubernetes_configmap,configmap_name=envoy-config,namespace=default,resource_version=56593031 created=1544103867000000000i 1547597616000000000

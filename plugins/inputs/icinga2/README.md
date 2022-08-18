@@ -6,11 +6,13 @@ The icinga2 plugin uses the icinga2 remote API to gather status on running
 services and hosts. You can read Icinga2's documentation for their remote API
 [here](https://docs.icinga.com/icinga2/latest/doc/module/icinga2/chapter/icinga2-api)
 
-### Configuration:
+### Configuration
 
 ```toml
 # Description
 [[inputs.icinga2]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Required Icinga2 server address
   # server = "https://localhost:5665"
   
@@ -32,13 +34,13 @@ services and hosts. You can read Icinga2's documentation for their remote API
   # insecure_skip_verify = true
 ```
 
-### Measurements & Fields:
+### Measurements & Fields
 
 - All measurements have the following fields:
     - name (string)
     - state_code (int)
 
-### Tags:
+### Tags
 
 - All measurements have the following tags:
     - check_command - The short name of the check command
@@ -49,7 +51,7 @@ services and hosts. You can read Icinga2's documentation for their remote API
     - scheme - The icinga2 protocol (http/https)
     - server - The server the check_command is running for
 
-### Sample Queries:
+### Sample Queries
 
 ```sql
 SELECT * FROM "icinga2_services" WHERE state_code = 0 AND time > now() - 24h // Service with OK status
@@ -58,7 +60,7 @@ SELECT * FROM "icinga2_services" WHERE state_code = 2 AND time > now() - 24h // 
 SELECT * FROM "icinga2_services" WHERE state_code = 3 AND time > now() - 24h // Service with UNKNOWN status
 ```
 
-### Example Output:
+### Example Output
 
 ```
 $ ./circonus-unified-agent -config circonus-unified-agent.conf -input-filter icinga2 -test

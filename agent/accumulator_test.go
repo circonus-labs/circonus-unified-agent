@@ -71,11 +71,11 @@ func TestAccAddError(t *testing.T) {
 
 func TestSetPrecision(t *testing.T) {
 	tests := []struct {
-		name      string
-		unset     bool
-		precision time.Duration
 		timestamp time.Time
 		expected  time.Time
+		name      string
+		precision time.Duration
+		unset     bool
 	}{
 		{
 			name:      "default precision is nanosecond",

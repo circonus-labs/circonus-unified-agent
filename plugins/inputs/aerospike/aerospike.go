@@ -43,6 +43,8 @@ type Aerospike struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Aerospike servers to connect to (with port)
   ## This plugin will query all namespaces the aerospike
   ## server has configured and get stats for them.

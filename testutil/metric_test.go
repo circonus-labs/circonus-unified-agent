@@ -11,9 +11,9 @@ import (
 
 func TestRequireMetricEqual(t *testing.T) {
 	tests := []struct {
-		name string
 		got  cua.Metric
 		want cua.Metric
+		name string
 	}{
 		{
 			name: "equal metrics should be equal",

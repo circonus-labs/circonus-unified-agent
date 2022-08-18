@@ -2,11 +2,13 @@
 
 Nginx Plus is a commercial version of the open source web server Nginx. The use this plugin you will need a license. For more information about the differences between Nginx (F/OSS) and Nginx Plus, [click here](https://www.nginx.com/blog/whats-difference-nginx-foss-nginx-plus/).
 
-### Configuration:
+### Configuration
 
 ```toml
 # Read Nginx Plus API advanced status information
 [[inputs.nginx_plus_api]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## An array of Nginx API URIs to gather stats.
   urls = ["http://localhost/api"]
   # Nginx API version, default: 3
@@ -47,158 +49,158 @@ Nginx Plus is a commercial version of the open source web server Nginx. The use 
 | nginx_plus_api_http_location_zones   | >= 5                      |
 | nginx_plus_api_resolver_zones        | >= 5                      |
 
-### Measurements & Fields:
+### Measurements & Fields
 
 - nginx_plus_api_processes
-  - respawned
+    - respawned
 - nginx_plus_api_connections
-  - accepted
-  - dropped
-  - active
-  - idle
+    - accepted
+    - dropped
+    - active
+    - idle
 - nginx_plus_api_ssl
-  - handshakes
-  - handshakes_failed
-  - session_reuses
+    - handshakes
+    - handshakes_failed
+    - session_reuses
 - nginx_plus_api_http_requests
-  - total
-  - current
+    - total
+    - current
 - nginx_plus_api_http_server_zones
-  - processing
-  - requests
-  - responses_1xx
-  - responses_2xx
-  - responses_3xx
-  - responses_4xx
-  - responses_5xx
-  - responses_total
-  - received
-  - sent
-  - discarded
+    - processing
+    - requests
+    - responses_1xx
+    - responses_2xx
+    - responses_3xx
+    - responses_4xx
+    - responses_5xx
+    - responses_total
+    - received
+    - sent
+    - discarded
 - nginx_plus_api_http_upstreams
-  - keepalive
-  - zombies
+    - keepalive
+    - zombies
 - nginx_plus_api_http_upstream_peers
-  - requests
-  - unavail
-  - healthchecks_checks
-  - header_time
-  - state
-  - response_time
-  - active
-  - healthchecks_last_passed
-  - weight
-  - responses_1xx
-  - responses_2xx
-  - responses_3xx
-  - responses_4xx
-  - responses_5xx
-  - received
-  - healthchecks_fails
-  - healthchecks_unhealthy
-  - backup
-  - responses_total
-  - sent
-  - fails
-  - downtime
+    - requests
+    - unavail
+    - healthchecks_checks
+    - header_time
+    - state
+    - response_time
+    - active
+    - healthchecks_last_passed
+    - weight
+    - responses_1xx
+    - responses_2xx
+    - responses_3xx
+    - responses_4xx
+    - responses_5xx
+    - received
+    - healthchecks_fails
+    - healthchecks_unhealthy
+    - backup
+    - responses_total
+    - sent
+    - fails
+    - downtime
 - nginx_plus_api_http_caches
-  - size
-  - max_size
-  - cold
-  - hit_responses
-  - hit_bytes
-  - stale_responses
-  - stale_bytes
-  - updating_responses
-  - updating_bytes
-  - revalidated_responses
-  - revalidated_bytes
-  - miss_responses
-  - miss_bytes
-  - miss_responses_written
-  - miss_bytes_written
-  - expired_responses
-  - expired_bytes
-  - expired_responses_written
-  - expired_bytes_written
-  - bypass_responses
-  - bypass_bytes
-  - bypass_responses_written
-  - bypass_bytes_written
+    - size
+    - max_size
+    - cold
+    - hit_responses
+    - hit_bytes
+    - stale_responses
+    - stale_bytes
+    - updating_responses
+    - updating_bytes
+    - revalidated_responses
+    - revalidated_bytes
+    - miss_responses
+    - miss_bytes
+    - miss_responses_written
+    - miss_bytes_written
+    - expired_responses
+    - expired_bytes
+    - expired_responses_written
+    - expired_bytes_written
+    - bypass_responses
+    - bypass_bytes
+    - bypass_responses_written
+    - bypass_bytes_written
 - nginx_plus_api_stream_upstreams
-  - zombies
+    - zombies
 - nginx_plus_api_stream_upstream_peers
-  - unavail
-  - healthchecks_checks
-  - healthchecks_fails
-  - healthchecks_unhealthy
-  - healthchecks_last_passed
-  - response_time
-  - state
-  - active
-  - weight
-  - received
-  - backup
-  - sent
-  - fails
-  - downtime
+    - unavail
+    - healthchecks_checks
+    - healthchecks_fails
+    - healthchecks_unhealthy
+    - healthchecks_last_passed
+    - response_time
+    - state
+    - active
+    - weight
+    - received
+    - backup
+    - sent
+    - fails
+    - downtime
 - nginx_plus_api_stream_server_zones
-  - processing
-  - connections
-  - received
-  - sent
+    - processing
+    - connections
+    - received
+    - sent
 - nginx_plus_api_location_zones
-  - requests
-  - responses_1xx
-  - responses_2xx
-  - responses_3xx
-  - responses_4xx
-  - responses_5xx
-  - responses_total
-  - received
-  - sent
-  - discarded
+    - requests
+    - responses_1xx
+    - responses_2xx
+    - responses_3xx
+    - responses_4xx
+    - responses_5xx
+    - responses_total
+    - received
+    - sent
+    - discarded
 - nginx_plus_api_resolver_zones
-  - name
-  - srv
-  - addr
-  - noerror
-  - formerr
-  - servfail
-  - nxdomain
-  - notimp
-  - refused
-  - timedout
-  - unknown
+    - name
+    - srv
+    - addr
+    - noerror
+    - formerr
+    - servfail
+    - nxdomain
+    - notimp
+    - refused
+    - timedout
+    - unknown
 
-### Tags:
+### Tags
 
 - nginx_plus_api_processes, nginx_plus_api_connections, nginx_plus_api_ssl, nginx_plus_api_http_requests
-  - source
-  - port
+    - source
+    - port
 
 - nginx_plus_api_http_upstreams, nginx_plus_api_stream_upstreams
-  - upstream
-  - source
-  - port
+    - upstream
+    - source
+    - port
 
 - nginx_plus_api_http_server_zones, nginx_plus_api_upstream_server_zones, nginx_plus_api_http_location_zones, nginx_plus_api_resolver_zones
-  - source
-  - port
-  - zone
+    - source
+    - port
+    - zone
 
 - nginx_plus_api_upstream_peers, nginx_plus_api_stream_upstream_peers
-  - id
-  - upstream
-  - source
-  - port
-  - upstream_address
+    - id
+    - upstream
+    - source
+    - port
+    - upstream_address
 
 - nginx_plus_api_http_caches
-  - source
-  - port
+    - source
+    - port
 
-### Example Output:
+### Example Output
 
 Using this configuration:
 

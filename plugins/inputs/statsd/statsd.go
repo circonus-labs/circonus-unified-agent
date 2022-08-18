@@ -19,7 +19,7 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/parsers/graphite"
 	"github.com/circonus-labs/circonus-unified-agent/selfstat"
-	"github.com/maier/go-trapmetrics"
+	"github.com/circonus-labs/go-trapmetrics"
 )
 
 const (
@@ -38,113 +38,158 @@ const (
 	parserGoRoutines = 5
 )
 
+// // Statsd allows the importing of statsd and dogstatsd data.
+// type Statsd struct {
+// 	InstanceID   string  `toml:"instance_id"`
+// 	Broker       string  `toml:"broker"`
+// 	DebugAPI     *bool   `toml:"debug_api"`
+// 	TraceMetrics *string `toml:"trace_metrics"`
+
+// 	// Protocol used on listener - udp or tcp
+// 	Protocol string `toml:"protocol"`
+
+// 	// Address & Port to serve from
+// 	ServiceAddress string
+
+// 	// Number of messages allowed to queue up in between calls to Gather. If this
+// 	// fills up, packets will get dropped until the next Gather interval is ran.
+// 	AllowedPendingMessages int
+
+// 	// // Percentiles specifies the percentiles that will be calculated for timing
+// 	// // and histogram stats.
+// 	// Percentiles     []internal.Number
+// 	// PercentileLimit int
+
+// 	// DeleteGauges   bool
+// 	// DeleteCounters bool
+// 	// DeleteSets     bool
+// 	// DeleteTimings  bool
+// 	// ConvertNames   bool
+
+// 	// MetricSeparator is the separator between parts of the metric name.
+// 	MetricSeparator string
+
+// 	// // This flag enables parsing of tags in the dogstatsd extension to the
+// 	// // statsd protocol (http://docs.datadoghq.com/guides/dogstatsd/)
+// 	// ParseDataDogTags bool // depreciated in 1.10; use datadog_extensions
+
+// 	// Parses extensions to statsd in the datadog statsd format
+// 	// currently supports metrics and datadog tags.
+// 	// http://docs.datadoghq.com/guides/dogstatsd/
+// 	DataDogExtensions bool `toml:"datadog_extensions"`
+
+// 	// UDPPacketSize is deprecated, it's only here for legacy support
+// 	// we now always create 1 max size buffer and then copy only what we need
+// 	// into the in channel
+// 	// see https://github.com/circonus-labs/circonus-unified-agent/pull/992
+// 	UDPPacketSize int `toml:"udp_packet_size"`
+
+// 	ReadBufferSize int `toml:"read_buffer_size"`
+
+// 	sync.Mutex
+// 	// Lock for preventing a data race during resource cleanup
+// 	cleanup sync.Mutex
+// 	wg      sync.WaitGroup
+// 	// accept channel tracks how many active connections there are, if there
+// 	// is an available bool in accept, then we are below the maximum and can
+// 	// accept the connection
+// 	accept chan bool
+// 	// drops tracks the number of dropped metrics.
+// 	drops int
+// 	// malformed tracks the number of malformed packets
+// 	// malformed int
+
+// 	// Channel for all incoming statsd packets
+// 	in   chan input
+// 	done chan struct{}
+
+// 	// // Cache gauges, counters & sets so they can be aggregated as they arrive
+// 	// // gauges and counters map measurement/tags hash -> field name -> metrics
+// 	// // sets and timings map measurement/tags hash -> metrics
+// 	// gauges   map[string]cachedgauge
+// 	// counters map[string]cachedcounter
+// 	// sets     map[string]cachedset
+// 	// timings  map[string]cachedtimings
+
+// 	// bucket -> influx templates
+// 	Templates []string
+
+// 	// Protocol listeners
+// 	UDPlistener *net.UDPConn
+// 	TCPlistener *net.TCPListener
+
+// 	// track current connections so we can close them in Stop()
+// 	conns map[string]*net.TCPConn
+
+// 	MaxTCPConnections int `toml:"max_tcp_connections"`
+
+// 	TCPKeepAlive       bool               `toml:"tcp_keep_alive"`
+// 	TCPKeepAlivePeriod *internal.Duration `toml:"tcp_keep_alive_period"`
+
+// 	graphiteParser *graphite.Parser
+
+// 	acc cua.Accumulator
+
+// 	MaxConnections     selfstat.Stat
+// 	CurrentConnections selfstat.Stat
+// 	TotalConnections   selfstat.Stat
+// 	TCPPacketsRecv     selfstat.Stat
+// 	TCPBytesRecv       selfstat.Stat
+// 	UDPPacketsRecv     selfstat.Stat
+// 	UDPPacketsDrop     selfstat.Stat
+// 	UDPBytesRecv       selfstat.Stat
+// 	ParseTimeNS        selfstat.Stat
+
+// 	Log cua.Logger
+
+// 	// circonus destination for the metrics from this input
+// 	metricDestination *trapmetrics.TrapMetrics
+
+// 	// A pool of byte slices to handle parsing
+// 	bufPool sync.Pool
+// }
+
 // Statsd allows the importing of statsd and dogstatsd data.
 type Statsd struct {
-	InstanceID string `toml:"instance_id"`
-	Broker     string `toml:"broker"`
-
-	// Protocol used on listener - udp or tcp
-	Protocol string `toml:"protocol"`
-
-	// Address & Port to serve from
-	ServiceAddress string
-
-	// Number of messages allowed to queue up in between calls to Gather. If this
-	// fills up, packets will get dropped until the next Gather interval is ran.
-	AllowedPendingMessages int
-
-	// // Percentiles specifies the percentiles that will be calculated for timing
-	// // and histogram stats.
-	// Percentiles     []internal.Number
-	// PercentileLimit int
-
-	// DeleteGauges   bool
-	// DeleteCounters bool
-	// DeleteSets     bool
-	// DeleteTimings  bool
-	// ConvertNames   bool
-
-	// MetricSeparator is the separator between parts of the metric name.
-	MetricSeparator string
-
-	// // This flag enables parsing of tags in the dogstatsd extension to the
-	// // statsd protocol (http://docs.datadoghq.com/guides/dogstatsd/)
-	// ParseDataDogTags bool // depreciated in 1.10; use datadog_extensions
-
-	// Parses extensions to statsd in the datadog statsd format
-	// currently supports metrics and datadog tags.
-	// http://docs.datadoghq.com/guides/dogstatsd/
-	DataDogExtensions bool `toml:"datadog_extensions"`
-
-	// UDPPacketSize is deprecated, it's only here for legacy support
-	// we now always create 1 max size buffer and then copy only what we need
-	// into the in channel
-	// see https://github.com/circonus-labs/circonus-unified-agent/pull/992
-	UDPPacketSize int `toml:"udp_packet_size"`
-
-	ReadBufferSize int `toml:"read_buffer_size"`
-
-	sync.Mutex
-	// Lock for preventing a data race during resource cleanup
-	cleanup sync.Mutex
 	wg      sync.WaitGroup
-	// accept channel tracks how many active connections there are, if there
-	// is an available bool in accept, then we are below the maximum and can
-	// accept the connection
-	accept chan bool
-	// drops tracks the number of dropped metrics.
-	drops int
-	// malformed tracks the number of malformed packets
-	// malformed int
-
-	// Channel for all incoming statsd packets
-	in   chan input
-	done chan struct{}
-
-	// // Cache gauges, counters & sets so they can be aggregated as they arrive
-	// // gauges and counters map measurement/tags hash -> field name -> metrics
-	// // sets and timings map measurement/tags hash -> metrics
-	// gauges   map[string]cachedgauge
-	// counters map[string]cachedcounter
-	// sets     map[string]cachedset
-	// timings  map[string]cachedtimings
-
-	// bucket -> influx templates
-	Templates []string
-
-	// Protocol listeners
-	UDPlistener *net.UDPConn
-	TCPlistener *net.TCPListener
-
-	// track current connections so we can close them in Stop()
-	conns map[string]*net.TCPConn
-
-	MaxTCPConnections int `toml:"max_tcp_connections"`
-
-	TCPKeepAlive       bool               `toml:"tcp_keep_alive"`
-	TCPKeepAlivePeriod *internal.Duration `toml:"tcp_keep_alive_period"`
-
-	graphiteParser *graphite.Parser
-
-	acc cua.Accumulator
-
-	MaxConnections     selfstat.Stat
-	CurrentConnections selfstat.Stat
-	TotalConnections   selfstat.Stat
-	TCPPacketsRecv     selfstat.Stat
-	TCPBytesRecv       selfstat.Stat
-	UDPPacketsRecv     selfstat.Stat
-	UDPPacketsDrop     selfstat.Stat
-	UDPBytesRecv       selfstat.Stat
-	ParseTimeNS        selfstat.Stat
-
-	Log cua.Logger
-
-	// circonus destination for the metrics from this input
-	metricDestination *trapmetrics.TrapMetrics
-
-	// A pool of byte slices to handle parsing
-	bufPool sync.Pool
+	cleanup sync.Mutex
+	sync.Mutex
+	UDPPacketsDrop         selfstat.Stat
+	Log                    cua.Logger
+	ParseTimeNS            selfstat.Stat
+	UDPBytesRecv           selfstat.Stat
+	CurrentConnections     selfstat.Stat
+	UDPPacketsRecv         selfstat.Stat
+	TCPBytesRecv           selfstat.Stat
+	TCPPacketsRecv         selfstat.Stat
+	MaxConnections         selfstat.Stat
+	acc                    cua.Accumulator
+	TotalConnections       selfstat.Stat
+	graphiteParser         *graphite.Parser
+	accept                 chan bool
+	in                     chan input
+	done                   chan struct{}
+	TraceMetrics           *string `toml:"trace_metrics"`
+	UDPlistener            *net.UDPConn
+	TCPlistener            *net.TCPListener
+	conns                  map[string]*net.TCPConn
+	DebugAPI               *bool `toml:"debug_api"`
+	metricDestination      *trapmetrics.TrapMetrics
+	TCPKeepAlivePeriod     *internal.Duration `toml:"tcp_keep_alive_period"`
+	bufPool                sync.Pool
+	Broker                 string `toml:"broker"`
+	MetricSeparator        string
+	ServiceAddress         string
+	Protocol               string `toml:"protocol"`
+	InstanceID             string `toml:"instance_id"`
+	Templates              []string
+	UDPPacketSize          int `toml:"udp_packet_size"`
+	MaxTCPConnections      int `toml:"max_tcp_connections"`
+	AllowedPendingMessages int
+	drops                  int
+	ReadBufferSize         int  `toml:"read_buffer_size"`
+	DataDogExtensions      bool `toml:"datadog_extensions"`
+	TCPKeepAlive           bool `toml:"tcp_keep_alive"`
 }
 
 type input struct {
@@ -155,18 +200,17 @@ type input struct {
 
 // One statsd metric, form is <bucket>:<value>|<mtype>|@<samplerate>
 type metric struct {
-	name   string
-	field  string
-	bucket string
-	// hash       string
-	intvalue   int64
-	floatvalue float64
+	tags       map[string]string
+	name       string
+	field      string
+	bucket     string
 	strvalue   string
 	mtype      string
-	additive   bool
-	samplerate float64
-	tags       map[string]string
 	mtags      trapmetrics.Tags
+	samplerate float64
+	intvalue   int64
+	floatvalue float64
+	additive   bool
 }
 
 // type cachedset struct {
@@ -198,8 +242,7 @@ func (*Statsd) Description() string {
 }
 
 const sampleConfig = `
-  ## Instance ID -- required
-  instance_id = ""
+  instance_id = "" # unique instance identifier (REQUIRED)
 
   ## Protocol, must be "tcp", "udp", "udp4" or "udp6" (default=udp)
   protocol = "udp"
@@ -313,10 +356,13 @@ func (s *Statsd) Start(ctx context.Context, ac cua.Accumulator) error {
 
 	s.Log.Debug("initializing metric destination")
 	opts := &circmgr.MetricDestConfig{
-		PluginID:      "statsd",
-		InstanceID:    s.InstanceID,
-		MetricGroupID: "",
-		Broker:        s.Broker,
+		MetricMeta: circmgr.MetricMeta{
+			PluginID:   "statsd",
+			InstanceID: s.InstanceID,
+		},
+		Broker:       s.Broker,
+		DebugAPI:     s.DebugAPI,
+		TraceMetrics: s.TraceMetrics,
 	}
 
 	dest, err := circmgr.NewMetricDestination(opts, s.Log)

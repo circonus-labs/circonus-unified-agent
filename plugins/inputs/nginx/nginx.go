@@ -28,6 +28,8 @@ type Nginx struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   # An array of Nginx stub_status URI to gather stats.
   urls = ["http://localhost/server_status"]
 

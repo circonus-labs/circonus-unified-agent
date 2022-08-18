@@ -16,6 +16,8 @@ type RethinkDB struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## An array of URI to gather stats about. Specify an ip or hostname
   ## with optional port add password. ie,
   ##   rethinkdb://user:auth_key@10.10.3.30:28105,

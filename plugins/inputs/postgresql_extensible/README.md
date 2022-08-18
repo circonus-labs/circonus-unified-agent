@@ -13,6 +13,8 @@ The example below has two queries are specified, with the following parameters:
 
 ```toml
 [[inputs.postgresql_extensible]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   # specify address via a url matching:
   # postgres://[pqgotest[:password]]@host:port[/dbname]?sslmode=...
   # or a simple string:
@@ -73,9 +75,11 @@ The example below has two queries are specified, with the following parameters:
 The system can be easily extended using homemade metrics collection tools or
 using postgresql extensions ([pg_stat_statements](http://www.postgresql.org/docs/current/static/pgstatstatements.html), [pg_proctab](https://github.com/markwkm/pg_proctab) or [powa](http://dalibo.github.io/powa/))
 
-# Sample Queries :
+# Sample Queries
+
 - circonus-unified-agent.conf postgresql_extensible queries (assuming that you have configured
  correctly your connection)
+
 ```toml
 [[inputs.postgresql_extensible.query]]
   sqlquery="SELECT * FROM pg_stat_database"
@@ -128,7 +132,9 @@ using postgresql extensions ([pg_stat_statements](http://www.postgresql.org/docs
 ```
 
 # Postgresql Side
+
 postgresql.conf :
+
 ```
 shared_preload_libraries = 'pg_stat_statements,pg_stat_kcache'
 ```
@@ -136,18 +142,22 @@ shared_preload_libraries = 'pg_stat_statements,pg_stat_kcache'
 Please follow the requirements to setup those extensions.
 
 In the database (can be a specific monitoring db)
+
 ```
 create extension pg_stat_statements;
 create extension pg_stat_kcache;
 create extension pg_proctab;
 ```
+
 (assuming that the extension is installed on the OS Layer)
 
- - pg_stat_kcache is available on the postgresql.org yum repo
- - pg_proctab is available at : https://github.com/markwkm/pg_proctab
+* pg_stat_kcache is available on the postgresql.org yum repo
+* pg_proctab is available at : <https://github.com/markwkm/pg_proctab>
 
- ## Views
- - Blocking sessions
+## Views
+
+* Blocking sessions
+
 ```sql
 CREATE OR REPLACE VIEW public.blocking_procs AS
  SELECT a.datname AS db,
@@ -171,7 +181,9 @@ CREATE OR REPLACE VIEW public.blocking_procs AS
   WHERE kl.granted AND NOT bl.granted
   ORDER BY a.query_start;
 ```
-  - Sessions Statistics
+
+* Sessions Statistics
+
 ```sql
 CREATE OR REPLACE VIEW public.sessions AS
  WITH proctab AS (

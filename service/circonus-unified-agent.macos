@@ -3,7 +3,7 @@
 <plist version="1.0">
     <dict>
         <key>Label</key>
-        <string>circonus-unified-agent</string>
+        <string>com.circonus.circonus-unified-agent</string>
         <key>ServiceDescription</key>
         <string>Circonus Unified Agent Binary</string>
         <key>Program</key>

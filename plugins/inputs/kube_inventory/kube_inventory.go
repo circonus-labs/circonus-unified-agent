@@ -43,6 +43,8 @@ type KubernetesInventory struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## URL for the Kubernetes API
   url = "https://127.0.0.1"
 

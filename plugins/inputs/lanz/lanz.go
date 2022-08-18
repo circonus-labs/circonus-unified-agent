@@ -15,6 +15,8 @@ import (
 )
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## URL to Arista LANZ endpoint
   servers = [
     "tcp://127.0.0.1:50001"

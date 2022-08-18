@@ -27,6 +27,8 @@ func (*HDDTemp) Description() string {
 }
 
 var hddtempSampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## By default, circonus-unified-agent gathers temps data from all disks detected by the
   ## hddtemp.
   ##

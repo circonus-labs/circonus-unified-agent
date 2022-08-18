@@ -18,6 +18,8 @@ import (
 )
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## specify your credentials
   ##
   username = "your_username"

@@ -16,6 +16,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/internal"
@@ -24,6 +25,7 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/outputs"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/parsers"
+	"github.com/circonus-labs/circonus-unified-agent/plugins/parsers/json_v2"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/processors"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/serializers"
 	"github.com/influxdata/toml"
@@ -57,6 +59,9 @@ var (
 
 func init() {
 	defaultPluginsEnabled = strings.ToLower(os.Getenv("ENABLE_DEFAULT_PLUGINS")) != "false"
+	if !defaultPluginsEnabled {
+		log.Print("I! Default plugins disabled")
+	}
 }
 
 // Config specifies the URL/user/password for the database that circonus-unified-agent
@@ -116,26 +121,20 @@ func NewConfig() *Config {
 
 // AgentConfig defines configuration that will be used by the agent
 type AgentConfig struct {
-	// Interval at which to gather information
-	Interval internal.Duration
+	// Name of the file to be logged to when using the "file" logtarget.  If set to
+	// the empty string then logs are written to stderr.
+	Logfile string `toml:"logfile"`
 
-	// RoundInterval rounds collection interval to 'interval'.
-	//     ie, if Interval=10s then always collect on :00, :10, :20, etc.
-	RoundInterval bool
+	// It is !!important!! to set the hostname when using containers to prevent
+	// a unique check being created every time the container starts.
+	Hostname string
 
-	// By default or when set to "0s", precision will be set to the same
-	// timestamp order as the collection interval, with the maximum being 1s.
-	//   ie, when interval = "10s", precision will be "1s"
-	//       when interval = "250ms", precision will be "1ms"
-	// Precision will NOT be used for service inputs. It is up to each individual
-	// service input to set the timestamp at the appropriate precision.
-	Precision internal.Duration
+	// Log target controls the destination for logs and can be one of "file",
+	// "stderr" or, on Windows, "eventlog".  When set to "file", the output file
+	// is determined by the "logfile" setting.
+	LogTarget string `toml:"logtarget"`
 
-	// CollectionJitter is used to jitter the collection by a random amount.
-	// Each plugin will sleep for a random time within jitter before collecting.
-	// This can be used to avoid many plugins querying things like sysfs at the
-	// same time, which can have a measurable effect on the system.
-	CollectionJitter internal.Duration
+	Circonus CirconusConfig `toml:"circonus"`
 
 	// FlushInterval is the Interval at which to flush data
 	FlushInterval internal.Duration
@@ -146,9 +145,11 @@ type AgentConfig struct {
 	// ie, a jitter of 5s and interval 10s means flushes will happen every 10-15s
 	FlushJitter internal.Duration
 
-	// MetricBatchSize is the maximum number of metrics that is wrote to an
-	// output plugin in one call.
-	MetricBatchSize int
+	// CollectionJitter is used to jitter the collection by a random amount.
+	// Each plugin will sleep for a random time within jitter before collecting.
+	// This can be used to avoid many plugins querying things like sysfs at the
+	// same time, which can have a measurable effect on the system.
+	CollectionJitter internal.Duration
 
 	// MetricBufferLimit is the max number of metrics that each output plugin
 	// will cache. The buffer is cleared when a successful write occurs. When
@@ -157,62 +158,75 @@ type AgentConfig struct {
 	// not be less than 2 times MetricBatchSize.
 	MetricBufferLimit int
 
-	// FlushBufferWhenFull tells circonus-unified-agent to flush the metric buffer whenever
-	// it fills up, regardless of FlushInterval. Setting this option to true
-	// does _not_ deactivate FlushInterval.
-	FlushBufferWhenFull bool // deprecated in 0.13; has no effect
-
-	// TODO(cam): Remove UTC and parameter, they are no longer
-	// valid for the agent config. Leaving them here for now for backwards-
-	// compatibility
-	UTC bool `toml:"utc"` // deprecated in 1.0.0; has no effect
-
-	// Debug is the option for running in debug mode
-	Debug bool `toml:"debug"`
-
-	// Quiet is the option for running in quiet mode
-	Quiet bool `toml:"quiet"`
-
-	// Log target controls the destination for logs and can be one of "file",
-	// "stderr" or, on Windows, "eventlog".  When set to "file", the output file
-	// is determined by the "logfile" setting.
-	LogTarget string `toml:"logtarget"`
-
-	// Name of the file to be logged to when using the "file" logtarget.  If set to
-	// the empty string then logs are written to stderr.
-	Logfile string `toml:"logfile"`
-
-	// The file will be rotated after the time interval specified.  When set
-	// to 0 no time based rotation is performed.
-	LogfileRotationInterval internal.Duration `toml:"logfile_rotation_interval"`
+	// Maximum number of rotated archives to keep, any older logs are deleted.
+	// If set to -1, no archives are removed.
+	LogfileRotationMaxArchives int `toml:"logfile_rotation_max_archives"`
 
 	// The logfile will be rotated when it becomes larger than the specified
 	// size.  When set to 0 no size based rotation is performed.
 	LogfileRotationMaxSize internal.Size `toml:"logfile_rotation_max_size"`
 
-	// Maximum number of rotated archives to keep, any older logs are deleted.
-	// If set to -1, no archives are removed.
-	LogfileRotationMaxArchives int `toml:"logfile_rotation_max_archives"`
+	// By default or when set to "0s", precision will be set to the same
+	// timestamp order as the collection interval, with the maximum being 1s.
+	//   ie, when interval = "10s", precision will be "1s"
+	//       when interval = "250ms", precision will be "1ms"
+	// Precision will NOT be used for service inputs. It is up to each individual
+	// service input to set the timestamp at the appropriate precision.
+	Precision internal.Duration
 
-	Hostname     string
+	// The file will be rotated after the time interval specified.  When set
+	// to 0 no time based rotation is performed.
+	LogfileRotationInterval internal.Duration `toml:"logfile_rotation_interval"`
+
+	// MetricBatchSize is the maximum number of metrics that is wrote to an
+	// output plugin in one call.
+	MetricBatchSize int
+
+	// Interval at which to gather information
+	Interval internal.Duration
+
+	// Quiet is the option for running in quiet mode
+	Quiet bool `toml:"quiet"`
+
+	// RoundInterval rounds collection interval to 'interval'.
+	//     ie, if Interval=10s then always collect on :00, :10, :20, etc.
+	RoundInterval bool
+
+	// DEPRECATED - hostname will no longer be added as a tag to every metric
 	OmitHostname bool
 
-	Circonus CirconusConfig `toml:"circonus"`
+	// Debug is the option for running in debug mode
+	Debug bool `toml:"debug"`
 }
 
+// CirconusConfig configures circonus check management
+// Broker          - optional: broker ID - numeric portion of _cid from broker api object (default is selected: enterprise or public httptrap broker)
+// APIURL          - optional: api url (default: https://api.circonus.com/v2)
+// APIToken        - REQUIRED: api token
+// APIApp          - optional: api app (default: circonus-unified-agent)
+// APITLSCA        - optional: api ca cert file
+// CacheConfigs    - optional: cache check bundle configurations - efficient for large number of inputs
+// CacheDir        - optional: where to cache the check bundle configurations - must be read/write for user running cua
+// CacheNoVerify   - optional: don't verify checks loaded from cache, just use them
+// DebugAPI        - optional: debug circonus api calls
+// TraceMetrics    - optional: output json sent to broker (path to write files to or `-` for logger)
+// DebugChecks     - optional: use when instructed by circonus support
+// CheckSearchTags - optional: set of tags to use when searching for checks (default: service:circonus-unified-agentd)
 type CirconusConfig struct {
-	Broker          string            `toml:"broker"`            // optional: broker ID - numeric portion of _cid from broker api object (default is selected: enterprise or public httptrap broker)
-	APIURL          string            `toml:"api_url"`           // optional: api url (default: https://api.circonus.com/v2)
-	APIToken        string            `toml:"api_token"`         // api token (REQUIRED)
-	APIApp          string            `toml:"api_app"`           // optional: api app (default: circonus-unified-agent)
-	APITLSCA        string            `toml:"api_tls_ca"`        // optional: api ca cert file
-	CacheConfigs    bool              `toml:"cache_configs"`     // optional: cache check bundle configurations - efficient for large number of inputs
-	CacheDir        string            `toml:"cache_dir"`         // optional: where to cache the check bundle configurations - must be read/write for user running cua
-	DebugAPI        bool              `toml:"debug_api"`         // optional: debug circonus api calls
-	TraceMetrics    string            `toml:"trace_metrics"`     // optional: output json sent to broker (path to write files to or `-` for logger)
-	DebugChecks     map[string]string `toml:"debug_checks"`      // optional: use when instructed by circonus support
-	CheckSearchTags []string          `toml:"check_search_tags"` // optional: set of tags to use when searching for checks (default: service:circonus-unified-agentd)
-	CheckNamePrefix string            `toml:"check_name_prefix"` // optional: used in check display name and check target (default: OS hostname, use with containers)
+	DebugChecks     map[string]string `toml:"debug_checks"`
+	TraceMetrics    string            `toml:"trace_metrics"`
+	APIURL          string            `toml:"api_url"`
+	APIToken        string            `toml:"api_token"`
+	APIApp          string            `toml:"api_app"`
+	APITLSCA        string            `toml:"api_tls_ca"`
+	CacheDir        string            `toml:"cache_dir"`
+	Broker          string            `toml:"broker"`
+	Hostname        string            `toml:"-"`
+	CheckSearchTags []string          `toml:"check_search_tags"`
+	CheckTags       []string          `toml:"check_tags"`
+	DebugAPI        bool              `toml:"debug_api"`
+	CacheNoVerify   bool              `toml:"cache_no_verify"`
+	CacheConfigs    bool              `toml:"cache_configs"`
 }
 
 // InputNames returns a list of strings of the configured inputs.
@@ -313,6 +327,11 @@ var globalTagsConfig = `
 var agentConfig = `
 # Configuration for circonus-unified-agent
 [agent]
+  ## Override default hostname, if empty use os.Hostname()
+  ## It is !!important!! to set the hostname when using containers to prevent
+  ## a unique check being created every time the container starts.
+  hostname = ""
+
   ## Default data collection interval for all inputs
   interval = "10s"
   ## Rounds collection interval to 'interval'
@@ -379,11 +398,6 @@ var agentConfig = `
   ## If set to -1, no archives are removed.
   # logfile_rotation_max_archives = 5
 
-  ## Override default hostname, if empty use os.Hostname()
-  hostname = ""
-  ## If set to true, do no set the "host" tag in the circonus-unified-agent.
-  omit_hostname = false
-
   [agent.circonus]
     ## Circonus API token must be provided to use this plugin
     ## REQUIRED
@@ -402,16 +416,6 @@ var agentConfig = `
     ## Use for internal deployments with private certificates
     # api_tls_ca = "/opt/circonus/unified-agent/etc/circonus_api_ca.pem"
 
-    ## Check name prefix
-    ## Optional
-    ## Unique prefix to use for all checks created by this instance.
-    ## Default is the hostname from the OS. If set, "host" tag on metrics will be 
-    ## overridden with this value. For containers, use omit_hostname=true in agent section
-    ## and set this value, so that the plugin will be able to predictively find the check 
-    ## for this instance. Otherwise, the container's os.Hostname() will be used
-    ## (resulting in a new check being created every time the container starts).
-    # check_name_prefix = "example"
-
     ## Broker
     ## Optional
     ## Explicit broker id or blank (default blank, auto select)
@@ -426,6 +430,12 @@ var agentConfig = `
     ## Optional (required if cache_configs is true)
     ## Note: cache_dir must be read/write for the user running the cua process
     # cache_dir = "/opt/circonus/etc/cache.d"
+
+    ## Check tags configurations
+    ## Optional
+    ## tags to add to the check bundle, formatted as an array of namespace:tag pairs
+    ## eg: [ "team:red", "team:blue", "env:dev", "security:pci", "security:sox" ]
+    # check_tags = [ "foo:bar", "baz:buzz" ]
 
     ## Debug circonus api calls and trap submissions
     ## Optional 
@@ -764,7 +774,9 @@ func (c *Config) LoadDirectory(path string) error {
 // Try to find a default config file at these locations (in order):
 //   1. $CUA_CONFIG_PATH
 //   2. $HOME/.circonus/unified-agent/circonus-unified-agent.conf
-//   3. /opt/circonus/unified-agent/etc/circonus-unified-agent.conf
+//   3. os specific:
+//      default: /opt/circonus/unified-agent/etc/circonus-unified-agent.conf
+//      windows: "C:\Program Files\Circonus\Circonus-Unified-Agent\etc\circonus-unified-agent.conf"
 //
 func getDefaultConfigPath() (string, error) {
 	envfile := os.Getenv("CUA_CONFIG_PATH")
@@ -772,10 +784,11 @@ func getDefaultConfigPath() (string, error) {
 	etcfile := "/opt/circonus/unified-agent/etc/circonus-unified-agent.conf"
 	if runtime.GOOS == "windows" {
 		programFiles := os.Getenv("ProgramFiles")
-		if programFiles == "" { // Should never happen
+		if programFiles == "" {
+			log.Print("I! ProgramFiles Environment var is unset")
 			programFiles = `C:\Program Files`
 		}
-		etcfile = programFiles + `\Circonus-unified-agent\circonus-unified-agent.conf`
+		etcfile = programFiles + `\Circonus\Circonus-Unified-Agent\etc\circonus-unified-agent.conf`
 	}
 	for _, path := range []string{envfile, homefile, etcfile} {
 		if _, err := os.Stat(path); err == nil {
@@ -839,18 +852,28 @@ func (c *Config) LoadConfigData(data []byte) error {
 		}
 	}
 
-	if !c.Agent.OmitHostname {
-		if c.Agent.Hostname == "" {
-			hostname, err := os.Hostname()
-			if err != nil {
-				return fmt.Errorf("hostname: %w", err)
-			}
-
-			c.Agent.Hostname = hostname
+	// mgm: hard set the agent.hostname and circonus.checknameprefix
+	if c.Agent.Hostname == "" {
+		hostname, err := os.Hostname()
+		if err != nil {
+			return fmt.Errorf("hostname: %w", err)
+		} else if hostname == "" {
+			return fmt.Errorf("invalid hostname from OS (blank) - must be set in agent.hostname or OS")
 		}
-
-		c.Tags["host"] = c.Agent.Hostname
+		c.Agent.Hostname = hostname
 	}
+	if !isASCII(c.Agent.Hostname) {
+		return fmt.Errorf("hostname must contain only ASCII characters, %s is invalid. You can set the hostname in the CUA config in the [agent] section", c.Agent.Hostname)
+	}
+
+	if c.Agent.Circonus.Hostname == "" {
+		c.Agent.Circonus.Hostname = c.Agent.Hostname
+	}
+
+	// mgm: ignore omit hostname - do not set host:hostname tag on each metric
+	// if !c.Agent.OmitHostname {
+	// 	c.Tags["host"] = c.Agent.Hostname
+	// }
 
 	if len(c.UnusedFields) > 0 {
 		return fmt.Errorf("line %d: configuration specified the fields %q, but they weren't used", tbl.Line, keys(c.UnusedFields))
@@ -959,6 +982,15 @@ func (c *Config) LoadConfigData(data []byte) error {
 	}
 
 	return nil
+}
+
+func isASCII(s string) bool {
+	for i := 0; i < len(s); i++ {
+		if s[i] > unicode.MaxASCII {
+			return false
+		}
+	}
+	return true
 }
 
 // trimBOM trims the Byte-Order-Marks from the beginning of the file.
@@ -1410,6 +1442,52 @@ func (c *Config) getParserConfig(name string, tbl *ast.Table) (*parsers.Config, 
 	c.getFieldBool(tbl, "csv_trim_space", &pc.CSVTrimSpace)
 
 	c.getFieldStringSlice(tbl, "form_urlencoded_tag_keys", &pc.FormUrlencodedTagKeys)
+	// for JSONPath parser
+	if node, ok := tbl.Fields["json_v2"]; ok {
+		if metricConfigs, ok := node.([]*ast.Table); ok {
+			pc.JSONV2Config = make([]parsers.JSONV2Config, len(metricConfigs))
+			for i, metricConfig := range metricConfigs {
+				mc := pc.JSONV2Config[i]
+				c.getFieldString(metricConfig, "measurement_name", &mc.MeasurementName)
+				if mc.MeasurementName == "" {
+					mc.MeasurementName = name
+				}
+				c.getFieldString(metricConfig, "measurement_name_path", &mc.MeasurementNamePath)
+				c.getFieldString(metricConfig, "timestamp_path", &mc.TimestampPath)
+				c.getFieldString(metricConfig, "timestamp_format", &mc.TimestampFormat)
+				c.getFieldString(metricConfig, "timestamp_timezone", &mc.TimestampTimezone)
+
+				mc.Fields = getFieldSubtable(c, metricConfig)
+				mc.Tags = getTagSubtable(c, metricConfig)
+
+				if objectconfigs, ok := metricConfig.Fields["object"]; ok {
+					if objectconfigs, ok := objectconfigs.([]*ast.Table); ok {
+						for _, objectConfig := range objectconfigs {
+							var o json_v2.JSONObject
+							c.getFieldString(objectConfig, "path", &o.Path)
+							c.getFieldBool(objectConfig, "optional", &o.Optional)
+							c.getFieldString(objectConfig, "timestamp_key", &o.TimestampKey)
+							c.getFieldString(objectConfig, "timestamp_format", &o.TimestampFormat)
+							c.getFieldString(objectConfig, "timestamp_timezone", &o.TimestampTimezone)
+							c.getFieldBool(objectConfig, "disable_prepend_keys", &o.DisablePrependKeys)
+							c.getFieldStringSlice(objectConfig, "included_keys", &o.IncludedKeys)
+							c.getFieldStringSlice(objectConfig, "excluded_keys", &o.ExcludedKeys)
+							c.getFieldStringSlice(objectConfig, "tags", &o.Tags)
+							c.getFieldStringMap(objectConfig, "renames", &o.Renames)
+							c.getFieldStringMap(objectConfig, "fields", &o.Fields)
+
+							o.FieldPaths = getFieldSubtable(c, objectConfig)
+							o.TagPaths = getTagSubtable(c, objectConfig)
+
+							mc.JSONObjects = append(mc.JSONObjects, o)
+						}
+					}
+				}
+
+				pc.JSONV2Config[i] = mc
+			}
+		}
+	}
 
 	pc.MetricName = name
 
@@ -1418,6 +1496,44 @@ func (c *Config) getParserConfig(name string, tbl *ast.Table) (*parsers.Config, 
 	}
 
 	return pc, nil
+}
+
+func getFieldSubtable(c *Config, metricConfig *ast.Table) []json_v2.DataSet {
+	var fields []json_v2.DataSet
+
+	if fieldConfigs, ok := metricConfig.Fields["field"]; ok {
+		if fieldConfigs, ok := fieldConfigs.([]*ast.Table); ok {
+			for _, fieldconfig := range fieldConfigs {
+				var f json_v2.DataSet
+				c.getFieldString(fieldconfig, "path", &f.Path)
+				c.getFieldString(fieldconfig, "rename", &f.Rename)
+				c.getFieldString(fieldconfig, "type", &f.Type)
+				c.getFieldBool(fieldconfig, "optional", &f.Optional)
+				fields = append(fields, f)
+			}
+		}
+	}
+
+	return fields
+}
+
+func getTagSubtable(c *Config, metricConfig *ast.Table) []json_v2.DataSet {
+	var tags []json_v2.DataSet
+
+	if fieldConfigs, ok := metricConfig.Fields["tag"]; ok {
+		if fieldConfigs, ok := fieldConfigs.([]*ast.Table); ok {
+			for _, fieldconfig := range fieldConfigs {
+				var t json_v2.DataSet
+				c.getFieldString(fieldconfig, "path", &t.Path)
+				c.getFieldString(fieldconfig, "rename", &t.Rename)
+				t.Type = "string"
+				tags = append(tags, t)
+				c.getFieldBool(fieldconfig, "optional", &t.Optional)
+			}
+		}
+	}
+
+	return tags
 }
 
 // buildSerializer grabs the necessary entries from the ast.Table for creating
@@ -1429,17 +1545,17 @@ func (c *Config) buildSerializer(name string, tbl *ast.Table) (serializers.Seria
 	c.getFieldString(tbl, "data_format", &sc.DataFormat)
 
 	if sc.DataFormat == "" {
-		sc.DataFormat = "influx"
+		sc.DataFormat = "circonus"
 	}
 
 	c.getFieldString(tbl, "prefix", &sc.Prefix)
 	c.getFieldString(tbl, "template", &sc.Template)
 	c.getFieldStringSlice(tbl, "templates", &sc.Templates)
 	c.getFieldString(tbl, "carbon2_format", &sc.Carbon2Format)
-	c.getFieldInt(tbl, "influx_max_line_bytes", &sc.InfluxMaxLineBytes)
+	// c.getFieldInt(tbl, "influx_max_line_bytes", &sc.InfluxMaxLineBytes)
 
-	c.getFieldBool(tbl, "influx_sort_fields", &sc.InfluxSortFields)
-	c.getFieldBool(tbl, "influx_uint_support", &sc.InfluxUintSupport)
+	// c.getFieldBool(tbl, "influx_sort_fields", &sc.InfluxSortFields)
+	// c.getFieldBool(tbl, "influx_uint_support", &sc.InfluxUintSupport)
 	c.getFieldBool(tbl, "graphite_tag_support", &sc.GraphiteTagSupport)
 	c.getFieldString(tbl, "graphite_separator", &sc.GraphiteSeparator)
 
@@ -1448,8 +1564,8 @@ func (c *Config) buildSerializer(name string, tbl *ast.Table) (serializers.Seria
 	c.getFieldBool(tbl, "splunkmetric_hec_routing", &sc.HecRouting)
 	c.getFieldBool(tbl, "splunkmetric_multimetric", &sc.SplunkmetricMultiMetric)
 
-	c.getFieldStringSlice(tbl, "wavefront_source_override", &sc.WavefrontSourceOverride)
-	c.getFieldBool(tbl, "wavefront_use_strict", &sc.WavefrontUseStrict)
+	// c.getFieldStringSlice(tbl, "wavefront_source_override", &sc.WavefrontSourceOverride)
+	// c.getFieldBool(tbl, "wavefront_use_strict", &sc.WavefrontUseStrict)
 
 	c.getFieldBool(tbl, "prometheus_export_timestamp", &sc.PrometheusExportTimestamp)
 	c.getFieldBool(tbl, "prometheus_sort_metrics", &sc.PrometheusSortMetrics)
@@ -1509,7 +1625,7 @@ func (c *Config) missingTomlField(typ reflect.Type, key string) error {
 		"grok_custom_patterns", "grok_named_patterns", "grok_patterns", "grok_timezone",
 		"grok_unique_timestamp", "influx_max_line_bytes", "influx_sort_fields", "influx_uint_support",
 		"interval", "json_name_key", "json_query", "json_strict", "json_string_fields",
-		"json_time_format", "json_time_key", "json_timestamp_units", "json_timezone",
+		"json_time_format", "json_time_key", "json_timestamp_units", "json_timezone", "json_v2",
 		"metric_batch_size", "metric_buffer_limit", "name_override", "name_prefix",
 		"name_suffix", "namedrop", "namepass", "order", "pass", "period", "precision",
 		"prefix", "prometheus_export_timestamp", "prometheus_sort_metrics", "prometheus_string_as_label",
@@ -1690,8 +1806,8 @@ type unwrappable interface {
 //   default - which are enabled for "hosts" (disabled in docker containers)
 //
 type circonusPlugin struct {
-	Enabled bool
 	Data    []byte
+	Enabled bool
 }
 
 func DefaultPluginsEnabled() bool {
@@ -1723,7 +1839,8 @@ var agentPluginList = map[string]circonusPlugin{
 		Enabled: true,
 		Data: []byte(`
 instance_id="` + defaultInstanceID + `"
-collect_memstats = true`),
+collect_memstats = true
+collect_selfstats = true`),
 	},
 }
 
@@ -1732,121 +1849,15 @@ var defaultWindowsPluginList = map[string]circonusPlugin{
 		Enabled: true,
 		Data: []byte(`
 instance_id = "` + defaultInstanceID + `"
-[[inputs.win_perf_counters.object]]
-  # Processor usage, alternative to native, reports on a per core.
-  ObjectName = "Processor"
-  Instances = ["*"]
-  Counters = [
-    "% Idle Time",
-    "% Interrupt Time",
-    "% Privileged Time",
-    "% User Time",
-    "% Processor Time",
-    "% DPC Time",
-  ]
-  Measurement = "win_cpu"
-  # Set to true to include _Total instance when querying for all (*).
-  IncludeTotal=true
-
-[[inputs.win_perf_counters.object]]
-  # Disk times and queues
-  ObjectName = "LogicalDisk"
-  Instances = ["*"]
-  Counters = [
-    "% Idle Time",
-    "% Disk Time",
-    "% Disk Read Time",
-    "% Disk Write Time",
-    "% Free Space",
-    "Current Disk Queue Length",
-    "Free Megabytes",
-  ]
-  Measurement = "win_disk"
-  # Set to true to include _Total instance when querying for all (*).
-  #IncludeTotal=false
-
-[[inputs.win_perf_counters.object]]
-  ObjectName = "PhysicalDisk"
-  Instances = ["*"]
-  Counters = [
-    "Disk Read Bytes/sec",
-    "Disk Write Bytes/sec",
-    "Current Disk Queue Length",
-    "Disk Reads/sec",
-    "Disk Writes/sec",
-    "% Disk Time",
-    "% Disk Read Time",
-    "% Disk Write Time",
-  ]
-  Measurement = "win_diskio"
-
-[[inputs.win_perf_counters.object]]
-  ObjectName = "Network Interface"
-  Instances = ["*"]
-  Counters = [
-    "Bytes Received/sec",
-    "Bytes Sent/sec",
-    "Packets Received/sec",
-    "Packets Sent/sec",
-    "Packets Received Discarded",
-    "Packets Outbound Discarded",
-    "Packets Received Errors",
-    "Packets Outbound Errors",
-  ]
-  Measurement = "win_net"
-
-[[inputs.win_perf_counters.object]]
-  ObjectName = "System"
-  Counters = [
-    "Context Switches/sec",
-    "System Calls/sec",
-    "Processor Queue Length",
-    "System Up Time",
-    "Processes",
-    "Threads",
-    "File Data Operations/sec",
-    "File Control Operations/sec",
-    "Registry Quota In Use",
-  ]
-  Instances = ["------"]
-  Measurement = "win_system"
-  # Set to true to include _Total instance when querying for all (*).
-  #IncludeTotal=false
-
-[[inputs.win_perf_counters.object]]
-  # Example query where the Instance portion must be removed to get data back,
-  # such as from the Memory object.
-  ObjectName = "Memory"
-  Counters = [
-    "Available Bytes",
-    "Committed Bytes",
-    "Cache Faults/sec",
-    "Demand Zero Faults/sec",
-    "Page Faults/sec",
-    "Pages/sec",
-    "Transition Faults/sec",
-    "Pool Nonpaged Bytes",
-    "Pool Paged Bytes",
-    "Standby Cache Reserve Bytes",
-    "Standby Cache Normal Priority Bytes",
-    "Standby Cache Core Bytes",
-  ]
-  # Use 6 x - to remove the Instance bit from the query.
-  Instances = ["------"]
-  Measurement = "win_mem"
-  # Set to true to include _Total instance when querying for all (*).
-  #IncludeTotal=false
-
-[[inputs.win_perf_counters.object]]
-  # Example query where the Instance portion must be removed to get data back,
-  # such as from the Paging File object.
-  ObjectName = "Paging File"
-  Counters = [
-    "% Usage",
-  ]
-  Instances = ["_Total"]
-  Measurement = "win_swap"
-`),
+object = [
+  {ObjectName = "Paging File", Counters = ["% Usage"], Instances = ["_Total"], Measurement = "win_swap"},
+  {ObjectName = "Memory", Counters = ["Available Bytes","Committed Bytes","Cache Faults/sec","Demand Zero Faults/sec","Page Faults/sec","Pages/sec","Transition Faults/sec","Pool Nonpaged Bytes","Pool Paged Bytes","Standby Cache Reserve Bytes","Standby Cache Normal Priority Bytes","Standby Cache Core Bytes"],Instances = ["------"],Measurement = "win_mem"},
+  {ObjectName = "System",Counters = ["Context Switches/sec","System Calls/sec","Processor Queue Length","System Up Time","Processes","Threads","File Data Operations/sec","File Control Operations/sec","% Registry Quota In Use"],Instances = ["------"],Measurement = "win_system"},
+  {ObjectName = "Network Interface",Instances = ["*"],Counters = ["Bytes Received/sec","Bytes Sent/sec","Packets Received/sec","Packets Sent/sec","Packets Received Discarded","Packets Outbound Discarded","Packets Received Errors","Packets Outbound Errors"],Measurement = "win_net"},
+  {ObjectName = "PhysicalDisk",Instances = ["*"],Counters = ["Disk Read Bytes/sec","Disk Write Bytes/sec","Current Disk Queue Length","Disk Reads/sec","Disk Writes/sec","% Disk Time","% Disk Read Time","% Disk Write Time"],Measurement = "win_diskio"},
+  {ObjectName = "LogicalDisk",Instances = ["*"],Counters = ["% Idle Time","% Disk Time","% Disk Read Time","% Disk Write Time","% Free Space","Current Disk Queue Length","Free Megabytes"],Measurement = "win_disk"},
+  {ObjectName = "Processor",Instances = ["*"],Counters = ["% Idle Time","% Interrupt Time","% Privileged Time","% User Time","% Processor Time","% DPC Time"],Measurement = "win_cpu",IncludeTotal = true},
+]`),
 	},
 }
 

@@ -13,8 +13,11 @@ In addition to services, this plugin can gather other unit types as well,
 see `systemctl list-units --all --type help` for possible options.
 
 ### Configuration
+
 ```toml
 [[inputs.systemd_units]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Set timeout for systemctl execution
   # timeout = "1s"
   #
@@ -25,16 +28,17 @@ see `systemctl list-units --all --type help` for possible options.
 ```
 
 ### Metrics
+
 - systemd_units:
-  - tags:
-    - name (string, unit name)
-    - load (string, load state)
-    - active (string, active state)
-    - sub (string, sub state)
-  - fields:
-    - load_code (int, see below)
-    - active_code (int, see below)
-    - sub_code (int, see below)
+    - tags:
+        - name (string, unit name)
+        - load (string, load state)
+        - active (string, active state)
+        - sub (string, sub state)
+    - fields:
+        - load_code (int, see below)
+        - active_code (int, see below)
+        - sub_code (int, see below)
 
 #### Load
 

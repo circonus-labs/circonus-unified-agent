@@ -9,19 +9,19 @@ type Zpool func() ([]string, error)
 type Zdataset func(properties []string) ([]string, error)
 
 type Zfs struct {
+	Log            cua.Logger `toml:"-"`
+	zdataset       Zdataset   //nolint:structcheck,unused
+	sysctl         Sysctl     //nolint:structcheck,unused
+	zpool          Zpool      //nolint:structcheck,unused
 	KstatPath      string
 	KstatMetrics   []string
 	PoolMetrics    bool
 	DatasetMetrics bool
-	sysctl         Sysctl     //nolint:structcheck,unused
-	zpool          Zpool      //nolint:structcheck,unused
-	zdataset       Zdataset   //nolint:structcheck,unused
-	Log            cua.Logger `toml:"-"`
 }
 
 var sampleConfig = `
-  ## an instance id is required
-  instance_id  ""
+  instance_id = "" # unique instance identifier (REQUIRED)
+  
   ## By default, gather zpool stats
   poolMetrics = true
 

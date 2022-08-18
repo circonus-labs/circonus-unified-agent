@@ -22,7 +22,7 @@ case "$hw" in
     amd64)
         hw="x86_64"
         ;;
-    aarch64)
+    aarch64|arm64)
         hw="arm64"
         ;;
     *)
@@ -31,6 +31,10 @@ case "$hw" in
 esac
 
 cua_version=""
+
+# amd64 or arm64
+# (note, x86_64 will be aliased to amd64)
+# (note, aarch64 will be aliased to arm64)
 pkg_arch="${hw}"
 pkg_ext=""       # currently: rpm or deb
 pkg_cmd=""       # currently: yum or dpkg
@@ -39,6 +43,8 @@ pkg_file=""
 pkg_url=""
 cua_api_key=""
 cua_api_app=""
+cua_api_url=""
+cua_config=""
 cua_conf_file="/opt/circonus/unified-agent/etc/circonus-unified-agent.conf"
 
 usage() {
@@ -50,8 +56,12 @@ Usage
 
 Options
 
-  --key           Circonus API key/token **${BOLD}REQUIRED${NORMAL}**
+  [--key]         Circonus API key/token
   [--app]         Circonus API app name (authorized w/key) Default: circonus-unified-agent
+  [--apiurl]      Circonus API URL (e.g. https://api.circonus.com/v2) Default: https://api.circonus.com/v2
+  [--arch]        Circonus package architecture (amd64, arm64) Default: return from 'uname -m'
+  [--config]      Absolute path to the config file to use for the installation
+  [--ver]         Install specific version (use semver tag from repository releases - e.g. v0.0.32)
   [--help]        This message
 
 Note: Provide an authorized app for the key or ensure api 
@@ -82,12 +92,65 @@ __parse_parameters() {
                 fail "--app must be followed by an api app."
             fi
             ;;
+        (--apiurl)
+            if [[ -n "${1:-}" ]]; then
+                cua_api_url="$1"
+                shift
+            else
+                fail "--url must be followed by an api url."
+            fi
+        (--arch)
+            if [[ -n "${1:-}" ]]; then
+                pkg_arch="$1"
+                shift
+            else
+                fail "--arch must be followed by an architecture."
+            fi
+            ;;
+        (--config)
+            if [[ -n "${1:-}" ]]; then
+                cua_config="$1"
+                shift
+            else
+                fail "--config must be followed a path to the config file"
+            fi
+            ;;
+        (--ver)
+            if [[ -n "${1:-}" ]]; then
+                ver="$1"
+                [[ $ver =~ ^v?[0-9]+\.[0-9]+\.[0-9]+$ ]] && cua_version=${ver#v} || fail "--ver must be followed by a valid semver (e.g. v0.0.32)."
+                shift                
+            else
+                fail "--ver must be followed by a valid semver (e.g. v0.0.32)."
+            fi
+            ;;
+        (--help)
+            usage
+            exit 0
+            ;;
+        (*)
+            fail "Unknown parameter: $token"
+            ;;
         esac
     done
 }
 
 __cua_init() {
     set +o errexit
+
+    # set the package architecture
+    # (note, an explicit --arch parameter will override this)
+    case "$(uname -m)" in
+    (amd64|x86_64)
+        pkg_arch="amd64"
+        ;;
+    (arm64|aarch64)
+        pkg_arch="arm64"
+        ;;
+    (*)
+        fail "Unsupported architecture: $os_arch"
+        ;;
+    esac    
     
     # trigger error if needed commands are not found...
     local cmd_list="cat curl sed uname mkdir systemctl basename"
@@ -97,7 +160,7 @@ __cua_init() {
     done
 
     # detect package installation command
-    cmd_list="yum dpkg"
+    cmd_list="yum dpkg rpm"
     for cmd in $cmd_list; do
         pkg_cmd=$(type -P $cmd)
         if [[ $? -eq 0 ]]; then
@@ -105,6 +168,10 @@ __cua_init() {
             (yum)
                 pkg_ext=".rpm"
                 pkg_args="localinstall -y"
+                ;;
+            (rpm)
+                pkg_ext=".rpm"
+                pkg_args="-iv"
                 ;;
             (dpkg)
                 pkg_ext=".deb"
@@ -120,7 +187,9 @@ __cua_init() {
     set -o errexit
 
     __parse_parameters "$@" 
-    [[ -n "${cua_api_key:-}" ]] || fail "Circonus API key is *required*."
+    if [ -z ${cua_api_key} ] && [ -z ${cua_config} ]  ; then
+         fail "--key value is required if you do not set --config"
+    fi
 }
 
 __make_circonus_dir() {
@@ -160,16 +229,29 @@ __get_cua_package() {
 __configure_agent() {
     log "Updating configuration: ${cua_conf_file}"
 
+    if [[ -n ${cua_config} ]]; then
+        log "\tUsing supplied configuration file"
+        \cp ${cua_config} ${cua_conf_file}
+    fi
+
     [[ -f $cua_conf_file ]] || fail "config file (${cua_conf_file}) not found"
 
-    log "\tSetting Circonus API key in configuration"
-    \sed -i -e "s/  api_token = \"\"/  api_token = \"${cua_api_key}\"/" $cua_conf_file
-    [[ $? -eq 0 ]] || fail "updating ${cua_conf_file} with api key"
+    if [[ -n "${cua_api_key}" ]]; then
+        log "\tSetting Circonus API key in configuration"
+        \sed -i -e "s/  api_token = \".*\"/  api_token = \"${cua_api_key}\"/" $cua_conf_file
+        [[ $? -eq 0 ]] || fail "updating ${cua_conf_file} with api key"
+    fi
 
     if [[ -n "${cua_api_app}" ]]; then
         log "\tSetting Circonus API app name in configuration"
-        \sed -i -e "s/  api_app = \"\"/  api_app = \"${cua_api_app}\"/" $cua_conf_file
+        \sed -i -e "s/    # api_app = \"circonus-unified-agent\"/    api_app = \"${cua_api_app}\"/" $cua_conf_file
         [[ $? -eq 0 ]] || fail "updating ${cua_conf_file} with api app"
+    fi
+
+    if [[ -n "${cua_api_url}" ]]; then
+        log "\tSetting Circonus API URL in configuration"
+        \sed -i -e "s/    # api_url = \"https://api.circonus.com/\"/    api_url = \"${cua_api_url}\"/" $cua_conf_file
+        [[ $? -eq 0 ]] || fail "updating ${cua_conf_file} with api url"
     fi
 
     log "Restarting circonus-unified-agent service"
@@ -190,9 +272,12 @@ __get_latest_release() {
 }
 
 cua_install() {
-    log "Getting latest release version from repository"
-    tag=$(__get_latest_release)
-    cua_version=${tag#v}
+    __cua_init "$@"
+    if [[ -z "$cua_version" ]]; then
+        log "Getting latest release version from repository"
+        tag=$(__get_latest_release)
+        cua_version=${tag#v}
+    fi
 
     pkg_file="circonus-unified-agent_${cua_version}_${pkg_arch}"
     pkg_url="https://github.com/circonus-labs/circonus-unified-agent/releases/download/v${cua_version}/"
@@ -202,7 +287,6 @@ cua_install() {
     cua_dir="/opt/circonus/unified-agent"
     [[ -d $cua_dir ]] && fail "${cua_dir} previous installation directory found."
 
-    __cua_init "$@"
     __make_circonus_dir
     __get_cua_package
     __configure_agent

@@ -16,6 +16,8 @@ type Couchbase struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## specify servers via a url matching:
   ##  [protocol://][:password]@address[:port]
   ##  e.g.

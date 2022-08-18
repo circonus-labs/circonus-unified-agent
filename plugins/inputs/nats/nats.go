@@ -1,3 +1,4 @@
+//go:build !freebsd || (freebsd && cgo)
 // +build !freebsd freebsd,cgo
 
 package nats
@@ -19,13 +20,14 @@ import (
 )
 
 type Nats struct {
+	client          *http.Client
 	Server          string
 	ResponseTimeout internal.Duration
-
-	client *http.Client
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## The address of the monitoring endpoint of the NATS server
   server = "http://localhost:8222"
 

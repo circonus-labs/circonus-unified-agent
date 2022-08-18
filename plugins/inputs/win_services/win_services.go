@@ -1,3 +1,4 @@
+//go:build windows
 // +build windows
 
 package winservices
@@ -80,6 +81,8 @@ func (rmr *MgProvider) Connect() (WinServiceManager, error) {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Names of the services to monitor. Leave empty to monitor all the available services on the host
   service_names = [
     "LanmanServer",

@@ -10,6 +10,8 @@ and use the old zookeeper connection method.
 
 ```toml
 [[inputs.kafka_consumer]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Kafka brokers.
   brokers = ["localhost:9092"]
 

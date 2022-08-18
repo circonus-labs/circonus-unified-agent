@@ -24,6 +24,8 @@ const adminCoresPath = "/solr/admin/cores?action=STATUS&wt=json"
 // }
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## specify a list of one or more Solr servers
   servers = ["http://localhost:8983"]
 
@@ -37,13 +39,13 @@ const sampleConfig = `
 
 // Solr is a plugin to read stats from one or many Solr servers
 type Solr struct {
-	Local       bool
-	Servers     []string
+	client      *http.Client
 	Username    string
 	Password    string
-	HTTPTimeout internal.Duration
+	Servers     []string
 	Cores       []string
-	client      *http.Client
+	HTTPTimeout internal.Duration
+	Local       bool
 }
 
 // AdminCoresStatus is an exported type that
@@ -62,8 +64,8 @@ type AdminCoresStatus struct {
 // MBeansData is an exported type that
 // contains a response from Solr with metrics
 type MBeansData struct {
-	Headers    ResponseHeader    `json:"responseHeader"`
 	SolrMbeans []json.RawMessage `json:"solr-mbeans"`
+	Headers    ResponseHeader    `json:"responseHeader"`
 }
 
 // ResponseHeader is an exported type that
@@ -93,9 +95,9 @@ type QueryHandler struct {
 // contains update handler metrics
 type UpdateHandler struct {
 	Stats struct {
+		AutocommitMaxTime        string `json:"autocommit maxTime"`
 		Adds                     int64  `json:"adds"`
 		AutocommitMaxDocs        int64  `json:"autocommit maxDocs"`
-		AutocommitMaxTime        string `json:"autocommit maxTime"`
 		Autocommits              int64  `json:"autocommits"`
 		Commits                  int64  `json:"commits"`
 		CumulativeAdds           int64  `json:"cumulative_adds"`

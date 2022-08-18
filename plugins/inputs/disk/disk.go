@@ -25,6 +25,8 @@ func (*Stats) Description() string {
 }
 
 var diskSampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## By default stats will be gathered for all mount points.
   ## Set mount_points will restrict the stats to only the specified mount points.
   # mount_points = ["/"]

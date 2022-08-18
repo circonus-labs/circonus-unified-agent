@@ -3,11 +3,13 @@
 The Fibaro plugin makes HTTP calls to the Fibaro controller API to gather values of hooked devices.
 Those values could be true (1) or false (0) for switches, percentage for dimmers, temperature, etc.
 
-### Configuration:
+### Configuration
 
 ```toml
 # Read devices value(s) from a Fibaro controller
 [[inputs.fibaro]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Required Fibaro controller address/hostname.
   ## Note: at the time of writing this plugin, Fibaro only implemented http - no https available
   url = "http://<controller>:80"
@@ -20,24 +22,23 @@ Those values could be true (1) or false (0) for switches, percentage for dimmers
   # timeout = "5s"
 ```
 
-### Metrics:
+### Metrics
 
 - fibaro
-  - tags:
-    - deviceId (device id)
-    - section (section name)
-    - room (room name)
-    - name (device name)
-    - type (device type)
-  - fields:
-    - batteryLevel (float, when available from device)
-    - energy (float, when available from device)
-    - power (float, when available from device)
-    - value (float)
-    - value2 (float, when available from device)
+    - tags:
+        - deviceId (device id)
+        - section (section name)
+        - room (room name)
+        - name (device name)
+        - type (device type)
+    - fields:
+        - batteryLevel (float, when available from device)
+        - energy (float, when available from device)
+        - power (float, when available from device)
+        - value (float)
+        - value2 (float, when available from device)
 
-
-### Example Output:
+### Example Output
 
 ```
 fibaro,deviceId=9,host=vm1,name=Fenêtre\ haute,room=Cuisine,section=Cuisine,type=com.fibaro.FGRM222 energy=2.04,power=0.7,value=99,value2=99 1529996807000000000

@@ -1,6 +1,7 @@
 package circonus
 
 import (
+	"bytes"
 	"context"
 	"strconv"
 	"strings"
@@ -8,10 +9,10 @@ import (
 	"time"
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
-	"github.com/maier/go-trapmetrics"
+	"github.com/circonus-labs/go-trapmetrics"
 )
 
-func (c *Circonus) metricProcessor(id int, metrics []cua.Metric) int64 {
+func (c *Circonus) metricProcessor(id int, metrics []cua.Metric, buf bytes.Buffer) int64 {
 
 	c.Log.Debugf("processor %d, received %d batches", id, len(metrics))
 
@@ -70,7 +71,7 @@ func (c *Circonus) metricProcessor(id int, metrics []cua.Metric) int64 {
 			defer wg.Done()
 			subStart := time.Now()
 			d.queuedMetrics = int64(0)
-			result, err := d.metrics.Flush(ctx)
+			result, err := d.metrics.FlushWithBuffer(ctx, buf)
 			if err != nil {
 				c.Log.Warnf("submitting metrics (%s): %s", d.id, err)
 				return
@@ -105,6 +106,7 @@ func (c *Circonus) metricProcessor(id int, metrics []cua.Metric) int64 {
 
 // handleGeneric constructs text and numeric metrics from a cua metric
 // Note: for certain cua metric types the actual fields may be either text OR numeric...
+//       and now potentially boolean as well as text and numeric.
 func (c *Circonus) handleGeneric(m cua.Metric) int64 {
 	dest := c.getMetricDestination(m)
 	if dest == nil {
@@ -123,11 +125,19 @@ func (c *Circonus) handleGeneric(m cua.Metric) int64 {
 		switch v := field.Value.(type) {
 		case string:
 			if err := dest.metrics.TextSet(mn, tags, v, &batchTS); err != nil {
-				c.Log.Warnf("setting text (%s %s): %s", mn, tags.String(), err)
+				c.Log.Warnf("setting text (%s) (%s) (%#v): %s", mn, tags.String(), v, err)
+			}
+		case bool: // boolean needs to be converted to 0=false, 1=true
+			val := 0
+			if v {
+				val = 1
+			}
+			if err := dest.metrics.GaugeSet(mn, tags, val, &batchTS); err != nil {
+				c.Log.Warnf("setting (boolean) gauge (%s) (%s) (%#v): %s", mn, tags.String(), v, err)
 			}
 		default: // treat it as a numeric
 			if err := dest.metrics.GaugeSet(mn, tags, v, &batchTS); err != nil {
-				c.Log.Warnf("setting gauge (%s %s): %s", mn, tags.String(), err)
+				c.Log.Warnf("setting gauge (%s) (%s) (%#v): %s", mn, tags.String(), v, err)
 			}
 		}
 		numMetrics++
@@ -263,6 +273,15 @@ func (c *Circonus) getMetricGroupTag(m cua.Metric) string {
 		// what the plugin identifies a subgroup of metrics as, some have multiple names
 		// e.g. internal, smart, aws, etc.
 		return m.Name()
+	}
+	return ""
+}
+
+func (c *Circonus) getMetricProjectTag(m cua.Metric) string {
+	for _, t := range m.TagList() {
+		if t.Key == "project_id" {
+			return t.Value
+		}
 	}
 	return ""
 }

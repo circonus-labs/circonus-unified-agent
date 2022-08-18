@@ -20,6 +20,8 @@ import (
 )
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Commands array
   commands = [
     "/tmp/test.sh",
@@ -43,14 +45,12 @@ const sampleConfig = `
 const MaxStderrBytes = 512
 
 type Exec struct {
-	Commands []string
+	parser   parsers.Parser
+	runner   Runner
+	Log      cua.Logger `toml:"-"`
 	Command  string
+	Commands []string
 	Timeout  internal.Duration
-
-	parser parsers.Parser
-
-	runner Runner
-	Log    cua.Logger `toml:"-"`
 }
 
 func NewExec() *Exec {

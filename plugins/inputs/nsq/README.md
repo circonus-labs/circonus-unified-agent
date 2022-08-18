@@ -1,10 +1,12 @@
 # NSQ Input Plugin
 
-### Configuration:
+### Configuration
 
 ```toml
 # Description
 [[inputs.nsq]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## An array of NSQD HTTP API endpoints
   endpoints  = ["http://localhost:4151"]
 

@@ -10,11 +10,13 @@ This plugin requires sudo, that is why you should setup and be sure that the age
 
 ```toml
 [[inputs.dmcache]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Whether to report per-device stats or not
   per_device = true
 ```
 
-### Measurements & Fields:
+### Measurements & Fields
 
 - dmcache
     - length
@@ -33,12 +35,12 @@ This plugin requires sudo, that is why you should setup and be sure that the age
     - promotions
     - dirty
 
-### Tags:
+### Tags
 
 - All measurements have the following tags:
     - device
 
-### Example Output:
+### Example Output
 
 ```
 $ ./circonus-unified-agent --test --config /etc/circonus-unified-agent/circonus-unified-agent.conf --input-filter dmcache

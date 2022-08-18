@@ -338,10 +338,10 @@ func TestAlignTime(t *testing.T) {
 	}
 
 	tests := []struct {
-		name     string
 		now      time.Time
-		interval time.Duration
 		expected time.Time
+		name     string
+		interval time.Duration
 	}{
 		{
 			name:     "aligned",

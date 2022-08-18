@@ -1,8 +1,10 @@
+//go:build windows
 // +build windows
 
 package ping
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"regexp"
@@ -12,7 +14,7 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 )
 
-func (p *Ping) pingToURL(u string, acc cua.Accumulator) {
+func (p *Ping) pingToURL(ctx context.Context, u string, acc cua.Accumulator) {
 	tags := map[string]string{"url": u}
 	fields := map[string]interface{}{"result_code": 0}
 
@@ -30,18 +32,19 @@ func (p *Ping) pingToURL(u string, acc cua.Accumulator) {
 		// Combine go err + stderr output
 		pendingError = errors.New(strings.TrimSpace(out) + ", " + err.Error())
 	}
-	trans, recReply, receivePacket, avg, min, max, err := processPingOutput(out)
+	trans, recReply, receivePacket, avg, min, max, rtts, err := processPingOutput(out)
 	if err != nil {
 		// fatal error
 		if pendingError != nil {
-			acc.AddError(fmt.Errorf("%w: %s", pendingError, u))
+			acc.AddError(fmt.Errorf("%s: %w", u, pendingError))
 		} else {
-			acc.AddError(fmt.Errorf("%w: %s", err, u))
+			acc.AddError(fmt.Errorf("%s: %w", u, err))
 		}
 
 		fields["result_code"] = 2
 		fields["errors"] = 100.0
-		acc.AddFields("ping", fields, tags)
+		p.addStats(acc, fields, tags, nil, nil)
+		// acc.AddFields("ping", fields, tags)
 		return
 	}
 	// Calculate packet loss percentage
@@ -62,7 +65,9 @@ func (p *Ping) pingToURL(u string, acc cua.Accumulator) {
 	if max >= 0 {
 		fields["maximum_response_ms"] = float64(max)
 	}
-	acc.AddFields("ping", fields, tags)
+
+	p.addStats(acc, fields, tags, nil, &rtts)
+	// acc.AddFields("ping", fields, tags)
 }
 
 // args returns the arguments for the 'ping' executable
@@ -84,19 +89,29 @@ func (p *Ping) args(url string) []string {
 
 // processPingOutput takes in a string output from the ping command
 // based on linux implementation but using regex ( multilanguage support )
-// It returns (<transmitted packets>, <received reply>, <received packet>, <average response>, <min response>, <max response>)
-func processPingOutput(out string) (int, int, int, int, int, int, error) {
+// It returns (<transmitted packets>, <received reply>, <received packet>, <average response>, <min response>, <max response>, []rtts)
+func processPingOutput(out string) (int, int, int, int, int, int, []float64, error) {
 	// So find a line contain 3 numbers except reply lines
 	var stats, aproxs []string = nil, nil
-	procErr := fmt.Errorf("fatal error processing ping output")
+	rtts := make([]float64, 0)
+	err := errors.New("Fatal error processing ping output")
 	stat := regexp.MustCompile(`=\W*(\d+)\D*=\W*(\d+)\D*=\W*(\d+)`)
 	aprox := regexp.MustCompile(`=\W*(\d+)\D*ms\D*=\W*(\d+)\D*ms\D*=\W*(\d+)\D*ms`)
 	tttLine := regexp.MustCompile(`TTL=\d+`)
+	timeLine := regexp.MustCompile(`time=(\d+[\.\d]*)`)
 	lines := strings.Split(out, "\n")
 	var receivedReply int = 0
 	for _, line := range lines {
 		if tttLine.MatchString(line) {
 			receivedReply++
+			rttMatch := timeLine.FindStringSubmatch(line)
+			if len(rttMatch) < 2 {
+				continue
+			}
+			rtt, err := strconv.ParseFloat(rttMatch[1], 32)
+			if err == nil {
+				rtts = append(rtts, rtt)
+			}
 		} else {
 			if stats == nil {
 				stats = stat.FindStringSubmatch(line)
@@ -109,35 +124,35 @@ func processPingOutput(out string) (int, int, int, int, int, int, error) {
 
 	// stats data should contain 4 members: entireExpression + ( Send, Receive, Lost )
 	if len(stats) != 4 {
-		return 0, 0, 0, -1, -1, -1, procErr
+		return 0, 0, 0, -1, -1, -1, rtts, err
 	}
 	trans, err := strconv.Atoi(stats[1])
 	if err != nil {
-		return 0, 0, 0, -1, -1, -1, fmt.Errorf("ping atoi trans (%s): %w", stats[1], err)
+		return 0, 0, 0, -1, -1, -1, rtts, err
 	}
 	receivedPacket, err := strconv.Atoi(stats[2])
 	if err != nil {
-		return 0, 0, 0, -1, -1, -1, fmt.Errorf("ping atoi recv (%s): %w", stats[2], err)
+		return 0, 0, 0, -1, -1, -1, rtts, err
 	}
 
 	// aproxs data should contain 4 members: entireExpression + ( min, max, avg )
 	if len(aproxs) != 4 {
-		return trans, receivedReply, receivedPacket, -1, -1, -1, procErr
+		return trans, receivedReply, receivedPacket, -1, -1, -1, rtts, err
 	}
 	min, err := strconv.Atoi(aproxs[1])
 	if err != nil {
-		return trans, receivedReply, receivedPacket, -1, -1, -1, fmt.Errorf("ping atoi min (%s): %w", aproxs[1], err)
+		return trans, receivedReply, receivedPacket, -1, -1, -1, rtts, err
 	}
 	max, err := strconv.Atoi(aproxs[2])
 	if err != nil {
-		return trans, receivedReply, receivedPacket, -1, -1, -1, fmt.Errorf("ping atoi max (%s): %w", aproxs[2], err)
+		return trans, receivedReply, receivedPacket, -1, -1, -1, rtts, err
 	}
 	avg, err := strconv.Atoi(aproxs[3])
 	if err != nil {
-		return 0, 0, 0, -1, -1, -1, fmt.Errorf("ping atoi avg (%s): %w", aproxs[3], err)
+		return 0, 0, 0, -1, -1, -1, rtts, err
 	}
 
-	return trans, receivedReply, receivedPacket, avg, min, max, nil
+	return trans, receivedReply, receivedPacket, avg, min, max, rtts, err
 }
 
 func (p *Ping) timeout() float64 {

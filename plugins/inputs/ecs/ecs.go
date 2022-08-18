@@ -3,6 +3,7 @@ package ecs
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 	"time"
@@ -48,6 +49,8 @@ const (
 )
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## ECS metadata url.
   ## Metadata v2 API is used if set explicitly. Otherwise,
   ## v3 metadata endpoint API is used if available.
@@ -160,6 +163,8 @@ func resolveEndpoint(ecs *Ecs) {
 		ecs.metadataVersion = 3
 		return
 	}
+
+	log.Print("I! ECS_CONTAINER_METADATA_URI Environment var is unset, using v2 ecs endpoint")
 
 	// Use v2 endpoint if nothing else is available.
 	ecs.EndpointURL = v2Endpoint

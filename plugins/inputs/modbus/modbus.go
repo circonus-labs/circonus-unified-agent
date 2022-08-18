@@ -74,6 +74,8 @@ const (
 
 const description = `Retrieve data from MODBUS slave devices`
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Connection Configuration
   ##
   ## The plugin supports connections to PLCs via MODBUS/TCP or

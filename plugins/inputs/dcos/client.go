@@ -32,16 +32,16 @@ type Client interface {
 
 type APIError struct {
 	URL         string
-	StatusCode  int
 	Title       string
 	Description string
+	StatusCode  int
 }
 
 // Login is request data for logging in.
 type Login struct {
 	UID   string `json:"uid"`
-	Exp   int64  `json:"exp"`
 	Token string `json:"token"`
+	Exp   int64  `json:"exp"`
 }
 
 // LoginError is the response when login fails.
@@ -80,23 +80,22 @@ type DataPoint struct {
 
 // Metrics are the DCOS metrics
 type Metrics struct {
-	Datapoints []DataPoint            `json:"datapoints"`
 	Dimensions map[string]interface{} `json:"dimensions"`
+	Datapoints []DataPoint            `json:"datapoints"`
 }
 
 // AuthToken is the authentication token.
 type AuthToken struct {
-	Text   string
 	Expire time.Time
+	Text   string
 }
 
 // ClusterClient is a Client that uses the cluster URL.
 type ClusterClient struct {
 	clusterURL *url.URL
 	httpClient *http.Client
-	// credentials *Credentials
-	token     string
-	semaphore chan struct{}
+	semaphore  chan struct{}
+	token      string
 }
 
 type claims struct {

@@ -19,6 +19,8 @@ import (
 
 const description = "Read CPU, Fans, Powersupply and Voltage metrics of hardware server through redfish APIs"
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Server url
   address = "https://127.0.0.1:5000"
 

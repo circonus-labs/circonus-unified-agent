@@ -14,14 +14,14 @@ import (
 )
 
 var sizeTests = []struct {
-	size  uint32
 	bytes []byte
+	size  uint32
 }{
-	{0, []byte{0x00}},
-	{127, []byte{0x7F}},
-	{128, []byte{0x80, 0x00, 0x00, 0x80}},
-	{1000, []byte{0x80, 0x00, 0x03, 0xE8}},
-	{33554431, []byte{0x81, 0xFF, 0xFF, 0xFF}},
+	{size: 0, bytes: []byte{0x00}},
+	{size: 127, bytes: []byte{0x7F}},
+	{size: 128, bytes: []byte{0x80, 0x00, 0x00, 0x80}},
+	{size: 1000, bytes: []byte{0x80, 0x00, 0x03, 0xE8}},
+	{size: 33554431, bytes: []byte{0x81, 0xFF, 0xFF, 0xFF}},
 }
 
 func TestSize(t *testing.T) {
@@ -43,17 +43,25 @@ func TestSize(t *testing.T) {
 
 var streamTests = []struct {
 	desc    string
-	recType recType
-	reqID   uint16
 	content []byte
 	raw     []byte
+	reqID   uint16
+	recType recType
 }{
-	{"single record", typeStdout, 1, nil,
-		[]byte{1, byte(typeStdout), 0, 1, 0, 0, 0, 0},
+	{
+		desc:    "single record",
+		recType: typeStdout,
+		reqID:   1,
+		content: nil,
+		raw:     []byte{1, byte(typeStdout), 0, 1, 0, 0, 0, 0},
 	},
 	// this data will have to be split into two records
-	{"two records", typeStdin, 300, make([]byte, 66000),
-		bytes.Join([][]byte{
+	{
+		desc:    "two records",
+		recType: typeStdin,
+		reqID:   300,
+		content: make([]byte, 66000),
+		raw: bytes.Join([][]byte{
 			// header for the first record
 			{1, byte(typeStdin), 0x01, 0x2C, 0xFF, 0xFF, 1, 0},
 			make([]byte, 65536),
@@ -197,26 +205,26 @@ var streamBeginTypeStdin = bytes.Join([][]byte{
 	nil)
 
 var cleanUpTests = []struct {
-	input []byte
 	err   error
+	input []byte
 }{
 	// confirm that child.handleRecord closes req.pw after aborting req
 	{
-		bytes.Join([][]byte{
+		input: bytes.Join([][]byte{
 			streamBeginTypeStdin,
 			makeRecord(typeAbortRequest, 1, nil),
 		},
 			nil),
-		ErrRequestAborted,
+		err: ErrRequestAborted,
 	},
 	// confirm that child.serve closes all pipes after error reading record
 	{
-		bytes.Join([][]byte{
+		input: bytes.Join([][]byte{
 			streamBeginTypeStdin,
 			nil,
 		},
 			nil),
-		ErrConnClosed,
+		err: ErrConnClosed,
 	},
 }
 

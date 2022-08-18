@@ -10,6 +10,8 @@ apcupsd should be installed and it's daemon should be running.
 
 ```toml
 [[inputs.apcupsd]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   # A list of running apcupsd server to connect to.
   # If not provided will default to tcp://127.0.0.1:3551
   servers = ["tcp://127.0.0.1:3551"]
@@ -21,29 +23,27 @@ apcupsd should be installed and it's daemon should be running.
 ### Metrics
 
 - apcupsd
-  - tags:
-    - serial
-    - status (string representing the set status_flags)
-    - ups_name
-    - model
-  - fields:
-    - status_flags ([status-bits][])
-    - input_voltage
-    - load_percent
-    - battery_charge_percent
-    - time_left_ns
-    - output_voltage
-    - internal_temp
-    - battery_voltage
-    - input_frequency
-    - time_on_battery_ns
-    - battery_date
-    - nominal_input_voltage
-    - nominal_battery_voltage
-    - nominal_power
-    - firmware
-
-
+    - tags:
+        - serial
+        - status (string representing the set status_flags)
+        - ups_name
+        - model
+    - fields:
+        - status_flags ([status-bits][])
+        - input_voltage
+        - load_percent
+        - battery_charge_percent
+        - time_left_ns
+        - output_voltage
+        - internal_temp
+        - battery_voltage
+        - input_frequency
+        - time_on_battery_ns
+        - battery_date
+        - nominal_input_voltage
+        - nominal_battery_voltage
+        - nominal_power
+        - firmware
 
 ### Example output
 

@@ -5,10 +5,13 @@ package installed.
 
 This plugin collects sensor metrics with the `sensors` executable from the lm-sensor package.
 
-### Configuration:
+### Configuration
+
 ```toml
 # Monitor sensors, requires lm-sensors package
 [[inputs.sensors]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Remove numbers from field names.
   ## If true, a field name like 'temp1_input' will be changed to 'temp_input'.
   # remove_numbers = true
@@ -17,18 +20,20 @@ This plugin collects sensor metrics with the `sensors` executable from the lm-se
   # timeout = "5s"
 ```
 
-### Measurements & Fields:
+### Measurements & Fields
+
 Fields are created dynamically depending on the sensors. All fields are float.
 
-### Tags:
+### Tags
 
 - All measurements have the following tags:
     - chip
     - feature
 
-### Example Output:
+### Example Output
 
 #### Default
+
 ```
 $ circonus-unified-agent --config circonus-unified-agent.conf --input-filter sensors --test
 * Plugin: sensors, Collection 1
@@ -40,6 +45,7 @@ $ circonus-unified-agent --config circonus-unified-agent.conf --input-filter sen
 ```
 
 #### With remove_numbers=false
+
 ```
 * Plugin: sensors, Collection 1
 > sensors,chip=power_meter-acpi-0,feature=power1 power1_average=0,power1_average_interval=300 1466753424000000000

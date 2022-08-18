@@ -6,13 +6,15 @@ streaming (tcp, unix) or datagram (udp, unixgram) protocols.
 The plugin expects messages in the
 [Input Data Formats](https://github.com/circonus-labs/circonus-unified-agent/blob/master/docs/DATA_FORMATS_INPUT.md).
 
-### Configuration:
+### Configuration
 
 This is a sample configuration for the plugin.
 
 ```toml
 # Generic socket listener capable of handling multiple socket types.
 [[inputs.socket_listener]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## URL to listen on
   # service_address = "tcp://:8094"
   # service_address = "tcp://127.0.0.1:http"

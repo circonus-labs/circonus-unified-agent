@@ -55,6 +55,8 @@ type Aurora struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Schedulers are the base addresses of your Aurora Schedulers
   schedulers = ["http://127.0.0.1:8081"]
 

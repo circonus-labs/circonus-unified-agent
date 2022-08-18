@@ -40,6 +40,8 @@ type MapQuery map[string]Query
 const defaultServer = "Server=.;app name=cua;log=1;"
 
 const sampleConfig = `
+instance_id = "" # unique instance identifier (REQUIRED)
+
 ## Specify instances to monitor with a list of connection strings.
 ## All connection parameters are optional.
 ## By default, the host is localhost, listening on default port, TCP 1433.

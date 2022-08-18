@@ -37,7 +37,7 @@ func loadCheckConfig(id string) *apiclient.CheckBundle {
 		ch.logger.Warnf("parsing check config %s: %s", checkConfigFile, err)
 		return nil
 	}
-	ch.logger.Debugf("using cached config: %s - %s", checkConfigFile, bundle.Config[apiclicfg.SubmissionURL])
+	ch.logger.Infof("using cached config: %s - %s", checkConfigFile, bundle.Config[apiclicfg.SubmissionURL])
 
 	return &bundle
 }

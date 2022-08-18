@@ -66,6 +66,8 @@ type Prometheus struct {
 }
 
 var sampleConfig = `
+  ## instance_id is required on input plugins
+  instance_id = "prometheus"
   ## An array of urls to scrape metrics from.
   urls = ["http://localhost:9100/metrics"]
 

@@ -38,6 +38,8 @@ type Kubernetes struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## URL for the kubelet
   url = "http://127.0.0.1:10255"
 

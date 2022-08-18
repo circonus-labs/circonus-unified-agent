@@ -45,6 +45,8 @@ const (
 )
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## An array of API URI to gather stats.
   urls = ["http://localhost/api"]
 

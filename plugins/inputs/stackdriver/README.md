@@ -10,6 +10,8 @@ costs.
 
 ```toml
 [[inputs.stackdriver]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## GCP Project
   project = "erudite-bloom-151019"
 

@@ -135,16 +135,31 @@ option operate similar to the `snmpget` utility.
     # is_tag = false
 
     ## Apply one of the following conversions to the variable value:
-    ##   float(X) Convert the input value into a float and divides by the
-    ##            Xth power of 10. Effectively just moves the decimal left
-    ##            X places. For example a value of `123` with `float(2)`
-    ##            will result in `1.23`.
-    ##   float:   Convert the value into a float with no adjustment. Same
-    ##            as `float(0)`.
-    ##   int:     Convert the value into an integer.
-    ##   hwaddr:  Convert the value to a MAC address.
-    ##   ipaddr:  Convert the value to an IP address.
+    ##   float(X)   Convert the input value into a float and divides by the
+    ##              Xth power of 10. Effectively just moves the decimal left
+    ##              X places. For example a value of `123` with `float(2)`
+    ##              will result in `1.23`.
+    ##   float:     Convert the value into a float with no adjustment. Same
+    ##              as `float(0)`.
+    ##   int:       Convert the value into an integer.
+    ##   hwaddr:    Convert the value to a MAC address.
+    ##   ipaddr:    Convert the value to an IP address.
+    ##   string:    Force convert a byte slice to a string (nonprintable characters will be converted to '_').
+    ##   regexp:    Use a regular expression to extract a value from the input.
+    ##   timestamp: Parse the input as a timestamp and convert it to a unix epoch in UTC.
     # conversion = ""
+    ## Regular expression used to extract value from input. 
+    ## Must contain a pattern named 'value' e.g. (?P<value>re).
+    # regexp = ""
+    ## Type of the value to be extracted from the input. (float|int|uint|text)
+    # regexp_type = ""
+    ## Timestamp laytout - format of the string to be parsed as a timestamp.
+    ## e.g. 
+    ##    timestamp from oid       timestamp_layout
+    ##    "07/13/2025"             "01/02/2006"
+    ##    "03/03/2022 23:49:22"    "01/02/2006 15:04:05"
+    ## See: https://pkg.go.dev/time#pkg-constants for more example layouts
+    # timestamp_layout = ""
 ```
 
 #### Table

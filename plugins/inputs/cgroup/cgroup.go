@@ -11,6 +11,8 @@ type CGroup struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Directories in which to look for files, globs are supported.
   ## Consider restricting paths to the set of cgroups you really
   ## want to monitor if you have a large number of cgroups, to avoid

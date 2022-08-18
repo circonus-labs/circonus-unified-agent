@@ -1,3 +1,4 @@
+//go:build !solaris
 // +build !solaris
 
 package tail
@@ -39,28 +40,24 @@ type empty struct{}
 type semaphore chan empty
 
 type Tail struct {
-	Files               []string `toml:"files"`
-	FromBeginning       bool     `toml:"from_beginning"`
-	Pipe                bool     `toml:"pipe"`
-	WatchMethod         string   `toml:"watch_method"`
-	MaxUndeliveredLines int      `toml:"max_undelivered_lines"`
-	CharacterEncoding   string   `toml:"character_encoding"`
-
-	Log        cua.Logger `toml:"-"`
-	tailers    map[string]*tail.Tail
-	offsets    map[string]int64
-	parserFunc parsers.ParserFunc
-	wg         sync.WaitGroup
-
-	acc cua.TrackingAccumulator
-
-	MultilineConfig MultilineConfig `toml:"multiline"`
-	multiline       *Multiline
-
-	ctx     context.Context
-	cancel  context.CancelFunc
-	sem     semaphore
-	decoder *encoding.Decoder
+	wg                  sync.WaitGroup
+	acc                 cua.TrackingAccumulator
+	Log                 cua.Logger `toml:"-"`
+	ctx                 context.Context
+	multiline           *Multiline
+	decoder             *encoding.Decoder
+	sem                 semaphore
+	cancel              context.CancelFunc
+	tailers             map[string]*tail.Tail
+	offsets             map[string]int64
+	parserFunc          parsers.ParserFunc
+	CharacterEncoding   string          `toml:"character_encoding"`
+	WatchMethod         string          `toml:"watch_method"`
+	Files               []string        `toml:"files"`
+	MultilineConfig     MultilineConfig `toml:"multiline"`
+	MaxUndeliveredLines int             `toml:"max_undelivered_lines"`
+	Pipe                bool            `toml:"pipe"`
+	FromBeginning       bool            `toml:"from_beginning"`
 }
 
 func NewTail() *Tail {
@@ -79,6 +76,8 @@ func NewTail() *Tail {
 }
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## File names or a pattern to tail.
   ## These accept standard unix glob matching rules, but with the addition of
   ## ** as a "super asterisk". ie:
@@ -157,7 +156,10 @@ func (t *Tail) Init() error {
 
 	var err error
 	t.decoder, err = encoding.NewDecoder(t.CharacterEncoding)
-	return fmt.Errorf("new decoder: %w", err)
+	if err != nil {
+		return fmt.Errorf("new decoder: %w", err)
+	}
+	return nil
 }
 
 func (t *Tail) Gather(ctx context.Context, acc cua.Accumulator) error {

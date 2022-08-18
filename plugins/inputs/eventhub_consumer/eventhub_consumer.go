@@ -65,6 +65,8 @@ type EventHub struct {
 // SampleConfig is provided here
 func (*EventHub) SampleConfig() string {
 	return `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## The default behavior is to create a new Event Hub client from environment variables.
   ## This requires one of the following sets of environment variables to be set:
   ##

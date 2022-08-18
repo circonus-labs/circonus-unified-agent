@@ -88,13 +88,15 @@ func ParseV2(buf []byte, header http.Header) ([]cua.Metric, error) {
 					metric, err := metric.New("prometheus", tags, fields, t, valueType(mf.GetType()))
 					if err == nil {
 						metrics = append(metrics, metric)
+					} else {
+						return nil, fmt.Errorf("metric new: %w", err)
 					}
 				}
 			}
 		}
 	}
 
-	return metrics, fmt.Errorf("metric new: %w", err)
+	return metrics, nil
 }
 
 // Get Quantiles for summary metric & Buckets for histogram
@@ -231,12 +233,14 @@ func Parse(buf []byte, header http.Header) ([]cua.Metric, error) {
 				metric, err := metric.New(metricName, tags, fields, t, valueType(mf.GetType()))
 				if err == nil {
 					metrics = append(metrics, metric)
+				} else {
+					return nil, fmt.Errorf("metric new: %w", err)
 				}
 			}
 		}
 	}
 
-	return metrics, fmt.Errorf("metric new: %w", err)
+	return metrics, nil
 }
 
 func valueType(mt dto.MetricType) cua.ValueType {

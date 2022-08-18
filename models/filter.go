@@ -9,32 +9,28 @@ import (
 
 // TagFilter is the name of a tag, and the values on which to filter
 type TagFilter struct {
+	filter filter.Filter
 	Name   string
 	Filter []string
-	filter filter.Filter
 }
 
 // Filter containing drop/pass and tagdrop/tagpass rules
 type Filter struct {
-	NameDrop []string
-	nameDrop filter.Filter
-	NamePass []string
-	namePass filter.Filter
-
-	FieldDrop []string
-	fieldDrop filter.Filter
-	FieldPass []string
-	fieldPass filter.Filter
-
-	TagDrop []TagFilter
-	TagPass []TagFilter
-
-	TagExclude []string
-	tagExclude filter.Filter
-	TagInclude []string
+	fieldPass  filter.Filter
+	nameDrop   filter.Filter
 	tagInclude filter.Filter
-
-	isActive bool
+	namePass   filter.Filter
+	tagExclude filter.Filter
+	fieldDrop  filter.Filter
+	NameDrop   []string
+	FieldPass  []string
+	TagDrop    []TagFilter
+	TagPass    []TagFilter
+	TagExclude []string
+	FieldDrop  []string
+	TagInclude []string
+	NamePass   []string
+	isActive   bool
 }
 
 // Compile all Filter lists into filter.Filter objects.

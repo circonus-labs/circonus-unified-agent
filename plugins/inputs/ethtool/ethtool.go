@@ -14,16 +14,11 @@ type Command interface {
 }
 
 type Ethtool struct {
-	// This is the list of interface names to include
-	InterfaceInclude []string `toml:"interface_include"`
-
-	// This is the list of interface names to ignore
-	InterfaceExclude []string `toml:"interface_exclude"`
-
 	Log cua.Logger `toml:"-"`
-
 	// the ethtool command
-	command Command //nolint:structcheck,unused
+	command          Command
+	InterfaceInclude []string `toml:"interface_include"` // This is the list of interface names to include
+	InterfaceExclude []string `toml:"interface_exclude"` // This is the list of interface names to ignore
 }
 
 const (
@@ -32,6 +27,8 @@ const (
 	tagDriverName = "driver"    //nolint:deadcode,varcheck
 
 	sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## List of interfaces to pull metrics for
   # interface_include = ["eth0"]
 

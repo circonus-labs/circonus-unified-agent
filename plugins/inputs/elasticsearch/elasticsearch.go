@@ -90,6 +90,8 @@ type indexStat struct {
 }
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## specify a list of one or more Elasticsearch servers
   # you can add username and password to your url to use basic authentication:
   # servers = ["http://user:pass@localhost:9200"]

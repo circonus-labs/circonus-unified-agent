@@ -6,8 +6,8 @@ import (
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/serializers/carbon2"
+	"github.com/circonus-labs/circonus-unified-agent/plugins/serializers/circonus"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/serializers/graphite"
-	"github.com/circonus-labs/circonus-unified-agent/plugins/serializers/influx"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/serializers/json"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/serializers/nowmetric"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/serializers/prometheus"
@@ -56,15 +56,15 @@ type Config struct {
 	// Character for separating metric name and field for Graphite tags
 	GraphiteSeparator string `toml:"graphite_separator"`
 
-	// Maximum line length in bytes; influx format only
-	InfluxMaxLineBytes int `toml:"influx_max_line_bytes"`
+	// // Maximum line length in bytes; influx format only
+	// InfluxMaxLineBytes int `toml:"influx_max_line_bytes"`
 
-	// Sort field keys, set to true only when debugging as it less performant
-	// than unsorted fields; influx format only
-	InfluxSortFields bool `toml:"influx_sort_fields"`
+	// // Sort field keys, set to true only when debugging as it less performant
+	// // than unsorted fields; influx format only
+	// InfluxSortFields bool `toml:"influx_sort_fields"`
 
-	// Support unsigned integer output; influx format only
-	InfluxUintSupport bool `toml:"influx_uint_support"`
+	// // Support unsigned integer output; influx format only
+	// InfluxUintSupport bool `toml:"influx_uint_support"`
 
 	// Prefix to add to all measurements, only supports Graphite
 	Prefix string `toml:"prefix"`
@@ -85,12 +85,12 @@ type Config struct {
 	// Enable Splunk MultiMetric output (Splunk 8.0+)
 	SplunkmetricMultiMetric bool `toml:"splunkmetric_multi_metric"`
 
-	// Point tags to use as the source name for Wavefront (if none found, host will be used).
-	WavefrontSourceOverride []string `toml:"wavefront_source_override"`
+	// // Point tags to use as the source name for Wavefront (if none found, host will be used).
+	// WavefrontSourceOverride []string `toml:"wavefront_source_override"`
 
-	// Use Strict rules to sanitize metric and tag names from invalid characters for Wavefront
-	// When enabled forward slash (/) and comma (,) will be accepted
-	WavefrontUseStrict bool `toml:"wavefront_use_strict"`
+	// // Use Strict rules to sanitize metric and tag names from invalid characters for Wavefront
+	// // When enabled forward slash (/) and comma (,) will be accepted
+	// WavefrontUseStrict bool `toml:"wavefront_use_strict"`
 
 	// Include the metric timestamp on each sample.
 	PrometheusExportTimestamp bool `toml:"prometheus_export_timestamp"`
@@ -109,8 +109,10 @@ func NewSerializer(config *Config) (Serializer, error) {
 	var err error
 	var serializer Serializer
 	switch config.DataFormat {
-	case "influx":
-		serializer, err = NewInfluxSerializerConfig(config)
+	case "circonus":
+		serializer, err = NewCirconusSerializer(time.Millisecond)
+	// case "influx":
+	// 	serializer, err = NewInfluxSerializerConfig(config)
 	case "graphite":
 		serializer, err = NewGraphiteSerializer(config.Prefix, config.Template, config.GraphiteTagSupport, config.GraphiteSeparator, config.Templates)
 	case "json":
@@ -174,27 +176,31 @@ func NewNowSerializer() (Serializer, error) {
 	return nowmetric.NewSerializer()
 }
 
-func NewInfluxSerializerConfig(config *Config) (Serializer, error) {
-	var sort influx.FieldSortOrder
-	if config.InfluxSortFields {
-		sort = influx.SortFields
-	}
-
-	var typeSupport influx.FieldTypeSupport
-	if config.InfluxUintSupport {
-		typeSupport += influx.UintSupport
-	}
-
-	s := influx.NewSerializer()
-	s.SetMaxLineBytes(config.InfluxMaxLineBytes)
-	s.SetFieldSortOrder(sort)
-	s.SetFieldTypeSupport(typeSupport)
-	return s, nil
+func NewCirconusSerializer(timestampUnits time.Duration) (Serializer, error) {
+	return circonus.NewSerializer(timestampUnits)
 }
 
-func NewInfluxSerializer() (Serializer, error) {
-	return influx.NewSerializer(), nil
-}
+// func NewInfluxSerializerConfig(config *Config) (Serializer, error) {
+// 	var sort influx.FieldSortOrder
+// 	if config.InfluxSortFields {
+// 		sort = influx.SortFields
+// 	}
+
+// 	var typeSupport influx.FieldTypeSupport
+// 	if config.InfluxUintSupport {
+// 		typeSupport += influx.UintSupport
+// 	}
+
+// 	s := influx.NewSerializer()
+// 	s.SetMaxLineBytes(config.InfluxMaxLineBytes)
+// 	s.SetFieldSortOrder(sort)
+// 	s.SetFieldTypeSupport(typeSupport)
+// 	return s, nil
+// }
+
+// func NewInfluxSerializer() (Serializer, error) {
+// 	return influx.NewSerializer(), nil
+// }
 
 func NewGraphiteSerializer(prefix, template string, tagSupport bool, separator string, templates []string) (Serializer, error) {
 	graphiteTemplates, defaultTemplate, err := graphite.InitGraphiteTemplates(templates)

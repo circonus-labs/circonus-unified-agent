@@ -73,7 +73,7 @@ Example for Windows Server 2003, this would be set to true:
 
 #### UsePerfCounterTime
 
-Bool, if set to `true` will request a timestamp along with the PerfCounter data. 
+Bool, if set to `true` will request a timestamp along with the PerfCounter data.
 If se to `false`, current time will be used.
 
 Supported on Windows Vista/Windows Server 2008 and newer
@@ -85,6 +85,7 @@ Example:
 See Entry below.
 
 ### Entry
+
 A new configuration entry consists of the TOML header starting with,
 `[[inputs.win_perf_counters.object]]`.
 This must follow before other plugin configurations,
@@ -93,6 +94,7 @@ beneath the main win_perf_counters entry, `[[inputs.win_perf_counters]]`.
 Following this are 3 required key/value pairs and three optional parameters and their usage.
 
 #### ObjectName
+
 **Required**
 
 ObjectName is the Object to query for, like Processor, DirectoryServices, LogicalDisk or similar.
@@ -100,6 +102,7 @@ ObjectName is the Object to query for, like Processor, DirectoryServices, Logica
 Example: `ObjectName = "LogicalDisk"`
 
 #### Instances
+
 **Required**
 
 The instances key (this is an array) declares the instances of a counter you would like returned,
@@ -120,6 +123,7 @@ Here only one option is valid if you want data back,
 and that is to specify `Instances = ["------"]`.
 
 #### Counters
+
 **Required**
 
 The Counters key (this is an array) declares the counters of the ObjectName
@@ -132,7 +136,7 @@ This must be specified for every counter you want the results of, or use
 is set to `true`.
 
 #### Measurement
-*Optional*
+_Optional_
 
 This key is optional. If it is not set it will be `win_perf_counters`.
 In InfluxDB this is the key underneath which the returned data is stored.
@@ -143,7 +147,7 @@ separately from Processor results.
 Example: `Measurement = "win_disk"``
 
 #### IncludeTotal
-*Optional*
+_Optional_
 
 This key is optional. It is a simple bool.
 If it is not set to true or included it is treated as false.
@@ -153,7 +157,7 @@ like `_Total`, `0,_Total` and so on where applicable
 (Processor Information is one example).
 
 #### WarnOnMissing
-*Optional*
+_Optional_
 
 This key is optional. It is a simple bool.
 If it is not set to true or included it is treated as false.
@@ -162,7 +166,7 @@ It will print out any ObjectName/Instance/Counter combinations
 asked for that do not match. Useful when debugging new configurations.
 
 #### FailOnMissing
-*Internal*
+_Internal_
 
 This key should not be used. It is for testing purposes only.
 It is a simple bool. If it is not set to true or included this is treated as false.
@@ -172,8 +176,11 @@ if any of the combinations of ObjectName/Instances/Counters are invalid.
 ## Examples
 
 ### Generic Queries
+
 ```toml
 [[inputs.win_perf_counters]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   [[inputs.win_perf_counters.object]]
     # Processor usage, alternative to native, reports on a per core.
     ObjectName = "Processor"
@@ -216,6 +223,7 @@ if any of the combinations of ObjectName/Instances/Counters are invalid.
 ```
 
 ### Active Directory Domain Controller
+
 ```toml
 [[inputs.win_perf_counters]]
   [inputs.win_perf_counters.tags]
@@ -244,6 +252,7 @@ if any of the combinations of ObjectName/Instances/Counters are invalid.
 ```
 
 ### DFS Namespace + Domain Controllers
+
 ```toml
 [[inputs.win_perf_counters]]
   [[inputs.win_perf_counters.object]]
@@ -257,6 +266,7 @@ if any of the combinations of ObjectName/Instances/Counters are invalid.
 ```
 
 ### DFS Replication + Domain Controllers
+
 ```toml
 [[inputs.win_perf_counters]]
   [[inputs.win_perf_counters.object]]
@@ -270,6 +280,7 @@ if any of the combinations of ObjectName/Instances/Counters are invalid.
 ```
 
 ### DNS Server + Domain Controllers
+
 ```toml
 [[inputs.win_perf_counters]]
   [[inputs.win_perf_counters.object]]
@@ -281,6 +292,7 @@ if any of the combinations of ObjectName/Instances/Counters are invalid.
 ```
 
 ### IIS / ASP.NET
+
 ```toml
 [[inputs.win_perf_counters]]
   [[inputs.win_perf_counters.object]]
@@ -325,6 +337,7 @@ if any of the combinations of ObjectName/Instances/Counters are invalid.
 ```
 
 ### Process
+
 ```toml
 [[inputs.win_perf_counters]]
   [[inputs.win_perf_counters.object]]
@@ -337,6 +350,7 @@ if any of the combinations of ObjectName/Instances/Counters are invalid.
 ```
 
 ### .NET Monitoring
+
 ```toml
 [[inputs.win_perf_counters]]
   [[inputs.win_perf_counters.object]]
@@ -401,6 +415,7 @@ your performance counters.
 1. Drop into the C:\WINDOWS\System32 directory by typing `C:` then `cd \Windows\System32`
 1. Rebuild your counter values, which may take a few moments so please be
    patient, by running:
+
    ```
    lodctr /r
    ```

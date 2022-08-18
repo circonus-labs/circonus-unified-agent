@@ -61,6 +61,8 @@ func (n *Openntpd) Description() string {
 
 func (n *Openntpd) SampleConfig() string {
 	return `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Run ntpctl binary with sudo.
   # use_sudo = false
 

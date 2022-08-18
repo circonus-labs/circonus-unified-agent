@@ -1,6 +1,7 @@
 package synproxy
 
 import (
+	"log"
 	"os"
 	"path"
 
@@ -20,7 +21,9 @@ func (k *Synproxy) Description() string {
 }
 
 func (k *Synproxy) SampleConfig() string {
-	return ""
+	return `
+  instance_id = "" # unique instance identifier (REQUIRED)
+`
 }
 
 func getHostProc() string {
@@ -28,6 +31,7 @@ func getHostProc() string {
 	if os.Getenv("HOST_PROC") != "" {
 		procPath = os.Getenv("HOST_PROC")
 	}
+	log.Print("I! Using default procPath: " + procPath)
 	return procPath
 }
 

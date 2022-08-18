@@ -20,41 +20,55 @@ const (
 
 // OutputConfig containing name and filter
 type OutputConfig struct {
-	Name   string
-	Alias  string
-	Filter Filter
-
-	FlushInterval     time.Duration
+	Name              string
+	Alias             string
+	NamePrefix        string
+	NameSuffix        string
+	NameOverride      string
+	Filter            Filter
 	FlushJitter       time.Duration
 	MetricBufferLimit int
 	MetricBatchSize   int
-
-	NameOverride string
-	NamePrefix   string
-	NameSuffix   string
+	FlushInterval     time.Duration
 }
 
 // RunningOutput contains the output configuration
 type RunningOutput struct {
-	// Must be 64-bit aligned
-	newMetricsCount int64
-	droppedMetrics  int64
-
+	aggMutex          sync.Mutex
+	MetricsFiltered   selfstat.Stat
+	WriteTime         selfstat.Stat
 	Output            cua.Output
+	log               cua.Logger
 	Config            *OutputConfig
+	BatchReady        chan time.Time
+	buffer            *Buffer
+	newMetricsCount   int64
+	droppedMetrics    int64
 	MetricBufferLimit int
 	MetricBatchSize   int
-
-	MetricsFiltered selfstat.Stat
-	WriteTime       selfstat.Stat
-
-	BatchReady chan time.Time
-
-	buffer *Buffer
-	log    cua.Logger
-
-	aggMutex sync.Mutex
 }
+
+// original
+// type RunningOutput struct {
+// 	// Must be 64-bit aligned
+// 	newMetricsCount int64
+// 	droppedMetrics  int64
+
+// 	Output            cua.Output
+// 	Config            *OutputConfig
+// 	MetricBufferLimit int
+// 	MetricBatchSize   int
+
+// 	MetricsFiltered selfstat.Stat
+// 	WriteTime       selfstat.Stat
+
+// 	BatchReady chan time.Time
+
+// 	buffer *Buffer
+// 	log    cua.Logger
+
+// 	aggMutex sync.Mutex
+// }
 
 func NewRunningOutput(
 	name string,

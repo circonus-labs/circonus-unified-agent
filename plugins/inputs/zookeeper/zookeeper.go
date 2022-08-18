@@ -33,6 +33,8 @@ type Zookeeper struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## An array of address to gather stats about. Specify an ip or hostname
   ## with port. ie localhost:2181, 10.0.0.1:2181, etc.
 

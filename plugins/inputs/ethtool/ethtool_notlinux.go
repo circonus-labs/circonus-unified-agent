@@ -1,3 +1,4 @@
+//go:build !linux
 // +build !linux
 
 package ethtool
@@ -20,6 +21,6 @@ func (e *Ethtool) Gather(_ context.Context, _ cua.Accumulator) error {
 
 func init() {
 	inputs.Add(pluginName, func() cua.Input {
-		return &Ethtool{}
+		return &Ethtool{command: nil}
 	})
 }

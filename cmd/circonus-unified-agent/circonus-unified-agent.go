@@ -1,4 +1,5 @@
-// +build go1.16
+//go:build go1.17
+// +build go1.17
 
 package main
 
@@ -22,6 +23,7 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/internal"
 	"github.com/circonus-labs/circonus-unified-agent/internal/circonus"
 	"github.com/circonus-labs/circonus-unified-agent/internal/goplugin"
+	"github.com/circonus-labs/circonus-unified-agent/internal/release"
 	"github.com/circonus-labs/circonus-unified-agent/logger"
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/aggregators/all"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
@@ -139,6 +141,7 @@ func runAgent(ctx context.Context,
 		if err != nil {
 			return fmt.Errorf("loaddir (%s): %w", *fConfigDirectory, err)
 		}
+		log.Printf("I! Completed loading configs from %s", *fConfigDirectory)
 	}
 
 	// mgm: add default plugins and agent plugins
@@ -227,7 +230,7 @@ func runAgent(ctx context.Context,
 }
 
 func usageExit(rc int) {
-	fmt.Println(internal.Usage)
+	fmt.Println(internal.Usage) //nolint
 	os.Exit(rc)
 }
 
@@ -247,7 +250,7 @@ func formatFullVersion() string {
 		if commit == "" {
 			commit = "unknown"
 		}
-		if buildTag != "" {
+		if buildTag == "" {
 			buildTag = "n/a"
 		}
 		git := fmt.Sprintf("(git: %s %s %s)", branch, commit, buildTag)
@@ -261,7 +264,19 @@ func formatFullVersion() string {
 	return strings.Join(parts, " ")
 }
 
+func setReleaseInfo() {
+	ri := release.GetInfo()
+
+	version = ri.Version
+	commit = ri.Commit
+	branch = ri.Branch
+	buildDate = ri.BuildDate
+	buildTag = ri.BuildTag
+}
+
 func main() {
+	setReleaseInfo()
+
 	flag.Usage = func() { usageExit(0) }
 	flag.Parse()
 	args := flag.Args()

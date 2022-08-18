@@ -18,6 +18,8 @@ import (
 )
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Program to run as daemon
   command = ["cua-smartctl", "-d", "/dev/sda"]
 
@@ -42,14 +44,13 @@ const sampleConfig = `
 `
 
 type Execd struct {
-	Command      []string        `toml:"command"`
+	parser       parsers.Parser
+	Log          cua.Logger `toml:"-"`
+	acc          cua.Accumulator
+	process      *process.Process
 	Signal       string          `toml:"signal"`
+	Command      []string        `toml:"command"`
 	RestartDelay config.Duration `toml:"restart_delay"`
-	Log          cua.Logger      `toml:"-"`
-
-	process *process.Process
-	acc     cua.Accumulator
-	parser  parsers.Parser
 }
 
 func (e *Execd) SampleConfig() string {

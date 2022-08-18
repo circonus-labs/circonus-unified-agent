@@ -4,11 +4,13 @@ The tengine plugin gathers metrics from the
 [Tengine Web Server](http://tengine.taobao.org/) via the
 [reqstat](http://tengine.taobao.org/document/http_reqstat.html) module.
 
-### Configuration:
+### Configuration
 
 ```toml
 # Read Tengine's basic status information (ngx_http_reqstat_module)
 [[inputs.tengine]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## An array of Tengine reqstat module URI to gather stats.
   urls = ["http://127.0.0.1/us"]
 
@@ -23,44 +25,44 @@ The tengine plugin gathers metrics from the
   # insecure_skip_verify = false
 ```
 
-### Metrics:
+### Metrics
 
 - Measurement
-  - tags:
-    - port
-    - server
-    - server_name
-  - fields:
-    - bytes_in (integer, total number of bytes received from client)
-    - bytes_out (integer, total number of bytes sent to client)
-    - conn_total (integer, total number of accepted connections)
-    - req_total (integer, total number of processed requests)
-    - http_2xx (integer, total number of 2xx requests)
-    - http_3xx (integer, total number of 3xx requests)
-    - http_4xx (integer, total number of 4xx requests)
-    - http_5xx (integer, total number of 5xx requests)
-    - http_other_status (integer, total number of other requests)
-    - rt (integer, accumulation or rt)
-    - ups_req (integer, total number of requests calling for upstream)
-    - ups_rt (integer, accumulation or upstream rt)
-    - ups_tries (integer, total number of times calling for upstream)
-    - http_200 (integer, total number of 200 requests)
-    - http_206 (integer, total number of 206 requests)
-    - http_302 (integer, total number of 302 requests)
-    - http_304 (integer, total number of 304 requests)
-    - http_403 (integer, total number of 403 requests)
-    - http_404 (integer, total number of 404 requests)
-    - http_416 (integer, total number of 416 requests)
-    - http_499 (integer, total number of 499 requests)
-    - http_500 (integer, total number of 500 requests)
-    - http_502 (integer, total number of 502 requests)
-    - http_503 (integer, total number of 503 requests)
-    - http_504 (integer, total number of 504 requests)
-    - http_508 (integer, total number of 508 requests)
-    - http_other_detail_status (integer, total number of requests of other status codes*http_ups_4xx total number of requests of upstream 4xx)
-    - http_ups_5xx (integer, total number of requests of upstream 5xx)
+    - tags:
+        - port
+        - server
+        - server_name
+    - fields:
+        - bytes_in (integer, total number of bytes received from client)
+        - bytes_out (integer, total number of bytes sent to client)
+        - conn_total (integer, total number of accepted connections)
+        - req_total (integer, total number of processed requests)
+        - http_2xx (integer, total number of 2xx requests)
+        - http_3xx (integer, total number of 3xx requests)
+        - http_4xx (integer, total number of 4xx requests)
+        - http_5xx (integer, total number of 5xx requests)
+        - http_other_status (integer, total number of other requests)
+        - rt (integer, accumulation or rt)
+        - ups_req (integer, total number of requests calling for upstream)
+        - ups_rt (integer, accumulation or upstream rt)
+        - ups_tries (integer, total number of times calling for upstream)
+        - http_200 (integer, total number of 200 requests)
+        - http_206 (integer, total number of 206 requests)
+        - http_302 (integer, total number of 302 requests)
+        - http_304 (integer, total number of 304 requests)
+        - http_403 (integer, total number of 403 requests)
+        - http_404 (integer, total number of 404 requests)
+        - http_416 (integer, total number of 416 requests)
+        - http_499 (integer, total number of 499 requests)
+        - http_500 (integer, total number of 500 requests)
+        - http_502 (integer, total number of 502 requests)
+        - http_503 (integer, total number of 503 requests)
+        - http_504 (integer, total number of 504 requests)
+        - http_508 (integer, total number of 508 requests)
+        - http_other_detail_status (integer, total number of requests of other status codes*http_ups_4xx total number of requests of upstream 4xx)
+        - http_ups_5xx (integer, total number of requests of upstream 5xx)
 
-### Example Output:
+### Example Output
 
 ```
 tengine,host=gcp-thz-api-5,port=80,server=localhost,server_name=localhost bytes_in=9129i,bytes_out=56334i,conn_total=14i,http_200=90i,http_206=0i,http_2xx=90i,http_302=0i,http_304=0i,http_3xx=0i,http_403=0i,http_404=0i,http_416=0i,http_499=0i,http_4xx=0i,http_500=0i,http_502=0i,http_503=0i,http_504=0i,http_508=0i,http_5xx=0i,http_other_detail_status=0i,http_other_status=0i,http_ups_4xx=0i,http_ups_5xx=0i,req_total=90i,rt=0i,ups_req=0i,ups_rt=0i,ups_tries=0i 1526546308000000000

@@ -291,6 +291,8 @@ type nvmeDevice struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Optionally specify the path to the smartctl executable
   # path_smartctl = "/usr/bin/smartctl"
 

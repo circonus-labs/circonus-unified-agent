@@ -26,10 +26,9 @@ used as collection tags, and all sub-keys are flattened. For example:
 
 Would be parsed into the following metrics, all of which would be tagged with collection=paxos:
 
- - refresh = 9363435
- - refresh_latency.avgcount: 9363435
- - refresh_latency.sum: 5378.794002000
-
+- refresh = 9363435
+- refresh_latency.avgcount: 9363435
+- refresh_latency.sum: 5378.794002000
 
 *Cluster Stats*
 
@@ -38,15 +37,17 @@ ceph configuration and an access key to function (the ceph_config and ceph_user 
 in conjunction to specify these prerequisites). It may be run on any server you wish which has access to
 the cluster.  The currently supported commands are:
 
-* ceph status
-* ceph df
-* ceph osd pool stats
+- ceph status
+- ceph df
+- ceph osd pool stats
 
-### Configuration:
+### Configuration
 
 ```toml
 # Collects performance metrics from the MON and OSD nodes in a Ceph storage cluster.
 [[inputs.ceph]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## This is the recommended interval to poll.  Too frequent and you will lose
   ## data points due to timeouts during rebalancing and recovery
   interval = '1m'
@@ -89,7 +90,7 @@ the cluster.  The currently supported commands are:
   gather_cluster_stats = false
 ```
 
-### Metrics:
+### Metrics
 
 *Admin Socket Stats*
 
@@ -100,144 +101,143 @@ All admin measurements will have the following tags:
 - type: either 'osd', 'mon', 'mds' or 'rgw' to indicate which type of node was queried
 - id: a unique string identifier, parsed from the socket file name for the node
 - collection: the top-level key under which these fields were reported. Possible values are:
-  - for MON nodes:
-    - cluster
-    - leveldb
-    - mon
-    - paxos
-    - throttle-mon_client_bytes
-    - throttle-mon_daemon_bytes
-    - throttle-msgr_dispatch_throttler-mon
-  - for OSD nodes:
-    - WBThrottle
-    - filestore
-    - leveldb
-    - mutex-FileJournal::completions_lock
-    - mutex-FileJournal::finisher_lock
-    - mutex-FileJournal::write_lock
-    - mutex-FileJournal::writeq_lock
-    - mutex-JOS::ApplyManager::apply_lock
-    - mutex-JOS::ApplyManager::com_lock
-    - mutex-JOS::SubmitManager::lock
-    - mutex-WBThrottle::lock
-    - objecter
-    - osd
-    - recoverystate_perf
-    - throttle-filestore_bytes
-    - throttle-filestore_ops
-    - throttle-msgr_dispatch_throttler-client
-    - throttle-msgr_dispatch_throttler-cluster
-    - throttle-msgr_dispatch_throttler-hb_back_server
-    - throttle-msgr_dispatch_throttler-hb_front_serve
-    - throttle-msgr_dispatch_throttler-hbclient
-    - throttle-msgr_dispatch_throttler-ms_objecter
-    - throttle-objecter_bytes
-    - throttle-objecter_ops
-    - throttle-osd_client_bytes
-    - throttle-osd_client_messages
-  - for MDS nodes:
-    - AsyncMessenger::Worker-0
-    - AsyncMessenger::Worker-1
-    - AsyncMessenger::Worker-2
-    - finisher-PurgeQueue
-    - mds
-    - mds_cache
-    - mds_log
-    - mds_mem
-    - mds_server
-    - mds_sessions
-    - objecter
-    - purge_queue
-    - throttle-msgr_dispatch_throttler-mds
-    - throttle-objecter_bytes
-    - throttle-objecter_ops
-    - throttle-write_buf_throttle
-  - for RGW nodes:
-    - AsyncMessenger::Worker-0
-    - AsyncMessenger::Worker-1
-    - AsyncMessenger::Worker-2
-    - cct
-    - finisher-radosclient
-    - mempool
-    - objecter
-    - rgw
-    - simple-throttler
-    - throttle-msgr_dispatch_throttler-radosclient
-    - throttle-objecter_bytes
-    - throttle-objecter_ops
-    - throttle-rgw_async_rados_ops
+    - for MON nodes:
+        - cluster
+        - leveldb
+        - mon
+        - paxos
+        - throttle-mon_client_bytes
+        - throttle-mon_daemon_bytes
+        - throttle-msgr_dispatch_throttler-mon
+    - for OSD nodes:
+        - WBThrottle
+        - filestore
+        - leveldb
+        - mutex-FileJournal::completions_lock
+        - mutex-FileJournal::finisher_lock
+        - mutex-FileJournal::write_lock
+        - mutex-FileJournal::writeq_lock
+        - mutex-JOS::ApplyManager::apply_lock
+        - mutex-JOS::ApplyManager::com_lock
+        - mutex-JOS::SubmitManager::lock
+        - mutex-WBThrottle::lock
+        - objecter
+        - osd
+        - recoverystate_perf
+        - throttle-filestore_bytes
+        - throttle-filestore_ops
+        - throttle-msgr_dispatch_throttler-client
+        - throttle-msgr_dispatch_throttler-cluster
+        - throttle-msgr_dispatch_throttler-hb_back_server
+        - throttle-msgr_dispatch_throttler-hb_front_serve
+        - throttle-msgr_dispatch_throttler-hbclient
+        - throttle-msgr_dispatch_throttler-ms_objecter
+        - throttle-objecter_bytes
+        - throttle-objecter_ops
+        - throttle-osd_client_bytes
+        - throttle-osd_client_messages
+    - for MDS nodes:
+        - AsyncMessenger::Worker-0
+        - AsyncMessenger::Worker-1
+        - AsyncMessenger::Worker-2
+        - finisher-PurgeQueue
+        - mds
+        - mds_cache
+        - mds_log
+        - mds_mem
+        - mds_server
+        - mds_sessions
+        - objecter
+        - purge_queue
+        - throttle-msgr_dispatch_throttler-mds
+        - throttle-objecter_bytes
+        - throttle-objecter_ops
+        - throttle-write_buf_throttle
+    - for RGW nodes:
+        - AsyncMessenger::Worker-0
+        - AsyncMessenger::Worker-1
+        - AsyncMessenger::Worker-2
+        - cct
+        - finisher-radosclient
+        - mempool
+        - objecter
+        - rgw
+        - simple-throttler
+        - throttle-msgr_dispatch_throttler-radosclient
+        - throttle-objecter_bytes
+        - throttle-objecter_ops
+        - throttle-rgw_async_rados_ops
 
 *Cluster Stats*
 
-+ ceph_health
-  - fields:
-    - status
-    - overall_status
+- ceph_health
+    - fields:
+        - status
+        - overall_status
 
 - ceph_osdmap
-  - fields:
-    - epoch (float)
-    - num_osds (float)
-    - num_up_osds (float)
-    - num_in_osds (float)
-    - full (bool)
-    - nearfull (bool)
-    - num_remapped_pgs (float)
+    - fields:
+        - epoch (float)
+        - num_osds (float)
+        - num_up_osds (float)
+        - num_in_osds (float)
+        - full (bool)
+        - nearfull (bool)
+        - num_remapped_pgs (float)
 
-+ ceph_pgmap
-  - fields:
-    - version (float)
-    - num_pgs (float)
-    - data_bytes (float)
-    - bytes_used (float)
-    - bytes_avail (float)
-    - bytes_total (float)
-    - read_bytes_sec (float)
-    - write_bytes_sec (float)
-    - op_per_sec (float, exists only in ceph <10)
-    - read_op_per_sec (float)
-    - write_op_per_sec (float)
+- ceph_pgmap
+    - fields:
+        - version (float)
+        - num_pgs (float)
+        - data_bytes (float)
+        - bytes_used (float)
+        - bytes_avail (float)
+        - bytes_total (float)
+        - read_bytes_sec (float)
+        - write_bytes_sec (float)
+        - op_per_sec (float, exists only in ceph <10)
+        - read_op_per_sec (float)
+        - write_op_per_sec (float)
 
 - ceph_pgmap_state
-  - tags:
-    - state
-  - fields:
-    - count (float)
+    - tags:
+        - state
+    - fields:
+        - count (float)
 
-+ ceph_usage
-  - fields:
-    - total_bytes (float)
-    - total_used_bytes (float)
-    - total_avail_bytes (float)
-    - total_space (float, exists only in ceph <0.84)
-    - total_used (float, exists only in ceph <0.84)
-    - total_avail (float, exists only in ceph <0.84)
+- ceph_usage
+    - fields:
+        - total_bytes (float)
+        - total_used_bytes (float)
+        - total_avail_bytes (float)
+        - total_space (float, exists only in ceph <0.84)
+        - total_used (float, exists only in ceph <0.84)
+        - total_avail (float, exists only in ceph <0.84)
 
 - ceph_pool_usage
-  - tags:
-    - name
-  - fields:
-    - kb_used (float)
-    - bytes_used (float)
-    - objects (float)
-    - percent_used (float)
-    - max_avail (float)
+    - tags:
+        - name
+    - fields:
+        - kb_used (float)
+        - bytes_used (float)
+        - objects (float)
+        - percent_used (float)
+        - max_avail (float)
 
-+ ceph_pool_stats
-  - tags:
-    - name
-  - fields:
-    - read_bytes_sec (float)
-    - write_bytes_sec (float)
-    - op_per_sec (float, exists only in ceph <10)
-    - read_op_per_sec (float)
-    - write_op_per_sec (float)
-    - recovering_objects_per_sec (float)
-    - recovering_bytes_per_sec (float)
-    - recovering_keys_per_sec (float)
+- ceph_pool_stats
+    - tags:
+        - name
+    - fields:
+        - read_bytes_sec (float)
+        - write_bytes_sec (float)
+        - op_per_sec (float, exists only in ceph <10)
+        - read_op_per_sec (float)
+        - write_op_per_sec (float)
+        - recovering_objects_per_sec (float)
+        - recovering_bytes_per_sec (float)
+        - recovering_keys_per_sec (float)
 
-
-### Example Output:
+### Example Output
 
 *Cluster Stats*
 

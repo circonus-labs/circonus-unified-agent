@@ -20,11 +20,11 @@ func TestLogin(t *testing.T) {
 	defer ts.Close()
 
 	var tests = []struct {
-		name          string
-		responseCode  int
-		responseBody  string
 		expectedError error
+		name          string
+		responseBody  string
 		expectedToken string
+		responseCode  int
 	}{
 		{
 			name:          "Login successful",
@@ -85,11 +85,11 @@ func TestGetSummary(t *testing.T) {
 	defer ts.Close()
 
 	var tests = []struct {
-		name          string
-		responseCode  int
-		responseBody  string
-		expectedValue *Summary
 		expectedError error
+		expectedValue *Summary
+		name          string
+		responseBody  string
+		responseCode  int
 	}{
 		{
 			name:          "No nodes",
@@ -152,11 +152,11 @@ func TestGetNodeMetrics(t *testing.T) {
 	defer ts.Close()
 
 	var tests = []struct {
-		name          string
-		responseCode  int
-		responseBody  string
-		expectedValue *Metrics
 		expectedError error
+		expectedValue *Metrics
+		name          string
+		responseBody  string
+		responseCode  int
 	}{
 		{
 			name:          "Empty Body",
@@ -195,11 +195,11 @@ func TestGetContainerMetrics(t *testing.T) {
 	defer ts.Close()
 
 	var tests = []struct {
-		name          string
-		responseCode  int
-		responseBody  string
-		expectedValue *Metrics
 		expectedError error
+		expectedValue *Metrics
+		name          string
+		responseBody  string
+		responseCode  int
 	}{
 		{
 			name:          "204 No Content",

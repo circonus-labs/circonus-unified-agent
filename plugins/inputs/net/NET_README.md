@@ -2,11 +2,13 @@
 
 This plugin gathers metrics about network interface and protocol usage (Linux only).
 
-### Configuration:
+### Configuration
 
 ```toml
 # Gather metrics about network interfaces
 [[inputs.net]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## By default, agent gathers stats from any up interface (excluding loopback)
   ## Setting interfaces will tell it to gather these explicit interfaces,
   ## regardless of status. When specifying an interface, glob-style
@@ -21,7 +23,7 @@ This plugin gathers metrics about network interface and protocol usage (Linux on
   ##
 ```
 
-### Measurements & Fields:
+### Measurements & Fields
 
 The fields from this plugin are gathered in the _net_ measurement.
 
@@ -42,14 +44,14 @@ Under freebsd/openbsd and darwin the plugin uses netstat.
 Additionally, for the time being _only under Linux_, the plugin gathers system wide stats for different network protocols using /proc/net/snmp (tcp, udp, icmp, etc.).
 Explanation of the different metrics exposed by snmp is out of the scope of this document. The best way to find information would be tracing the constants in the Linux kernel source [here](https://elixir.bootlin.com/linux/latest/source/net/ipv4/proc.c) and their usage. If /proc/net/snmp cannot be read for some reason, agent ignores the error silently.
 
-### Tags:
+### Tags
 
 * Net measurements have the following tags:
-    - interface (the interface from which metrics are gathered)
+    * interface (the interface from which metrics are gathered)
 
 Under Linux the system wide protocol metrics have the interface=all tag.
 
-### Sample Queries:
+### Sample Queries
 
 You can use the following query to get the upload/download traffic rate per second for all interfaces in the last hour. The query uses the [derivative function](https://docs.influxdata.com/influxdb/v1.2/query_language/functions#derivative) which calculates the rate of change between subsequent field values.
 
@@ -57,7 +59,7 @@ You can use the following query to get the upload/download traffic rate per seco
 SELECT derivative(first(bytes_recv), 1s) as "download bytes/sec", derivative(first(bytes_sent), 1s) as "upload bytes/sec" FROM net WHERE time > now() - 1h AND interface != 'all' GROUP BY time(10s), interface fill(0);
 ```
 
-### Example Output:
+### Example Output
 
 ```sh
 # All platforms

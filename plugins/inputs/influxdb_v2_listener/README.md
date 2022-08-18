@@ -9,10 +9,12 @@ The `/api/v2/write` endpoint supports the `precision` query parameter and can be
 to one of `ns`, `us`, `ms`, `s`.  All other parameters are ignored and
 defer to the output plugins configuration.
 
-### Configuration:
+### Configuration
 
 ```toml
 [[inputs.influxdb_v2_listener]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Address and port to host InfluxDB listener on
   ## (Double check the port. Could be 9999 if using OSS Beta)
   service_address = ":8086"
@@ -40,13 +42,14 @@ defer to the output plugins configuration.
   # token = "some-long-shared-secret-token"
 ```
 
-### Metrics:
+### Metrics
 
 Metrics are created from InfluxDB Line Protocol in the request body.
 
-### Troubleshooting:
+### Troubleshooting
 
 **Example Query:**
+
 ```
 curl -i -XPOST 'http://localhost:8186/api/v2/write' --data-binary 'cpu_load_short,host=server01,region=us-west value=0.64 1434055562000000000'
 ```

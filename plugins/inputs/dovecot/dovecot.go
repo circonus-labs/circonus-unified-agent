@@ -26,6 +26,8 @@ func (d *Dovecot) Description() string {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## specify dovecot servers via an address:port list
   ##  e.g.
   ##    localhost:24242

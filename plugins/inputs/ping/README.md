@@ -4,8 +4,7 @@ Sends a ping message by executing the system ping command and reports the result
 
 This plugin has two main methods of operation: `exec` and `native`.  The
 recommended method is `native`, which has greater system compatibility and
-performance.  However, for backwards compatibility the `exec` method is the
-default.
+performance.
 
 When using `method = "exec"`, the systems ping utility is executed to send the
 ping packets.
@@ -13,7 +12,8 @@ ping packets.
 Most ping command implementations are supported, one notable exception being
 that there is currently no support for GNU Inetutils ping.  You may instead use
 the iputils-ping implementation:
-```
+
+```sh
 apt-get install iputils-ping
 ```
 
@@ -21,10 +21,12 @@ When using `method = "native"` a ping is sent and the results are reported in
 native Go by the agent process, eliminating the need to execute the system
 `ping` command.
 
-### Configuration:
+## Configuration
 
 ```toml
 [[inputs.ping]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Hosts to send ping packets to.
   urls = ["example.org"]
 
@@ -32,14 +34,11 @@ native Go by the agent process, eliminating the need to execute the system
   ## to "exec" the systems ping command will be executed.  When set to "native"
   ## the plugin will send pings directly.
   ##
-  ## While the default is "exec" for backwards compatibility, new deployments
-  ## are encouraged to use the "native" method for improved compatibility and
-  ## performance.
-  # method = "exec"
+  # method = "native"
 
   ## Number of ping packets to send per interval.  Corresponds to the "-c"
   ## option of the ping command.
-  # count = 1
+  # count = 3
 
   ## Time to wait between sending ping packets in seconds.  Operates like the
   ## "-i" option of the ping command.
@@ -57,6 +56,9 @@ native Go by the agent process, eliminating the need to execute the system
   ## option of the ping command.
   # interface = ""
 
+  ## Percentiles to calculate. This only works with the native method.
+  # percentiles = [50, 95, 99]
+
   ## Specify the ping executable binary.
   # binary = "ping"
 
@@ -67,9 +69,13 @@ native Go by the agent process, eliminating the need to execute the system
 
   ## Use only IPv6 addresses when resolving a hostname.
   # ipv6 = false
+
+  ## Number of data bytes to be sent. Corresponds to the "-s"
+  ## option of the ping command. This only works with the native method.
+  # size = 56
 ```
 
-#### File Limit
+### File Limit
 
 Since this plugin runs the ping command, it may need to open multiple files per
 host.  The number of files used is lessened with the `native` option but still
@@ -81,19 +87,22 @@ use the "drop-in directory", usually located at
 `/etc/systemd/system/circonus-unified-agent.service.d`.
 
 You can create or edit a drop-in file in the correct location using:
+
 ```sh
-$ systemctl edit circonus-unified-agent
+systemctl edit circonus-unified-agent
 ```
 
 Increase the number of open files:
+
 ```ini
 [Service]
 LimitNOFILE=8192
 ```
 
 Restart circonus-unified-agent:
+
 ```sh
-$ systemctl edit circonus-unified-agent
+systemctl edit circonus-unified-agent
 ```
 
 #### Linux Permissions
@@ -102,21 +111,25 @@ When using `method = "native"`, agent will attempt to use privileged raw
 ICMP sockets.  On most systems, doing so requires `CAP_NET_RAW` capabilities.
 
 With systemd:
+
 ```sh
-$ systemctl edit circonus-unified-agent
+systemctl edit circonus-unified-agent
 ```
+
 ```ini
 [Service]
 CapabilityBoundingSet=CAP_NET_RAW
 AmbientCapabilities=CAP_NET_RAW
 ```
+
 ```sh
-$ systemctl restart circonus-unified-agent
+systemctl restart circonus-unified-agent
 ```
 
 Without systemd:
+
 ```sh
-$ setcap cap_net_raw=eip /opt/circonus/unified-agent/sbin/circonus-unified-agentd
+setcap cap_net_raw=eip /opt/circonus/unified-agent/sbin/circonus-unified-agentd
 ```
 
 Reference [`man 7 capabilities`][man 7 capabilities] for more information about
@@ -129,7 +142,7 @@ ICMP echo sockets.  If you wish to use this method you must ensure agent's
 group, usually `cua`, is allowed to use ICMP echo sockets:
 
 ```sh
-$ sysctl -w net.ipv4.ping_group_range="GROUP_ID_LOW   GROUP_ID_HIGH"
+sysctl -w net.ipv4.ping_group_range="GROUP_ID_LOW   GROUP_ID_HIGH"
 ```
 
 Reference [`man 7 icmp`][man 7 icmp] for more information about ICMP echo
@@ -140,35 +153,34 @@ sockets and the `ping_group_range` setting.
 ### Metrics
 
 - ping
-  - tags:
-    - url
-  - fields:
-    - packets_transmitted (integer)
-    - packets_received (integer)
-    - percent_packet_loss (float)
-    - ttl (integer, Not available on Windows)
-    - average_response_ms (integer)
-    - minimum_response_ms (integer)
-    - maximum_response_ms (integer)
-    - standard_deviation_ms (integer, Available on Windows only with native ping)
-    - errors (float, Windows only)
-    - reply_received (integer, Windows with method = "exec" only)
-    - percent_reply_loss (float, Windows with method = "exec" only)
-    - result_code (int, success = 0, no such host = 1, ping error = 2)
+    - tags:
+        - url
+    - fields:
+        - packets_transmitted (integer)
+        - packets_received (integer)
+        - percent_packet_loss (float)
+        - ttl (integer, Not available on Windows)
+        - average_response_ms (integer)
+        - minimum_response_ms (integer)
+        - maximum_response_ms (integer)
+        - standard_deviation_ms (integer, Available on Windows only with native ping)
+        - errors (float, Windows only)
+        - reply_received (integer, Windows with method = "exec" only)
+        - percent_reply_loss (float, Windows with method = "exec" only)
+        - result_code (int, success = 0, no such host = 1, ping error = 2)
 
-##### reply_received vs packets_received
+#### reply_received vs packets_received
 
 On Windows systems with `method = "exec"`, the "Destination net unreachable" reply will increment `packets_received` but not `reply_received`*.
 
 ##### ttl
 
 There is currently no support for TTL on windows with `"native"`; track
-progress at https://github.com/golang/go/issues/7175 and
-https://github.com/golang/go/issues/7174
-
+progress at <https://github.com/golang/go/issues/7175> and
+<https://github.com/golang/go/issues/7174>
 
 ### Example Output
 
-```
+```text
 ping,url=example.org average_response_ms=23.066,ttl=63,maximum_response_ms=24.64,minimum_response_ms=22.451,packets_received=5i,packets_transmitted=5i,percent_packet_loss=0,result_code=0i,standard_deviation_ms=0.809 1535747258000000000
 ```

@@ -2,10 +2,12 @@
 
 The proxmox plugin gathers metrics about containers and VMs using the Proxmox API.
 
-### Configuration:
+### Configuration
 
 ```toml
 [[inputs.proxmox]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## API connection configuration. The API token was introduced in Proxmox v6.2. Required permissions for user and token: PVEAuditor role on /.
   base_url = "https://localhost:8006/api2/json"
   api_token = "USER@REALM!TOKENID=UUID"
@@ -29,33 +31,33 @@ The plugin will need to have access to the Proxmox API. An API token
 must be provided with the corresponding user being assigned at least the PVEAuditor
 role on /.
 
-### Measurements & Fields:
+### Measurements & Fields
 
 - proxmox
-  - status
-  - uptime
-  - cpuload
-  - mem_used
-  - mem_total
-  - mem_free
-  - mem_used_percentage
-  - swap_used
-  - swap_total
-  - swap_free
-  - swap_used_percentage
-  - disk_used
-  - disk_total
-  - disk_free
-  - disk_used_percentage
+    - status
+    - uptime
+    - cpuload
+    - mem_used
+    - mem_total
+    - mem_free
+    - mem_used_percentage
+    - swap_used
+    - swap_total
+    - swap_free
+    - swap_used_percentage
+    - disk_used
+    - disk_total
+    - disk_free
+    - disk_used_percentage
 
-### Tags:
+### Tags
 
-  - node_fqdn - FQDN of the node agent is running on
-  - vm_name - Name of the VM/container
-  - vm_fqdn - FQDN of the VM/container
-  - vm_type - Type of the VM/container (lxc, qemu)
+- node_fqdn - FQDN of the node agent is running on
+- vm_name - Name of the VM/container
+- vm_fqdn - FQDN of the VM/container
+- vm_type - Type of the VM/container (lxc, qemu)
 
-### Example Output:
+### Example Output
 
 ```
 $ ./circonus-unified-agent --config circonus-unified-agent.conf --input-filter proxmox --test

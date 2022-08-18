@@ -33,6 +33,8 @@ type GitHub struct {
 }
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## List of repositories to monitor.
   repositories = [
 	  "circonus-labs/circonus-unified-agent",

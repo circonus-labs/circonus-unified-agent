@@ -11,18 +11,25 @@ import (
 )
 
 type Self struct {
-	CollectMemstats bool
+	CollectMemstats  bool
+	CollectSelfstats bool
 }
 
 func NewSelf() cua.Input {
 	return &Self{
-		CollectMemstats: true,
+		CollectMemstats:  true,
+		CollectSelfstats: true,
 	}
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## If true, collect cua memory stats.
   # collect_memstats = true
+
+  ## if true, collect selfstats (per plugin)
+  # collect_selfstats = true
 `
 
 func (s *Self) Description() string {
@@ -56,16 +63,16 @@ func (s *Self) Gather(ctx context.Context, acc cua.Accumulator) error {
 		acc.AddFields("internal_memstats", fields, map[string]string{"__rollup": "false"})
 	}
 
-	// agentVersion := inter.Version()
-	goVersion := strings.TrimPrefix(runtime.Version(), "go")
+	if s.CollectSelfstats {
+		goVersion := strings.TrimPrefix(runtime.Version(), "go")
 
-	for _, m := range selfstat.Metrics() {
-		if m.Name() == "internal_agent" {
-			m.AddTag("go_version", goVersion)
+		for _, m := range selfstat.Metrics() {
+			if m.Name() == "internal_agent" {
+				m.AddTag("go_version", goVersion)
+			}
+			m.AddTag("__rollup", "false")
+			acc.AddFields(m.Name(), m.Fields(), m.Tags(), m.Time())
 		}
-		// m.AddTag("version", agentVersion)
-		m.AddTag("__rollup", "false")
-		acc.AddFields(m.Name(), m.Fields(), m.Tags(), m.Time())
 	}
 
 	return nil

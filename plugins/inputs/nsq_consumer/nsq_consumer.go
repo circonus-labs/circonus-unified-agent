@@ -50,6 +50,8 @@ type NSQConsumer struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Server option still works but is deprecated, we just prepend it to the nsqd array.
   # server = "localhost:4150"
 

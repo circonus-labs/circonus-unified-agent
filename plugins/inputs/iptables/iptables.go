@@ -1,3 +1,4 @@
+//go:build linux
 // +build linux
 
 package iptables
@@ -33,6 +34,8 @@ func (ipt *Iptables) Description() string {
 // SampleConfig returns sample configuration options.
 func (ipt *Iptables) SampleConfig() string {
 	return `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## iptables require root access on most systems.
   ## Setting 'use_sudo' to true will make use of sudo to run iptables.
   ## Users must configure sudo to allow cua user to run iptables with no password.

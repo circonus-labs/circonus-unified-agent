@@ -25,6 +25,8 @@ import (
 
 const description = `Retrieves SNMP values from remote agents`
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Agent addresses to retrieve values from.
   ##   example: agents = ["udp://127.0.0.1:161"]
   ##            agents = ["tcp://127.0.0.1:161"]
@@ -965,9 +967,11 @@ func snmpTranslateCall(oid string) *TranslateItem {
 				if len(obj) == 0 {
 					continue
 				}
-				if i := strings.Index(obj, "("); i != -1 {
+				i := strings.Index(obj, "(")
+				j := strings.Index(obj, ")")
+				if i != -1 && j != -1 {
 					obj = obj[i+1:]
-					stc.oidNum += "." + obj[:strings.Index(obj, ")")]
+					stc.oidNum += "." + obj[:j]
 				} else {
 					stc.oidNum += "." + obj
 				}

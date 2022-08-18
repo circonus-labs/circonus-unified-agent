@@ -48,6 +48,8 @@ type fireboardStats struct {
 
 // A sample configuration to only gather stats from localhost, default port.
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Specify auth token for your account
   auth_token = "invalidAuthToken"
   ## You can override the fireboard server URL if necessary

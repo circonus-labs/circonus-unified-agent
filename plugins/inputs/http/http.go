@@ -48,6 +48,8 @@ type HTTP struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## One or more URLs from which to read formatted metrics
   urls = [
     "http://localhost/metrics"

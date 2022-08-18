@@ -16,6 +16,8 @@ Minimum Version of Monit tested with is 5.16.
 
 ```toml
 [[inputs.monit]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Monit HTTPD address
   address = "http://127.0.0.1:2812"
 
@@ -37,197 +39,198 @@ Minimum Version of Monit tested with is 5.16.
 ### Metrics
 
 - monit_filesystem
-  - tags:
-    - address
-    - version
-    - service
-    - platform_name
-    - status
-    - monitoring_status
-    - monitoring_mode
-  - fields:
-    - status_code
-    - monitoring_status_code
-    - monitoring_mode_code
-    - mode
-    - block_percent
-    - block_usage
-    - block_total
-    - inode_percent
-    - inode_usage
-    - inode_total
+    - tags:
+        - address
+        - version
+        - service
+        - platform_name
+        - status
+        - monitoring_status
+        - monitoring_mode
+    - fields:
+        - status_code
+        - monitoring_status_code
+        - monitoring_mode_code
+        - mode
+        - block_percent
+        - block_usage
+        - block_total
+        - inode_percent
+        - inode_usage
+        - inode_total
 
-+ monit_directory
-  - tags:
-    - address
-    - version
-    - service
-    - platform_name
-    - status
-    - monitoring_status
-    - monitoring_mode
-  - fields:
-    - status_code
-    - monitoring_status_code
-    - monitoring_mode_code
-    - permissions
+- monit_directory
+    - tags:
+        - address
+        - version
+        - service
+        - platform_name
+        - status
+        - monitoring_status
+        - monitoring_mode
+    - fields:
+        - status_code
+        - monitoring_status_code
+        - monitoring_mode_code
+        - permissions
 
 - monit_file
-  - tags:
-    - address
-    - version
-    - service
-    - platform_name
-    - status
-    - monitoring_status
-    - monitoring_mode
-  - fields:
-    - status_code
-    - monitoring_status_code
-    - monitoring_mode_code
-    - size
-    - permissions
+    - tags:
+        - address
+        - version
+        - service
+        - platform_name
+        - status
+        - monitoring_status
+        - monitoring_mode
+    - fields:
+        - status_code
+        - monitoring_status_code
+        - monitoring_mode_code
+        - size
+        - permissions
 
-+ monit_process
-  - tags:
-    - address
-    - version
-    - service
-    - platform_name
-    - status
-    - monitoring_status
-    - monitoring_mode
-  - fields:
-    - status_code
-    - monitoring_status_code
-    - monitoring_mode_code
-    - cpu_percent
-    - cpu_percent_total
-    - mem_kb
-    - mem_kb_total
-    - mem_percent
-    - mem_percent_total
-    - pid
-    - parent_pid
-    - threads
-    - children
+- monit_process
+    - tags:
+        - address
+        - version
+        - service
+        - platform_name
+        - status
+        - monitoring_status
+        - monitoring_mode
+    - fields:
+        - status_code
+        - monitoring_status_code
+        - monitoring_mode_code
+        - cpu_percent
+        - cpu_percent_total
+        - mem_kb
+        - mem_kb_total
+        - mem_percent
+        - mem_percent_total
+        - pid
+        - parent_pid
+        - threads
+        - children
 
 - monit_remote_host
-  - tags:
-    - address
-    - version
-    - service
-    - platform_name
-    - status
-    - monitoring_status
-    - monitoring_mode
-  - fields:
-    - status_code
-    - monitoring_status_code
-    - monitoring_mode_code
-    - hostname
-    - port_number
-    - request
-    - response_time
-    - protocol
-    - type
+    - tags:
+        - address
+        - version
+        - service
+        - platform_name
+        - status
+        - monitoring_status
+        - monitoring_mode
+    - fields:
+        - status_code
+        - monitoring_status_code
+        - monitoring_mode_code
+        - hostname
+        - port_number
+        - request
+        - response_time
+        - protocol
+        - type
 
-+ monit_system
-  - tags:
-    - address
-    - version
-    - service
-    - platform_name
-    - status
-    - monitoring_status
-    - monitoring_mode
-  - fields:
-    - status_code
-    - monitoring_status_code
-    - monitoring_mode_code
-    - cpu_system
-    - cpu_user
-    - cpu_wait
-    - cpu_load_avg_1m
-    - cpu_load_avg_5m
-    - cpu_load_avg_15m
-    - mem_kb
-    - mem_percent
-    - swap_kb
-    - swap_percent
+- monit_system
+    - tags:
+        - address
+        - version
+        - service
+        - platform_name
+        - status
+        - monitoring_status
+        - monitoring_mode
+    - fields:
+        - status_code
+        - monitoring_status_code
+        - monitoring_mode_code
+        - cpu_system
+        - cpu_user
+        - cpu_wait
+        - cpu_load_avg_1m
+        - cpu_load_avg_5m
+        - cpu_load_avg_15m
+        - mem_kb
+        - mem_percent
+        - swap_kb
+        - swap_percent
 
 - monit_fifo
-  - tags:
-    - address
-    - version
-    - service
-    - platform_name
-    - status
-    - monitoring_status
-    - monitoring_mode
-  - fields:
-    - status_code
-    - monitoring_status_code
-    - monitoring_mode_code
-	- permissions
+    - tags:
+        - address
+        - version
+        - service
+        - platform_name
+        - status
+        - monitoring_status
+        - monitoring_mode
+    - fields:
+        - status_code
+        - monitoring_status_code
+        - monitoring_mode_code
+        - permissions
 
-+ monit_program
-  - tags:
-    - address
-    - version
-    - service
-    - platform_name
-    - status
-    - monitoring_status
-    - monitoring_mode
-  - fields:
-    - status_code
-    - monitoring_status_code
-    - monitoring_mode_code
-
-- monit_network
-  - tags:
-    - address
-    - version
-    - service
-    - platform_name
-    - status
-    - monitoring_status
-    - monitoring_mode
-  - fields:
-    - status_code
-    - monitoring_status_code
-    - monitoring_mode_code
-
-+ monit_program
-  - tags:
-    - address
-    - version
-    - service
-    - platform_name
-    - status
-    - monitoring_status
-    - monitoring_mode
-  - fields:
-    - status_code
-    - monitoring_status_code
-    - monitoring_mode_code
+- monit_program
+    - tags:
+        - address
+        - version
+        - service
+        - platform_name
+        - status
+        - monitoring_status
+        - monitoring_mode
+    - fields:
+        - status_code
+        - monitoring_status_code
+        - monitoring_mode_code
 
 - monit_network
-  - tags:
-    - address
-    - version
-    - service
-    - platform_name
-    - status
-    - monitoring_status
-    - monitoring_mode
-  - fields:
-    - status_code
-    - monitoring_status_code
-    - monitoring_mode_code
+    - tags:
+        - address
+        - version
+        - service
+        - platform_name
+        - status
+        - monitoring_status
+        - monitoring_mode
+    - fields:
+        - status_code
+        - monitoring_status_code
+        - monitoring_mode_code
+
+- monit_program
+    - tags:
+        - address
+        - version
+        - service
+        - platform_name
+        - status
+        - monitoring_status
+        - monitoring_mode
+    - fields:
+        - status_code
+        - monitoring_status_code
+        - monitoring_mode_code
+
+- monit_network
+    - tags:
+        - address
+        - version
+        - service
+        - platform_name
+        - status
+        - monitoring_status
+        - monitoring_mode
+    - fields:
+        - status_code
+        - monitoring_status_code
+        - monitoring_mode_code
 
 ### Example Output
+
 ```
 monit_file,monitoring_mode=active,monitoring_status=monitored,pending_action=none,platform_name=Linux,service=rsyslog_pid,source=xyzzy.local,status=running,version=5.20.0 mode=644i,monitoring_mode_code=0i,monitoring_status_code=1i,pending_action_code=0i,size=3i,status_code=0i 1579735047000000000
 monit_process,monitoring_mode=active,monitoring_status=monitored,pending_action=none,platform_name=Linux,service=rsyslog,source=xyzzy.local,status=running,version=5.20.0 children=0i,cpu_percent=0,cpu_percent_total=0,mem_kb=3148i,mem_kb_total=3148i,mem_percent=0.2,mem_percent_total=0.2,monitoring_mode_code=0i,monitoring_status_code=1i,parent_pid=1i,pending_action_code=0i,pid=318i,status_code=0i,threads=4i 1579735047000000000

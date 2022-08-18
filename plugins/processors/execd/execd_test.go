@@ -94,7 +94,7 @@ func TestMain(m *testing.M) {
 
 func runCountMultiplierProgram() {
 	parser := influx.NewStreamParser(os.Stdin)
-	serializer, _ := serializers.NewInfluxSerializer()
+	serializer, _ := serializers.NewCirconusSerializer(time.Millisecond)
 
 	for {
 		metric, err := parser.Next()

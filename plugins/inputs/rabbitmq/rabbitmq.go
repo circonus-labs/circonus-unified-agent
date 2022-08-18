@@ -37,32 +37,26 @@ const DefaultClientTimeout = 4
 // RabbitMQ defines the configuration necessary for gathering metrics,
 // see the sample config for further details
 type RabbitMQ struct {
-	URL      string `toml:"url"`
-	Username string `toml:"username"`
-	Password string `toml:"password"`
-	tls.ClientConfig
-
-	ResponseHeaderTimeout internal.Duration `toml:"header_timeout"`
-	ClientTimeout         internal.Duration `toml:"client_timeout"`
-
-	Nodes     []string `toml:"nodes"`
-	Queues    []string `toml:"queues"`
-	Exchanges []string `toml:"exchanges"`
-
-	QueueInclude              []string `toml:"queue_name_include"`
-	QueueExclude              []string `toml:"queue_name_exclude"`
-	FederationUpstreamInclude []string `toml:"federation_upstream_include"`
-	FederationUpstreamExclude []string `toml:"federation_upstream_exclude"`
-
-	Client *http.Client `toml:"-"`
-
-	filterCreated     bool
-	excludeEveryQueue bool
-	queueFilter       filter.Filter
-	upstreamFilter    filter.Filter
-
-	Log             cua.Logger
 	versionLastSent time.Time
+	Log             cua.Logger
+	upstreamFilter  filter.Filter
+	queueFilter     filter.Filter
+	Client          *http.Client `toml:"-"`
+	tls.ClientConfig
+	Password                  string            `toml:"password"`
+	Username                  string            `toml:"username"`
+	URL                       string            `toml:"url"`
+	QueueInclude              []string          `toml:"queue_name_include"`
+	Exchanges                 []string          `toml:"exchanges"`
+	FederationUpstreamInclude []string          `toml:"federation_upstream_include"`
+	FederationUpstreamExclude []string          `toml:"federation_upstream_exclude"`
+	Queues                    []string          `toml:"queues"`
+	Nodes                     []string          `toml:"nodes"`
+	QueueExclude              []string          `toml:"queue_name_exclude"`
+	ClientTimeout             internal.Duration `toml:"client_timeout"`
+	ResponseHeaderTimeout     internal.Duration `toml:"header_timeout"`
+	filterCreated             bool
+	excludeEveryQueue         bool
 }
 
 // OverviewResponse ...
@@ -148,24 +142,23 @@ type Queue struct {
 
 // Node ...
 type Node struct {
-	Name string
-
-	DiskFree                 int64   `json:"disk_free"`
+	Name                     string
+	MnesiaDiskTxCount        int64   `json:"mnesia_disk_tx_count"`
 	DiskFreeLimit            int64   `json:"disk_free_limit"`
-	DiskFreeAlarm            bool    `json:"disk_free_alarm"`
+	IoWriteBytes             int64   `json:"io_write_bytes"`
 	FdTotal                  int64   `json:"fd_total"`
 	FdUsed                   int64   `json:"fd_used"`
 	MemLimit                 int64   `json:"mem_limit"`
 	MemUsed                  int64   `json:"mem_used"`
-	MemAlarm                 bool    `json:"mem_alarm"`
+	IoWriteAvgTimeDetails    Details `json:"io_write_avg_time_details"`
 	ProcTotal                int64   `json:"proc_total"`
 	ProcUsed                 int64   `json:"proc_used"`
 	RunQueue                 int64   `json:"run_queue"`
 	SocketsTotal             int64   `json:"sockets_total"`
 	SocketsUsed              int64   `json:"sockets_used"`
-	Running                  bool    `json:"running"`
+	IoWriteAvgTime           int64   `json:"io_write_avg_time"`
 	Uptime                   int64   `json:"uptime"`
-	MnesiaDiskTxCount        int64   `json:"mnesia_disk_tx_count"`
+	DiskFree                 int64   `json:"disk_free"`
 	MnesiaDiskTxCountDetails Details `json:"mnesia_disk_tx_count_details"`
 	MnesiaRAMTxCount         int64   `json:"mnesia_ram_tx_count"`
 	MnesiaRAMTxCountDetails  Details `json:"mnesia_ram_tx_count_details"`
@@ -177,18 +170,18 @@ type Node struct {
 	IoReadAvgTimeDetails     Details `json:"io_read_avg_time_details"`
 	IoReadBytes              int64   `json:"io_read_bytes"`
 	IoReadBytesDetails       Details `json:"io_read_bytes_details"`
-	IoWriteAvgTime           int64   `json:"io_write_avg_time"`
-	IoWriteAvgTimeDetails    Details `json:"io_write_avg_time_details"`
-	IoWriteBytes             int64   `json:"io_write_bytes"`
 	IoWriteBytesDetails      Details `json:"io_write_bytes_details"`
+	Running                  bool    `json:"running"`
+	MemAlarm                 bool    `json:"mem_alarm"`
+	DiskFreeAlarm            bool    `json:"disk_free_alarm"`
 }
 
 type Exchange struct {
-	Name         string
 	MessageStats `json:"message_stats"`
+	Name         string
 	Type         string
-	Internal     bool
 	Vhost        string
+	Internal     bool
 	Durable      bool
 	AutoDelete   bool `json:"auto_delete"`
 }
@@ -264,6 +257,8 @@ type gatherFunc func(r *RabbitMQ, acc cua.Accumulator)
 var gatherFunctions = []gatherFunc{gatherOverview, gatherNodes, gatherQueues, gatherExchanges, gatherFederationLinks}
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## an instance id is required
   instance_id  ""
   ## Management Plugin url. (default: http://localhost:15672)

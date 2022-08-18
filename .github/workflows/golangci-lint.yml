@@ -11,14 +11,14 @@ jobs:
     name: lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@v3
         with:
           stable: true
-          go-version: 1.16.x
-      - uses: actions/checkout@v2
+          go-version: 1.17.x
+      - uses: actions/checkout@v3
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v2
+        uses: golangci/golangci-lint-action@v3.2.0
         with:
-          version: v1.40
+          version: v1.42
           skip-go-installation: true
           args: --timeout=5m

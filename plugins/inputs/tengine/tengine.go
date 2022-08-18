@@ -29,6 +29,8 @@ type Tengine struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   # An array of Tengine reqstat module URI to gather stats.
   urls = ["http://127.0.0.1/us"]
 

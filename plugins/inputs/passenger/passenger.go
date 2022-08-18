@@ -127,6 +127,8 @@ func (p *process) getUptime() int64 {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Path of passenger-status.
   ##
   ## Plugin gather metric via parsing XML output of passenger-status

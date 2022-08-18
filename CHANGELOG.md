@@ -1,3 +1,197 @@
+# v0.0.46
+
+* feat(internal/circonus): Check tags are configurable via the `agent.circonus.check_tags` key in the agent config file
+* fix(internal/circonus): Check tags are agent self-managed for all plugins
+
+# v0.0.45
+
+* add: (snmp) `timestamp` conversion for OIDs returning date/time strings (requires `timestamp_layout` to be set) [CIRC-8420]
+
+# v0.0.44
+
+* upd: go-trapmetrrics v0.0.8
+* CIRC-8110 Oracle plugin fixes / updates
+* build(deps): bump golangci/golangci-lint-action from 3.1.0 to 3.2.0
+* build(deps): bump github.com/shirou/gopsutil/v3 from 3.22.3 to 3.22.4
+* add: (snmp) trim leading/trailing space on strings in field conversion
+* fix: (snmp) panic when connection fails
+* add: (snmp) regexp conversion option
+* add: (snmp) string conversion option
+* doc: (snmp) update readme with new regexp conversion option
+
+# v0.0.43
+
+* upd: go-trapcheck to v0.0.8 [CIRC-8241]
+* CIRC-8110 Normalize metric names
+* build(deps): bump actions/setup-go from 2 to 3
+* build(deps): bump github.com/shirou/gopsutil/v3 from 3.22.2 to 3.22.3
+* Update oracle_metrics.py produced metric names
+* build(deps): bump actions/setup-go from 2 to 3
+
+# v0.0.42
+
+* upd: merge PR#47 - update prometheus to not error on success and examples for `instance_id`
+* upd: input plugins to document `instance_id` being required in README and example config in code
+* upd: vsphere plugin README and config code example annotate that `instance_id` is required [CIRC-7979]
+* upd: example config to ensure _all_ input plugins have an annotation that `instance_id` is required
+* upd: vsphere config in example config to annotate that `instance_id` is required [CIRC-7979]
+* upd: build(deps): bump actions/checkout from 2 to 3
+* upd: build(deps): bump github.com/shirou/gopsutil/v3 from 3.22.1 to 3.22.2
+* upd: build(deps): bump golangci/golangci-lint-action from 2 to 3.1.0
+
+# v0.0.41
+
+* add: --apiurl argument to installer [CIRC-7756]
+* add: processor support (amd64,x86_64,aarch64,arm64) oracle linux on arm specifically [CIRC-7730]
+* fix: handle booleans as numerics [CIRC-7781]
+* upd: on windows, check for config in "C:\Program Files\Circonus\Circonus-Unified-Agent\etc\circonus-unified-agent.conf" [CIRC-7980]
+* doc: update doc/WINDOWS_SERVICE.md to reflect where installer is actually putting the files [CIRC-7980]
+* add: external plugin support
+* add: external plugin for oracle metrics [CIRC-7877]
+
+# v0.0.40
+
+* fix(snmp): bad slice indexing for oid components
+* add(snmp): oid to snmp get error messages
+* fix(lint): force local config file
+* fix: lint issues
+* build(deps): bump github.com/shirou/gopsutil/v3 from 3.21.12 to 3.22.1
+
+# v0.0.39
+
+* add: input plugin to pull circonus httptrap stream tag formatted metrics [CIRC-7530]
+
+# v0.0.38
+
+* build(deps): bump github.com/shirou/gopsutil/v3 from 3.21.11 to 3.21.12
+* fix: goreleaser-nfpm stuttering sbin dir
+
+# v0.0.37
+
+* fix: deprecated syntax rpm/deb
+* fix: lint issues
+* upd: default collection interval 10s
+* upd: build(deps): bump github.com/shirou/gopsutil/v3 from 3.21.8 to 3.21.11
+* upd: build(deps): bump github.com/gosnmp/gosnmp from 1.32.0 to 1.34.0
+
+# v0.0.36
+
+* fix: ensure example configs included in base os build archives
+
+# v0.0.35
+
+* add: support SuSE variants (sles,suse,opensuse)
+* upd: gopsutil/v3 3.21.6->3.21.8
+* add: circ_http_json input plugin
+* upd: (outcirc) reusable bytes.Buffer for metric handling/flushing
+* dep: (outcirc) default destination (drop no dest metrics)
+* add: (outcirc) `project_id` awareness for metrics coming from stackdriver_circonus
+* add: (outcirc) `project_id` to metric meta when metrics come from stackdriver_circonus
+* upd: (outcirc) struct alignment
+* upd: (outcirc) use bytes.Buffer for metric flushing
+* dep: (outcirc) `one_check`
+* dep: (outcirc) "default" check (don't create anymore, just drop metrics with no discernable destination)
+* dep: (outcirc) `check_name_prefix` - using `agent.hostname` globally
+* upd: (outcirc) use metric meta struct
+* add: (outcirc) `cua_runtime` metric every minute
+* upd: (statsd) use metric meta data struct for DM
+* upd: (statsd) struct alignment
+* add: (stackdriver_circ) project_id as metric tag
+* upd: (stackdriver_circ) pull default list of services from circmgr
+* upd: (stackdriver_circ) struct align
+* add: (snmp) Tags to config so DM can use them
+* upd: (snmp) struct align
+* upd: (snmp) use metric meta struct
+* upd: (snmp) use flush pool for DM
+* upd: (snmp) don't cache snmp connections use and close (memory)
+* upd: (snmp) add static tags when using DM
+* add: (snmp) Close to snmp interface
+* upd: (snmp) fieldConvert to handle non-printable chars as encoded hex otherwise encode as string (text metric)
+* add: (snmp) close to mock snmp conn to satisfy interface
+* add: (snmp) flush handling pool for DM
+* upd: (ping) struct alignment and add Tags, so DM will see them
+* upd: (ping) use metric meta struct
+* upd: (ping) add static tags if configured on input
+* add: (internal) flag to control selfstat collection - with large number of plugin instances thousands of metrics can be generated
+* upd: (circmgr) move log msg re cache usage from info to debug
+* add: (circmgr) break out metric meta data (plugin,instance,group,project) (due to stackdriver_circonus special handling)
+* add: (circmgr) handling of project_id (stackdriver_circonus)
+* upd: (circmgr) remove service from search tags
+* upd: (circmgr) service check tag to _service
+* upd: (circmgr) use hostname vs checkNamePrefix
+* add: (circmgr) special handling for check type and display name for (stackdriver_circonus)
+* upd: (circmgr) cache tls config when loading checks from cache
+* upd: (circmgr) move dest key to MetricMeta struct method (stackdriver_circonus)
+* add: (circmgr) static tags param to AddMetricToDest for input plugin Tags attribute
+* add: (circmgr) stackdriver_circonus helper for vanity check display_name and single source of truth for gcp services
+* add: (intsnmp) conn.Close exposed as Close on wrapper
+* upd: (intsnmp) lint struct align
+* upd: (install) add `--ver` option to install_linux
+* upd: (config) eliminate global host tag
+* upd: (config) use single hostname setting from agent
+* add: (config) controlling of selfstats for internal plugin (can turn off for large number of plugin instances)
+* upd: (exconf) deprecate check_name_prefix for agent.circonus
+* upd: (exconf) clarify hostname setting and its affects
+* upd: (exconf) clarify broker setting and where to find broker ID
+* upd: go-trapcheck v0.0.7, go-trapmetrics v0.0.7
+* upd: v1.42 (lint)
+* upd: ignore windows arm64 due to OLE errors
+* upd: struct layout + go1.17
+* upd: (docker) remove deprecated option from config
+* upd: (docker) switch include source tag option to true in config, readme and example
+
+# v0.0.34
+
+* fix: location of binary for rpm/deb
+* upd: (circmgr) remove redundant check tags
+* upd: (snmp) send collection duration as metric
+* fix: (snmp test) lint
+
+# v0.0.33
+
+* add: check tags for host check with os meta data
+* add: (snmp) context awareness during collection
+* add: (snmp) log timing msg for gather taking >1m
+* fix: (circout) lint struct alignment
+* add: (circmgr) cache_no_verify to use checks from cache w/o verifying via API
+* fix: (snmp) convert octet-string to hex to avoid control characters emitted in metrics
+* upd: dependencies (go-trapcheck,go-trapmetrics)
+* fix: lint issues
+* build(deps): bump github.com/shirou/gopsutil/v3 from 3.21.5 to 3.21.6
+* fix: adding basic parsing for Windows machines w/o IE
+* build(deps): bump github.com/gosnmp/gosnmp from 1.31.0 to 1.32.0
+* build(deps): bump github.com/shirou/gopsutil/v3 from 3.21.4 to 3.21.5
+* add: dependabot config
+
+# v0.0.32
+
+* upd: switch trap packages to circonus-labs
+* fix: (config, example confs) win perf registry quota counter name
+* feat: ping direct metric mode
+    * add: units tag to rtt histogram
+    * upd: default privileged to true
+* upd: (example confs) cache and trace paths
+* fix: (circmgr) don't use empty metric group for tag
+* doc: add linux support mention back into readme
+* fix: removing the Windows OSI `--app` flag
+* feat: circonus serializer (use for `--test`)
+* upd: default config directory for windows
+* doc: update WINDOWS_SERVICE.md
+* upd: CIRC-6586 FreeBSD service definition - address PID issue whereby restarting or stopping would not work as expected
+* upd: CIRC-6586 MacOS service definition - convention is to use a fully qualified service name that matches the LaunchDaemon file name
+* upd: CIRC-6586 freebsd installer - remove escaping that prevented commands from being executed properly
+
+# v0.0.31
+
+* upd: rename systemd/init service defs to indicate they are for linux
+* upd: dep (go-trapcheck, go-trapmetrics) - metric submission performance
+* upd: allow override of api debug and trace per check creator (dm or output)
+* fix: remove chown for log dir (deb/rpm - cua doesn't use)
+* add: in service definition for FreeBSD and other logistical changes - CIRC-6586
+* upd: rename service definitions to indicate what OS they are for - CIRC-6586
+* upd: installer scripts to reference new home for service definitions
+* add: freebsd service definition
+
 # v0.0.30
 
 * upd: add context to service input Start method

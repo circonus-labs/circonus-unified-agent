@@ -1,3 +1,4 @@
+//go:build linux
 // +build linux
 
 package conntrack
@@ -51,6 +52,8 @@ func (c *Conntrack) Description() string {
 }
 
 var sampleConfig = `
+   instance_id = "" # unique instance identifier (REQUIRED)
+
    ## The following defaults would work with multiple versions of conntrack.
    ## Note the nf_ and ip_ filename prefixes are mutually exclusive across
    ## kernel versions, as are the directory locations.

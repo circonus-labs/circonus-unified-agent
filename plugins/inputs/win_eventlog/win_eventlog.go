@@ -1,4 +1,5 @@
-//+build windows
+//go:build windows
+// +build windows
 
 //revive:disable-next-line:var-naming
 // Package win_eventlog Input plugin to collect Windows Event Log messages
@@ -23,6 +24,8 @@ import (
 )
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Agent should have Administrator permissions to subscribe for some Windows Events channels
   ## (System log, for example)
 

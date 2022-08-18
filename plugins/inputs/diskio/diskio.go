@@ -17,18 +17,15 @@ var (
 )
 
 type DiskIO struct {
-	ps system.PS
-
-	Devices          []string
+	ps               system.PS
+	deviceFilter     filter.Filter
+	Log              cua.Logger
+	infoCache        map[string]diskInfoCache //nolint:unused,structcheck
 	DeviceTags       []string
 	NameTemplates    []string
+	Devices          []string
 	SkipSerialNumber bool
-
-	Log cua.Logger
-
-	infoCache    map[string]diskInfoCache //nolint:structcheck,unused
-	deviceFilter filter.Filter
-	initialized  bool
+	initialized      bool
 }
 
 func (*DiskIO) Description() string {
@@ -36,6 +33,8 @@ func (*DiskIO) Description() string {
 }
 
 var diskIOsampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## By default, the agent will gather stats for all devices including
   ## disk partitions.
   ## Setting devices will restrict the stats to the specified devices.

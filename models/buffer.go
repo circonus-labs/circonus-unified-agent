@@ -15,20 +15,18 @@ var (
 // Buffer stores metrics in a circular buffer.
 type Buffer struct {
 	sync.Mutex
-	buf   []cua.Metric
-	first int // index of the first/oldest metric
-	last  int // one after the index of the last/newest metric
-	size  int // number of metrics currently in the buffer
-	cap   int // the capacity of the buffer
-
-	batchFirst int // index of the first metric in the batch
-	batchSize  int // number of metrics currently in the batch
-
-	MetricsAdded   selfstat.Stat
-	MetricsWritten selfstat.Stat
-	MetricsDropped selfstat.Stat
 	BufferSize     selfstat.Stat
+	MetricsDropped selfstat.Stat
+	MetricsWritten selfstat.Stat
+	MetricsAdded   selfstat.Stat
 	BufferLimit    selfstat.Stat
+	buf            []cua.Metric
+	cap            int // the capacity of the buffer
+	batchSize      int // number of metrics currently in the batch
+	size           int // number of metrics currently in the buffer
+	last           int // one after the index of the last/newest metric
+	first          int // index of the first/oldest metric
+	batchFirst     int // index of the first metric in the batch
 }
 
 // NewBuffer returns a new empty Buffer with the given capacity.

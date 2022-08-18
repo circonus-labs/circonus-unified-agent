@@ -1,12 +1,10 @@
 #!/bin/bash
 
 BIN_DIR=/opt/circonus/unified-agent/sbin
-LOG_DIR=/var/log/circonus
 SERVICE_DIR=/opt/circonus/unified-agent/service
-LOGROTATE_DIR=/etc/logrotate.d
 
 function install_init {
-    cp -f $SERVICE_DIR/init.sh /etc/init.d/circonus-unified-agent
+    cp -f $SERVICE_DIR/circonus-unified-agent.init /etc/init.d/circonus-unified-agent
     chmod +x /etc/init.d/circonus-unified-agent
 }
 
@@ -48,10 +46,6 @@ if [[ ! -f /opt/circonus/unified-agent/etc/circonus-unified-agent.conf ]] && [[ 
    cp /opt/circonus/unified-agent/etc/example-circonus-unified-agent.conf /opt/circonus/unified-agent/etc/circonus-unified-agent.conf
 fi
 
-test -d $LOG_DIR || mkdir -p $LOG_DIR
-chown -R -L cua:cua $LOG_DIR
-chmod 755 $LOG_DIR
-
 # Distribution-specific logic
 if [[ -f /etc/redhat-release ]] || [[ -f /etc/SuSE-release ]]; then
     # RHEL-variant logic
@@ -83,6 +77,9 @@ elif [[ -f /etc/os-release ]]; then
         fi
     elif [[ "$NAME" = "Solus" ]]; then
         # Solus logic
+        install_systemd /usr/lib/systemd/system/circonus-unified-agent.service
+    elif [[ "$ID" == *"sles"* ]] || [[ "$ID_LIKE" == *"suse"*  ]] || [[  "$ID_LIKE" = *"opensuse"* ]]; then
+        # Modern SuSE logic
         install_systemd /usr/lib/systemd/system/circonus-unified-agent.service
     fi
 fi

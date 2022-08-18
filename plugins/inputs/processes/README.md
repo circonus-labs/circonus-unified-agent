@@ -13,7 +13,9 @@ it requires access to execute `ps`.
 ```toml
 # Get the number of processes and group them by status
 [[inputs.processes]]
-  # no configuration
+  instance_id = "" # unique instance identifier (REQUIRED)
+
+  # no other configuration
 ```
 
 Another possible configuration is to define an alternative path for resolving the /proc location.
@@ -24,19 +26,19 @@ Using the environment variable `HOST_PROC` the plugin will retrieve process info
 ### Metrics
 
 - processes
-  - fields:
-    - blocked (aka disk sleep or uninterruptible sleep)
-    - running
-    - sleeping
-    - stopped
-    - total
-    - zombie
-    - dead
-    - wait (freebsd only)
-    - idle (bsd and Linux 4+ only)
-    - paging (linux only)
-    - parked (linux only)
-    - total_threads (linux only)
+    - fields:
+        - blocked (aka disk sleep or uninterruptible sleep)
+        - running
+        - sleeping
+        - stopped
+        - total
+        - zombie
+        - dead
+        - wait (freebsd only)
+        - idle (bsd and Linux 4+ only)
+        - paging (linux only)
+        - parked (linux only)
+        - total_threads (linux only)
 
 ### Process State Mappings
 

@@ -1,3 +1,4 @@
+//go:build !windows
 // +build !windows
 
 package intelrdt
@@ -39,22 +40,21 @@ var pqosMetricOrder = map[int]string{
 }
 
 type IntelRDT struct {
-	PqosPath         string   `toml:"pqos_path"`
-	Cores            []string `toml:"cores"`
-	Processes        []string `toml:"processes"`
-	SamplingInterval int32    `toml:"sampling_interval"`
-	ShortenedMetrics bool     `toml:"shortened_metrics"`
-
+	wg               sync.WaitGroup
 	Log              cua.Logger       `toml:"-"`
-	Publisher        Publisher        `toml:"-"`
 	Processor        ProcessesHandler `toml:"-"`
-	stopPQOSChan     chan bool
 	quitChan         chan struct{}
 	errorChan        chan error
-	parsedCores      []string
 	processesPIDsMap map[string]string
 	cancel           context.CancelFunc
-	wg               sync.WaitGroup
+	stopPQOSChan     chan bool
+	Publisher        Publisher `toml:"-"`
+	PqosPath         string    `toml:"pqos_path"`
+	Processes        []string  `toml:"processes"`
+	parsedCores      []string
+	Cores            []string `toml:"cores"`
+	SamplingInterval int32    `toml:"sampling_interval"`
+	ShortenedMetrics bool     `toml:"shortened_metrics"`
 }
 
 type processMeasurement struct {
@@ -73,6 +73,8 @@ func (*IntelRDT) Description() string {
 
 func (*IntelRDT) SampleConfig() string {
 	return `
+    instance_id = "" # unique instance identifier (REQUIRED)
+
 	## Optionally set sampling interval to Nx100ms. 
 	## This value is propagated to pqos tool. Interval format is defined by pqos itself.
 	## If not provided or provided 0, will be set to 10 = 10x100ms = 1s.

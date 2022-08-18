@@ -1,3 +1,4 @@
+//go:build windows
 // +build windows
 
 package ping
@@ -42,7 +43,7 @@ Approximate round trip times in milli-seconds:
 `
 
 func TestHost(t *testing.T) {
-	trans, recReply, recPacket, avg, min, max, err := processPingOutput(winPLPingOutput)
+	trans, recReply, recPacket, avg, min, max, rtts, err := processPingOutput(winPLPingOutput)
 	assert.NoError(t, err)
 	assert.Equal(t, 4, trans, "4 packets were transmitted")
 	assert.Equal(t, 4, recReply, "4 packets were reply")
@@ -50,8 +51,9 @@ func TestHost(t *testing.T) {
 	assert.Equal(t, 50, avg, "Average 50")
 	assert.Equal(t, 46, min, "Min 46")
 	assert.Equal(t, 57, max, "max 57")
+	assert.Equal(t, 4, len(rtts), "4 rtts")
 
-	trans, recReply, recPacket, avg, min, max, err = processPingOutput(winENPingOutput)
+	trans, recReply, recPacket, avg, min, max, rtts, err = processPingOutput(winENPingOutput)
 	assert.NoError(t, err)
 	assert.Equal(t, 4, trans, "4 packets were transmitted")
 	assert.Equal(t, 4, recReply, "4 packets were reply")
@@ -59,6 +61,7 @@ func TestHost(t *testing.T) {
 	assert.Equal(t, 50, avg, "Average 50")
 	assert.Equal(t, 50, min, "Min 50")
 	assert.Equal(t, 52, max, "Max 52")
+	assert.Equal(t, 4, len(rtts), "4 rtts")
 }
 
 func mockHostPinger(binary string, timeout float64, args ...string) (string, error) {

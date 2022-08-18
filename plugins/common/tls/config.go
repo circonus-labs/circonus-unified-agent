@@ -14,36 +14,21 @@ type ClientConfig struct {
 	TLSCert            string `toml:"tls_cert"`
 	TLSKey             string `toml:"tls_key"`
 	InsecureSkipVerify bool   `toml:"insecure_skip_verify"`
-
-	// Deprecated: in 1.7; use TLS variables above
-	SSLCA   string `toml:"ssl_ca"`
-	SSLCert string `toml:"ssl_cert"`
-	SSLKey  string `toml:"ssl_key"`
 }
 
 // ServerConfig represents the standard server TLS config.
 type ServerConfig struct {
 	TLSCert           string   `toml:"tls_cert"`
 	TLSKey            string   `toml:"tls_key"`
-	TLSAllowedCACerts []string `toml:"tls_allowed_cacerts"`
-	TLSCipherSuites   []string `toml:"tls_cipher_suites"`
 	TLSMinVersion     string   `toml:"tls_min_version"`
 	TLSMaxVersion     string   `toml:"tls_max_version"`
+	TLSAllowedCACerts []string `toml:"tls_allowed_cacerts"`
+	TLSCipherSuites   []string `toml:"tls_cipher_suites"`
 }
 
 // TLSConfig returns a tls.Config, may be nil without error if TLS is not
 // configured.
 func (c *ClientConfig) TLSConfig() (*tls.Config, error) {
-	// Support deprecated variable names
-	if c.TLSCA == "" && c.SSLCA != "" {
-		c.TLSCA = c.SSLCA
-	}
-	if c.TLSCert == "" && c.SSLCert != "" {
-		c.TLSCert = c.SSLCert
-	}
-	if c.TLSKey == "" && c.SSLKey != "" {
-		c.TLSKey = c.SSLKey
-	}
 
 	// TODO: return default tls.Config; plugins should not call if they don't
 	// want TLS, this will require using another option to determine.  In the

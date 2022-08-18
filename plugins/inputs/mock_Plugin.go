@@ -19,7 +19,11 @@ func (m *MockPlugin) Description() string {
 
 // SampleConfig will populate the sample configuration portion of the plugin's configuration
 func (m *MockPlugin) SampleConfig() string {
-	return `  sampleVar = 'foo'`
+	return `  
+  instance_id = "" # unique instance identifier (REQUIRED)
+
+  sampleVar = 'foo'
+`
 }
 
 // Gather defines what data the plugin will gather.

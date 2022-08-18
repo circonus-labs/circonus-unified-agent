@@ -9,6 +9,8 @@ generate it using `circonus-unified-agent --usage mailchimp`.
 
 ```toml
 [[inputs.mailchimp]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## MailChimp API key
   ## get from https://admin.mailchimp.com/account/api/
   api_key = "" # required
@@ -24,36 +26,36 @@ generate it using `circonus-unified-agent --usage mailchimp`.
 ### Metrics
 
 - mailchimp
-  - tags:
-    - id
-    - campaign_title
-  - fields:
-    - emails_sent (integer, emails)
-    - abuse_reports (integer, reports)
-    - unsubscribed (integer, unsubscribes)
-    - hard_bounces (integer, emails)
-    - soft_bounces (integer, emails)
-    - syntax_errors (integer, errors)
-    - forwards_count (integer, emails)
-    - forwards_opens (integer, emails)
-    - opens_total (integer, emails)
-    - unique_opens (integer, emails)
-    - open_rate (double, percentage)
-    - clicks_total (integer, clicks)
-    - unique_clicks (integer, clicks)
-    - unique_subscriber_clicks (integer, clicks)
-    - click_rate (double, percentage)
-    - facebook_recipient_likes (integer, likes)
-    - facebook_unique_likes (integer, likes)
-    - facebook_likes (integer, likes)
-    - industry_type (string, type)
-    - industry_open_rate (double, percentage)
-    - industry_click_rate (double, percentage)
-    - industry_bounce_rate (double, percentage)
-    - industry_unopen_rate (double, percentage)
-    - industry_unsub_rate (double, percentage)
-    - industry_abuse_rate (double, percentage)
-    - list_stats_sub_rate (double, percentage)
-    - list_stats_unsub_rate (double, percentage)
-    - list_stats_open_rate (double, percentage)
-    - list_stats_click_rate (double, percentage)
+    - tags:
+        - id
+        - campaign_title
+    - fields:
+        - emails_sent (integer, emails)
+        - abuse_reports (integer, reports)
+        - unsubscribed (integer, unsubscribes)
+        - hard_bounces (integer, emails)
+        - soft_bounces (integer, emails)
+        - syntax_errors (integer, errors)
+        - forwards_count (integer, emails)
+        - forwards_opens (integer, emails)
+        - opens_total (integer, emails)
+        - unique_opens (integer, emails)
+        - open_rate (double, percentage)
+        - clicks_total (integer, clicks)
+        - unique_clicks (integer, clicks)
+        - unique_subscriber_clicks (integer, clicks)
+        - click_rate (double, percentage)
+        - facebook_recipient_likes (integer, likes)
+        - facebook_unique_likes (integer, likes)
+        - facebook_likes (integer, likes)
+        - industry_type (string, type)
+        - industry_open_rate (double, percentage)
+        - industry_click_rate (double, percentage)
+        - industry_bounce_rate (double, percentage)
+        - industry_unopen_rate (double, percentage)
+        - industry_unsub_rate (double, percentage)
+        - industry_abuse_rate (double, percentage)
+        - list_stats_sub_rate (double, percentage)
+        - list_stats_unsub_rate (double, percentage)
+        - list_stats_open_rate (double, percentage)
+        - list_stats_click_rate (double, percentage)

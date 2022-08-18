@@ -59,6 +59,8 @@ type SnmpTrap struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Transport, local address, and port to listen on.  Transport must
   ## be "udp://".  Omit local address to listen on all interfaces.
   ##   example: "udp://127.0.0.1:1234"

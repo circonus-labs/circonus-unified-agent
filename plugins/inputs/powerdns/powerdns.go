@@ -21,6 +21,8 @@ type Powerdns struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## An array of sockets to gather stats about.
   ## Specify a path to unix socket.
   unix_sockets = ["/var/run/pdns.controlsocket"]

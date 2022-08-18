@@ -34,6 +34,8 @@ var defaultBinary = "/usr/sbin/nsd-control"
 var defaultTimeout = internal.Duration{Duration: time.Second}
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Address of server to connect to, optionally ':port'. Defaults to the
   ## address in the nsd config file.
   server = "127.0.0.1:8953"

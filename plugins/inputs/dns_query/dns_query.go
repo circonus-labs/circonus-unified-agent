@@ -43,6 +43,8 @@ type DNSQuery struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## servers to query
   servers = ["8.8.8.8"]
 

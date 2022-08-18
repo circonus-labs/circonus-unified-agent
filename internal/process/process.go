@@ -15,20 +15,19 @@ import (
 
 // Process is a long-running process manager that will restart processes if they stop.
 type Process struct {
-	Cmd          *exec.Cmd
+	mainLoopWg   sync.WaitGroup
 	Stdin        io.WriteCloser
 	Stdout       io.ReadCloser
 	Stderr       io.ReadCloser
-	ReadStdoutFn func(io.Reader)
-	ReadStderrFn func(io.Reader)
-	RestartDelay time.Duration
 	Log          cua.Logger
-
-	name       string
-	args       []string
-	pid        int32
-	cancel     context.CancelFunc
-	mainLoopWg sync.WaitGroup
+	Cmd          *exec.Cmd
+	ReadStderrFn func(io.Reader)
+	ReadStdoutFn func(io.Reader)
+	cancel       context.CancelFunc
+	name         string
+	args         []string
+	RestartDelay time.Duration
+	pid          int32
 }
 
 // New creates a new process wrapper

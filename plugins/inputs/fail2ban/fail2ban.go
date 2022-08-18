@@ -22,6 +22,8 @@ type Fail2ban struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Use sudo to run fail2ban-client
   use_sudo = false
 `

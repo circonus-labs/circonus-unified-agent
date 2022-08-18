@@ -31,19 +31,20 @@ const (
 )
 
 type OpenWeatherMap struct {
+	client          *http.Client
+	baseURL         *url.URL
 	AppID           string            `toml:"app_id"`
-	CityID          []string          `toml:"city_id"`
+	BaseURL         string            `toml:"base_url"`
+	Units           string            `toml:"units"`
 	Lang            string            `toml:"lang"`
 	Fetch           []string          `toml:"fetch"`
-	BaseURL         string            `toml:"base_url"`
+	CityID          []string          `toml:"city_id"`
 	ResponseTimeout internal.Duration `toml:"response_timeout"`
-	Units           string            `toml:"units"`
-
-	client  *http.Client
-	baseURL *url.URL
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## OpenWeatherMap API key.
   app_id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
@@ -170,10 +171,18 @@ func (n *OpenWeatherMap) gatherURL(addr string) (*Status, error) {
 }
 
 type WeatherEntry struct {
-	Dt     int64 `json:"dt"`
-	Clouds struct {
-		All int64 `json:"all"`
-	} `json:"clouds"`
+	Name    string `json:"name"`
+	Weather []struct {
+		Main        string `json:"main"`
+		Description string `json:"description"`
+		Icon        string `json:"icon"`
+		ID          int64  `json:"id"`
+	} `json:"weather"`
+	Sys struct {
+		Country string `json:"country"`
+		Sunrise int64  `json:"sunrise"`
+		Sunset  int64  `json:"sunset"`
+	} `json:"sys"`
 	Main struct {
 		Humidity int64   `json:"humidity"`
 		Pressure float64 `json:"pressure"`
@@ -183,41 +192,33 @@ type WeatherEntry struct {
 		Rain1 float64 `json:"1h"`
 		Rain3 float64 `json:"3h"`
 	} `json:"rain"`
-	Sys struct {
-		Country string `json:"country"`
-		Sunrise int64  `json:"sunrise"`
-		Sunset  int64  `json:"sunset"`
-	} `json:"sys"`
 	Wind struct {
 		Deg   float64 `json:"deg"`
 		Speed float64 `json:"speed"`
 	} `json:"wind"`
-	ID    int64  `json:"id"`
-	Name  string `json:"name"`
 	Coord struct {
 		Lat float64 `json:"lat"`
 		Lon float64 `json:"lon"`
 	} `json:"coord"`
+	Dt     int64 `json:"dt"`
+	ID     int64 `json:"id"`
+	Clouds struct {
+		All int64 `json:"all"`
+	} `json:"clouds"`
 	Visibility int64 `json:"visibility"`
-	Weather    []struct {
-		ID          int64  `json:"id"`
-		Main        string `json:"main"`
-		Description string `json:"description"`
-		Icon        string `json:"icon"`
-	} `json:"weather"`
 }
 
 type Status struct {
+	List []WeatherEntry `json:"list"`
 	City struct {
-		Coord struct {
+		Country string `json:"country"`
+		Name    string `json:"name"`
+		Coord   struct {
 			Lat float64 `json:"lat"`
 			Lon float64 `json:"lon"`
 		} `json:"coord"`
-		Country string `json:"country"`
-		ID      int64  `json:"id"`
-		Name    string `json:"name"`
+		ID int64 `json:"id"`
 	} `json:"city"`
-	List []WeatherEntry `json:"list"`
 }
 
 func gatherWeatherURL(r io.Reader) (*Status, error) {

@@ -1,3 +1,4 @@
+//go:build linux
 // +build linux
 
 package ipvs
@@ -28,7 +29,9 @@ func (i *IPVS) Description() string {
 
 // SampleConfig returns a sample configuration for this input plugin
 func (i *IPVS) SampleConfig() string {
-	return ``
+	return `
+  instance_id = "" # unique instance identifier (REQUIRED)
+`
 }
 
 // Gather gathers the stats

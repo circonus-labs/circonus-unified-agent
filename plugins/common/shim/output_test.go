@@ -32,7 +32,7 @@ func TestOutputShim(t *testing.T) {
 		wg.Done()
 	}()
 
-	serializer, _ := serializers.NewInfluxSerializer()
+	serializer, _ := serializers.NewCirconusSerializer(time.Millisecond)
 
 	m, _ := metric.New("thing",
 		map[string]string{

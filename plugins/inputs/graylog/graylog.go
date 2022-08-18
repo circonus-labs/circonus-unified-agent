@@ -77,6 +77,8 @@ func (c *RealHTTPClient) HTTPClient() *http.Client {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## API endpoint, currently supported API:
   ##
   ##   - multiple  (Ex http://<host>:12900/system/metrics/multiple)

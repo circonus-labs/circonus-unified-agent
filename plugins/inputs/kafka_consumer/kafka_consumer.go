@@ -17,6 +17,8 @@ import (
 )
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Kafka brokers.
   brokers = ["localhost:9092"]
 

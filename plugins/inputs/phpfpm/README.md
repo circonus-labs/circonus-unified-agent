@@ -2,11 +2,13 @@
 
 Get phpfpm stats using either HTTP status page or fpm socket.
 
-### Configuration:
+### Configuration
 
 ```toml
 # Read metrics of phpfpm, via HTTP status page or socket
 [[inputs.phpfpm]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## An array of addresses to gather stats about. Specify an ip or hostname
   ## with optional port and path
   ##
@@ -44,23 +46,23 @@ Get phpfpm stats using either HTTP status page or fpm socket.
 When using `unixsocket`, you have to ensure that agent runs on same
 host, and socket path is accessible to `cua` user.
 
-### Metrics:
+### Metrics
 
 - phpfpm
-  - tags:
-    - pool
-    - url
-  - fields:
-    - accepted_conn
-    - listen_queue
-    - max_listen_queue
-    - listen_queue_len
-    - idle_processes
-    - active_processes
-    - total_processes
-    - max_active_processes
-    - max_children_reached
-    - slow_requests
+    - tags:
+        - pool
+        - url
+    - fields:
+        - accepted_conn
+        - listen_queue
+        - max_listen_queue
+        - listen_queue_len
+        - idle_processes
+        - active_processes
+        - total_processes
+        - max_active_processes
+        - max_children_reached
+        - slow_requests
 
 # Example Output
 

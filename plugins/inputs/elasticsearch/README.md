@@ -24,6 +24,8 @@ Note that specific statistics information can change between Elasticsearch versi
 
 ```toml
 [[inputs.elasticsearch]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## specify a list of one or more Elasticsearch servers
   ## you can add username and password to your url to use basic authentication:
   ## servers = ["http://user:pass@localhost:9200"]

@@ -78,14 +78,6 @@ func TestClientConfig(t *testing.T) {
 			expNil: false,
 			expErr: false,
 		},
-		{
-			name: "support deprecated ssl field names",
-			client: tls.ClientConfig{
-				SSLCA:   pki.CACertPath(),
-				SSLCert: pki.ClientCertPath(),
-				SSLKey:  pki.ClientKeyPath(),
-			},
-		},
 	}
 	for _, tt := range tests {
 		tt := tt

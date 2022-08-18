@@ -12,9 +12,12 @@ your database.
   [measurement filtering](https://github.com/circonus-labs/circonus-unified-agent/blob/master/docs/CONFIGURATION.md#measurement-filtering)
   options to exclude unneeded tags.
 
-### Configuration:
+### Configuration
+
 ```toml
 [[inputs.dcos]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## The DC/OS cluster URL.
   cluster_url = "https://dcos-master-1"
 
@@ -63,6 +66,7 @@ When using Enterprise DC/OS, it is recommended to use a service account to
 authenticate with the cluster.
 
 The plugin requires the following permissions:
+
 ```
 dcos:adminrouter:ops:system-metrics full
 dcos:adminrouter:ops:mesos full
@@ -71,6 +75,7 @@ dcos:adminrouter:ops:mesos full
 Follow the directions to [create a service account and assign permissions](https://docs.mesosphere.com/1.10/security/service-auth/custom-service-auth/).
 
 Quick configuration using the Enterprise CLI:
+
 ```
 dcos security org service-accounts keypair circonus-unified-agent-sa-key.pem circonus-unified-agent-sa-cert.pem
 dcos security org service-accounts create -p circonus-unified-agent-sa-cert.pem -d "Circonus DC/OS input plugin" circonus-unified-agent
@@ -89,6 +94,7 @@ of the following options:
 Then `token_file` can be set by using the [dcos cli] to login periodically.
 The cli can login for at most XXX days, you will need to ensure the cli
 performs a new login before this time expires.
+
 ```
 dcos auth login --username foo --password bar
 dcos config show core.dcos_acs_token > ~/.dcos/token
@@ -101,85 +107,85 @@ token is compromised it cannot be revoked and may require a full reinstall of
 the cluster.  For more information on this technique reference
 [this blog post](https://medium.com/@richardgirges/authenticating-open-source-dc-os-with-third-party-services-125fa33a5add).
 
-### Metrics:
+### Metrics
 
 Please consult the [Metrics Reference](https://docs.mesosphere.com/1.10/metrics/reference/)
 for details about field interpretation.
 
 - dcos_node
-  - tags:
-    - cluster
-    - hostname
-    - path (filesystem fields only)
-    - interface (network fields only)
-  - fields:
-    - system_uptime (float)
-    - cpu_cores (float)
-    - cpu_total (float)
-    - cpu_user (float)
-    - cpu_system (float)
-    - cpu_idle (float)
-    - cpu_wait (float)
-    - load_1min (float)
-    - load_5min (float)
-    - load_15min (float)
-    - filesystem_capacity_total_bytes (int)
-    - filesystem_capacity_used_bytes (int)
-    - filesystem_capacity_free_bytes (int)
-    - filesystem_inode_total (float)
-    - filesystem_inode_used (float)
-    - filesystem_inode_free (float)
-    - memory_total_bytes (int)
-    - memory_free_bytes (int)
-    - memory_buffers_bytes (int)
-    - memory_cached_bytes (int)
-    - swap_total_bytes (int)
-    - swap_free_bytes (int)
-    - swap_used_bytes (int)
-    - network_in_bytes (int)
-    - network_out_bytes (int)
-    - network_in_packets (float)
-    - network_out_packets (float)
-    - network_in_dropped (float)
-    - network_out_dropped (float)
-    - network_in_errors (float)
-    - network_out_errors (float)
-    - process_count (float)
+    - tags:
+        - cluster
+        - hostname
+        - path (filesystem fields only)
+        - interface (network fields only)
+    - fields:
+        - system_uptime (float)
+        - cpu_cores (float)
+        - cpu_total (float)
+        - cpu_user (float)
+        - cpu_system (float)
+        - cpu_idle (float)
+        - cpu_wait (float)
+        - load_1min (float)
+        - load_5min (float)
+        - load_15min (float)
+        - filesystem_capacity_total_bytes (int)
+        - filesystem_capacity_used_bytes (int)
+        - filesystem_capacity_free_bytes (int)
+        - filesystem_inode_total (float)
+        - filesystem_inode_used (float)
+        - filesystem_inode_free (float)
+        - memory_total_bytes (int)
+        - memory_free_bytes (int)
+        - memory_buffers_bytes (int)
+        - memory_cached_bytes (int)
+        - swap_total_bytes (int)
+        - swap_free_bytes (int)
+        - swap_used_bytes (int)
+        - network_in_bytes (int)
+        - network_out_bytes (int)
+        - network_in_packets (float)
+        - network_out_packets (float)
+        - network_in_dropped (float)
+        - network_out_dropped (float)
+        - network_in_errors (float)
+        - network_out_errors (float)
+        - process_count (float)
 
 - dcos_container
-  - tags:
-    - cluster
-    - hostname
-    - container_id
-    - task_name
-  - fields:
-    - cpus_limit (float)
-    - cpus_system_time (float)
-    - cpus_throttled_time (float)
-    - cpus_user_time (float)
-    - disk_limit_bytes (int)
-    - disk_used_bytes (int)
-    - mem_limit_bytes (int)
-    - mem_total_bytes (int)
-    - net_rx_bytes (int)
-    - net_rx_dropped (float)
-    - net_rx_errors (float)
-    - net_rx_packets (float)
-    - net_tx_bytes (int)
-    - net_tx_dropped (float)
-    - net_tx_errors (float)
-    - net_tx_packets (float)
+    - tags:
+        - cluster
+        - hostname
+        - container_id
+        - task_name
+    - fields:
+        - cpus_limit (float)
+        - cpus_system_time (float)
+        - cpus_throttled_time (float)
+        - cpus_user_time (float)
+        - disk_limit_bytes (int)
+        - disk_used_bytes (int)
+        - mem_limit_bytes (int)
+        - mem_total_bytes (int)
+        - net_rx_bytes (int)
+        - net_rx_dropped (float)
+        - net_rx_errors (float)
+        - net_rx_packets (float)
+        - net_tx_bytes (int)
+        - net_tx_dropped (float)
+        - net_tx_errors (float)
+        - net_tx_packets (float)
 
 - dcos_app
-  - tags:
-    - cluster
-    - hostname
-    - container_id
-    - task_name
-  - fields:
-    - fields are application specific
+    - tags:
+        - cluster
+        - hostname
+        - container_id
+        - task_name
+    - fields:
+        - fields are application specific
 
-### Example Output:
+### Example Output
 
 ```
 dcos_node,cluster=enterprise,hostname=192.168.122.18,path=/boot filesystem_capacity_free_bytes=918188032i,filesystem_capacity_total_bytes=1063256064i,filesystem_capacity_used_bytes=145068032i,filesystem_inode_free=523958,filesystem_inode_total=524288,filesystem_inode_used=330 1511859222000000000

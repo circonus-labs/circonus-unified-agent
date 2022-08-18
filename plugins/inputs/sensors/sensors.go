@@ -1,3 +1,4 @@
+//go:build linux
 // +build linux
 
 package sensors
@@ -35,6 +36,8 @@ func (*Sensors) Description() string {
 
 func (*Sensors) SampleConfig() string {
 	return `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Remove numbers from field names.
   ## If true, a field name like 'temp1_input' will be changed to 'temp_input'.
   # remove_numbers = true

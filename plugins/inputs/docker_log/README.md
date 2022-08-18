@@ -16,6 +16,8 @@ The docker plugin uses the [Official Docker Client][] to gather logs from the
 
 ```toml
 [[inputs.docker_log]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Docker Endpoint
   ##   To use TCP, set endpoint = "tcp://[ip]:[port]"
   ##   To use environment variables (ie, docker-machine), set endpoint = "ENV"
@@ -75,15 +77,15 @@ This will cause all data points to have the `source` tag be set to the first 12 
 ### Metrics
 
 - docker_log
-  - tags:
-    - container_image
-    - container_version
-    - container_name
-    - stream (stdout, stderr, or tty)
-    - source
-  - fields:
-    - container_id
-    - message
+    - tags:
+        - container_image
+        - container_version
+        - container_name
+        - stream (stdout, stderr, or tty)
+        - source
+    - fields:
+        - container_id
+        - message
 
 ### Example Output
 

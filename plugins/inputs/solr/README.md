@@ -7,10 +7,12 @@ More about [performance statistics](https://cwiki.apache.org/confluence/display/
 
 Tested from 3.5 to 7.*
 
-### Configuration:
+### Configuration
 
 ```toml
 [[inputs.solr]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## specify a list of one or more Solr servers
   servers = ["http://localhost:8983"]
   ##
@@ -22,7 +24,7 @@ Tested from 3.5 to 7.*
   # password = "pa$$word"
 ```
 
-### Example output of gathered metrics:
+### Example output of gathered metrics
 
 ```
 ➜  ~ circonus-unified-agent -config circonus-unified-agent.conf -input-filter solr -test

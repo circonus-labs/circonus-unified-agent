@@ -148,6 +148,8 @@ var serverTypeMapping = map[string]ServerType{
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## An array of URLs of the form:
   ##   host [ ":" port]
   servers = ["127.0.0.1:4020"]

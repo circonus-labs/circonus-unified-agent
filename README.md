@@ -18,6 +18,7 @@ The developer guide, covering concepts and development details, is located under
 
 CUA shares the same [minimum requirements](https://github.com/golang/go/wiki/MinimumRequirements) as Go:
 
+- Linux kernel 2.6.23 or later
 - Windows 7 or later
 - FreeBSD 11.2 or later
 - MacOS 10.11 El Capitan or later

@@ -36,6 +36,8 @@ func (u *Uwsgi) Description() string {
 // SampleConfig returns the sample configuration
 func (u *Uwsgi) SampleConfig() string {
 	return `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## List with urls of uWSGI Stats servers. URL must match pattern:
   ## scheme://address[:port]
   ##

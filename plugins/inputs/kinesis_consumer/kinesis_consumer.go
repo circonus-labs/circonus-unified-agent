@@ -72,6 +72,8 @@ const (
 var maxSeq = strToBint(strings.Repeat("9", 129))
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Amazon REGION of kinesis endpoint.
   region = "ap-southeast-2"
 

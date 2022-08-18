@@ -64,6 +64,8 @@ type Payload struct {
 }
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Address and port to host HTTP listener on
   service_address = ":8080"
 

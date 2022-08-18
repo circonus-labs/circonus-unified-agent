@@ -82,6 +82,8 @@ type riakStats struct {
 
 // A sample configuration to only gather stats from localhost, default port.
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   # Specify a list of one or more riak http servers
   servers = ["http://localhost:8098"]
 `

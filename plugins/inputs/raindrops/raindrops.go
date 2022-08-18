@@ -22,6 +22,8 @@ type Raindrops struct {
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## An array of raindrops middleware URI to gather stats.
   urls = ["http://localhost:8080/_raindrops"]
 `

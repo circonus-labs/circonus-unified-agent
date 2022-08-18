@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/circonus-labs/circonus-unified-agent/internal"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/serializers"
@@ -13,15 +14,15 @@ import (
 )
 
 const (
-	expNewFile   = "test1,tag1=value1 value=1 1257894000000000000\n"
-	expExistFile = "cpu,cpu=cpu0 value=100 1455312810012459582\n" +
-		"test1,tag1=value1 value=1 1257894000000000000\n"
+	expNewFile   = `{"value|ST[input_metric_group:test1,tag1:value1]": {"_value": 1, "_type": "L", "_ts": 1257894000000}}` + "\n"
+	expExistFile = `{"cpu|ST[cpu:cpu0]": {"_value": 100, "_type": "L", "_ts": 1455312810012459582}}` + "\n" +
+		`{"value|ST[input_metric_group:test1,tag1:value1]": {"_value": 1, "_type": "n", "_ts": 1257894000000}}` + "\n"
 )
 
 func TestFileExistingFile(t *testing.T) {
 	fh := createFile()
 	defer os.Remove(fh.Name())
-	s, _ := serializers.NewInfluxSerializer()
+	s, _ := serializers.NewCirconusSerializer(time.Millisecond)
 	f := File{
 		Files:      []string{fh.Name()},
 		serializer: s,
@@ -40,7 +41,7 @@ func TestFileExistingFile(t *testing.T) {
 }
 
 func TestFileNewFile(t *testing.T) {
-	s, _ := serializers.NewInfluxSerializer()
+	s, _ := serializers.NewCirconusSerializer(time.Millisecond)
 	fh := tmpFile()
 	defer os.Remove(fh)
 	f := File{
@@ -68,7 +69,7 @@ func TestFileExistingFiles(t *testing.T) {
 	fh3 := createFile()
 	defer os.Remove(fh3.Name())
 
-	s, _ := serializers.NewInfluxSerializer()
+	s, _ := serializers.NewCirconusSerializer(time.Millisecond)
 	f := File{
 		Files:      []string{fh1.Name(), fh2.Name(), fh3.Name()},
 		serializer: s,
@@ -89,7 +90,7 @@ func TestFileExistingFiles(t *testing.T) {
 }
 
 func TestFileNewFiles(t *testing.T) {
-	s, _ := serializers.NewInfluxSerializer()
+	s, _ := serializers.NewCirconusSerializer(time.Millisecond)
 	fh1 := tmpFile()
 	defer os.Remove(fh1)
 	fh2 := tmpFile()
@@ -121,7 +122,7 @@ func TestFileBoth(t *testing.T) {
 	fh2 := tmpFile()
 	defer os.Remove(fh2)
 
-	s, _ := serializers.NewInfluxSerializer()
+	s, _ := serializers.NewCirconusSerializer(time.Millisecond)
 	f := File{
 		Files:      []string{fh1.Name(), fh2},
 		serializer: s,
@@ -146,7 +147,7 @@ func TestFileStdout(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	s, _ := serializers.NewInfluxSerializer()
+	s, _ := serializers.NewCirconusSerializer(time.Millisecond)
 	f := File{
 		Files:      []string{"stdout"},
 		serializer: s,
@@ -183,7 +184,7 @@ func createFile() *os.File {
 	if err != nil {
 		panic(err)
 	}
-	_, _ = f.WriteString("cpu,cpu=cpu0 value=100 1455312810012459582\n")
+	_, _ = f.WriteString(`{"cpu|ST[cpu:cpu0]": {"_value": 100, "_type": "L", "_ts": 1455312810012459582}}` + "\n")
 	return f
 }
 

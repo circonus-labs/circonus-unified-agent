@@ -2,10 +2,12 @@
 
 Reports the number and total size of files in specified directories.
 
-### Configuration:
+### Configuration
 
 ```toml
 [[inputs.filecount]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Directory to gather stats about.
   ##   deprecated in 1.9; use the directories option
   # directory = "/var/cache/apt/archives"
@@ -45,13 +47,13 @@ Reports the number and total size of files in specified directories.
 ### Metrics
 
 - filecount
-  - tags:
-    - directory (the directory path)
-  - fields:
-    - count (integer)
-    - size_bytes (integer)
+    - tags:
+        - directory (the directory path)
+    - fields:
+        - count (integer)
+        - size_bytes (integer)
 
-### Example Output:
+### Example Output
 
 ```
 filecount,directory=/var/cache/apt count=7i,size_bytes=7438336i 1530034445000000000

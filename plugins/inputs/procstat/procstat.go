@@ -23,27 +23,27 @@ var (
 type PID int32
 
 type Procstat struct {
-	PidFinder   string `toml:"pid_finder"`
-	PidFile     string `toml:"pid_file"`
-	Exe         string
-	Pattern     string
-	Prefix      string
-	CmdLineTag  bool `toml:"cmdline_tag"`
-	ProcessName string
-	User        string
-	SystemdUnit string
-	CGroup      string `toml:"cgroup"`
-	PidTag      bool
-	WinService  string `toml:"win_service"`
-
-	finder PIDFinder
-
-	createPIDFinder func() (PIDFinder, error)
+	finder          PIDFinder
 	procs           map[PID]Process
+	createPIDFinder func() (PIDFinder, error)
 	createProcess   func(PID) (Process, error)
+	SystemdUnit     string
+	Prefix          string
+	ProcessName     string
+	User            string
+	Pattern         string
+	CGroup          string `toml:"cgroup"`
+	Exe             string
+	WinService      string `toml:"win_service"`
+	PidFile         string `toml:"pid_file"`
+	PidFinder       string `toml:"pid_finder"`
+	PidTag          bool
+	CmdLineTag      bool `toml:"cmdline_tag"`
 }
 
 var sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## PID file to monitor process
   pid_file = "/var/run/nginx.pid"
   ## executable name (ie, pgrep <exe>)

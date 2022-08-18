@@ -50,6 +50,8 @@ type Mysql struct {
 }
 
 const sampleConfig = `
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## specify servers via a url matching:
   ##  [username[:password]@][protocol[(address)]]/[?tls=[true|false|skip-verify|custom]]
   ##  see https://github.com/go-sql-driver/mysql#dsn-data-source-name

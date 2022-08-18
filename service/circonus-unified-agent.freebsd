@@ -32,7 +32,7 @@ load_rc_config $name
 start_precmd=circonus_unified_agentd_prestart
 pidfile="/var/run/${name}.pid"
 command=/usr/sbin/daemon
-command_args="-crP ${pidfile} /opt/circonus/unified-agent/sbin/circonus-unified-agentd ${circonus_unified_agentd_flags_flags} --pidfile ${pidfile} --config=${circonus_unified_agentd_conf} >> /var/log/circonus_unified_agentd.log 2>&1"
+command_args="-crP ${pidfile} /opt/circonus/unified-agent/sbin/circonus-unified-agentd ${circonus_unified_agentd_flags_flags} --config=${circonus_unified_agentd_conf} >> /var/log/circonus_unified_agentd.log 2>&1"
 
 echo ${command_args}
 

@@ -3,8 +3,11 @@
 The `cpu` plugin gather metrics on the system CPUs.
 
 #### Configuration
+
 ```toml
 [[inputs.cpu]]
+  instance_id = "" # unique instance identifier (REQUIRED)
+
   ## Whether to report per-cpu stats or not
   percpu = true
   ## Whether to report total system cpu stats or not
@@ -20,31 +23,31 @@ The `cpu` plugin gather metrics on the system CPUs.
 On Linux, consult `man proc` for details on the meanings of these values.
 
 - cpu
-  - tags:
-    - cpu (CPU ID or `cpu-total`)
-  - fields:
-    - time_user (float)
-    - time_system (float)
-    - time_idle (float)
-    - time_active (float)
-    - time_nice (float)
-    - time_iowait (float)
-    - time_irq (float)
-    - time_softirq (float)
-    - time_steal (float)
-    - time_guest (float)
-    - time_guest_nice (float)
-    - usage_user (float, percent)
-    - usage_system (float, percent)
-    - usage_idle (float, percent)
-    - usage_active (float)
-    - usage_nice (float, percent)
-    - usage_iowait (float, percent)
-    - usage_irq (float, percent)
-    - usage_softirq (float, percent)
-    - usage_steal (float, percent)
-    - usage_guest (float, percent)
-    - usage_guest_nice (float, percent)
+    - tags:
+        - cpu (CPU ID or `cpu-total`)
+    - fields:
+        - time_user (float)
+        - time_system (float)
+        - time_idle (float)
+        - time_active (float)
+        - time_nice (float)
+        - time_iowait (float)
+        - time_irq (float)
+        - time_softirq (float)
+        - time_steal (float)
+        - time_guest (float)
+        - time_guest_nice (float)
+        - usage_user (float, percent)
+        - usage_system (float, percent)
+        - usage_idle (float, percent)
+        - usage_active (float)
+        - usage_nice (float, percent)
+        - usage_iowait (float, percent)
+        - usage_irq (float, percent)
+        - usage_softirq (float, percent)
+        - usage_steal (float, percent)
+        - usage_guest (float, percent)
+        - usage_guest_nice (float, percent)
 
 ### Troubleshooting
 

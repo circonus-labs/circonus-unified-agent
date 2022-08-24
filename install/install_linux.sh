@@ -19,7 +19,7 @@ pass() { printf "${GREEN}"; log "$*"; printf "${NORMAL}"; }
 
 hw=$(uname -m | tr '[:upper:]' '[:lower:]')
 case "$hw" in
-    amd64)
+    x86_64|amd64)
         hw="x86_64"
         ;;
     aarch64|arm64)

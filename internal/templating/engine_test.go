@@ -36,10 +36,10 @@ func TestEngineWithWildcardTemplate(t *testing.T) {
 	require.NoError(t, err)
 
 	for _, testCase := range []struct {
+		tags        map[string]string
 		line        string
 		measurement string
 		field       string
-		tags        map[string]string
 	}{
 		{
 			line:        "taskmanagerTask.alarm-detector.Assign.alarmDefinitionId.timeout_errors.duration.p75",

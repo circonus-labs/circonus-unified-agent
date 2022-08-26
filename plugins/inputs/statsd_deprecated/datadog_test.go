@@ -11,17 +11,17 @@ import (
 func TestEventGather(t *testing.T) {
 	now := time.Now()
 	type expected struct {
-		title  string
 		tags   map[string]string
 		fields map[string]interface{}
+		title  string
 	}
 	tests := []struct {
+		now      time.Time
+		expected expected
 		name     string
 		message  string
 		hostname string
-		now      time.Time
 		err      bool
-		expected expected
 	}{{
 		name:     "basic",
 		message:  "_e{10,9}:test title|test text",
@@ -108,16 +108,16 @@ func TestEvents(t *testing.T) {
 		hostname string
 	}
 	type expected struct {
-		title          string
-		text           interface{}
 		now            time.Time
+		text           interface{}
 		ts             interface{}
-		priority       string
-		source         string
 		alertType      interface{}
-		aggregationKey string
 		sourceTypeName interface{}
 		checkTags      map[string]string
+		title          string
+		priority       string
+		source         string
+		aggregationKey string
 	}
 
 	tests := []struct {

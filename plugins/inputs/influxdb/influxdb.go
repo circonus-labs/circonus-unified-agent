@@ -22,9 +22,9 @@ const (
 )
 
 type APIError struct {
-	StatusCode  int
 	Reason      string
 	Description string `json:"error"`
+	StatusCode  int
 }
 
 func (e *APIError) Error() string {
@@ -35,13 +35,12 @@ func (e *APIError) Error() string {
 }
 
 type InfluxDB struct {
-	URLs     []string          `toml:"urls"`
-	Username string            `toml:"username"`
-	Password string            `toml:"password"`
-	Timeout  internal.Duration `toml:"timeout"`
+	client   *http.Client
+	Username string `toml:"username"`
+	Password string `toml:"password"`
 	tls.ClientConfig
-
-	client *http.Client
+	URLs    []string          `toml:"urls"`
+	Timeout internal.Duration `toml:"timeout"`
 }
 
 func (*InfluxDB) Description() string {
@@ -114,9 +113,9 @@ func (i *InfluxDB) Gather(ctx context.Context, acc cua.Accumulator) error {
 }
 
 type point struct {
-	Name   string                 `json:"name"`
 	Tags   map[string]string      `json:"tags"`
 	Values map[string]interface{} `json:"values"`
+	Name   string                 `json:"name"`
 }
 
 type memstats struct {
@@ -151,11 +150,13 @@ type memstats struct {
 
 // Gathers data from a particular URL
 // Parameters:
-//     acc    : The cua Accumulator to use
-//     url    : endpoint to send request to
+//
+//	acc    : The cua Accumulator to use
+//	url    : endpoint to send request to
 //
 // Returns:
-//     error: Any error that may have occurred
+//
+//	error: Any error that may have occurred
 func (i *InfluxDB) gatherURL(
 	acc cua.Accumulator,
 	url string,

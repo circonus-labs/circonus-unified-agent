@@ -16,13 +16,13 @@ import (
 
 // SQLServer struct
 type SQLServer struct {
-	Servers       []string `toml:"servers"`
-	QueryVersion  int      `toml:"query_version"`
-	AzureDB       bool     `toml:"azuredb"`
+	queries       MapQuery
 	DatabaseType  string   `toml:"database_type"`
+	Servers       []string `toml:"servers"`
 	IncludeQuery  []string `toml:"include_query"`
 	ExcludeQuery  []string `toml:"exclude_query"`
-	queries       MapQuery
+	QueryVersion  int      `toml:"query_version"`
+	AzureDB       bool     `toml:"azuredb"`
 	isInitialized bool
 }
 
@@ -30,8 +30,8 @@ type SQLServer struct {
 type Query struct {
 	ScriptName     string
 	Script         string
-	ResultByRow    bool
 	OrderedColumns []string
+	ResultByRow    bool
 }
 
 // MapQuery type

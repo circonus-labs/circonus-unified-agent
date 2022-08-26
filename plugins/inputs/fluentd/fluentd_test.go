@@ -103,8 +103,22 @@ var (
 		// 		{"object:f48698", "dummy", "input", nil, nil, nil},
 		// 		{"object:e27138", "dummy", "input", nil, nil, nil},
 		// 		{"object:d74060", "monitor_agent", "input", nil, nil, nil},
-		{"object:11a5e2c", "stdout", "output", &zero, nil, nil},
-		{"object:11237ec", "s3", "output", &zero, &zero, &zero},
+		{
+			PluginID:              "object:11a5e2c",
+			PluginType:            "stdout",
+			PluginCategory:        "output",
+			RetryCount:            &zero,
+			BufferQueueLength:     nil,
+			BufferTotalQueuedSize: nil,
+		},
+		{
+			PluginID:              "object:11237ec",
+			PluginType:            "s3",
+			PluginCategory:        "output",
+			RetryCount:            &zero,
+			BufferQueueLength:     &zero,
+			BufferTotalQueuedSize: &zero,
+		},
 	}
 	fluentdTest = &Fluentd{
 		Endpoint: "http://localhost:8081",

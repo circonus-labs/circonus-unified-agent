@@ -99,25 +99,25 @@ func execCmd(arg0 string, args ...string) ([]byte, error) {
 
 // Snmp holds the configuration for the plugin.
 type Snmp struct {
-	// The SNMP agent to query. Format is [SCHEME://]ADDR[:PORT] (e.g.
-	// udp://1.2.3.4:161).  If the scheme is not specified then "udp" is used.
-	Agents []string `toml:"agents"`
-
 	// The tag used to name the agent host
 	AgentHostTag string `toml:"agent_host_tag"`
 
-	snmp.ClientConfig
+	// Name is an element of a Table.
+	Name string
 
-	Tables []Table `toml:"table"`
+	// The SNMP agent to query. Format is [SCHEME://]ADDR[:PORT] (e.g.
+	// udp://1.2.3.4:161).  If the scheme is not specified then "udp" is used.
+	Agents []string `toml:"agents"`
+	Tables []Table  `toml:"table"`
 
-	// Name & Fields are the elements of a Table.
+	// Fields is an element of a Table.
 	// agent chokes if we try to embed a Table. So instead we have to embed the
 	// fields of a Table, and construct a Table during runtime.
-	Name   string  // deprecated in 1.14; use name_override
 	Fields []Field `toml:"field"`
 
 	connectionCache []snmpConnection
-	initialized     bool
+	snmp.ClientConfig
+	initialized bool
 }
 
 func (s *Snmp) init() error {
@@ -151,21 +151,16 @@ func (s *Snmp) init() error {
 type Table struct {
 	// Name will be the name of the measurement.
 	Name string
-
-	// Which tags to inherit from the top-level config.
-	InheritTags []string
-
-	// Adds each row's table index as a tag.
-	IndexAsTag bool
-
-	// Fields is the tags and values to look up.
-	Fields []Field `toml:"field"`
-
 	// OID for automatic field population.
 	// If provided, init() will populate Fields with all the table columns of the
 	// given OID.
 	Oid string
-
+	// Which tags to inherit from the top-level config.
+	InheritTags []string
+	// Fields is the tags and values to look up.
+	Fields []Field `toml:"field"`
+	// Adds each row's table index as a tag.
+	IndexAsTag  bool
 	initialized bool
 }
 
@@ -231,10 +226,6 @@ type Field struct {
 	Oid string
 	// OidIndexSuffix is the trailing sub-identifier on a table record OID that will be stripped off to get the record's index.
 	OidIndexSuffix string
-	// OidIndexLength specifies the length of the index in OID path segments. It can be used to remove sub-identifiers that vary in content or length.
-	OidIndexLength int
-	// IsTag controls whether this OID is output as a tag or a value.
-	IsTag bool
 	// Conversion controls any type conversion that is done on the value.
 	//  "float"/"float(0)" will convert the value into a float.
 	//  "float(X)" will convert the value into a float, and then move the decimal before Xth right-most digit.
@@ -242,9 +233,12 @@ type Field struct {
 	//  "hwaddr" will convert a 6-byte string to a MAC address.
 	//  "ipaddr" will convert the value to an IPv4 or IPv6 address.
 	Conversion string
+	// OidIndexLength specifies the length of the index in OID path segments. It can be used to remove sub-identifiers that vary in content or length.
+	OidIndexLength int
+	// IsTag controls whether this OID is output as a tag or a value.
+	IsTag bool
 	// Translate tells if the value of the field should be snmptranslated
-	Translate bool
-
+	Translate   bool
 	initialized bool
 }
 
@@ -300,8 +294,8 @@ type RTableRow struct {
 }
 
 type walkError struct {
-	msg string
 	err error
+	msg string
 }
 
 func (e *walkError) Error() string {
@@ -591,12 +585,13 @@ func (s *Snmp) getConnection(idx int) (snmpConnection, error) {
 }
 
 // fieldConvert converts from any type according to the conv specification
-//  "float"/"float(0)" will convert the value into a float.
-//  "float(X)" will convert the value into a float, and then move the decimal before Xth right-most digit.
-//  "int" will convert the value into an integer.
-//  "hwaddr" will convert the value into a MAC address.
-//  "ipaddr" will convert the value into into an IP address.
-//  "" will convert a byte slice into a string.
+//
+//	"float"/"float(0)" will convert the value into a float.
+//	"float(X)" will convert the value into a float, and then move the decimal before Xth right-most digit.
+//	"int" will convert the value into an integer.
+//	"hwaddr" will convert the value into a MAC address.
+//	"ipaddr" will convert the value into into an IP address.
+//	"" will convert a byte slice into a string.
 func fieldConvert(conv string, sv gosnmp.SnmpPDU) (interface{}, error) {
 	v := sv.Value
 
@@ -728,11 +723,11 @@ func fieldConvert(conv string, sv gosnmp.SnmpPDU) (interface{}, error) {
 }
 
 type snmpTableCache struct {
+	err     error
 	mibName string
 	oidNum  string
 	oidText string
 	fields  []Field
-	err     error
 }
 
 var snmpTableCaches map[string]snmpTableCache
@@ -821,12 +816,12 @@ func snmpTableCall(oid string) (mibName string, oidNum string, oidText string, f
 }
 
 type TranslateItem struct {
+	err        error
+	valMap     map[string]string
 	mibName    string
 	oidNum     string
 	oidText    string
 	conversion string
-	valMap     map[string]string
-	err        error
 }
 
 var snmpTranslateCachesLock sync.Mutex

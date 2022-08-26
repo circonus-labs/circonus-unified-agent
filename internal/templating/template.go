@@ -7,9 +7,9 @@ import (
 
 // Template represents a pattern and tags to map a metric string to a influxdb Point
 type Template struct {
+	defaultTags       map[string]string
 	separator         string
 	parts             []string
-	defaultTags       map[string]string
 	greedyField       bool
 	greedyMeasurement bool
 }

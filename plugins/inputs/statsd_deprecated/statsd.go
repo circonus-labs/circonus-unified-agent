@@ -37,105 +37,154 @@ const (
 )
 
 // Statsd allows the importing of statsd and dogstatsd data.
+// type Statsd struct {
+// 	// Protocol used on listener - udp or tcp
+// 	Protocol string `toml:"protocol"`
+
+// 	// Address & Port to serve from
+// 	ServiceAddress string
+
+// 	// Number of messages allowed to queue up in between calls to Gather. If this
+// 	// fills up, packets will get dropped until the next Gather interval is ran.
+// 	AllowedPendingMessages int
+
+// 	// Percentiles specifies the percentiles that will be calculated for timing
+// 	// and histogram stats.
+// 	Percentiles     []internal.Number
+// 	PercentileLimit int
+
+// 	DeleteGauges   bool
+// 	DeleteCounters bool
+// 	DeleteSets     bool
+// 	DeleteTimings  bool
+// 	ConvertNames   bool
+
+// 	// MetricSeparator is the separator between parts of the metric name.
+// 	MetricSeparator string
+// 	// This flag enables parsing of tags in the dogstatsd extension to the
+// 	// statsd protocol (http://docs.datadoghq.com/guides/dogstatsd/)
+// 	ParseDataDogTags bool // depreciated in 1.10; use datadog_extensions
+
+// 	// Parses extensions to statsd in the datadog statsd format
+// 	// currently supports metrics and datadog tags.
+// 	// http://docs.datadoghq.com/guides/dogstatsd/
+// 	DataDogExtensions bool `toml:"datadog_extensions"`
+
+// 	// UDPPacketSize is deprecated, it's only here for legacy support
+// 	// we now always create 1 max size buffer and then copy only what we need
+// 	// into the in channel
+// 	// see https://github.com/circonus-labs/circonus-unified-agent/pull/992
+// 	UDPPacketSize int `toml:"udp_packet_size"`
+
+// 	ReadBufferSize int `toml:"read_buffer_size"`
+
+// 	sync.Mutex
+// 	// Lock for preventing a data race during resource cleanup
+// 	cleanup sync.Mutex
+// 	wg      sync.WaitGroup
+// 	// accept channel tracks how many active connections there are, if there
+// 	// is an available bool in accept, then we are below the maximum and can
+// 	// accept the connection
+// 	accept chan bool
+// 	// drops tracks the number of dropped metrics.
+// 	drops int
+// 	// malformed tracks the number of malformed packets
+// 	// malformed int
+
+// 	// Channel for all incoming statsd packets
+// 	in   chan input
+// 	done chan struct{}
+
+// 	// Cache gauges, counters & sets so they can be aggregated as they arrive
+// 	// gauges and counters map measurement/tags hash -> field name -> metrics
+// 	// sets and timings map measurement/tags hash -> metrics
+// 	gauges   map[string]cachedgauge
+// 	counters map[string]cachedcounter
+// 	sets     map[string]cachedset
+// 	timings  map[string]cachedtimings
+
+// 	// bucket -> influx templates
+// 	Templates []string
+
+// 	// Protocol listeners
+// 	UDPlistener *net.UDPConn
+// 	TCPlistener *net.TCPListener
+
+// 	// track current connections so we can close them in Stop()
+// 	conns map[string]*net.TCPConn
+
+// 	MaxTCPConnections int `toml:"max_tcp_connections"`
+
+// 	TCPKeepAlive       bool               `toml:"tcp_keep_alive"`
+// 	TCPKeepAlivePeriod *internal.Duration `toml:"tcp_keep_alive_period"`
+
+// 	graphiteParser *graphite.Parser
+
+// 	acc cua.Accumulator
+
+// 	MaxConnections     selfstat.Stat
+// 	CurrentConnections selfstat.Stat
+// 	TotalConnections   selfstat.Stat
+// 	TCPPacketsRecv     selfstat.Stat
+// 	TCPBytesRecv       selfstat.Stat
+// 	UDPPacketsRecv     selfstat.Stat
+// 	UDPPacketsDrop     selfstat.Stat
+// 	UDPBytesRecv       selfstat.Stat
+// 	ParseTimeNS        selfstat.Stat
+
+// 	Log cua.Logger
+
+// 	// A pool of byte slices to handle parsing
+// 	bufPool sync.Pool
+// }
+
 type Statsd struct {
-	// Protocol used on listener - udp or tcp
-	Protocol string `toml:"protocol"`
-
-	// Address & Port to serve from
-	ServiceAddress string
-
-	// Number of messages allowed to queue up in between calls to Gather. If this
-	// fills up, packets will get dropped until the next Gather interval is ran.
-	AllowedPendingMessages int
-
-	// Percentiles specifies the percentiles that will be calculated for timing
-	// and histogram stats.
-	Percentiles     []internal.Number
-	PercentileLimit int
-
-	DeleteGauges   bool
-	DeleteCounters bool
-	DeleteSets     bool
-	DeleteTimings  bool
-	ConvertNames   bool
-
-	// MetricSeparator is the separator between parts of the metric name.
-	MetricSeparator string
-	// This flag enables parsing of tags in the dogstatsd extension to the
-	// statsd protocol (http://docs.datadoghq.com/guides/dogstatsd/)
-	ParseDataDogTags bool // depreciated in 1.10; use datadog_extensions
-
-	// Parses extensions to statsd in the datadog statsd format
-	// currently supports metrics and datadog tags.
-	// http://docs.datadoghq.com/guides/dogstatsd/
-	DataDogExtensions bool `toml:"datadog_extensions"`
-
-	// UDPPacketSize is deprecated, it's only here for legacy support
-	// we now always create 1 max size buffer and then copy only what we need
-	// into the in channel
-	// see https://github.com/circonus-labs/circonus-unified-agent/pull/992
-	UDPPacketSize int `toml:"udp_packet_size"`
-
-	ReadBufferSize int `toml:"read_buffer_size"`
-
 	sync.Mutex
-	// Lock for preventing a data race during resource cleanup
-	cleanup sync.Mutex
-	wg      sync.WaitGroup
-	// accept channel tracks how many active connections there are, if there
-	// is an available bool in accept, then we are below the maximum and can
-	// accept the connection
-	accept chan bool
-	// drops tracks the number of dropped metrics.
-	drops int
-	// malformed tracks the number of malformed packets
-	// malformed int
-
-	// Channel for all incoming statsd packets
-	in   chan input
-	done chan struct{}
-
-	// Cache gauges, counters & sets so they can be aggregated as they arrive
-	// gauges and counters map measurement/tags hash -> field name -> metrics
-	// sets and timings map measurement/tags hash -> metrics
-	gauges   map[string]cachedgauge
-	counters map[string]cachedcounter
-	sets     map[string]cachedset
-	timings  map[string]cachedtimings
-
-	// bucket -> influx templates
-	Templates []string
-
-	// Protocol listeners
-	UDPlistener *net.UDPConn
-	TCPlistener *net.TCPListener
-
-	// track current connections so we can close them in Stop()
-	conns map[string]*net.TCPConn
-
-	MaxTCPConnections int `toml:"max_tcp_connections"`
-
-	TCPKeepAlive       bool               `toml:"tcp_keep_alive"`
-	TCPKeepAlivePeriod *internal.Duration `toml:"tcp_keep_alive_period"`
-
-	graphiteParser *graphite.Parser
-
-	acc cua.Accumulator
-
-	MaxConnections     selfstat.Stat
-	CurrentConnections selfstat.Stat
-	TotalConnections   selfstat.Stat
-	TCPPacketsRecv     selfstat.Stat
-	TCPBytesRecv       selfstat.Stat
-	UDPPacketsRecv     selfstat.Stat
-	UDPPacketsDrop     selfstat.Stat
-	UDPBytesRecv       selfstat.Stat
-	ParseTimeNS        selfstat.Stat
-
-	Log cua.Logger
-
-	// A pool of byte slices to handle parsing
-	bufPool sync.Pool
+	cleanup                sync.Mutex
+	wg                     sync.WaitGroup
+	TCPBytesRecv           selfstat.Stat
+	UDPPacketsDrop         selfstat.Stat
+	UDPPacketsRecv         selfstat.Stat
+	UDPBytesRecv           selfstat.Stat
+	TCPPacketsRecv         selfstat.Stat
+	TotalConnections       selfstat.Stat
+	CurrentConnections     selfstat.Stat
+	MaxConnections         selfstat.Stat
+	acc                    cua.Accumulator
+	ParseTimeNS            selfstat.Stat
+	Log                    cua.Logger
+	graphiteParser         *graphite.Parser
+	conns                  map[string]*net.TCPConn
+	bufPool                sync.Pool
+	TCPKeepAlivePeriod     *internal.Duration `toml:"tcp_keep_alive_period"`
+	accept                 chan bool
+	TCPlistener            *net.TCPListener
+	in                     chan input
+	done                   chan struct{}
+	gauges                 map[string]cachedgauge
+	counters               map[string]cachedcounter
+	sets                   map[string]cachedset
+	timings                map[string]cachedtimings
+	UDPlistener            *net.UDPConn
+	Protocol               string `toml:"protocol"`
+	ServiceAddress         string
+	MetricSeparator        string
+	Templates              []string
+	Percentiles            []internal.Number
+	PercentileLimit        int
+	drops                  int
+	ReadBufferSize         int `toml:"read_buffer_size"`
+	MaxTCPConnections      int `toml:"max_tcp_connections"`
+	UDPPacketSize          int `toml:"udp_packet_size"`
+	AllowedPendingMessages int
+	TCPKeepAlive           bool `toml:"tcp_keep_alive"`
+	DeleteCounters         bool
+	DeleteGauges           bool
+	DeleteSets             bool
+	DeleteTimings          bool
+	ConvertNames           bool
+	ParseDataDogTags       bool
+	DataDogExtensions      bool `toml:"datadog_extensions"`
 }
 
 type input struct {
@@ -146,41 +195,41 @@ type input struct {
 
 // One statsd metric, form is <bucket>:<value>|<mtype>|@<samplerate>
 type metric struct {
+	tags       map[string]string
 	name       string
 	field      string
 	bucket     string
 	hash       string
-	intvalue   int64
-	floatvalue float64
 	strvalue   string
 	mtype      string
-	additive   bool
+	intvalue   int64
+	floatvalue float64
 	samplerate float64
-	tags       map[string]string
+	additive   bool
 }
 
 type cachedset struct {
-	name   string
 	fields map[string]map[string]bool
 	tags   map[string]string
+	name   string
 }
 
 type cachedgauge struct {
-	name   string
 	fields map[string]interface{}
 	tags   map[string]string
+	name   string
 }
 
 type cachedcounter struct {
-	name   string
 	fields map[string]interface{}
 	tags   map[string]string
+	name   string
 }
 
 type cachedtimings struct {
-	name   string
 	fields map[string]RunningStats
 	tags   map[string]string
+	name   string
 }
 
 func (*Statsd) Description() string {

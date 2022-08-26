@@ -14,17 +14,17 @@ import (
 )
 
 type Client struct {
-	URL    string
 	client *http.Client
 	config *ClientConfig
+	URL    string
 }
 
 type ClientConfig struct {
-	ResponseTimeout time.Duration
-	Username        string
-	Password        string
-	ProxyConfig     *ProxyConfig
+	ProxyConfig *ProxyConfig
+	Username    string
+	Password    string
 	tls.ClientConfig
+	ResponseTimeout time.Duration
 }
 
 type ProxyConfig struct {
@@ -41,33 +41,33 @@ type ProxyTargetConfig struct {
 
 type ReadRequest struct {
 	Mbean      string
-	Attributes []string
 	Path       string
+	Attributes []string
 }
 
 type ReadResponse struct {
-	Status            int
 	Value             interface{}
 	RequestMbean      string
-	RequestAttributes []string
 	RequestPath       string
 	RequestTarget     string
+	RequestAttributes []string
+	Status            int
 }
 
-// Jolokia JSON request object. Example: {
-//   "type": "read",
-//   "mbean: "java.lang:type="Runtime",
-//   "attribute": "Uptime",
-//   "target": {
-//     "url: "service:jmx:rmi:///jndi/rmi://target:9010/jmxrmi"
-//   }
-// }
+//	Jolokia JSON request object. Example: {
+//	  "type": "read",
+//	  "mbean: "java.lang:type="Runtime",
+//	  "attribute": "Uptime",
+//	  "target": {
+//	    "url: "service:jmx:rmi:///jndi/rmi://target:9010/jmxrmi"
+//	  }
+//	}
 type jolokiaRequest struct {
+	Attribute interface{}    `json:"attribute,omitempty"`
+	Target    *jolokiaTarget `json:"target,omitempty"`
 	Type      string         `json:"type"`
 	Mbean     string         `json:"mbean"`
-	Attribute interface{}    `json:"attribute,omitempty"`
 	Path      string         `json:"path,omitempty"`
-	Target    *jolokiaTarget `json:"target,omitempty"`
 }
 
 type jolokiaTarget struct {
@@ -76,22 +76,22 @@ type jolokiaTarget struct {
 	Password string `json:"password,omitempty"`
 }
 
-// Jolokia JSON response object. Example: {
-//   "request": {
-//     "type": "read"
-//     "mbean": "java.lang:type=Runtime",
-//     "attribute": "Uptime",
-//     "target": {
-//       "url": "service:jmx:rmi:///jndi/rmi://target:9010/jmxrmi"
-//     }
-//   },
-//   "value": 1214083,
-//   "timestamp": 1488059309,
-//   "status": 200
-// }
+//	Jolokia JSON response object. Example: {
+//	  "request": {
+//	    "type": "read"
+//	    "mbean": "java.lang:type=Runtime",
+//	    "attribute": "Uptime",
+//	    "target": {
+//	      "url": "service:jmx:rmi:///jndi/rmi://target:9010/jmxrmi"
+//	    }
+//	  },
+//	  "value": 1214083,
+//	  "timestamp": 1488059309,
+//	  "status": 200
+//	}
 type jolokiaResponse struct {
-	Request jolokiaRequest `json:"request"`
 	Value   interface{}    `json:"value"`
+	Request jolokiaRequest `json:"request"`
 	Status  int            `json:"status"`
 }
 

@@ -22,21 +22,20 @@ const (
 )
 
 type TopK struct {
-	Period             internal.Duration
-	K                  int
-	GroupBy            []string `toml:"group_by"`
-	Fields             []string
+	lastAggregation    time.Time
+	tagsGlobs          filter.Filter
+	cache              map[string][]cua.Metric
+	aggFieldSet        map[string]bool
+	rankFieldSet       map[string]bool
+	AddGroupByTag      string `toml:"add_groupby_tag"`
 	Aggregation        string
-	Bottomk            bool
-	AddGroupByTag      string   `toml:"add_groupby_tag"`
 	AddRankFields      []string `toml:"add_rank_fields"`
 	AddAggregateFields []string `toml:"add_aggregate_fields"`
-
-	cache           map[string][]cua.Metric
-	tagsGlobs       filter.Filter
-	rankFieldSet    map[string]bool
-	aggFieldSet     map[string]bool
-	lastAggregation time.Time
+	Fields             []string
+	GroupBy            []string `toml:"group_by"`
+	Period             internal.Duration
+	K                  int
+	Bottomk            bool
 }
 
 func New() *TopK {
@@ -109,8 +108,8 @@ var sampleConfig = `
 `
 
 type MetricAggregation struct {
-	groupbykey string
 	values     map[string]float64
+	groupbykey string
 }
 
 func sortMetrics(metrics []MetricAggregation, field string, reverse bool) {

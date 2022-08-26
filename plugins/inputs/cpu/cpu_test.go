@@ -108,16 +108,17 @@ func TestCPUStats(t *testing.T) {
 // if the measurement is of the wrong type, or if no matching measurements are found
 //
 // Parameters:
-//     t *testing.T            : Testing object to use
-//     acc testutil.Accumulator: Accumulator to examine
-//     measurement string      : Name of the measurement to examine
-//     expectedValue float64   : Value to search for within the measurement
-//     delta float64           : Maximum acceptable distance of an accumulated value
-//                               from the expectedValue parameter. Useful when
-//                               floating-point arithmetic imprecision makes looking
-//                               for an exact match impractical
-//     tags map[string]string  : Tag set the found measurement must have. Set to nil to
-//                               ignore the tag set.
+//
+//	t *testing.T            : Testing object to use
+//	acc testutil.Accumulator: Accumulator to examine
+//	measurement string      : Name of the measurement to examine
+//	expectedValue float64   : Value to search for within the measurement
+//	delta float64           : Maximum acceptable distance of an accumulated value
+//	                          from the expectedValue parameter. Useful when
+//	                          floating-point arithmetic imprecision makes looking
+//	                          for an exact match impractical
+//	tags map[string]string  : Tag set the found measurement must have. Set to nil to
+//	                          ignore the tag set.
 func assertContainsTaggedFloat(
 	t *testing.T,
 	acc *testutil.Accumulator,

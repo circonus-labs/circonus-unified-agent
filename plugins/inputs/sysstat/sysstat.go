@@ -175,7 +175,9 @@ func (s *Sysstat) Gather(ctx context.Context, acc cua.Accumulator) error {
 
 // collect collects sysstat data with the collector utility sadc.
 // It runs the following command:
-//     Sadc -S <Activity1> -S <Activity2> ... <collectInterval> 2 tmpFile
+//
+//	Sadc -S <Activity1> -S <Activity2> ... <collectInterval> 2 tmpFile
+//
 // The above command collects system metrics during <collectInterval> and
 // saves it in binary form to tmpFile.
 func (s *Sysstat) collect() error {
@@ -230,7 +232,9 @@ func withCLocale(cmd *exec.Cmd) *exec.Cmd {
 }
 
 // parse runs Sadf on the previously saved tmpFile:
-//    Sadf -p -- -p <option> tmpFile
+//
+//	Sadf -p -- -p <option> tmpFile
+//
 // and parses the output to add it to the cua.Accumulator acc.
 func (s *Sysstat) parse(acc cua.Accumulator, option string, ts time.Time) error {
 	cmd := execCommand(s.Sadf, s.sadfOptions(option)...)

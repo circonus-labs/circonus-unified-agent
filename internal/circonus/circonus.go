@@ -246,11 +246,12 @@ func createMetrics(cfg *trapmetrics.Config) (*trapmetrics.TrapMetrics, error) {
 
 // NewMetricDestination will find/retrieve/create a new circonus check bundle and add it to a trap metrics instance to be
 // used as a metric destination.
-//  pluginID = id/name (e.g. inputs.cpu would be cpu, inputs.snmp would be snmp)
-//  instanceID = instance_id setting from the config
-//  metricGroupID = group of metrics from the plugin (some offer multiple)
-//  hostname = used in the display name and target of the check
-//  logger = an instance of cua logger (already configured for the plugin requesting the metric destination)
+//
+//	pluginID = id/name (e.g. inputs.cpu would be cpu, inputs.snmp would be snmp)
+//	instanceID = instance_id setting from the config
+//	metricGroupID = group of metrics from the plugin (some offer multiple)
+//	hostname = used in the display name and target of the check
+//	logger = an instance of cua logger (already configured for the plugin requesting the metric destination)
 func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetrics.TrapMetrics, error) {
 	if ch == nil {
 		return nil, fmt.Errorf("circonus metric destination management module: module not initialized")

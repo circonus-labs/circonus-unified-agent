@@ -36,9 +36,9 @@ const (
 
 // Fluentd - plugin main structure
 type Fluentd struct {
+	client   *http.Client
 	Endpoint string
 	Exclude  []string
-	client   *http.Client
 }
 
 type endpointInfo struct {
@@ -46,21 +46,23 @@ type endpointInfo struct {
 }
 
 type pluginData struct {
-	PluginID              string   `json:"plugin_id"`
-	PluginType            string   `json:"type"`
-	PluginCategory        string   `json:"plugin_category"`
 	RetryCount            *float64 `json:"retry_count"`
 	BufferQueueLength     *float64 `json:"buffer_queue_length"`
 	BufferTotalQueuedSize *float64 `json:"buffer_total_queued_size"`
+	PluginID              string   `json:"plugin_id"`
+	PluginType            string   `json:"type"`
+	PluginCategory        string   `json:"plugin_category"`
 }
 
 // parse JSON from fluentd Endpoint
 // Parameters:
-// 		data: unprocessed json received from endpoint
+//
+//	data: unprocessed json received from endpoint
 //
 // Returns:
-//		pluginData:		slice that contains parsed plugins
-//		error:			error that may have occurred
+//
+//	pluginData:		slice that contains parsed plugins
+//	error:			error that may have occurred
 func parse(data []byte) (datapointArray []pluginData, err error) {
 	var endpointData endpointInfo
 

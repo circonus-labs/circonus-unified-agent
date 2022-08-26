@@ -57,7 +57,9 @@ func (s *Sensors) Gather(ctx context.Context, acc cua.Accumulator) error {
 }
 
 // parse forks the command:
-//     sensors -u -A
+//
+//	sensors -u -A
+//
 // and parses the output to add it to the cua.Accumulator.
 func (s *Sensors) parse(acc cua.Accumulator) error {
 	tags := map[string]string{}

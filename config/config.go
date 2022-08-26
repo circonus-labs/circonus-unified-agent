@@ -772,12 +772,11 @@ func (c *Config) LoadDirectory(path string) error {
 }
 
 // Try to find a default config file at these locations (in order):
-//   1. $CUA_CONFIG_PATH
-//   2. $HOME/.circonus/unified-agent/circonus-unified-agent.conf
-//   3. os specific:
-//      default: /opt/circonus/unified-agent/etc/circonus-unified-agent.conf
-//      windows: "C:\Program Files\Circonus\Circonus-Unified-Agent\etc\circonus-unified-agent.conf"
-//
+//  1. $CUA_CONFIG_PATH
+//  2. $HOME/.circonus/unified-agent/circonus-unified-agent.conf
+//  3. os specific:
+//     default: /opt/circonus/unified-agent/etc/circonus-unified-agent.conf
+//     windows: "C:\Program Files\Circonus\Circonus-Unified-Agent\etc\circonus-unified-agent.conf"
 func getDefaultConfigPath() (string, error) {
 	envfile := os.Getenv("CUA_CONFIG_PATH")
 	homefile := os.ExpandEnv("${HOME}/.circonus/unified-agent/circonus-unified-agent.conf")
@@ -1800,11 +1799,10 @@ type unwrappable interface {
 	Unwrap() cua.Processor
 }
 
-//
 // Circonus plugins
-//   agent   - which are always enabled
-//   default - which are enabled for "hosts" (disabled in docker containers)
 //
+//	agent   - which are always enabled
+//	default - which are enabled for "hosts" (disabled in docker containers)
 type circonusPlugin struct {
 	Data    []byte
 	Enabled bool

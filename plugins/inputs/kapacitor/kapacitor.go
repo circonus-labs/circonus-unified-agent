@@ -19,11 +19,10 @@ const (
 )
 
 type Kapacitor struct {
+	client *http.Client
+	tls.ClientConfig
 	URLs    []string `toml:"urls"`
 	Timeout internal.Duration
-	tls.ClientConfig
-
-	client *http.Client
 }
 
 func (*Kapacitor) Description() string {
@@ -93,9 +92,9 @@ func (k *Kapacitor) createHTTPClient() (*http.Client, error) {
 }
 
 type object struct {
-	Name   string                 `json:"name"`
 	Values map[string]interface{} `json:"values"`
 	Tags   map[string]string      `json:"tags"`
+	Name   string                 `json:"name"`
 }
 
 type memstats struct {
@@ -128,26 +127,28 @@ type memstats struct {
 }
 
 type stats struct {
-	CmdLine          []string           `json:"cmdline"`
-	ClusterID        string             `json:"cluster_id"`
-	Host             string             `json:"host"`
 	Kapacitor        *map[string]object `json:"kapacitor"`
 	MemStats         *memstats          `json:"memstats"`
-	NumEnabledTasks  int                `json:"num_enabled_tasks"`
-	NumSubscriptions int                `json:"num_subscriptions"`
-	NumTasks         int                `json:"num_tasks"`
+	ClusterID        string             `json:"cluster_id"`
+	Host             string             `json:"host"`
 	Product          string             `json:"product"`
 	ServerID         string             `json:"server_id"`
 	Version          string             `json:"version"`
+	CmdLine          []string           `json:"cmdline"`
+	NumEnabledTasks  int                `json:"num_enabled_tasks"`
+	NumSubscriptions int                `json:"num_subscriptions"`
+	NumTasks         int                `json:"num_tasks"`
 }
 
 // Gathers data from a particular URL
 // Parameters:
-//     acc    : The cua Accumulator to use
-//     url    : endpoint to send request to
+//
+//	acc    : The cua Accumulator to use
+//	url    : endpoint to send request to
 //
 // Returns:
-//     error: Any error that may have occurred
+//
+//	error: Any error that may have occurred
 func (k *Kapacitor) gatherURL(
 	acc cua.Accumulator,
 	rurl string,

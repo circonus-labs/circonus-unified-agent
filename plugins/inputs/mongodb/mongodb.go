@@ -18,21 +18,20 @@ import (
 )
 
 type MongoDB struct {
+	Log    cua.Logger
+	mongos map[string]*Server
+	tlsint.ClientConfig
 	Servers             []string
+	ColStatsDbs         []string
 	Ssl                 Ssl
-	mongos              map[string]*Server
 	GatherClusterStatus bool
 	GatherPerdbStats    bool
 	GatherColStats      bool
-	ColStatsDbs         []string
-	tlsint.ClientConfig
-
-	Log cua.Logger
 }
 
 type Ssl struct {
-	Enabled bool
 	CaCerts []string `toml:"cacerts"`
+	Enabled bool
 }
 
 var sampleConfig = `
@@ -149,7 +148,7 @@ func (m *MongoDB) gatherServer(server *Server, acc cua.Accumulator) error {
 
 		if m.Ssl.Enabled {
 			// Deprecated TLS config
-			tlsConfig = &tls.Config{MinVersion: tls.VersionTLS12}
+			tlsConfig = &tls.Config{MinVersion: tls.VersionTLS12} // #nosec G402 // G402: TLS MinVersion too low.
 			if len(m.Ssl.CaCerts) > 0 {
 				roots := x509.NewCertPool()
 				for _, caCert := range m.Ssl.CaCerts {

@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
@@ -58,16 +59,14 @@ const sampleConfig = `
 // but it also contains fields for the management of a separate, concurrent
 // zipkin http server
 type Zipkin struct {
+	Log            cua.Logger
+	handler        Handler
+	server         *http.Server
+	waitGroup      *sync.WaitGroup
 	ServiceAddress string
-	Port           int
 	Path           string
-
-	Log cua.Logger
-
-	address   string
-	handler   Handler
-	server    *http.Server
-	waitGroup *sync.WaitGroup
+	address        string
+	Port           int
 }
 
 // Description is a necessary method implementation from cua.ServiceInput
@@ -99,7 +98,8 @@ func (z *Zipkin) Start(ctx context.Context, acc cua.Accumulator) error {
 	}
 
 	z.server = &http.Server{
-		Handler: router,
+		Handler:           router,
+		ReadHeaderTimeout: 5 * time.Second, // G112: Potential Slowloris Attack because ReadHeaderTimeout is not configured in the http.Server
 	}
 
 	addr := ":" + strconv.Itoa(z.Port)

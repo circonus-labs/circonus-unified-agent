@@ -1,6 +1,8 @@
 package circonus
 
 import (
+	"context"
+	"strings"
 	"time"
 
 	"github.com/circonus-labs/go-trapmetrics"
@@ -21,6 +23,21 @@ func AddMetricToDest(dest *trapmetrics.TrapMetrics, pluginID, metricGroup, metri
 		if err := dest.GaugeSet(metricName, tags, v, &ts); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func UpdateCheckTags(ctx context.Context, dest *trapmetrics.TrapMetrics) error {
+
+	b, err := dest.UpdateCheckTags(ctx)
+	if err != nil {
+		return err
+	}
+
+	// bundle will be nil if no updates were needed
+	if b != nil {
+		saveCheckConfig(dest.TrapID(), b)
 	}
 
 	return nil
@@ -61,4 +78,23 @@ func ConvertTags(pluginID, metricGroup string, tags, staticTags map[string]strin
 	}
 
 	return ctags
+}
+
+// VerifyTags is used to ensure that a list of tags provided in a config are not blank
+// and to lowercase them.
+func VerifyTags(tags []string) ([]string, bool) {
+	if len(tags) == 0 {
+		return tags, true
+	}
+
+	result := make([]string, 0, len(tags))
+
+	for _, tag := range tags {
+		if tag == "" {
+			continue
+		}
+		result = append(result, strings.ToLower(tag))
+	}
+
+	return result, true
 }

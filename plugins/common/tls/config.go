@@ -146,6 +146,6 @@ func loadCertificate(config *tls.Config, certFile, keyFile string) error {
 	}
 
 	config.Certificates = []tls.Certificate{cert}
-	config.BuildNameToCertificate()
+	// config.BuildNameToCertificate() // SA1019: config.BuildNameToCertificate has been deprecated since Go 1.14: NameToCertificate only allows associating a single certificate with a given name. Leave that field nil to let the library select the first compatible chain from Certificates.
 	return nil
 }

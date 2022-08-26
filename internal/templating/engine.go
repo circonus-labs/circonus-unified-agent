@@ -13,8 +13,8 @@ const (
 // Engine uses a Matcher to retrieve the appropriate template and applies the template
 // to the input string
 type Engine struct {
-	joiner  string
 	matcher *matcher
+	joiner  string
 }
 
 // Apply extracts the template fields from the given line and returns the measurement

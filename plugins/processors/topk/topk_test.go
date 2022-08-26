@@ -11,8 +11,8 @@ import (
 
 // Key, value pair that represents a cua.Metric Field
 type field struct {
-	key string
 	val interface{}
+	key string
 }
 
 func fieldList(fields ...field) []field {
@@ -42,11 +42,12 @@ type metricChange struct {
 // Generate a new set of metrics from a set of changes. This is used to generate an answer which will be
 // compare against the output of the processor
 // NOTE: A `changeSet` is a map where the keys are the indices of the metrics to keep, and the values
-//       are list of new tags and fields to be added to the metric in that index.
-//       THE ORDERING OF THE NEW TAGS AND FIELDS MATTERS. When using reflect.DeepEqual to compare metrics,
-//       comparing metrics that have the same fields/tags added in different orders will return false, although
-//       they are semantically equal.
-//       Therefore the fields and tags must be in the same order that the processor would add them
+//
+//	are list of new tags and fields to be added to the metric in that index.
+//	THE ORDERING OF THE NEW TAGS AND FIELDS MATTERS. When using reflect.DeepEqual to compare metrics,
+//	comparing metrics that have the same fields/tags added in different orders will return false, although
+//	they are semantically equal.
+//	Therefore the fields and tags must be in the same order that the processor would add them
 func generateAns(input []cua.Metric, changeSet map[int]metricChange) []cua.Metric {
 	answer := []cua.Metric{}
 
@@ -174,7 +175,7 @@ func TestTopkMeanAddAggregateFields(t *testing.T) {
 	input := deepCopy(MetricsSet1)
 
 	// Generate the answer
-	chng := fieldList(field{"a_topk_aggregate", float64(28.044)})
+	chng := fieldList(field{key: "a_topk_aggregate", val: float64(28.044)})
 	changeSet := map[int]metricChange{
 		0: {newFields: chng},
 		1: {newFields: chng},
@@ -203,7 +204,7 @@ func TestTopkSumAddAggregateFields(t *testing.T) {
 	input := deepCopy(MetricsSet1)
 
 	// Generate the answer
-	chng := fieldList(field{"a_topk_aggregate", float64(140.22)})
+	chng := fieldList(field{key: "a_topk_aggregate", val: float64(140.22)})
 	changeSet := map[int]metricChange{
 		0: {newFields: chng},
 		1: {newFields: chng},
@@ -232,7 +233,7 @@ func TestTopkMaxAddAggregateFields(t *testing.T) {
 	input := deepCopy(MetricsSet1)
 
 	// Generate the answer
-	chng := fieldList(field{"a_topk_aggregate", float64(50.5)})
+	chng := fieldList(field{key: "a_topk_aggregate", val: float64(50.5)})
 	changeSet := map[int]metricChange{
 		0: {newFields: chng},
 		1: {newFields: chng},
@@ -261,7 +262,7 @@ func TestTopkMinAddAggregateFields(t *testing.T) {
 	input := deepCopy(MetricsSet1)
 
 	// Generate the answer
-	chng := fieldList(field{"a_topk_aggregate", float64(0.3)})
+	chng := fieldList(field{key: "a_topk_aggregate", val: float64(0.3)})
 	changeSet := map[int]metricChange{
 		0: {newFields: chng},
 		1: {newFields: chng},
@@ -291,10 +292,10 @@ func TestTopkGroupby1(t *testing.T) {
 
 	// Generate the answer
 	changeSet := map[int]metricChange{
-		2: {newFields: fieldList(field{"value_topk_aggregate", float64(74.18)})},
-		3: {newFields: fieldList(field{"value_topk_aggregate", float64(72)})},
-		4: {newFields: fieldList(field{"value_topk_aggregate", float64(163.22)})},
-		5: {newFields: fieldList(field{"value_topk_aggregate", float64(163.22)})},
+		2: {newFields: fieldList(field{key: "value_topk_aggregate", val: float64(74.18)})},
+		3: {newFields: fieldList(field{key: "value_topk_aggregate", val: float64(72)})},
+		4: {newFields: fieldList(field{key: "value_topk_aggregate", val: float64(163.22)})},
+		5: {newFields: fieldList(field{key: "value_topk_aggregate", val: float64(163.22)})},
 	}
 	answer := generateAns(input, changeSet)
 
@@ -315,9 +316,9 @@ func TestTopkGroupby2(t *testing.T) {
 	input := deepCopy(MetricsSet2)
 
 	// Generate the answer
-	chng1 := fieldList(field{"value_topk_aggregate", float64(66.805)})
-	chng2 := fieldList(field{"value_topk_aggregate", float64(72)})
-	chng3 := fieldList(field{"value_topk_aggregate", float64(81.61)})
+	chng1 := fieldList(field{key: "value_topk_aggregate", val: float64(66.805)})
+	chng2 := fieldList(field{key: "value_topk_aggregate", val: float64(72)})
+	chng3 := fieldList(field{key: "value_topk_aggregate", val: float64(81.61)})
 	changeSet := map[int]metricChange{
 		1: {newFields: chng1},
 		2: {newFields: chng1},
@@ -344,7 +345,7 @@ func TestTopkGroupby3(t *testing.T) {
 	input := deepCopy(MetricsSet2)
 
 	// Generate the answer
-	chng := fieldList(field{"value_topk_aggregate", float64(75.3)})
+	chng := fieldList(field{key: "value_topk_aggregate", val: float64(75.3)})
 	changeSet := map[int]metricChange{
 		4: {newFields: chng},
 		5: {newFields: chng},
@@ -372,10 +373,10 @@ func TestTopkGroupbyFields1(t *testing.T) {
 
 	// Generate the answer
 	changeSet := map[int]metricChange{
-		0: {newFields: fieldList(field{"A_topk_aggregate", float64(95.36)})},
-		1: {newFields: fieldList(field{"A_topk_aggregate", float64(39.01)})},
-		2: {newFields: fieldList(field{"A_topk_aggregate", float64(39.01)})},
-		5: {newFields: fieldList(field{"A_topk_aggregate", float64(29.45)})},
+		0: {newFields: fieldList(field{key: "A_topk_aggregate", val: float64(95.36)})},
+		1: {newFields: fieldList(field{key: "A_topk_aggregate", val: float64(39.01)})},
+		2: {newFields: fieldList(field{key: "A_topk_aggregate", val: float64(39.01)})},
+		5: {newFields: fieldList(field{key: "A_topk_aggregate", val: float64(29.45)})},
 	}
 	answer := generateAns(input, changeSet)
 
@@ -399,10 +400,10 @@ func TestTopkGroupbyFields2(t *testing.T) {
 
 	// Generate the answer
 	changeSet := map[int]metricChange{
-		0: {newFields: fieldList(field{"C_topk_aggregate", float64(72.41)})},
-		2: {newFields: fieldList(field{"B_topk_aggregate", float64(60.96)})},
-		4: {newFields: fieldList(field{"B_topk_aggregate", float64(81.55)}, field{"C_topk_aggregate", float64(49.96)})},
-		5: {newFields: fieldList(field{"C_topk_aggregate", float64(49.96)})},
+		0: {newFields: fieldList(field{key: "C_topk_aggregate", val: float64(72.41)})},
+		2: {newFields: fieldList(field{key: "B_topk_aggregate", val: float64(60.96)})},
+		4: {newFields: fieldList(field{key: "B_topk_aggregate", val: float64(81.55)}, field{key: "C_topk_aggregate", val: float64(49.96)})},
+		5: {newFields: fieldList(field{key: "C_topk_aggregate", val: float64(49.96)})},
 	}
 	answer := generateAns(input, changeSet)
 
@@ -425,7 +426,7 @@ func TestTopkGroupbyMetricName1(t *testing.T) {
 	input := deepCopy(MetricsSet2)
 
 	// Generate the answer
-	chng := fieldList(field{"value_topk_aggregate", float64(235.22000000000003)})
+	chng := fieldList(field{key: "value_topk_aggregate", val: float64(235.22000000000003)})
 	changeSet := map[int]metricChange{
 		3: {newFields: chng},
 		4: {newFields: chng},
@@ -453,10 +454,10 @@ func TestTopkGroupbyMetricName2(t *testing.T) {
 
 	// Generate the answer
 	changeSet := map[int]metricChange{
-		0: {newFields: fieldList(field{"A_topk_aggregate", float64(95.36)})},
-		1: {newFields: fieldList(field{"A_topk_aggregate", float64(78.02)}, field{"value_topk_aggregate", float64(133.61)})},
-		2: {newFields: fieldList(field{"A_topk_aggregate", float64(78.02)}, field{"value_topk_aggregate", float64(133.61)})},
-		4: {newFields: fieldList(field{"value_topk_aggregate", float64(87.92)})},
+		0: {newFields: fieldList(field{key: "A_topk_aggregate", val: float64(95.36)})},
+		1: {newFields: fieldList(field{key: "A_topk_aggregate", val: float64(78.02)}, field{key: "value_topk_aggregate", val: float64(133.61)})},
+		2: {newFields: fieldList(field{key: "A_topk_aggregate", val: float64(78.02)}, field{key: "value_topk_aggregate", val: float64(133.61)})},
+		4: {newFields: fieldList(field{key: "value_topk_aggregate", val: float64(87.92)})},
 	}
 	answer := generateAns(input, changeSet)
 

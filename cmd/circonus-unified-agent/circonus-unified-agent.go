@@ -230,7 +230,7 @@ func runAgent(ctx context.Context,
 }
 
 func usageExit(rc int) {
-	fmt.Println(internal.Usage) //nolint
+	fmt.Println(internal.Usage) //nolint:govet
 	os.Exit(rc)
 }
 
@@ -321,7 +321,8 @@ func main() {
 
 			log.Printf("I! Starting pprof HTTP server at: %s", pprofHostPort)
 
-			if err := http.ListenAndServe(*pprofAddr, nil); err != nil {
+			err := http.ListenAndServe(*pprofAddr, nil) // #nosec G114 // G114: Use of net/http serve function that has no support for setting timeouts
+			if err != nil {
 				log.Fatal("E! " + err.Error())
 			}
 		}()

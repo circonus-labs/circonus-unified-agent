@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"reflect"
+	"time"
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
@@ -29,16 +30,14 @@ func init() {
 }
 
 type Webhooks struct {
+	Github         *github.Webhook
+	Filestack      *filestack.Webhook
+	Mandrill       *mandrill.Webhook
+	Rollbar        *rollbar.Webhook
+	Papertrail     *papertrail.Webhook
+	Particle       *particle.Webhook
+	srv            *http.Server
 	ServiceAddress string
-
-	Github     *github.Webhook
-	Filestack  *filestack.Webhook
-	Mandrill   *mandrill.Webhook
-	Rollbar    *rollbar.Webhook
-	Papertrail *papertrail.Webhook
-	Particle   *particle.Webhook
-
-	srv *http.Server
 }
 
 func NewWebhooks() *Webhooks {
@@ -109,7 +108,10 @@ func (wh *Webhooks) Start(ctx context.Context, acc cua.Accumulator) error {
 		webhook.Register(r, acc)
 	}
 
-	wh.srv = &http.Server{Handler: r}
+	wh.srv = &http.Server{
+		Handler:           r,
+		ReadHeaderTimeout: 5 * time.Second, // G112: Potential Slowloris Attack because ReadHeaderTimeout is not configured in the http.Server
+	}
 
 	ln, err := net.Listen("tcp", wh.ServiceAddress)
 	if err != nil {

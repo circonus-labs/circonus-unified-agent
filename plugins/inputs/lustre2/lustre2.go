@@ -7,7 +7,6 @@ Lustre 2.x plugin
 Lustre (http://lustre.org/) is an open-source, parallel file system
 for HPC environments. It stores statistics about its activity in
 /proc
-
 */
 package lustre2
 
@@ -52,12 +51,13 @@ var sampleConfig = `
   # ]
 `
 
-/* The wanted fields would be a []string if not for the
-   lines that start with read_bytes/write_bytes and contain
-   both the byte count and the function call count
-	inProc   string // What to look for at the start of a line in /proc/fs/lustre/*
-	field    uint32 // which field to extract from that line
-	reportAs string // What measurement name to use
+/*
+	 The wanted fields would be a []string if not for the
+	   lines that start with read_bytes/write_bytes and contain
+	   both the byte count and the function call count
+		inProc   string // What to look for at the start of a line in /proc/fs/lustre/*
+		field    uint32 // which field to extract from that line
+		reportAs string // What measurement name to use
 */
 type mapping struct {
 	inProc   string

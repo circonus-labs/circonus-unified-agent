@@ -65,65 +65,84 @@ var (
 )
 
 // Parser is the primary struct to handle and grok-patterns defined in the config toml
+// type Parser struct {
+// 	Patterns []string
+// 	// namedPatterns is a list of internally-assigned names to the patterns
+// 	// specified by the user in Patterns.
+// 	// They will look like:
+// 	//   GROK_INTERNAL_PATTERN_0, GROK_INTERNAL_PATTERN_1, etc.
+// 	NamedPatterns      []string
+// 	CustomPatterns     string
+// 	CustomPatternFiles []string
+// 	Measurement        string
+// 	DefaultTags        map[string]string
+
+// 	// Timezone is an optional component to help render log dates to
+// 	// your chosen zone.
+// 	// Default: "" which renders UTC
+// 	// Options are as follows:
+// 	// 1. Local             -- interpret based on machine localtime
+// 	// 2. "America/Chicago" -- Unix TZ values like those found in https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+// 	// 3. UTC               -- or blank/unspecified, will return timestamp in UTC
+// 	Timezone string
+// 	loc      *time.Location
+
+// 	// UniqueTimestamp when set to "disable", timestamp will not incremented if there is a duplicate.
+// 	UniqueTimestamp string
+
+// 	// typeMap is a map of patterns -> capture name -> modifier,
+// 	//   ie, {
+// 	//          "%{TESTLOG}":
+// 	//             {
+// 	//                "bytes": "int",
+// 	//                "clientip": "tag"
+// 	//             }
+// 	//       }
+// 	typeMap map[string]map[string]string
+// 	// tsMap is a map of patterns -> capture name -> timestamp layout.
+// 	//   ie, {
+// 	//          "%{TESTLOG}":
+// 	//             {
+// 	//                "httptime": "02/Jan/2006:15:04:05 -0700"
+// 	//             }
+// 	//       }
+// 	tsMap map[string]map[string]string
+// 	// patterns is a map of all of the parsed patterns from CustomPatterns
+// 	// and CustomPatternFiles.
+// 	//   ie, {
+// 	//          "DURATION":      "%{NUMBER}[nuµm]?s"
+// 	//          "RESPONSE_CODE": "%{NUMBER:rc:tag}"
+// 	//       }
+// 	patterns map[string]string
+// 	// foundTsLayouts is a slice of timestamp patterns that have been found
+// 	// in the log lines. This slice gets updated if the user uses the generic
+// 	// 'ts' modifier for timestamps. This slice is checked first for matches,
+// 	// so that previously-matched layouts get priority over all other timestamp
+// 	// layouts.
+// 	foundTsLayouts []string
+
+// 	timeFunc func() time.Time
+// 	g        *grok.Grok
+// 	tsModder *tsModder
+// }
+
 type Parser struct {
-	Patterns []string
-	// namedPatterns is a list of internally-assigned names to the patterns
-	// specified by the user in Patterns.
-	// They will look like:
-	//   GROK_INTERNAL_PATTERN_0, GROK_INTERNAL_PATTERN_1, etc.
-	NamedPatterns      []string
-	CustomPatterns     string
-	CustomPatternFiles []string
-	Measurement        string
+	typeMap            map[string]map[string]string
+	tsModder           *tsModder
+	g                  *grok.Grok
+	timeFunc           func() time.Time
+	patterns           map[string]string
 	DefaultTags        map[string]string
-
-	// Timezone is an optional component to help render log dates to
-	// your chosen zone.
-	// Default: "" which renders UTC
-	// Options are as follows:
-	// 1. Local             -- interpret based on machine localtime
-	// 2. "America/Chicago" -- Unix TZ values like those found in https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-	// 3. UTC               -- or blank/unspecified, will return timestamp in UTC
-	Timezone string
-	loc      *time.Location
-
-	// UniqueTimestamp when set to "disable", timestamp will not incremented if there is a duplicate.
-	UniqueTimestamp string
-
-	// typeMap is a map of patterns -> capture name -> modifier,
-	//   ie, {
-	//          "%{TESTLOG}":
-	//             {
-	//                "bytes": "int",
-	//                "clientip": "tag"
-	//             }
-	//       }
-	typeMap map[string]map[string]string
-	// tsMap is a map of patterns -> capture name -> timestamp layout.
-	//   ie, {
-	//          "%{TESTLOG}":
-	//             {
-	//                "httptime": "02/Jan/2006:15:04:05 -0700"
-	//             }
-	//       }
-	tsMap map[string]map[string]string
-	// patterns is a map of all of the parsed patterns from CustomPatterns
-	// and CustomPatternFiles.
-	//   ie, {
-	//          "DURATION":      "%{NUMBER}[nuµm]?s"
-	//          "RESPONSE_CODE": "%{NUMBER:rc:tag}"
-	//       }
-	patterns map[string]string
-	// foundTsLayouts is a slice of timestamp patterns that have been found
-	// in the log lines. This slice gets updated if the user uses the generic
-	// 'ts' modifier for timestamps. This slice is checked first for matches,
-	// so that previously-matched layouts get priority over all other timestamp
-	// layouts.
-	foundTsLayouts []string
-
-	timeFunc func() time.Time
-	g        *grok.Grok
-	tsModder *tsModder
+	tsMap              map[string]map[string]string
+	loc                *time.Location
+	UniqueTimestamp    string
+	Timezone           string
+	Measurement        string
+	CustomPatterns     string
+	Patterns           []string
+	foundTsLayouts     []string
+	CustomPatternFiles []string
+	NamedPatterns      []string
 }
 
 // Compile is a bound method to Parser which will process the options for our parser
@@ -444,9 +463,10 @@ func (p *Parser) compileCustomPatterns() error {
 
 // parseTypedCaptures parses the capture modifiers, and then deletes the
 // modifier from the line so that it is a valid "grok" pattern again.
-//   ie,
-//     %{NUMBER:bytes:int}      => %{NUMBER:bytes}      (stores %{NUMBER}->bytes->int)
-//     %{IPORHOST:clientip:tag} => %{IPORHOST:clientip} (stores %{IPORHOST}->clientip->tag)
+//
+//	ie,
+//	  %{NUMBER:bytes:int}      => %{NUMBER:bytes}      (stores %{NUMBER}->bytes->int)
+//	  %{IPORHOST:clientip:tag} => %{IPORHOST:clientip} (stores %{IPORHOST}->clientip->tag)
 func (p *Parser) parseTypedCaptures(name, pattern string) (string, error) {
 	matches := modifierRe.FindAllStringSubmatch(pattern, -1)
 
@@ -501,7 +521,8 @@ type tsModder struct {
 // duplicate timestamp.
 // the increment unit is determined as the next smallest time unit below the
 // most significant time unit of ts.
-//   ie, if the input is at ms precision, it will increment it 1µs.
+//
+//	ie, if the input is at ms precision, it will increment it 1µs.
 func (t *tsModder) tsMod(ts time.Time) time.Time {
 	if ts.IsZero() {
 		return ts

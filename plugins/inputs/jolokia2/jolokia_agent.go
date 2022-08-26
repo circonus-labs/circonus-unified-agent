@@ -11,20 +11,17 @@ import (
 )
 
 type JolokiaAgent struct {
+	gatherer              *Gatherer
 	DefaultFieldPrefix    string
 	DefaultFieldSeparator string
 	DefaultTagPrefix      string
-
-	URLs            []string `toml:"urls"`
-	Username        string
-	Password        string
-	ResponseTimeout internal.Duration `toml:"response_timeout"`
-
+	Username              string
+	Password              string
 	tls.ClientConfig
-
-	Metrics  []MetricConfig `toml:"metric"`
-	gatherer *Gatherer
-	clients  []*Client
+	URLs            []string       `toml:"urls"`
+	Metrics         []MetricConfig `toml:"metric"`
+	clients         []*Client
+	ResponseTimeout internal.Duration `toml:"response_timeout"`
 }
 
 func (ja *JolokiaAgent) SampleConfig() string {

@@ -17,8 +17,8 @@ import (
 // SpanHandler is an implementation of a Handler which accepts zipkin thrift
 // span data and sends it to the recorder
 type SpanHandler struct {
-	Path     string
 	recorder Recorder
+	Path     string
 }
 
 // NewSpanHandler returns a new server instance given path to handle

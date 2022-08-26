@@ -18,14 +18,14 @@ type MDBData struct {
 }
 
 type DbData struct {
-	Name   string
 	Fields map[string]interface{}
+	Name   string
 }
 
 type ColData struct {
+	Fields map[string]interface{}
 	Name   string
 	DbName string
-	Fields map[string]interface{}
 }
 
 func NewMongodbData(statLine *StatLine, tags map[string]string) *MDBData {

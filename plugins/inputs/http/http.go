@@ -19,32 +19,29 @@ import (
 )
 
 type HTTP struct {
-	URLs            []string `toml:"urls"`
-	Method          string   `toml:"method"`
-	Body            string   `toml:"body"`
-	ContentEncoding string   `toml:"content_encoding"`
+	// The parser will automatically be set by cua core code because
+	// this plugin implements the ParserInput interface (i.e. the SetParser method)
+	parser parsers.Parser
 
 	Headers map[string]string `toml:"headers"`
+	client  *http.Client
 
 	// HTTP Basic Auth Credentials
 	Username string `toml:"username"`
 	Password string `toml:"password"`
-	tls.ClientConfig
 
+	ContentEncoding string `toml:"content_encoding"`
 	proxy.HTTPProxy
 
 	// Absolute path to file with Bearer token
 	BearerToken string `toml:"bearer_token"`
 
-	SuccessStatusCodes []int `toml:"success_status_codes"`
-
-	Timeout internal.Duration `toml:"timeout"`
-
-	client *http.Client
-
-	// The parser will automatically be set by cua core code because
-	// this plugin implements the ParserInput interface (i.e. the SetParser method)
-	parser parsers.Parser
+	Body   string `toml:"body"`
+	Method string `toml:"method"`
+	tls.ClientConfig
+	URLs               []string          `toml:"urls"`
+	SuccessStatusCodes []int             `toml:"success_status_codes"`
+	Timeout            internal.Duration `toml:"timeout"`
 }
 
 var sampleConfig = `
@@ -163,11 +160,13 @@ func (h *HTTP) SetParser(parser parsers.Parser) {
 
 // Gathers data from a particular URL
 // Parameters:
-//     acc    : The cua Accumulator to use
-//     url    : endpoint to send request to
+//
+//	acc    : The cua Accumulator to use
+//	url    : endpoint to send request to
 //
 // Returns:
-//     error: Any error that may have occurred
+//
+//	error: Any error that may have occurred
 func (h *HTTP) gatherURL(
 	acc cua.Accumulator,
 	url string,

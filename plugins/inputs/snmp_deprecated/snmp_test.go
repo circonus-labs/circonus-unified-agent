@@ -22,8 +22,8 @@ import (
 )
 
 type testSNMPConnection struct {
-	host   string
 	values map[string]interface{}
+	host   string
 }
 
 func (tsc *testSNMPConnection) Host() string {
@@ -698,48 +698,200 @@ func TestGather_host(t *testing.T) {
 
 func TestFieldConvert(t *testing.T) {
 	testTable := []struct {
-		input    gosnmp.SnmpPDU
-		conv     string
 		expected interface{}
+		conv     string
+		input    gosnmp.SnmpPDU
 	}{
-		{gosnmp.SnmpPDU{Value: []byte("foo")}, "", string("foo")},
-		{gosnmp.SnmpPDU{Value: "0.123"}, "float", float64(0.123)},
-		{gosnmp.SnmpPDU{Value: []byte("0.123")}, "float", float64(0.123)},
-		{gosnmp.SnmpPDU{Value: float32(0.123)}, "float", float64(float32(0.123))},
-		{gosnmp.SnmpPDU{Value: float64(0.123)}, "float", float64(0.123)},
-		{gosnmp.SnmpPDU{Value: 123}, "float", float64(123)},
-		{gosnmp.SnmpPDU{Value: 123}, "float(0)", float64(123)},
-		{gosnmp.SnmpPDU{Value: 123}, "float(4)", float64(0.0123)},
-		{gosnmp.SnmpPDU{Value: int8(123)}, "float(3)", float64(0.123)},
-		{gosnmp.SnmpPDU{Value: int16(123)}, "float(3)", float64(0.123)},
-		{gosnmp.SnmpPDU{Value: int32(123)}, "float(3)", float64(0.123)},
-		{gosnmp.SnmpPDU{Value: int64(123)}, "float(3)", float64(0.123)},
-		{gosnmp.SnmpPDU{Value: uint(123)}, "float(3)", float64(0.123)},
-		{gosnmp.SnmpPDU{Value: uint8(123)}, "float(3)", float64(0.123)},
-		{gosnmp.SnmpPDU{Value: uint16(123)}, "float(3)", float64(0.123)},
-		{gosnmp.SnmpPDU{Value: uint32(123)}, "float(3)", float64(0.123)},
-		{gosnmp.SnmpPDU{Value: uint64(123)}, "float(3)", float64(0.123)},
-		{gosnmp.SnmpPDU{Value: "123"}, "int", int64(123)},
-		{gosnmp.SnmpPDU{Value: []byte("123")}, "int", int64(123)},
-		{gosnmp.SnmpPDU{Value: "123123123123"}, "int", int64(123123123123)},
-		{gosnmp.SnmpPDU{Value: []byte("123123123123")}, "int", int64(123123123123)},
-		{gosnmp.SnmpPDU{Value: float32(12.3)}, "int", int64(12)},
-		{gosnmp.SnmpPDU{Value: float64(12.3)}, "int", int64(12)},
-		{gosnmp.SnmpPDU{Value: int(123)}, "int", int64(123)},
-		{gosnmp.SnmpPDU{Value: int8(123)}, "int", int64(123)},
-		{gosnmp.SnmpPDU{Value: int16(123)}, "int", int64(123)},
-		{gosnmp.SnmpPDU{Value: int32(123)}, "int", int64(123)},
-		{gosnmp.SnmpPDU{Value: int64(123)}, "int", int64(123)},
-		{gosnmp.SnmpPDU{Value: uint(123)}, "int", int64(123)},
-		{gosnmp.SnmpPDU{Value: uint8(123)}, "int", int64(123)},
-		{gosnmp.SnmpPDU{Value: uint16(123)}, "int", int64(123)},
-		{gosnmp.SnmpPDU{Value: uint32(123)}, "int", int64(123)},
-		{gosnmp.SnmpPDU{Value: uint64(123)}, "int", int64(123)},
-		{gosnmp.SnmpPDU{Value: []byte("abcdef")}, "hwaddr", "61:62:63:64:65:66"},
-		{gosnmp.SnmpPDU{Value: "abcdef"}, "hwaddr", "61:62:63:64:65:66"},
-		{gosnmp.SnmpPDU{Value: []byte("abcd")}, "ipaddr", "97.98.99.100"},
-		{gosnmp.SnmpPDU{Value: "abcd"}, "ipaddr", "97.98.99.100"},
-		{gosnmp.SnmpPDU{Value: []byte("abcdefghijklmnop")}, "ipaddr", "6162:6364:6566:6768:696a:6b6c:6d6e:6f70"},
+		{
+			input:    gosnmp.SnmpPDU{Value: []byte("foo")},
+			conv:     "",
+			expected: string("foo"),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: "0.123"},
+			conv:     "float",
+			expected: float64(0.123),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: []byte("0.123")},
+			conv:     "float",
+			expected: float64(0.123),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: float32(0.123)},
+			conv:     "float",
+			expected: float64(float32(0.123)),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: float64(0.123)},
+			conv:     "float",
+			expected: float64(0.123),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: 123},
+			conv:     "float",
+			expected: float64(123),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: 123},
+			conv:     "float(0)",
+			expected: float64(123),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: 123},
+			conv:     "float(4)",
+			expected: float64(0.0123),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: int8(123)},
+			conv:     "float(3)",
+			expected: float64(0.123),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: int16(123)},
+			conv:     "float(3)",
+			expected: float64(0.123),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: int32(123)},
+			conv:     "float(3)",
+			expected: float64(0.123),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: int64(123)},
+			conv:     "float(3)",
+			expected: float64(0.123),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: uint(123)},
+			conv:     "float(3)",
+			expected: float64(0.123),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: uint8(123)},
+			conv:     "float(3)",
+			expected: float64(0.123),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: uint16(123)},
+			conv:     "float(3)",
+			expected: float64(0.123),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: uint32(123)},
+			conv:     "float(3)",
+			expected: float64(0.123),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: uint64(123)},
+			conv:     "float(3)",
+			expected: float64(0.123),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: "123"},
+			conv:     "int",
+			expected: int64(123),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: []byte("123")},
+			conv:     "int",
+			expected: int64(123),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: "123123123123"},
+			conv:     "int",
+			expected: int64(123123123123),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: []byte("123123123123")},
+			conv:     "int",
+			expected: int64(123123123123),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: float32(12.3)},
+			conv:     "int",
+			expected: int64(12),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: float64(12.3)},
+			conv:     "int",
+			expected: int64(12),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: int(123)},
+			conv:     "int",
+			expected: int64(123),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: int8(123)},
+			conv:     "int",
+			expected: int64(123),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: int16(123)},
+			conv:     "int",
+			expected: int64(123),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: int32(123)},
+			conv:     "int",
+			expected: int64(123),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: int64(123)},
+			conv:     "int",
+			expected: int64(123),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: uint(123)},
+			conv:     "int",
+			expected: int64(123),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: uint8(123)},
+			conv:     "int",
+			expected: int64(123),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: uint16(123)},
+			conv:     "int",
+			expected: int64(123),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: uint32(123)},
+			conv:     "int",
+			expected: int64(123),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: uint64(123)},
+			conv:     "int",
+			expected: int64(123),
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: []byte("abcdef")},
+			conv:     "hwaddr",
+			expected: "61:62:63:64:65:66",
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: "abcdef"},
+			conv:     "hwaddr",
+			expected: "61:62:63:64:65:66",
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: []byte("abcd")},
+			conv:     "ipaddr",
+			expected: "97.98.99.100",
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: "abcd"},
+			conv:     "ipaddr",
+			expected: "97.98.99.100",
+		},
+		{
+			input:    gosnmp.SnmpPDU{Value: []byte("abcdefghijklmnop")},
+			conv:     "ipaddr",
+			expected: "6162:6364:6566:6768:696a:6b6c:6d6e:6f70",
+		},
 	}
 
 	for _, tc := range testTable {

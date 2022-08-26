@@ -36,34 +36,26 @@ const (
 )
 
 type InfluxDBV2Listener struct {
-	ServiceAddress string `toml:"service_address"`
-	port           int
-	tlsint.ServerConfig
-
-	MaxBodySize internal.Size `toml:"max_body_size"`
-	Token       string        `toml:"token"`
-	BucketTag   string        `toml:"bucket_tag"`
-
-	timeFunc influx.TimeFunc
-
-	listener net.Listener
-	server   http.Server
-
-	acc cua.Accumulator
-
+	mux             http.ServeMux
+	startTime       time.Time
+	server          http.Server
+	notFoundsServed selfstat.Stat
+	authFailures    selfstat.Stat
+	Log             cua.Logger `toml:"-"`
+	requestsRecv    selfstat.Stat
+	listener        net.Listener
+	readysServed    selfstat.Stat
+	acc             cua.Accumulator
 	bytesRecv       selfstat.Stat
 	requestsServed  selfstat.Stat
 	writesServed    selfstat.Stat
-	readysServed    selfstat.Stat
-	requestsRecv    selfstat.Stat
-	notFoundsServed selfstat.Stat
-	authFailures    selfstat.Stat
-
-	startTime time.Time
-
-	Log cua.Logger `toml:"-"`
-
-	mux http.ServeMux
+	timeFunc        influx.TimeFunc
+	ServiceAddress  string `toml:"service_address"`
+	Token           string `toml:"token"`
+	BucketTag       string `toml:"bucket_tag"`
+	tlsint.ServerConfig
+	MaxBodySize internal.Size `toml:"max_body_size"`
+	port        int
 }
 
 const sampleConfig = `
@@ -154,9 +146,10 @@ func (h *InfluxDBV2Listener) Start(ctx context.Context, acc cua.Accumulator) err
 	}
 
 	h.server = http.Server{
-		Addr:      h.ServiceAddress,
-		Handler:   h,
-		TLSConfig: tlsConf,
+		Addr:              h.ServiceAddress,
+		Handler:           h,
+		TLSConfig:         tlsConf,
+		ReadHeaderTimeout: 5 * time.Second, // G112: Potential Slowloris Attack because ReadHeaderTimeout is not configured in the http.Server
 	}
 
 	var listener net.Listener

@@ -43,11 +43,11 @@ const description = "Reads metrics from a SSL certificate"
 
 // X509Cert holds the configuration of the plugin.
 type X509Cert struct {
-	Sources    []string          `toml:"sources"`
-	Timeout    internal.Duration `toml:"timeout"`
-	ServerName string            `toml:"server_name"`
 	tlsCfg     *tls.Config
+	ServerName string `toml:"server_name"`
 	_tls.ClientConfig
+	Sources []string          `toml:"sources"`
+	Timeout internal.Duration `toml:"timeout"`
 }
 
 // Description returns description of the plugin.
@@ -259,7 +259,7 @@ func (c *X509Cert) Init() error {
 		return fmt.Errorf("TLSConfig: %w", err)
 	}
 	if tlsCfg == nil {
-		tlsCfg = &tls.Config{MinVersion: tls.VersionTLS12}
+		tlsCfg = &tls.Config{MinVersion: tls.VersionTLS12} // #nosec G402 // G402: TLS MinVersion too low.
 	}
 
 	c.tlsCfg = tlsCfg

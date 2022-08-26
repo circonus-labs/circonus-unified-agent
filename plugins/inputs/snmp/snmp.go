@@ -792,18 +792,19 @@ func (s *Snmp) getConnection(idx int) (snmpConnection, error) {
 }
 
 // fieldConvert converts from any type according to the conv specification
-//  "float"/"float(0)" will convert the value into a float.
-//  "float(X)" will convert the value into a float, and then move the decimal before Xth right-most digit.
-//  "int" will convert the value into an integer.
-//  "hwaddr" will convert the value into a MAC address.
-//  "ipaddr" will convert the value into into an IP address.
-//  "string" will force convert a byte slice into a string, nonprintable characters will be converted to '_'
-//           if the value is not a byte slice, it is returned as-is
-//  ""       will convert a byte slice into a string (if all runes are printable, otherwise it will return a hex string)
-//           if the value is not a byte slice, it is returned as-is
-//  "regex" will extract a value from the input
-//  "timestamp" convert string to unix epoch based on timestamp_layout
-//              see: https://pkg.go.dev/time#pkg-constants and https://pkg.go.dev/time#Parse
+//
+//	"float"/"float(0)" will convert the value into a float.
+//	"float(X)" will convert the value into a float, and then move the decimal before Xth right-most digit.
+//	"int" will convert the value into an integer.
+//	"hwaddr" will convert the value into a MAC address.
+//	"ipaddr" will convert the value into into an IP address.
+//	"string" will force convert a byte slice into a string, nonprintable characters will be converted to '_'
+//	         if the value is not a byte slice, it is returned as-is
+//	""       will convert a byte slice into a string (if all runes are printable, otherwise it will return a hex string)
+//	         if the value is not a byte slice, it is returned as-is
+//	"regex" will extract a value from the input
+//	"timestamp" convert string to unix epoch based on timestamp_layout
+//	            see: https://pkg.go.dev/time#pkg-constants and https://pkg.go.dev/time#Parse
 func fieldConvert(f Field, sv gosnmp.SnmpPDU) (interface{}, error) {
 
 	v := sv.Value

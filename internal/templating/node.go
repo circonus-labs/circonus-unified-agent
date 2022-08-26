@@ -8,10 +8,10 @@ import (
 // node is an item in a sorted k-ary tree of filter parts. Each child is sorted by its part value.
 // The special value of "*", is always sorted last.
 type node struct {
+	template  *Template
 	separator string
 	value     string
 	children  nodes
-	template  *Template
 }
 
 // insert inserts the given string template into the tree.  The filter string is separated
@@ -105,16 +105,18 @@ type nodes []*node
 // less than a non-wildcard value.
 //
 // For example, the filters:
-//             "*.*"
-//             "servers.*"
-//             "servers.localhost"
-//             "*.localhost"
+//
+//	"*.*"
+//	"servers.*"
+//	"servers.localhost"
+//	"*.localhost"
 //
 // Would be sorted as:
-//             "servers.localhost"
-//             "servers.*"
-//             "*.localhost"
-//             "*.*"
+//
+//	"servers.localhost"
+//	"servers.*"
+//	"*.localhost"
+//	"*.*"
 func (n *nodes) Less(j, k int) bool {
 	if (*n)[j].value == "*" && (*n)[k].value != "*" {
 		return false

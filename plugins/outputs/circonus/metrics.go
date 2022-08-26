@@ -106,7 +106,8 @@ func (c *Circonus) metricProcessor(id int, metrics []cua.Metric, buf bytes.Buffe
 
 // handleGeneric constructs text and numeric metrics from a cua metric
 // Note: for certain cua metric types the actual fields may be either text OR numeric...
-//       and now potentially boolean as well as text and numeric.
+//
+//	and now potentially boolean as well as text and numeric.
 func (c *Circonus) handleGeneric(m cua.Metric) int64 {
 	dest := c.getMetricDestination(m)
 	if dest == nil {

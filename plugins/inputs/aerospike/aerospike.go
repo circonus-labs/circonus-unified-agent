@@ -18,28 +18,20 @@ import (
 )
 
 type Aerospike struct {
-	Servers []string `toml:"servers"`
-
-	Username string `toml:"username"`
-	Password string `toml:"password"`
-
-	EnableTLS bool `toml:"enable_tls"`
-	EnableSSL bool `toml:"enable_ssl"` // deprecated in 1.7; use enable_tls
+	tlsConfig *tls.Config
+	Username  string `toml:"username"`
+	Password  string `toml:"password"`
 	tlsint.ClientConfig
-
-	initialized bool
-	tlsConfig   *tls.Config
-
-	DisableQueryNamespaces bool     `toml:"disable_query_namespaces"`
-	Namespaces             []string `toml:"namespaces"`
-
-	QuerySets bool     `toml:"query_sets"`
-	Sets      []string `toml:"sets"`
-
-	EnableTTLHistogram              bool `toml:"enable_ttl_histogram"`
-	EnableObjectSizeLinearHistogram bool `toml:"enable_object_size_linear_histogram"`
-
-	NumberHistogramBuckets int `toml:"num_histogram_buckets"`
+	Namespaces                      []string `toml:"namespaces"`
+	Servers                         []string `toml:"servers"`
+	Sets                            []string `toml:"sets"`
+	NumberHistogramBuckets          int      `toml:"num_histogram_buckets"`
+	EnableTLS                       bool     `toml:"enable_tls"`
+	QuerySets                       bool     `toml:"query_sets"`
+	DisableQueryNamespaces          bool     `toml:"disable_query_namespaces"`
+	EnableTTLHistogram              bool     `toml:"enable_ttl_histogram"`
+	EnableObjectSizeLinearHistogram bool     `toml:"enable_object_size_linear_histogram"`
+	initialized                     bool
 }
 
 var sampleConfig = `
@@ -97,8 +89,8 @@ func (a *Aerospike) Gather(ctx context.Context, acc cua.Accumulator) error {
 		if err != nil {
 			return fmt.Errorf("TLSConfig: %w", err)
 		}
-		if tlsConfig == nil && (a.EnableTLS || a.EnableSSL) {
-			tlsConfig = &tls.Config{MinVersion: tls.VersionTLS12}
+		if tlsConfig == nil && a.EnableTLS {
+			tlsConfig = &tls.Config{MinVersion: tls.VersionTLS12} // #nosec G402 // G402: TLS MinVersion too low.
 		}
 		a.tlsConfig = tlsConfig
 		a.initialized = true

@@ -10,9 +10,7 @@ import (
 	apiclicfg "github.com/circonus-labs/go-apiclient/config"
 )
 
-//
 // Check bundle config caching
-//
 func loadCheckConfig(id string) *apiclient.CheckBundle {
 	if !ch.circCfg.CacheConfigs {
 		return nil

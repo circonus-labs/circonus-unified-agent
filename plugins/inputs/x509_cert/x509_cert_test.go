@@ -136,8 +136,8 @@ func TestGatherLocal(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		mode    os.FileMode
 		content string
+		mode    os.FileMode
 		error   bool
 	}{
 		{name: "permission denied", mode: 0001, error: true},

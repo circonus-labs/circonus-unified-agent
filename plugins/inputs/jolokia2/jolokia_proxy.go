@@ -9,23 +9,20 @@ import (
 )
 
 type JolokiaProxy struct {
-	DefaultFieldPrefix    string
+	client                *Client
+	gatherer              *Gatherer
 	DefaultFieldSeparator string
 	DefaultTagPrefix      string
-
 	URL                   string `toml:"url"`
 	DefaultTargetPassword string
 	DefaultTargetUsername string
-	Targets               []JolokiaProxyTargetConfig `toml:"target"`
-
-	Username        string
-	Password        string
-	ResponseTimeout internal.Duration `toml:"response_timeout"`
+	DefaultFieldPrefix    string
+	Username              string
+	Password              string
 	tls.ClientConfig
-
-	Metrics  []MetricConfig `toml:"metric"`
-	client   *Client
-	gatherer *Gatherer
+	Targets         []JolokiaProxyTargetConfig `toml:"target"`
+	Metrics         []MetricConfig             `toml:"metric"`
+	ResponseTimeout internal.Duration          `toml:"response_timeout"`
 }
 
 type JolokiaProxyTargetConfig struct {

@@ -345,13 +345,13 @@ func TestParseEpoch(t *testing.T) {
 
 func TestParseEpochDecimal(t *testing.T) {
 	var tests = []struct {
-		name    string
-		line    string
-		noMatch bool
+		time    time.Time
 		err     error
 		tags    map[string]string
 		fields  map[string]interface{}
-		time    time.Time
+		name    string
+		line    string
+		noMatch bool
 	}{
 		{
 			name: "ns precision",
@@ -978,9 +978,9 @@ func TestNewlineInPatterns(t *testing.T) {
 func TestSyslogTimestamp(t *testing.T) {
 	currentYear := time.Now().Year()
 	tests := []struct {
+		expected time.Time
 		name     string
 		line     string
-		expected time.Time
 	}{
 		{
 			name:     "two digit day of month",

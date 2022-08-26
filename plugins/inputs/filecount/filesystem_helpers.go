@@ -43,6 +43,7 @@ func (osFS) Stat(name string) (os.FileInfo, error) { return os.Stat(name) }
 */
 
 // When tests can be done on windows, remove these nolint:unused comments - see filesystem_helpers_test.go
+//
 //nolint:unused
 type fakeFileSystem struct {
 	files map[string]fakeFileInfo

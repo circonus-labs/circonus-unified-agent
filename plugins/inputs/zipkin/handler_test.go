@@ -15,8 +15,8 @@ import (
 )
 
 type MockRecorder struct {
-	Data trace.Trace
 	Err  error
+	Data trace.Trace
 }
 
 func (m *MockRecorder) Record(t trace.Trace) error {

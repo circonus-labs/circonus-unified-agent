@@ -19,10 +19,10 @@ func TestZipkinPlugin(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		datafile    string // data file which contains test data
+		datafile    string
 		contentType string
-		wantErr     bool
 		want        []testutil.Metric
+		wantErr     bool
 	}{
 		{
 			name:        "threespan",

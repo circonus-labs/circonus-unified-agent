@@ -15,25 +15,27 @@ linters:
     - staticcheck
     - unused
     - gosimple
-    - structcheck
-    - varcheck
     - ineffassign
-    - deadcode
     - typecheck
     # - revive
-    # - golint -- deprecated, owner archived repo, replaced by 'revive'
     - gosec
-    # - interfacer -- deprecated, owner archived repo
     - misspell
     - unparam
     - prealloc
-    # - scopelint -- deprecated
     - exportloopref
     - gocritic
     - asciicheck
     - errorlint
     - unconvert
-    # - wrapcheck
-    # - goconst
-    # - nolintlint # different linters with different GOOS fire issues GOOS=linux 'structcheck' unused, under GOOS=darwin it's required
-    # - ifshort # doesn't really work... (x := someFunc(); if x ... then x used later, linter complains var isn't used)
+  disable:
+    ## deprecated linters
+    - deadcode
+    - exhaustivestruct
+    - golint
+    - ifshort
+    - interfacer
+    - maligned
+    - nosnakecase
+    - scopelint
+    - structcheck
+    - varcheck

@@ -19,11 +19,11 @@ func TestLineProtocolConverter_Record(t *testing.T) {
 		t trace.Trace
 	}
 	tests := []struct {
-		name    string
 		fields  fields
+		name    string
 		args    args
-		wantErr bool
 		want    []testutil.Metric
+		wantErr bool
 	}{
 		{
 			name: "threespan",

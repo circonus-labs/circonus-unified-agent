@@ -40,33 +40,33 @@ type MongoStatus struct {
 }
 
 type ServerStatus struct {
-	Host               string                 `bson:"host"`
-	Version            string                 `bson:"version"`
-	Process            string                 `bson:"process"`
-	Pid                int64                  `bson:"pid"`
-	Uptime             int64                  `bson:"uptime"`
-	UptimeMillis       int64                  `bson:"uptimeMillis"`
-	UptimeEstimate     int64                  `bson:"uptimeEstimate"`
 	LocalTime          time.Time              `bson:"localTime"`
+	OpLatencies        *OpLatenciesStats      `bson:"opLatencies"`
+	Mem                *MemStats              `bson:"mem"`
+	Locks              map[string]LockStats   `bson:"locks,omitempty"`
+	Network            *NetworkStats          `bson:"network"`
+	GlobalLock         *GlobalLockStats       `bson:"globalLock"`
+	Metrics            *MetricsStats          `bson:"metrics"`
+	WiredTiger         *WiredTiger            `bson:"wiredTiger"`
 	Asserts            *AssertsStats          `bson:"asserts"`
 	BackgroundFlushing *FlushStats            `bson:"backgroundFlushing"`
 	ExtraInfo          *ExtraInfo             `bson:"extra_info"`
 	Connections        *ConnectionStats       `bson:"connections"`
 	Dur                *DurStats              `bson:"dur"`
-	GlobalLock         *GlobalLockStats       `bson:"globalLock"`
-	Locks              map[string]LockStats   `bson:"locks,omitempty"`
-	Network            *NetworkStats          `bson:"network"`
+	TCMallocStats      *TCMallocStats         `bson:"tcmalloc"`
+	StorageEngine      map[string]string      `bson:"storageEngine"`
+	ShardCursorType    map[string]interface{} `bson:"shardCursorType"`
 	Opcounters         *OpcountStats          `bson:"opcounters"`
 	OpcountersRepl     *OpcountStats          `bson:"opcountersRepl"`
-	OpLatencies        *OpLatenciesStats      `bson:"opLatencies"`
-	RecordStats        *DBRecordStats         `bson:"recordStats"`
-	Mem                *MemStats              `bson:"mem"`
 	Repl               *ReplStatus            `bson:"repl"`
-	ShardCursorType    map[string]interface{} `bson:"shardCursorType"`
-	StorageEngine      map[string]string      `bson:"storageEngine"`
-	WiredTiger         *WiredTiger            `bson:"wiredTiger"`
-	Metrics            *MetricsStats          `bson:"metrics"`
-	TCMallocStats      *TCMallocStats         `bson:"tcmalloc"`
+	RecordStats        *DBRecordStats         `bson:"recordStats"`
+	Process            string                 `bson:"process"`
+	Host               string                 `bson:"host"`
+	Version            string                 `bson:"version"`
+	Uptime             int64                  `bson:"uptime"`
+	Pid                int64                  `bson:"pid"`
+	UptimeEstimate     int64                  `bson:"uptimeEstimate"`
+	UptimeMillis       int64                  `bson:"uptimeMillis"`
 }
 
 // DbStats stores stats from all dbs
@@ -76,12 +76,13 @@ type DbStats struct {
 
 // Db represent a single DB
 type Db struct {
-	Name        string
 	DbStatsData *DbStatsData
+	Name        string
 }
 
 // DbStatsData stores stats from a db
 type DbStatsData struct {
+	GleStats    interface{} `bson:"gleStats"`
 	Db          string      `bson:"db"`
 	Collections int64       `bson:"collections"`
 	Objects     int64       `bson:"objects"`
@@ -92,7 +93,6 @@ type DbStatsData struct {
 	Indexes     int64       `bson:"indexes"`
 	IndexSize   int64       `bson:"indexSize"`
 	Ok          int64       `bson:"ok"`
-	GleStats    interface{} `bson:"gleStats"`
 }
 
 type ColStats struct {
@@ -100,9 +100,9 @@ type ColStats struct {
 }
 
 type Collection struct {
+	ColStatsData *ColStatsData
 	Name         string
 	DbName       string
-	ColStatsData *ColStatsData
 }
 
 type ColStatsData struct {
@@ -133,10 +133,10 @@ type OplogStats struct {
 
 // ReplSetMember stores information related to a replica set member
 type ReplSetMember struct {
-	Name       string    `bson:"name"`
-	State      int64     `bson:"state"`
-	StateStr   string    `bson:"stateStr"`
 	OptimeDate time.Time `bson:"optimeDate"`
+	Name       string    `bson:"name"`
+	StateStr   string    `bson:"stateStr"`
+	State      int64     `bson:"state"`
 }
 
 // WiredTiger stores information related to the WiredTiger storage engine.
@@ -148,8 +148,8 @@ type WiredTiger struct {
 
 // ShardStats stores information from shardConnPoolStats.
 type ShardStats struct {
-	ShardStatsData `bson:",inline"`
 	Hosts          map[string]ShardHostStatsData `bson:"hosts"`
+	ShardStatsData `bson:",inline"`
 }
 
 // ShardStatsData is the total Shard Stats from shardConnPoolStats database command.
@@ -225,16 +225,16 @@ type ReplStatus struct {
 	Secondary    interface{} `bson:"secondary"`
 	IsReplicaSet interface{} `bson:"isreplicaset"`
 	ArbiterOnly  interface{} `bson:"arbiterOnly"`
+	Me           string      `bson:"me"`
 	Hosts        []string    `bson:"hosts"`
 	Passives     []string    `bson:"passives"`
-	Me           string      `bson:"me"`
 }
 
 // DBRecordStats stores data related to memory operations across databases.
 type DBRecordStats struct {
+	DBRecordAccesses          map[string]RecordAccesses `bson:",inline"`
 	AccessesNotInMemory       int64                     `bson:"accessesNotInMemory"`
 	PageFaultExceptionsThrown int64                     `bson:"pageFaultExceptionsThrown"`
-	DBRecordAccesses          map[string]RecordAccesses `bson:",inline"`
 }
 
 // RecordAccesses stores data related to memory operations scoped to a database.
@@ -245,21 +245,21 @@ type RecordAccesses struct {
 
 // MemStats stores data related to memory statistics.
 type MemStats struct {
+	Supported         interface{} `bson:"supported"`
 	Bits              int64       `bson:"bits"`
 	Resident          int64       `bson:"resident"`
 	Virtual           int64       `bson:"virtual"`
-	Supported         interface{} `bson:"supported"`
 	Mapped            int64       `bson:"mapped"`
 	MappedWithJournal int64       `bson:"mappedWithJournal"`
 }
 
 // FlushStats stores information about memory flushes.
 type FlushStats struct {
+	LastFinished time.Time `bson:"last_finished"`
 	Flushes      int64     `bson:"flushes"`
 	TotalMs      int64     `bson:"total_ms"`
 	AverageMs    float64   `bson:"average_ms"`
 	LastMs       int64     `bson:"last_ms"`
-	LastFinished time.Time `bson:"last_finished"`
 }
 
 // ConnectionStats stores information related to incoming database connections.
@@ -305,10 +305,10 @@ type ClientStats struct {
 
 // GlobalLockStats stores information related locks in the MMAP storage engine.
 type GlobalLockStats struct {
-	TotalTime     int64        `bson:"totalTime"`
-	LockTime      int64        `bson:"lockTime"`
 	CurrentQueue  *QueueStats  `bson:"currentQueue"`
 	ActiveClients *ClientStats `bson:"activeClients"`
+	TotalTime     int64        `bson:"totalTime"`
+	LockTime      int64        `bson:"lockTime"`
 }
 
 // NetworkStats stores information related to network traffic.
@@ -361,8 +361,8 @@ type TTLStats struct {
 
 // CursorStats stores information related to cursor metrics.
 type CursorStats struct {
-	TimedOut int64            `bson:"timedOut"`
 	Open     *OpenCursorStats `bson:"open"`
+	TimedOut int64            `bson:"timedOut"`
 }
 
 // DocumentStats stores information related to document metrics.
@@ -440,8 +440,8 @@ type ReplExecutorStats struct {
 
 // ReplNetworkStats stores information related to network usage by replication process
 type ReplNetworkStats struct {
-	Bytes    int64       `bson:"bytes"`
 	GetMores *BasicStats `bson:"getmores"`
+	Bytes    int64       `bson:"bytes"`
 	Ops      int64       `bson:"ops"`
 }
 
@@ -461,15 +461,15 @@ type ReadWriteLockTimes struct {
 
 // LockStats stores information related to time spent acquiring/holding locks
 // for a given database.
+//
+// AcquireCount and AcquireWaitCount are new fields of the lock stats only populated on 3.0 or newer.
+// Typed as a pointer so that if it is nil, mongostat can assume the field is not populated
+// with real namespace data.
 type LockStats struct {
-	TimeLockedMicros    ReadWriteLockTimes `bson:"timeLockedMicros"`
-	TimeAcquiringMicros ReadWriteLockTimes `bson:"timeAcquiringMicros"`
-
-	// AcquireCount and AcquireWaitCount are new fields of the lock stats only populated on 3.0 or newer.
-	// Typed as a pointer so that if it is nil, mongostat can assume the field is not populated
-	// with real namespace data.
-	AcquireCount     *ReadWriteLockTimes `bson:"acquireCount,omitempty"`
-	AcquireWaitCount *ReadWriteLockTimes `bson:"acquireWaitCount,omitempty"`
+	AcquireCount        *ReadWriteLockTimes `bson:"acquireCount,omitempty"`
+	AcquireWaitCount    *ReadWriteLockTimes `bson:"acquireWaitCount,omitempty"`
+	TimeLockedMicros    ReadWriteLockTimes  `bson:"timeLockedMicros"`
+	TimeAcquiringMicros ReadWriteLockTimes  `bson:"timeAcquiringMicros"`
 }
 
 // ExtraInfo stores additional platform specific information.
@@ -610,165 +610,352 @@ type LockStatus struct {
 	Global     bool
 }
 
+// // StatLine is a wrapper for all metrics reported by mongostat for monitored hosts.
+// type StatLine struct {
+// 	Key string
+// 	// What storage engine is being used for the node with this stat line
+// 	StorageEngine string
+
+// 	Error    error
+// 	IsMongos bool
+// 	Host     string
+// 	Version  string
+
+// 	UptimeNanos int64
+
+// 	// The time at which this StatLine was generated.
+// 	Time time.Time
+
+// 	// The last time at which this StatLine was printed to output.
+// 	LastPrinted time.Time
+
+// 	// Opcounter fields
+// 	Insert, InsertCnt   int64
+// 	Query, QueryCnt     int64
+// 	Update, UpdateCnt   int64
+// 	Delete, DeleteCnt   int64
+// 	GetMore, GetMoreCnt int64
+// 	Command, CommandCnt int64
+
+// 	// Asserts fields
+// 	Regular   int64
+// 	Warning   int64
+// 	Msg       int64
+// 	User      int64
+// 	Rollovers int64
+
+// 	// OpLatency fields
+// 	WriteOpsCnt    int64
+// 	WriteLatency   int64
+// 	ReadOpsCnt     int64
+// 	ReadLatency    int64
+// 	CommandOpsCnt  int64
+// 	CommandLatency int64
+
+// 	// TTL fields
+// 	Passes, PassesCnt                     int64
+// 	DeletedDocuments, DeletedDocumentsCnt int64
+
+// 	// Cursor fields
+// 	TimedOutC, TimedOutCCnt   int64
+// 	NoTimeoutC, NoTimeoutCCnt int64
+// 	PinnedC, PinnedCCnt       int64
+// 	TotalC, TotalCCnt         int64
+
+// 	// Document fields
+// 	DeletedD, InsertedD, ReturnedD, UpdatedD int64
+
+// 	// Commands fields
+// 	AggregateCommandTotal, AggregateCommandFailed         int64
+// 	CountCommandTotal, CountCommandFailed                 int64
+// 	DeleteCommandTotal, DeleteCommandFailed               int64
+// 	DistinctCommandTotal, DistinctCommandFailed           int64
+// 	FindCommandTotal, FindCommandFailed                   int64
+// 	FindAndModifyCommandTotal, FindAndModifyCommandFailed int64
+// 	GetMoreCommandTotal, GetMoreCommandFailed             int64
+// 	InsertCommandTotal, InsertCommandFailed               int64
+// 	UpdateCommandTotal, UpdateCommandFailed               int64
+
+// 	// Operation fields
+// 	ScanAndOrderOp, WriteConflictsOp int64
+
+// 	// Query Executor fields
+// 	TotalKeysScanned, TotalObjectsScanned int64
+
+// 	// Connection fields
+// 	CurrentC, AvailableC, TotalCreatedC int64
+
+// 	// Collection locks (3.0 mmap only)
+// 	CollectionLocks *CollectionLockStatus
+
+// 	// Cache utilization (wiredtiger only)
+// 	CacheDirtyPercent float64
+// 	CacheUsedPercent  float64
+
+// 	// Cache utilization extended (wiredtiger only)
+// 	TrackedDirtyBytes         int64
+// 	CurrentCachedBytes        int64
+// 	MaxBytesConfigured        int64
+// 	AppThreadsPageReadCount   int64
+// 	AppThreadsPageReadTime    int64
+// 	AppThreadsPageWriteCount  int64
+// 	BytesWrittenFrom          int64
+// 	BytesReadInto             int64
+// 	PagesEvictedByAppThread   int64
+// 	PagesQueuedForEviction    int64
+// 	PagesReadIntoCache        int64
+// 	PagesWrittenFromCache     int64
+// 	PagesRequestedFromCache   int64
+// 	ServerEvictingPages       int64
+// 	WorkerThreadEvictingPages int64
+// 	InternalPagesEvicted      int64
+// 	ModifiedPagesEvicted      int64
+// 	UnmodifiedPagesEvicted    int64
+
+// 	// Replicated Opcounter fields
+// 	InsertR, InsertRCnt                      int64
+// 	QueryR, QueryRCnt                        int64
+// 	UpdateR, UpdateRCnt                      int64
+// 	DeleteR, DeleteRCnt                      int64
+// 	GetMoreR, GetMoreRCnt                    int64
+// 	CommandR, CommandRCnt                    int64
+// 	ReplLag                                  int64
+// 	OplogStats                               *OplogStats
+// 	Flushes, FlushesCnt                      int64
+// 	FlushesTotalTime                         int64
+// 	Mapped, Virtual, Resident, NonMapped     int64
+// 	Faults, FaultsCnt                        int64
+// 	HighestLocked                            *LockStatus
+// 	QueuedReaders, QueuedWriters             int64
+// 	ActiveReaders, ActiveWriters             int64
+// 	AvailableReaders, AvailableWriters       int64
+// 	TotalTicketsReaders, TotalTicketsWriters int64
+// 	NetIn, NetInCnt                          int64
+// 	NetOut, NetOutCnt                        int64
+// 	NumConnections                           int64
+// 	ReplSetName                              string
+// 	NodeType                                 string
+// 	NodeState                                string
+// 	NodeStateInt                             int64
+
+// 	// Replicated Metrics fields
+// 	ReplNetworkBytes                    int64
+// 	ReplNetworkGetmoresNum              int64
+// 	ReplNetworkGetmoresTotalMillis      int64
+// 	ReplNetworkOps                      int64
+// 	ReplBufferCount                     int64
+// 	ReplBufferSizeBytes                 int64
+// 	ReplApplyBatchesNum                 int64
+// 	ReplApplyBatchesTotalMillis         int64
+// 	ReplApplyOps                        int64
+// 	ReplExecutorPoolInProgressCount     int64
+// 	ReplExecutorQueuesNetworkInProgress int64
+// 	ReplExecutorQueuesSleepers          int64
+// 	ReplExecutorUnsignaledEvents        int64
+
+// 	// Cluster fields
+// 	JumboChunksCount int64
+
+// 	// DB stats field
+// 	DbStatsLines []DbStatLine
+
+// 	// Col Stats field
+// 	ColStatsLines []ColStatLine
+
+// 	// Shard stats
+// 	TotalInUse, TotalAvailable, TotalCreated, TotalRefreshing int64
+
+// 	// Shard Hosts stats field
+// 	ShardHostStatsLines map[string]ShardHostStatLine
+
+// 	// TCMalloc stats field
+// 	TCMallocCurrentAllocatedBytes        int64
+// 	TCMallocHeapSize                     int64
+// 	TCMallocCentralCacheFreeBytes        int64
+// 	TCMallocCurrentTotalThreadCacheBytes int64
+// 	TCMallocMaxTotalThreadCacheBytes     int64
+// 	TCMallocTotalFreeBytes               int64
+// 	TCMallocTransferCacheFreeBytes       int64
+// 	TCMallocThreadCacheFreeBytes         int64
+// 	TCMallocSpinLockTotalDelayNanos      int64
+// 	TCMallocPageheapFreeBytes            int64
+// 	TCMallocPageheapUnmappedBytes        int64
+// 	TCMallocPageheapComittedBytes        int64
+// 	TCMallocPageheapScavengeCount        int64
+// 	TCMallocPageheapCommitCount          int64
+// 	TCMallocPageheapTotalCommitBytes     int64
+// 	TCMallocPageheapDecommitCount        int64
+// 	TCMallocPageheapTotalDecommitBytes   int64
+// 	TCMallocPageheapReserveCount         int64
+// 	TCMallocPageheapTotalReserveBytes    int64
+
+// 	// Storage stats field
+// 	StorageFreelistSearchBucketExhausted int64
+// 	StorageFreelistSearchRequests        int64
+// 	StorageFreelistSearchScanned         int64
+// }
+
+// below is an aligned struct of the above (192 pointer bytes instead of 1328)
+// the above is maintained for the comments and organization of the members
+
 // StatLine is a wrapper for all metrics reported by mongostat for monitored hosts.
 type StatLine struct {
-	Key string
-	// What storage engine is being used for the node with this stat line
-	StorageEngine string
-
-	Error    error
-	IsMongos bool
-	Host     string
-	Version  string
-
-	UptimeNanos int64
-
-	// The time at which this StatLine was generated.
-	Time time.Time
-
-	// The last time at which this StatLine was printed to output.
-	LastPrinted time.Time
-
-	// Opcounter fields
-	Insert, InsertCnt   int64
-	Query, QueryCnt     int64
-	Update, UpdateCnt   int64
-	Delete, DeleteCnt   int64
-	GetMore, GetMoreCnt int64
-	Command, CommandCnt int64
-
-	// Asserts fields
-	Regular   int64
-	Warning   int64
-	Msg       int64
-	User      int64
-	Rollovers int64
-
-	// OpLatency fields
-	WriteOpsCnt    int64
-	WriteLatency   int64
-	ReadOpsCnt     int64
-	ReadLatency    int64
-	CommandOpsCnt  int64
-	CommandLatency int64
-
-	// TTL fields
-	Passes, PassesCnt                     int64
-	DeletedDocuments, DeletedDocumentsCnt int64
-
-	// Cursor fields
-	TimedOutC, TimedOutCCnt   int64
-	NoTimeoutC, NoTimeoutCCnt int64
-	PinnedC, PinnedCCnt       int64
-	TotalC, TotalCCnt         int64
-
-	// Document fields
-	DeletedD, InsertedD, ReturnedD, UpdatedD int64
-
-	// Commands fields
-	AggregateCommandTotal, AggregateCommandFailed         int64
-	CountCommandTotal, CountCommandFailed                 int64
-	DeleteCommandTotal, DeleteCommandFailed               int64
-	DistinctCommandTotal, DistinctCommandFailed           int64
-	FindCommandTotal, FindCommandFailed                   int64
-	FindAndModifyCommandTotal, FindAndModifyCommandFailed int64
-	GetMoreCommandTotal, GetMoreCommandFailed             int64
-	InsertCommandTotal, InsertCommandFailed               int64
-	UpdateCommandTotal, UpdateCommandFailed               int64
-
-	// Operation fields
-	ScanAndOrderOp, WriteConflictsOp int64
-
-	// Query Executor fields
-	TotalKeysScanned, TotalObjectsScanned int64
-
-	// Connection fields
-	CurrentC, AvailableC, TotalCreatedC int64
-
-	// Collection locks (3.0 mmap only)
-	CollectionLocks *CollectionLockStatus
-
-	// Cache utilization (wiredtiger only)
-	CacheDirtyPercent float64
-	CacheUsedPercent  float64
-
-	// Cache utilization extended (wiredtiger only)
-	TrackedDirtyBytes         int64
-	CurrentCachedBytes        int64
-	MaxBytesConfigured        int64
-	AppThreadsPageReadCount   int64
-	AppThreadsPageReadTime    int64
-	AppThreadsPageWriteCount  int64
-	BytesWrittenFrom          int64
-	BytesReadInto             int64
-	PagesEvictedByAppThread   int64
-	PagesQueuedForEviction    int64
-	PagesReadIntoCache        int64
-	PagesWrittenFromCache     int64
-	PagesRequestedFromCache   int64
-	ServerEvictingPages       int64
-	WorkerThreadEvictingPages int64
-	InternalPagesEvicted      int64
-	ModifiedPagesEvicted      int64
-	UnmodifiedPagesEvicted    int64
-
-	// Replicated Opcounter fields
-	InsertR, InsertRCnt                      int64
-	QueryR, QueryRCnt                        int64
-	UpdateR, UpdateRCnt                      int64
-	DeleteR, DeleteRCnt                      int64
-	GetMoreR, GetMoreRCnt                    int64
-	CommandR, CommandRCnt                    int64
-	ReplLag                                  int64
-	OplogStats                               *OplogStats
-	Flushes, FlushesCnt                      int64
-	FlushesTotalTime                         int64
-	Mapped, Virtual, Resident, NonMapped     int64
-	Faults, FaultsCnt                        int64
-	HighestLocked                            *LockStatus
-	QueuedReaders, QueuedWriters             int64
-	ActiveReaders, ActiveWriters             int64
-	AvailableReaders, AvailableWriters       int64
-	TotalTicketsReaders, TotalTicketsWriters int64
-	NetIn, NetInCnt                          int64
-	NetOut, NetOutCnt                        int64
-	NumConnections                           int64
-	ReplSetName                              string
-	NodeType                                 string
-	NodeState                                string
-	NodeStateInt                             int64
-
-	// Replicated Metrics fields
-	ReplNetworkBytes                    int64
-	ReplNetworkGetmoresNum              int64
-	ReplNetworkGetmoresTotalMillis      int64
-	ReplNetworkOps                      int64
-	ReplBufferCount                     int64
-	ReplBufferSizeBytes                 int64
-	ReplApplyBatchesNum                 int64
-	ReplApplyBatchesTotalMillis         int64
-	ReplApplyOps                        int64
-	ReplExecutorPoolInProgressCount     int64
-	ReplExecutorQueuesNetworkInProgress int64
-	ReplExecutorQueuesSleepers          int64
-	ReplExecutorUnsignaledEvents        int64
-
-	// Cluster fields
-	JumboChunksCount int64
-
-	// DB stats field
-	DbStatsLines []DbStatLine
-
-	// Col Stats field
-	ColStatsLines []ColStatLine
-
-	// Shard stats
-	TotalInUse, TotalAvailable, TotalCreated, TotalRefreshing int64
-
-	// Shard Hosts stats field
-	ShardHostStatsLines map[string]ShardHostStatLine
-
-	// TCMalloc stats field
+	Time                                 time.Time
+	LastPrinted                          time.Time
+	Error                                error
+	CollectionLocks                      *CollectionLockStatus
+	ShardHostStatsLines                  map[string]ShardHostStatLine
+	OplogStats                           *OplogStats
+	HighestLocked                        *LockStatus
+	Host                                 string
+	NodeState                            string
+	NodeType                             string
+	ReplSetName                          string
+	Version                              string
+	Key                                  string
+	StorageEngine                        string
+	ColStatsLines                        []ColStatLine
+	DbStatsLines                         []DbStatLine
+	DeletedD                             int64
+	AppThreadsPageReadTime               int64
+	GetMoreCnt                           int64
+	Command                              int64
+	CommandCnt                           int64
+	Regular                              int64
+	Warning                              int64
+	Msg                                  int64
+	User                                 int64
+	Rollovers                            int64
+	WriteOpsCnt                          int64
+	WriteLatency                         int64
+	ReadOpsCnt                           int64
+	ReadLatency                          int64
+	CommandOpsCnt                        int64
+	CommandLatency                       int64
+	Passes                               int64
+	PassesCnt                            int64
+	DeletedDocuments                     int64
+	DeletedDocumentsCnt                  int64
+	TimedOutC                            int64
+	TimedOutCCnt                         int64
+	NoTimeoutC                           int64
+	NoTimeoutCCnt                        int64
+	PinnedC                              int64
+	PinnedCCnt                           int64
+	TotalC                               int64
+	TotalCCnt                            int64
+	DeleteCnt                            int64
+	InsertedD                            int64
+	ReturnedD                            int64
+	UpdatedD                             int64
+	AggregateCommandTotal                int64
+	AggregateCommandFailed               int64
+	CountCommandTotal                    int64
+	CountCommandFailed                   int64
+	DeleteCommandTotal                   int64
+	DeleteCommandFailed                  int64
+	DistinctCommandTotal                 int64
+	DistinctCommandFailed                int64
+	FindCommandTotal                     int64
+	FindCommandFailed                    int64
+	FindAndModifyCommandTotal            int64
+	QueryR                               int64
+	GetMoreCommandTotal                  int64
+	GetMoreCommandFailed                 int64
+	InsertCommandTotal                   int64
+	InsertCommandFailed                  int64
+	UpdateCommandTotal                   int64
+	UpdateCommandFailed                  int64
+	ScanAndOrderOp                       int64
+	WriteConflictsOp                     int64
+	TotalKeysScanned                     int64
+	TotalObjectsScanned                  int64
+	CurrentC                             int64
+	AvailableC                           int64
+	TotalCreatedC                        int64
+	UpdateR                              int64
+	CacheDirtyPercent                    float64
+	CacheUsedPercent                     float64
+	TrackedDirtyBytes                    int64
+	CurrentCachedBytes                   int64
+	MaxBytesConfigured                   int64
+	AppThreadsPageReadCount              int64
+	QueryRCnt                            int64
+	AppThreadsPageWriteCount             int64
+	BytesWrittenFrom                     int64
+	BytesReadInto                        int64
+	PagesEvictedByAppThread              int64
+	PagesQueuedForEviction               int64
+	PagesReadIntoCache                   int64
+	PagesWrittenFromCache                int64
+	PagesRequestedFromCache              int64
+	ServerEvictingPages                  int64
+	WorkerThreadEvictingPages            int64
+	InternalPagesEvicted                 int64
+	ModifiedPagesEvicted                 int64
+	UnmodifiedPagesEvicted               int64
+	InsertR                              int64
+	InsertRCnt                           int64
+	FindAndModifyCommandFailed           int64
+	GetMore                              int64
+	Delete                               int64
+	UpdateRCnt                           int64
+	DeleteR                              int64
+	DeleteRCnt                           int64
+	GetMoreR                             int64
+	GetMoreRCnt                          int64
+	CommandR                             int64
+	CommandRCnt                          int64
+	ReplLag                              int64
+	UpdateCnt                            int64
+	Flushes                              int64
+	FlushesCnt                           int64
+	FlushesTotalTime                     int64
+	Mapped                               int64
+	Virtual                              int64
+	Resident                             int64
+	NonMapped                            int64
+	Faults                               int64
+	FaultsCnt                            int64
+	Update                               int64
+	QueuedReaders                        int64
+	QueuedWriters                        int64
+	ActiveReaders                        int64
+	ActiveWriters                        int64
+	AvailableReaders                     int64
+	AvailableWriters                     int64
+	TotalTicketsReaders                  int64
+	TotalTicketsWriters                  int64
+	NetIn                                int64
+	NetInCnt                             int64
+	NetOut                               int64
+	NetOutCnt                            int64
+	NumConnections                       int64
+	QueryCnt                             int64
+	Query                                int64
+	InsertCnt                            int64
+	NodeStateInt                         int64
+	ReplNetworkBytes                     int64
+	ReplNetworkGetmoresNum               int64
+	ReplNetworkGetmoresTotalMillis       int64
+	ReplNetworkOps                       int64
+	ReplBufferCount                      int64
+	ReplBufferSizeBytes                  int64
+	ReplApplyBatchesNum                  int64
+	ReplApplyBatchesTotalMillis          int64
+	ReplApplyOps                         int64
+	ReplExecutorPoolInProgressCount      int64
+	ReplExecutorQueuesNetworkInProgress  int64
+	ReplExecutorQueuesSleepers           int64
+	ReplExecutorUnsignaledEvents         int64
+	JumboChunksCount                     int64
+	Insert                               int64
+	UptimeNanos                          int64
+	TotalInUse                           int64
+	TotalAvailable                       int64
+	TotalCreated                         int64
+	TotalRefreshing                      int64
+	StorageFreelistSearchScanned         int64
 	TCMallocCurrentAllocatedBytes        int64
 	TCMallocHeapSize                     int64
 	TCMallocCentralCacheFreeBytes        int64
@@ -788,11 +975,9 @@ type StatLine struct {
 	TCMallocPageheapTotalDecommitBytes   int64
 	TCMallocPageheapReserveCount         int64
 	TCMallocPageheapTotalReserveBytes    int64
-
-	// Storage stats field
 	StorageFreelistSearchBucketExhausted int64
 	StorageFreelistSearchRequests        int64
-	StorageFreelistSearchScanned         int64
+	IsMongos                             bool
 }
 
 type DbStatLine struct {

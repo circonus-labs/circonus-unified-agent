@@ -18,26 +18,25 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 )
 
 type OpenConfigTelemetry struct {
-	Servers         []string          `toml:"servers"`
-	Sensors         []string          `toml:"sensors"`
-	Username        string            `toml:"username"`
-	Password        string            `toml:"password"`
-	ClientID        string            `toml:"client_id"`
-	SampleFrequency internal.Duration `toml:"sample_frequency"`
-	StrAsTags       bool              `toml:"str_as_tags"`
-	RetryDelay      internal.Duration `toml:"retry_delay"`
-	EnableTLS       bool              `toml:"enable_tls"`
+	Log      cua.Logger
+	wg       *sync.WaitGroup
+	Username string `toml:"username"`
+	Password string `toml:"password"`
+	ClientID string `toml:"client_id"`
 	internaltls.ClientConfig
-
-	Log cua.Logger
-
+	Servers         []string `toml:"servers"`
 	sensorsConfig   []sensorConfig
 	grpcClientConns []*grpc.ClientConn
-	wg              *sync.WaitGroup
+	Sensors         []string          `toml:"sensors"`
+	RetryDelay      internal.Duration `toml:"retry_delay"`
+	SampleFrequency internal.Duration `toml:"sample_frequency"`
+	StrAsTags       bool              `toml:"str_as_tags"`
+	EnableTLS       bool              `toml:"enable_tls"`
 }
 
 var (
@@ -355,7 +354,7 @@ func (m *OpenConfigTelemetry) Start(ctx context.Context, acc cua.Accumulator) er
 		}
 		opts = append(opts, grpc.WithTransportCredentials(credentials.NewTLS(tlscfg)))
 	} else {
-		opts = append(opts, grpc.WithInsecure())
+		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	}
 
 	// Connect to given list of servers and start collecting data

@@ -37,13 +37,16 @@ type Ping struct {
 	pingHost          HostPinger               // host ping function
 	Size              *int                     // Packet size
 	nativePingFunc    NativePingFunc
-	Privileged        *bool // Privileged mode
+	Privileged        *bool   // Privileged mode
+	DebugAPI          *bool   `toml:"debug_api"`     // direct metrics mode - send directly to circonus (bypassing output)
+	TraceMetrics      *string `toml:"trace_metrics"` // direct metrics mode - send directly to circonus (bypassing output)
 	sourceAddress     string
 	Broker            string            `toml:"broker"`
 	Binary            string            // Ping executable binary
 	Method            string            // Method defines how to ping (native or exec)
 	Interface         string            // Interface or source address to send ping from (ping -I/-S <INTERFACE/SRC_ADDR>)
 	InstanceID        string            `toml:"instance_id"`
+	CheckTags         map[string]string `toml:"check_tags"` // direct metrics mode - list of tags to add to check when created
 	Tags              map[string]string // need static inpupt tags for direct metrics
 	Urls              []string          // URLs to ping
 	Percentiles       []int             // Calculate the given percentiles when using native method
@@ -389,7 +392,10 @@ func (p *Ping) Init() error {
 				PluginID:   "ping",
 				InstanceID: p.InstanceID,
 			},
-			Broker: p.Broker,
+			Broker:       p.Broker,
+			DebugAPI:     p.DebugAPI,
+			TraceMetrics: p.TraceMetrics,
+			CheckTags:    p.CheckTags,
 		}
 		dest, err := circmgr.NewMetricDestination(opts, p.Log)
 		if err != nil {

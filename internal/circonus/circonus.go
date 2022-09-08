@@ -7,6 +7,7 @@ import (
 	"os"
 	"regexp"
 	"runtime"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -42,11 +43,12 @@ type MetricMeta struct {
 }
 
 type MetricDestConfig struct {
-	DebugAPI     *bool   // allow override of api debugging per output
-	TraceMetrics *string // allow override of metric tracing per output
-	APIToken     string  // allow override of api token for a specific plugin (dm input or circonus output)
-	Broker       string  // allow override of broker for a specific plugin (dm input or circonus output)
-	Hostname     string  // allow override of hostname for a specific plugin (dm input or circonus output)
+	DebugAPI     *bool             // allow override of api debugging per output
+	TraceMetrics *string           // allow override of metric tracing per output
+	CheckTags    map[string]string // tags for a specific instance of a check
+	APIToken     string            // allow override of api token for a specific plugin (dm input or circonus output)
+	Broker       string            // allow override of broker for a specific plugin (dm input or circonus output)
+	Hostname     string            // allow override of hostname for a specific plugin (dm input or circonus output)
 	MetricMeta   MetricMeta
 }
 
@@ -269,6 +271,7 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 	metricGroupID := opts.MetricMeta.MetricGroupID
 	projectID := opts.MetricMeta.ProjectID
 	hostname := opts.Hostname
+	customTags := MapToTags(opts.CheckTags)
 
 	destKey := opts.MetricMeta.Key()
 
@@ -287,7 +290,7 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 		traceMetrics = *opts.TraceMetrics
 	}
 
-	bundle := loadCheckConfig(destKey)
+	bundle, bundleInCache := loadCheckConfig(destKey)
 	if bundle != nil {
 		// NOTE: api call debug won't be set on existing checks unless they are cached.
 		//       submission debugging will work as the flags will be set after the
@@ -429,11 +432,17 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 			}
 		}
 	default: // find/create check bundle
+		var tags []string
+		tags = append(tags, checkTags...)
+		if cleanTags, ok := VerifyTags(customTags); ok {
+			tags = append(tags, cleanTags...)
+		}
+
 		cc = &apiclient.CheckBundle{
 			Type:        strings.Join(checkType, ":"),
 			DisplayName: strings.Join(checkDisplayName, " "),
 			Target:      checkTarget,
-			Tags:        checkTags,
+			Tags:        tags,
 		}
 		if opts.Broker != "" {
 			cc.Brokers = []string{opts.Broker}
@@ -479,10 +488,45 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 		saveCheckConfig(destKey, bundle)
 	}
 
-	if b, err := updateCheckTags(circAPI, bundle, checkTags, logger); err != nil {
-		logger.Warnf("circonus metric destination management moudle: updating check %s", err)
-	} else if b != nil {
-		saveCheckConfig(destKey, b)
+	// custom tags can be set by a specific plugin via `check_tags` generic config option
+	updateCustomTags := false // checkForTagDelta(bundle, customTags)
+
+	// NOTE: we are NOT arbitrarily updating random checks based on the config to eliminate
+	// cache thrashing in fault when check tags change. Custom check tags (from config) are
+	// applied when a check is created, not whenever the agent restarts. The logic is here
+	// to update custom tags - when/if the impact to fault is mitigated. To implement, just
+	// remove the `if pluginID == "host" {` constraint and revert the hard flase setting
+	// above on udpateCustomTags to the commented out checkForTagDelta call.
+	if pluginID == "host" {
+		// the common tags are the main check tags (global tags in conf, os tags for host,
+		// and generic plugin tags common to all plugins)
+		updateCommonTags := checkForTagDelta(bundle, checkTags)
+		if bundleInCache && (updateCommonTags || updateCustomTags) {
+			// if the bundle was loaded from the local cache refresh from
+			// the API, so we do not squash any out-of-band updates to tags...
+			b, err := tch.RefreshCheckBundle()
+			if err != nil {
+				return nil, fmt.Errorf("circonus metric destination management module: unable to refresh check bundle: %w", err)
+			}
+			bundle = &b
+			saveCheckConfig(destKey, bundle)
+		}
+		if updateCommonTags || updateCustomTags {
+			var tags []string
+			if updateCommonTags {
+				tags = append(tags, checkTags...)
+			}
+			if updateCustomTags {
+				if cleanTags, ok := VerifyTags(customTags); ok {
+					tags = append(tags, cleanTags...)
+				}
+			}
+			if b, err := updateCheckTags(circAPI, bundle, tags, logger); err != nil {
+				logger.Warnf("circonus metric destination management moudle: updating check tags %s", err)
+			} else if b != nil {
+				saveCheckConfig(destKey, b)
+			}
+		}
 	}
 
 	// if checks are going to a non-public trap
@@ -580,37 +624,48 @@ func getOSCheckTags() []string {
 func updateCheckTags(client *apiclient.API, bundle *apiclient.CheckBundle, tags []string, logger cua.Logger) (*apiclient.CheckBundle, error) {
 
 	update := false
-	for _, ostag := range tags {
+	for _, tag := range tags {
 		found := false
-		ostagParts := strings.SplitN(ostag, ":", 2)
+		tagParts := strings.SplitN(tag, ":", 2)
 		for j, ctag := range bundle.Tags {
-			if ostag == ctag {
+			if tag == ctag {
 				found = true
 				break
 			}
 
 			ctagParts := strings.SplitN(ctag, ":", 2)
-			if len(ostagParts) == len(ctagParts) {
-				if ostagParts[0] == ctagParts[0] {
-					if ostagParts[1] != ctagParts[1] {
-						logger.Warnf("modifying tag: new: %v old: %v", ostagParts, ctagParts)
-						bundle.Tags[j] = ostag
-						update = true // but force update since we're modifying a tag
-						found = true
-						break
-					}
-				}
+			if len(tagParts) != len(ctagParts) {
+				continue
+			}
 
+			if len(tagParts) == 1 && tagParts[0] == ctagParts[0] {
+				found = true
+				break
+			}
+
+			if len(tagParts) == 2 {
+				if tagParts[0] != ctagParts[0] {
+					continue
+				}
+				if tagParts[1] != ctagParts[1] {
+					logger.Warnf("modifying tag: new: %v old: %v", tagParts, ctagParts)
+					bundle.Tags[j] = tag
+					update = true // but force update since we're modifying a tag
+					found = true
+					break
+				}
 			}
 		}
+
 		if !found {
-			logger.Warnf("adding missing tag: %s curr: %v", ostag, bundle.Tags)
-			bundle.Tags = append(bundle.Tags, ostag)
+			logger.Warnf("adding missing tag: %s curr: %v", tag, bundle.Tags)
+			bundle.Tags = append(bundle.Tags, tag)
 			update = true
 		}
 	}
 
 	if update {
+		sort.Strings(bundle.Tags)
 		b, err := client.UpdateCheckBundle(bundle)
 		if err != nil {
 			return nil, err
@@ -627,4 +682,49 @@ func (m MetricMeta) Key() string {
 		m.InstanceID,
 		m.MetricGroupID,
 		m.ProjectID)
+}
+
+func checkForTagDelta(bundle *apiclient.CheckBundle, tags []string) bool {
+	if len(tags) == 0 {
+		return false
+	}
+
+	for _, tag := range tags {
+		found := false
+		tagParts := strings.SplitN(tag, ":", 2)
+		for _, ctag := range bundle.Tags {
+			if tag == ctag {
+				found = true
+				break
+			}
+
+			ctagParts := strings.SplitN(ctag, ":", 2)
+			if len(tagParts) != len(ctagParts) {
+				continue
+			}
+
+			if tagParts[0] == ctagParts[0] {
+				if len(tagParts) == 1 {
+					found = true
+					break
+				}
+
+				if len(tagParts) == 2 {
+					if tagParts[0] != ctagParts[0] {
+						continue
+					}
+					if tagParts[1] != ctagParts[1] {
+						return true // changed tag value, update bundle
+					}
+				}
+			}
+		}
+
+		if !found {
+			return true // new tag, update bundle
+		}
+	}
+
+	return false
+
 }

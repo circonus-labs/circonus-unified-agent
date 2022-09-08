@@ -142,4 +142,8 @@ type Metric interface {
 	OriginInstance() string
 	// SetOriginInstance sets the origin instance id
 	SetOriginInstance(string)
+	// OriginCheckTags gets the origin check tags
+	OriginCheckTags() map[string]string
+	// SetOriginCheckTags sets the origin check tags
+	SetOriginCheckTags(map[string]string)
 }

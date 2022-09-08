@@ -1340,11 +1340,13 @@ func (c *Config) buildInput(name string, tbl *ast.Table) (*models.InputConfig, e
 	c.getFieldString(tbl, "name_suffix", &cp.MeasurementSuffix)
 	c.getFieldString(tbl, "name_override", &cp.NameOverride)
 	c.getFieldString(tbl, "alias", &cp.Alias)
-	// mgm:add `instance_id` backfill alias if it is empty
+	// mgm:add `instance_id` backfill with alias if it is empty
 	c.getFieldString(tbl, "instance_id", &cp.InstanceID)
 	if cp.Alias == "" {
 		cp.Alias = cp.InstanceID
 	}
+	// mgm:add `check_tags` - add to check bundle on creation ONLY
+	c.getFieldStringMap(tbl, "check_tags", &cp.CheckTags)
 
 	cp.Tags = make(map[string]string)
 	if node, ok := tbl.Fields["tags"]; ok {
@@ -1800,9 +1802,9 @@ type unwrappable interface {
 }
 
 // Circonus plugins
-//
-//	agent   - which are always enabled
-//	default - which are enabled for "hosts" (disabled in docker containers)
+
+// agent   - which are always enabled
+// default - which are enabled for "hosts" (disabled in docker containers)
 type circonusPlugin struct {
 	Data    []byte
 	Enabled bool

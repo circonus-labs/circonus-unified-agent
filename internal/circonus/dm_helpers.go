@@ -90,6 +90,7 @@ func VerifyTags(tags []string) ([]string, bool) {
 	result := make([]string, 0, len(tags))
 
 	for _, tag := range tags {
+		tag = strings.TrimSpace(tag)
 		if tag == "" {
 			continue
 		}
@@ -97,4 +98,33 @@ func VerifyTags(tags []string) ([]string, bool) {
 	}
 
 	return result, true
+}
+
+// MapToTags converts a map[string]string to []string
+func MapToTags(mtags map[string]string) []string {
+	if len(mtags) == 0 {
+		return []string{}
+	}
+
+	tags := make([]string, 0, len(mtags))
+	for k, v := range mtags {
+		k = strings.TrimSpace(k)
+		v = strings.TrimSpace(v)
+
+		tag := ""
+		switch {
+		case k != "" && v == "": // just a category
+			tag = k + ":"
+		case k == "" && v != "": // just a value
+			tag = ":" + v
+		case k != "" && v != "": // category and value
+			tag = k + ":" + v
+		case k == "" && v == "": // empty, ignore
+			continue
+		}
+
+		tags = append(tags, tag)
+	}
+
+	return tags
 }

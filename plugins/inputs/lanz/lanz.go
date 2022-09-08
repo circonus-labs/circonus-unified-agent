@@ -30,9 +30,9 @@ func init() {
 }
 
 type Lanz struct {
+	wg      sync.WaitGroup
 	Servers []string `toml:"servers"`
 	clients []lanz.Client
-	wg      sync.WaitGroup
 }
 
 func NewLanz() *Lanz {

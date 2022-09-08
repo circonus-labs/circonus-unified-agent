@@ -13,7 +13,8 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/common/logrus"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
-	"github.com/docker/libnetwork/ipvs"
+
+	"github.com/moby/ipvs"
 )
 
 // IPVS holds the state for this input plugin

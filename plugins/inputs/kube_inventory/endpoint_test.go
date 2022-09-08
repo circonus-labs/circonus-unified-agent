@@ -5,8 +5,9 @@ import (
 	"time"
 
 	"github.com/circonus-labs/circonus-unified-agent/testutil"
-	v1 "github.com/ericchiang/k8s/apis/core/v1"
-	metav1 "github.com/ericchiang/k8s/apis/meta/v1"
+
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestEndpoint(t *testing.T) {
@@ -16,16 +17,16 @@ func TestEndpoint(t *testing.T) {
 	now = time.Date(now.Year(), now.Month(), now.Day(), now.Hour(), 1, 36, 0, now.Location())
 
 	tests := []struct {
-		name     string
 		handler  *mockHandler
 		output   *testutil.Accumulator
+		name     string
 		hasError bool
 	}{
 		{
 			name: "no endpoints",
 			handler: &mockHandler{
 				responseMap: map[string]interface{}{
-					"/endpoints/": &v1.EndpointsList{},
+					"/endpoints/": &corev1.EndpointsList{},
 				},
 			},
 			hasError: false,
@@ -34,35 +35,35 @@ func TestEndpoint(t *testing.T) {
 			name: "collect ready endpoints",
 			handler: &mockHandler{
 				responseMap: map[string]interface{}{
-					"/endpoints/": &v1.EndpointsList{
-						Items: []*v1.Endpoints{
+					"/endpoints/": &corev1.EndpointsList{
+						Items: []corev1.Endpoints{
 							{
-								Subsets: []*v1.EndpointSubset{
+								Subsets: []corev1.EndpointSubset{
 									{
-										Addresses: []*v1.EndpointAddress{
+										Addresses: []corev1.EndpointAddress{
 											{
-												Hostname: toStrPtr("storage-6"),
+												Hostname: "storage-6",
 												NodeName: toStrPtr("b.storage.internal"),
-												TargetRef: &v1.ObjectReference{
-													Kind: toStrPtr("pod"),
-													Name: toStrPtr("storage-6"),
+												TargetRef: &corev1.ObjectReference{
+													Kind: "pod",
+													Name: "storage-6",
 												},
 											},
 										},
-										Ports: []*v1.EndpointPort{
+										Ports: []corev1.EndpointPort{
 											{
-												Name:     toStrPtr("server"),
-												Protocol: toStrPtr("TCP"),
-												Port:     toInt32Ptr(8080),
+												Name:     "server",
+												Protocol: "TCP",
+												Port:     8080,
 											},
 										},
 									},
 								},
-								Metadata: &metav1.ObjectMeta{
-									Generation:        toInt64Ptr(12),
-									Namespace:         toStrPtr("ns1"),
-									Name:              toStrPtr("storage"),
-									CreationTimestamp: &metav1.Time{Seconds: toInt64Ptr(now.Unix())},
+								ObjectMeta: metav1.ObjectMeta{
+									Generation:        12,
+									Namespace:         "ns1",
+									Name:              "storage",
+									CreationTimestamp: metav1.Time{Time: now},
 								},
 							},
 						},
@@ -96,35 +97,35 @@ func TestEndpoint(t *testing.T) {
 			name: "collect notready endpoints",
 			handler: &mockHandler{
 				responseMap: map[string]interface{}{
-					"/endpoints/": &v1.EndpointsList{
-						Items: []*v1.Endpoints{
+					"/endpoints/": &corev1.EndpointsList{
+						Items: []corev1.Endpoints{
 							{
-								Subsets: []*v1.EndpointSubset{
+								Subsets: []corev1.EndpointSubset{
 									{
-										NotReadyAddresses: []*v1.EndpointAddress{
+										NotReadyAddresses: []corev1.EndpointAddress{
 											{
-												Hostname: toStrPtr("storage-6"),
+												Hostname: "storage-6",
 												NodeName: toStrPtr("b.storage.internal"),
-												TargetRef: &v1.ObjectReference{
-													Kind: toStrPtr("pod"),
-													Name: toStrPtr("storage-6"),
+												TargetRef: &corev1.ObjectReference{
+													Kind: "pod",
+													Name: "storage-6",
 												},
 											},
 										},
-										Ports: []*v1.EndpointPort{
+										Ports: []corev1.EndpointPort{
 											{
-												Name:     toStrPtr("server"),
-												Protocol: toStrPtr("TCP"),
-												Port:     toInt32Ptr(8080),
+												Name:     "server",
+												Protocol: "TCP",
+												Port:     8080,
 											},
 										},
 									},
 								},
-								Metadata: &metav1.ObjectMeta{
-									Generation:        toInt64Ptr(12),
-									Namespace:         toStrPtr("ns1"),
-									Name:              toStrPtr("storage"),
-									CreationTimestamp: &metav1.Time{Seconds: toInt64Ptr(now.Unix())},
+								ObjectMeta: metav1.ObjectMeta{
+									Generation:        12,
+									Namespace:         "ns1",
+									Name:              "storage",
+									CreationTimestamp: metav1.Time{Time: now},
 								},
 							},
 						},
@@ -161,11 +162,8 @@ func TestEndpoint(t *testing.T) {
 			client: cli,
 		}
 		acc := new(testutil.Accumulator)
-		for _, endpoint := range ((v.handler.responseMap["/endpoints/"]).(*v1.EndpointsList)).Items {
-			ks.gatherEndpoint(*endpoint, acc)
-			// if err != nil {
-			// 	t.Errorf("Failed to gather endpoint - %s", err.Error())
-			// }
+		for _, endpoint := range ((v.handler.responseMap["/endpoints/"]).(*corev1.EndpointsList)).Items {
+			ks.gatherEndpoint(endpoint, acc)
 		}
 
 		err := acc.FirstError()

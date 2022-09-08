@@ -24,22 +24,19 @@ const (
 
 // KubernetesInventory represents the config object for the plugin.
 type KubernetesInventory struct {
-	URL               string            `toml:"url"`
-	BearerToken       string            `toml:"bearer_token"`
-	BearerTokenString string            `toml:"bearer_token_string"`
-	Namespace         string            `toml:"namespace"`
-	ResponseTimeout   internal.Duration `toml:"response_timeout"` // Timeout specified as a string - 3s, 1m, 1h
-	ResourceExclude   []string          `toml:"resource_exclude"`
-	ResourceInclude   []string          `toml:"resource_include"`
-	MaxConfigMapAge   internal.Duration `toml:"max_config_map_age"`
-
-	SelectorInclude []string `toml:"selector_include"`
-	SelectorExclude []string `toml:"selector_exclude"`
-
+	selectorFilter    filter.Filter
+	client            *client
+	BearerToken       string `toml:"bearer_token"`
+	BearerTokenString string `toml:"bearer_token_string"`
+	Namespace         string `toml:"namespace"`
+	URL               string `toml:"url"`
 	tls.ClientConfig
-	client *client
-
-	selectorFilter filter.Filter
+	ResourceInclude []string          `toml:"resource_include"`
+	SelectorInclude []string          `toml:"selector_include"`
+	SelectorExclude []string          `toml:"selector_exclude"`
+	ResourceExclude []string          `toml:"resource_exclude"`
+	MaxConfigMapAge internal.Duration `toml:"max_config_map_age"`
+	ResponseTimeout internal.Duration `toml:"response_timeout"` // Timeout specified as a string - 3s, 1m, 1h
 }
 
 var sampleConfig = `

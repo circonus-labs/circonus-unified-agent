@@ -1,4 +1,4 @@
-//nolint
+// nolint
 package prometheus
 
 import (
@@ -33,6 +33,7 @@ go_goroutines 15
 # TYPE test_metric untyped
 test_metric{label="value"} 1.0 1490802350000
 `
+
 const sampleSummaryTextFormat = `# HELP go_gc_duration_seconds A summary of the GC invocation durations.
 # TYPE go_gc_duration_seconds summary
 go_gc_duration_seconds{quantile="0"} 0.00010425500000000001
@@ -51,7 +52,7 @@ go_goroutines 15 1490802350000
 
 func TestPrometheusGeneratesMetrics(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, sampleTextFormat)
+		fmt.Fprint(w, sampleTextFormat)
 	}))
 	defer ts.Close()
 
@@ -76,7 +77,7 @@ func TestPrometheusGeneratesMetrics(t *testing.T) {
 
 func TestPrometheusGeneratesMetricsWithHostNameTag(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, sampleTextFormat)
+		fmt.Fprint(w, sampleTextFormat)
 	}))
 	defer ts.Close()
 
@@ -107,7 +108,7 @@ func TestPrometheusGeneratesMetricsAlthoughFirstDNSFails(t *testing.T) {
 	}
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, sampleTextFormat)
+		fmt.Fprint(w, sampleTextFormat)
 	}))
 	defer ts.Close()
 
@@ -130,7 +131,7 @@ func TestPrometheusGeneratesMetricsAlthoughFirstDNSFails(t *testing.T) {
 
 func TestPrometheusGeneratesSummaryMetricsV2(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, sampleSummaryTextFormat)
+		fmt.Fprint(w, sampleSummaryTextFormat)
 	}))
 	defer ts.Close()
 
@@ -161,7 +162,7 @@ go_gc_duration_seconds_sum 42.0
 go_gc_duration_seconds_count 42
 `
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, data)
+		fmt.Fprint(w, data)
 	}))
 	defer ts.Close()
 
@@ -217,7 +218,7 @@ go_gc_duration_seconds_count 42
 
 func TestPrometheusGeneratesGaugeMetricsV2(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, sampleGaugeTextFormat)
+		fmt.Fprint(w, sampleGaugeTextFormat)
 	}))
 	defer ts.Close()
 

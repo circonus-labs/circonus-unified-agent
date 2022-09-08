@@ -7,8 +7,9 @@ import (
 	"time"
 
 	"github.com/circonus-labs/circonus-unified-agent/testutil"
-	v1 "github.com/ericchiang/k8s/apis/apps/v1"
-	metav1 "github.com/ericchiang/k8s/apis/meta/v1"
+
+	appsv1 "k8s.io/api/apps/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestDaemonSet(t *testing.T) {
@@ -18,16 +19,16 @@ func TestDaemonSet(t *testing.T) {
 	now := time.Now()
 	now = time.Date(now.Year(), now.Month(), now.Day(), now.Hour(), 1, 36, 0, now.Location())
 	tests := []struct {
-		name     string
 		handler  *mockHandler
 		output   *testutil.Accumulator
+		name     string
 		hasError bool
 	}{
 		{
 			name: "no daemon set",
 			handler: &mockHandler{
 				responseMap: map[string]interface{}{
-					"/daemonsets/": &v1.DaemonSetList{},
+					"/daemonsets/": &appsv1.DaemonSetList{},
 				},
 			},
 			hasError: false,
@@ -36,29 +37,29 @@ func TestDaemonSet(t *testing.T) {
 			name: "collect daemonsets",
 			handler: &mockHandler{
 				responseMap: map[string]interface{}{
-					"/daemonsets/": &v1.DaemonSetList{
-						Items: []*v1.DaemonSet{
+					"/daemonsets/": &appsv1.DaemonSetList{
+						Items: []appsv1.DaemonSet{
 							{
-								Status: &v1.DaemonSetStatus{
-									CurrentNumberScheduled: toInt32Ptr(3),
-									DesiredNumberScheduled: toInt32Ptr(5),
-									NumberAvailable:        toInt32Ptr(2),
-									NumberMisscheduled:     toInt32Ptr(2),
-									NumberReady:            toInt32Ptr(1),
-									NumberUnavailable:      toInt32Ptr(1),
-									UpdatedNumberScheduled: toInt32Ptr(2),
+								Status: appsv1.DaemonSetStatus{
+									CurrentNumberScheduled: 3,
+									DesiredNumberScheduled: 5,
+									NumberAvailable:        2,
+									NumberMisscheduled:     2,
+									NumberReady:            1,
+									NumberUnavailable:      1,
+									UpdatedNumberScheduled: 2,
 								},
-								Metadata: &metav1.ObjectMeta{
-									Generation: toInt64Ptr(11221),
-									Namespace:  toStrPtr("ns1"),
-									Name:       toStrPtr("daemon1"),
+								ObjectMeta: metav1.ObjectMeta{
+									Generation: 11221,
+									Namespace:  "ns1",
+									Name:       "daemon1",
 									Labels: map[string]string{
 										"lab1": "v1",
 										"lab2": "v2",
 									},
-									CreationTimestamp: &metav1.Time{Seconds: toInt64Ptr(now.Unix())},
+									CreationTimestamp: metav1.Time{Time: now},
 								},
-								Spec: &v1.DaemonSetSpec{
+								Spec: appsv1.DaemonSetSpec{
 									Selector: &metav1.LabelSelector{
 										MatchLabels: map[string]string{
 											"select1": "s1",
@@ -106,11 +107,8 @@ func TestDaemonSet(t *testing.T) {
 		}
 		_ = ks.createSelectorFilters()
 		acc := new(testutil.Accumulator)
-		for _, dset := range ((v.handler.responseMap["/daemonsets/"]).(*v1.DaemonSetList)).Items {
-			ks.gatherDaemonSet(*dset, acc)
-			// if err != nil {
-			// 	t.Errorf("Failed to gather daemonset - %s", err.Error())
-			// }
+		for _, d := range ((v.handler.responseMap["/daemonsets/"]).(*appsv1.DaemonSetList)).Items {
+			ks.gatherDaemonSet(d, acc)
 		}
 
 		err := acc.FirstError()
@@ -144,29 +142,29 @@ func TestDaemonSetSelectorFilter(t *testing.T) {
 	now = time.Date(now.Year(), now.Month(), now.Day(), now.Hour(), 1, 36, 0, now.Location())
 
 	responseMap := map[string]interface{}{
-		"/daemonsets/": &v1.DaemonSetList{
-			Items: []*v1.DaemonSet{
+		"/daemonsets/": &appsv1.DaemonSetList{
+			Items: []appsv1.DaemonSet{
 				{
-					Status: &v1.DaemonSetStatus{
-						CurrentNumberScheduled: toInt32Ptr(3),
-						DesiredNumberScheduled: toInt32Ptr(5),
-						NumberAvailable:        toInt32Ptr(2),
-						NumberMisscheduled:     toInt32Ptr(2),
-						NumberReady:            toInt32Ptr(1),
-						NumberUnavailable:      toInt32Ptr(1),
-						UpdatedNumberScheduled: toInt32Ptr(2),
+					Status: appsv1.DaemonSetStatus{
+						CurrentNumberScheduled: 3,
+						DesiredNumberScheduled: 5,
+						NumberAvailable:        2,
+						NumberMisscheduled:     2,
+						NumberReady:            1,
+						NumberUnavailable:      1,
+						UpdatedNumberScheduled: 2,
 					},
-					Metadata: &metav1.ObjectMeta{
-						Generation: toInt64Ptr(11221),
-						Namespace:  toStrPtr("ns1"),
-						Name:       toStrPtr("daemon1"),
+					ObjectMeta: metav1.ObjectMeta{
+						Generation: 11221,
+						Namespace:  "ns1",
+						Name:       "daemon1",
 						Labels: map[string]string{
 							"lab1": "v1",
 							"lab2": "v2",
 						},
-						CreationTimestamp: &metav1.Time{Seconds: toInt64Ptr(now.Unix())},
+						CreationTimestamp: metav1.Time{Time: now},
 					},
-					Spec: &v1.DaemonSetSpec{
+					Spec: appsv1.DaemonSetSpec{
 						Selector: &metav1.LabelSelector{
 							MatchLabels: map[string]string{
 								"select1": "s1",
@@ -180,12 +178,12 @@ func TestDaemonSetSelectorFilter(t *testing.T) {
 	}
 
 	tests := []struct {
-		name     string
 		handler  *mockHandler
-		hasError bool
+		expected map[string]string
+		name     string
 		include  []string
 		exclude  []string
-		expected map[string]string
+		hasError bool
 	}{
 		{
 			name: "nil filters equals all selectors",
@@ -282,11 +280,8 @@ func TestDaemonSetSelectorFilter(t *testing.T) {
 		ks.SelectorExclude = v.exclude
 		_ = ks.createSelectorFilters()
 		acc := new(testutil.Accumulator)
-		for _, dset := range ((v.handler.responseMap["/daemonsets/"]).(*v1.DaemonSetList)).Items {
-			ks.gatherDaemonSet(*dset, acc)
-			// if err != nil {
-			// 	t.Errorf("Failed to gather daemonset - %s", err.Error())
-			// }
+		for _, dset := range ((v.handler.responseMap["/daemonsets/"]).(*appsv1.DaemonSetList)).Items {
+			ks.gatherDaemonSet(dset, acc)
 		}
 
 		// Grab selector tags

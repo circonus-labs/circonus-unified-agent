@@ -7,7 +7,7 @@ import (
 
 	pb "github.com/aristanetworks/goarista/lanz/proto"
 	"github.com/circonus-labs/circonus-unified-agent/testutil"
-	"github.com/golang/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 )
 
 var testProtoBufCongestionRecord1 = &pb.LanzRecord{

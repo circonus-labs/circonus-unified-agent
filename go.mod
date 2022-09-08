@@ -77,7 +77,7 @@ require (
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369
 	github.com/mdlayher/apcupsd v0.0.0-20200608131503-2bf01da7bf1b
 	github.com/mdlayher/netlink v1.4.1 // indirect
-	github.com/miekg/dns v1.0.14
+	github.com/miekg/dns v1.1.25-0.20191211073109-8ebf2e419df7
 	github.com/mitchellh/go-testing-interface v1.0.0 // indirect
 	github.com/moby/ipvs v1.0.2
 	github.com/morikuni/aec v1.0.0 // indirect

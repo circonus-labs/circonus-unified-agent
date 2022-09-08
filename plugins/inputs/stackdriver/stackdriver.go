@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	monitoring "cloud.google.com/go/monitoring/apiv3"
+	monitoring "cloud.google.com/go/monitoring/apiv3/v2"
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/internal"
 	"github.com/circonus-labs/circonus-unified-agent/internal/limiter"
@@ -150,22 +150,22 @@ type (
 
 	// TimeSeriesConfCache caches generated timeseries configurations
 	timeSeriesConfCache struct {
-		TTL             time.Duration
 		Generated       time.Time
 		TimeSeriesConfs []*timeSeriesConf
+		TTL             time.Duration
 	}
 
 	// Internal structure which holds our configuration for a particular GCP time
 	// series.
 	timeSeriesConf struct {
+		// The GCP API request that we'll use to fetch data for this time series.
+		listTimeSeriesRequest *monitoringpb.ListTimeSeriesRequest
 		// The influx measurement name this time series maps to
 		measurement string
 		// The prefix to use before any influx field names that we'll write for
 		// this time series. (Or, if we only decide to write one field name, this
 		// field just holds the value of the field name.)
 		fieldKey string
-		// The GCP API request that we'll use to fetch data for this time series.
-		listTimeSeriesRequest *monitoringpb.ListTimeSeriesRequest
 	}
 
 	// stackdriverMetricClient is a metric client for stackdriver

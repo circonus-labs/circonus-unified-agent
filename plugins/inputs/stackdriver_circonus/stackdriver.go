@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	monitoring "cloud.google.com/go/monitoring/apiv3"
+	monitoring "cloud.google.com/go/monitoring/apiv3/v2"
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/internal"
 	circmgr "github.com/circonus-labs/circonus-unified-agent/internal/circonus"

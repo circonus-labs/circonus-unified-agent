@@ -13,6 +13,7 @@ fix(lint): SA1019: config.BuildNameToCertificate has been deprecated since Go 1.
 fix(lint): G402: TLS MinVersion too low.
 fix(lint): G112: Potential Slowloris Attack because ReadHeaderTimeout is not configured in the http.Server
 fix(lint): ioutil deprecation
+build(deps): bump github.com/shirou/gopsutil/v3 from 3.22.7 to 3.22.8
 build(deps): bump github.com/shirou/gopsutil/v3 from 3.22.4 to 3.22.7
 feat(dep): (kube_inventory & prometheus) migrate from ericchiang/k8s (archived) to kubernetes/client-go [CIRC-9135]
 feat(dep): migrate from docker/libnetwork/ipvs to moby/ipvs

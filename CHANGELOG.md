@@ -1,3 +1,62 @@
+# v0.0.47
+
+feat: (snmp_trap) enable sending text traps to (open|elastic)search, counters and numeric traps to circonus [CIRC-8918]
+feat: (zfs) add additional zpool metrics for linux [CIRC-9131]
+feat: allow all input plugins to create checks with custom check tags from config [CIRC-9004] [CIRC-8780]
+feat: add elasticsearch output plugin [CIRC-9029]
+fix(dep): Vulnerability github.com/nats-io/nats-server/v2 v2.1.4 -> v2.8.4 <https://pkg.go.dev/vuln/GO-2022-0386>
+fix(dep): Vulnerability github.com/nats-io/nats.go v1.9.1 -> v1.16.0 <https://pkg.go.dev/vuln/GO-2022-0386>
+fix(dep): Vulnerability github.com/miekg/dns v1.0.14 -> v1.1.25-0.20191211073109-8ebf2e419df7 <https://pkg.go.dev/vuln/GO-2020-0008>
+fix(dep): Vulnerability github.com/apache/thrift v0.12.0 -> v0.13.0 <https://pkg.go.dev/vuln/GO-2021-0101>
+fix(lint): G114: Use of net/http serve function that has no support for setting timeouts
+fix(lint): SA1019: config.BuildNameToCertificate has been deprecated since Go 1.14: NameToCertificate only allows associating a single certificate with a given name. Leave that field nil to let the library select the first compatible chain from Certificates.
+fix(lint): G402: TLS MinVersion too low.
+fix(lint): G112: Potential Slowloris Attack because ReadHeaderTimeout is not configured in the http.Server
+fix(lint): ioutil deprecation
+build(deps): bump github.com/shirou/gopsutil/v3 from 3.22.4 to 3.22.7
+feat(dep): (kube_inventory & prometheus) migrate from ericchiang/k8s (archived) to kubernetes/client-go [CIRC-9135]
+feat(dep): migrate from docker/libnetwork/ipvs to moby/ipvs
+feat(dep): SA1019: grpc.WithInsecure is deprecated: use WithTransportCredentials and insecure.NewCredentials() instead. Will be supported throughout 1.x.
+feat(dep): SA1019: "cloud.google.com/go/monitoring/apiv3" is deprecated: Please use cloud.google.com/go/monitoring/apiv3/v2.
+feat(dep): SA1019: "github.com/golang/protobuf/proto" is deprecated: Use the "google.golang.org/protobuf/proto" package instead.
+fix(lint): struct alignent
+feat(dep): upd github.com/circonus-labs/go-apiclient v0.7.17->v0.7.18
+feat(dep): upd github.com/circonus-labs/go-trapcheck v0.0.8->v0.0.9
+feat(dep): upd github.com/circonus-labs/go-trapmemtrics v0.0.8->v0.0.9
+feat(dep): add k8s.io/client-go v0.25.0
+feat(dep): upd k8s.io/apimachinery v0.17.1 -> k8s.io/apimachinery v0.25.0
+feat(dep): add k8s.io/api v0.25.0
+feat(dep): upd gopkg.in/yaml.v2 v2.2.8 -> v2.4.0
+feat(dep): upd google.golang.org/grpc v1.33.1 -> v1.48.0
+feat(dep): add google.golang.org/protobuf v1.28.0
+feat(dep): upd google.golang.org/genproto v0.0.0-20200513103714-09dca8ec2884 -> v0.0.0-20220808131553-a91ffa7f803e
+feat(dep): upd google.golang.org/api v0.20.0 -> v0.91.0
+feat(dep): upd golang.org/x/text v0.3.6 -> v0.3.7
+feat(dep): upd golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a -> v0.0.0-20220722155257-8c9f86f7a55f
+feat(dep): upd golang.org/x/sync v0.0.0-20210220032951-036812b2e83c -> v0.0.0-20220601150217-0de741cfad7f
+feat(dep): upd golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d -> v0.0.0-20220622183110-fd043fe589d2
+feat(dep): upd golang.org/x/net v0.0.0-20210525063256-abc453219eb5 -> v0.0.0-20220722155237-a158d28d115b
+feat(dep): add github.com/testcontainers/testcontainers-go v0.13.0
+feat(dep): upd github.com/sirupsen/logrus v1.4.2 -> v1.8.1
+feat(dep): upd github.com/prometheus/common v0.9.1 -> v0.10.0
+feat(dep): upd github.com/prometheus/procfs v0.0.8 -> v0.6.0
+feat(dep): add github.com/olivere/elastic/v7 v7.0.32
+feat(dep): migrate github.com/docker/libnetwork v0.8.0-dev.2.0.20181012153825-d7b61745d166 -> github.com/moby/ipvs v1.0.2
+feat(dep): upd github.com/matttproud/golang_protobuf_extensions v1.0.1 -> v1.0.2-0.20181231171920-c182affec369
+feat(dep): upd github.com/gorilla/mux v1.6.2 -> v1.8.0
+feat(dep): upd github.com/golang/protobuf v1.3.5 -> v1.5.2
+feat(dep): upd github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d -> v1.3.2
+feat(dep): upd github.com/go-sql-driver/mysql v1.5.0 -> v1.6.0
+feat(dep): upd github.com/docker/go-connections v0.3.0 -> v0.4.0
+feat(dep): upd github.com/docker/docker v17.12.0-ce-rc1.0.20200916142827-bd33bbf0497b+incompatible -> v20.10.11+incompatible
+feat(dep): upd github.com/cisco-ie/nx-telemetry-proto v0.0.0-20190531143454-82441e232cf6 -> v0.0.0-20220628142927-f4160bcb943c
+feat(dep): upd github.com/aws/aws-sdk-go v1.34.34 -> v1.43.21
+feat(dep): add cloud.google.com/go/monitoring v1.6.0
+feat(dep): upd cloud.google.com/go/pubsub v1.2.0 -> v1.3.1
+fix: linux installer not recognizing x86_64 arch as valid [CIRC-9001]
+fix(lint): structcheck, deadcode, varcheck deprecated
+feat(lint): update golangci-lint to 1.49 [CIRC-9033]
+
 # v0.0.46
 
 * feat(internal/circonus): Check tags are configurable via the `agent.circonus.check_tags` key in the agent config file

@@ -28,38 +28,46 @@ type mibEntry struct {
 }
 
 type SnmpTrap struct {
-	ServiceAddress string            `toml:"service_address"`
-	Timeout        internal.Duration `toml:"timeout"`
-	Version        string            `toml:"version"`
-
-	// Settings for version 3
-	// Values: "noAuthNoPriv", "authNoPriv", "authPriv"
-	SecLevel string `toml:"sec_level"`
-	SecName  string `toml:"sec_name"`
-	// Values: "MD5", "SHA", "". Default: ""
-	AuthProtocol string `toml:"auth_protocol"`
-	AuthPassword string `toml:"auth_password"`
-	// Values: "DES", "AES", "". Default: ""
-	PrivProtocol string `toml:"priv_protocol"`
-	PrivPassword string `toml:"priv_password"`
-
-	acc      cua.Accumulator
-	listener *gosnmp.TrapListener
-	timeFunc func() time.Time
-	errCh    chan error
-
-	makeHandlerWrapper func(gosnmp.TrapHandlerFunc) gosnmp.TrapHandlerFunc
-
-	Log cua.Logger `toml:"-"`
-
-	cacheLock sync.Mutex
-	cache     map[string]mibEntry
-
-	execCmd execer
+	cacheLock            sync.Mutex
+	acc                  cua.Accumulator
+	Log                  cua.Logger `toml:"-"`
+	execCmd              execer
+	cache                map[string]mibEntry
+	makeHandlerWrapper   func(gosnmp.TrapHandlerFunc) gosnmp.TrapHandlerFunc
+	errCh                chan error
+	timeFunc             func() time.Time
+	listener             *gosnmp.TrapListener
+	AuthProtocol         string            `toml:"auth_protocol"`      // Values: "MD5", "SHA", "". Default: ""
+	CircRouteNumeric     string            `toml:"circ_route_numeric"` // route numeric metrics to specific output with tag
+	CircRouteText        string            `toml:"circ_route_text"`    // route text metrics to specific output with tag
+	PrivPassword         string            `toml:"priv_password"`
+	PrivProtocol         string            `toml:"priv_protocol"` // Values: "DES", "AES", "". Default: ""
+	AuthPassword         string            `toml:"auth_password"`
+	ServiceAddress       string            `toml:"service_address"`
+	SecName              string            `toml:"sec_name"`
+	SecLevel             string            `toml:"sec_level"` // V3 Values: "noAuthNoPriv", "authNoPriv", "authPriv"
+	Version              string            `toml:"version"`
+	Timeout              internal.Duration `toml:"timeout"`
+	NumericOIDMetricName bool              `toml:"numeric_oid_metric_name"` // use the numeric oid for the metric names
 }
 
 var sampleConfig = `
   instance_id = "" # unique instance identifier (REQUIRED)
+
+  ## Route numeric metrics to a specific output using a tag
+  ## e.g. circ_routing:circonus
+  ## In the desired output plugin use tagpass to accept
+  ## the metrics and in other output plugins use tagdrop
+  ## to ignore them.
+  # circ_route_numeric = ""
+  ## Route text metrics to a specifc output using a tag
+  ## e.g. circ_routing:elastic - in the elasticsearch output
+  ## plugin use tagpass to accept these metrics, and in the 
+  ## other output plugins use tagdrop to ignore these metrics.
+  ## Note: if this is blank, no text metrics will be generated.
+  # circ_route_text = ""
+  ## Use numeric OIDs for metric names
+  # numeric_oid_metric_name = false
 
   ## Transport, local address, and port to listen on.  Transport must
   ## be "udp://".  Omit local address to listen on all interfaces.
@@ -265,7 +273,9 @@ func setTrapOid(tags map[string]string, oid string, e mibEntry) {
 func makeTrapHandler(s *SnmpTrap) gosnmp.TrapHandlerFunc {
 	return func(packet *gosnmp.SnmpPacket, addr *net.UDPAddr) {
 		tm := s.timeFunc()
-		fields := map[string]interface{}{}
+		stringFields := map[string]interface{}{}
+		counterFields := map[string]interface{}{}
+		numericFields := map[string]interface{}{}
 		tags := map[string]string{}
 
 		tags["version"] = packet.Version.String()
@@ -285,7 +295,7 @@ func makeTrapHandler(s *SnmpTrap) gosnmp.TrapHandlerFunc {
 			if trapOid != "" {
 				e, err := s.lookup(trapOid)
 				if err != nil {
-					s.Log.Errorf("Error resolving V1 OID: %v", err)
+					s.Log.Errorf("Error resolving V1 OID, oid=%s, source=%s: %v", trapOid, tags["source"], err)
 					return
 				}
 				setTrapOid(tags, trapOid, e)
@@ -295,73 +305,222 @@ func makeTrapHandler(s *SnmpTrap) gosnmp.TrapHandlerFunc {
 				tags["agent_address"] = packet.AgentAddress
 			}
 
-			fields["sysUpTimeInstance"] = packet.Timestamp
+			numericFields["sysUpTimeInstance"] = packet.Timestamp
 		}
 
-		// ok.. i think this will handle a packet with multiple variables.
-		// i'm not clear on whether it is always 3 or if other variables can
-		// be added to a trap with additional meta information
-		metricName := ""
 		for _, v := range packet.Variables {
-			if v.Name == ".1.3.6.1.2.1.1.3.0" { // sysUptime, skipping it for now
-				continue
-			}
+			// Use system mibs to resolve oids.  Don't fall back to
+			// numeric oid because it's not useful enough to the end
+			// user and can be difficult to translate or remove from
+			// the database later.
+
+			var value interface{}
+
+			// todo: format the pdu value based on its snmp type and
+			// the mib's textual convention.  The snmp input plugin
+			// only handles textual convention for ip and mac
+			// addresses
 
 			switch v.Type {
 			case gosnmp.ObjectIdentifier:
 				val, ok := v.Value.(string)
 				if !ok {
-					s.Log.Errorf("getting value OID")
+					s.Log.Errorf("Error getting value OID")
 					return
 				}
 
-				e, err := s.lookup(val)
-				if err != nil {
-					s.Log.Errorf("resolving value OID: %s", err)
+				var e mibEntry
+				var err error
+				e, err = s.lookup(val)
+				if nil != err {
+					s.Log.Errorf("Error resolving value OID, oid=%s, source=%s: %v", val, tags["source"], err)
 					return
 				}
 
-				// i think we should only get one snmpTrapOID in a "packet"
-				// any other variables should be meta. otherwise, there doesn't
-				// seem that there would be a way to distinguish "what" the trap
-				// was regarding...
-				if v.Name == ".1.3.6.1.6.3.1.1.4.1.0" && metricName == "" {
-					metricName = e.oidText
-					tags["oid"] = val
-					tags["mib"] = e.mibName
-				} else {
-					// otherwise, just add it as a set of tags, so we can figure
-					// out where to go from here
-					tags["oid"] = val
-					tags["name"] = e.oidText
-					tags["mib"] = e.mibName
+				value = e.oidText
+
+				// 1.3.6.1.6.3.1.1.4.1.0 is SNMPv2-MIB::snmpTrapOID.0.
+				// If v.Name is this oid, set a tag of the trap name.
+				if v.Name == ".1.3.6.1.6.3.1.1.4.1.0" {
+					setTrapOid(tags, val, e)
+					continue
 				}
-			case gosnmp.OctetString:
-				e, err := s.lookup(v.Name)
-				if err != nil {
-					s.Log.Errorf("resolving OID: %s", err)
-					return
-				}
-				bytes := v.Value.([]byte)
-				tags[e.oidText] = string(bytes)
 			default:
-				e, err := s.lookup(v.Name)
-				if err != nil {
-					s.Log.Errorf("resolving OID: %s", err)
-					return
+				value = v.Value
+			}
+
+			e, err := s.lookup(v.Name)
+			if nil != err {
+				s.Log.Errorf("Error resolving OID oid=%s, source=%s: %v", v.Name, tags["source"], err)
+				return
+			}
+
+			name := e.oidText
+			if s.NumericOIDMetricName {
+				name = v.Name
+			}
+
+			if v.Type == gosnmp.OctetString {
+				if s.CircRouteText != "" {
+					bytes := v.Value.([]byte)
+					// Elasticsearch indexing failure, id: 0, error: failed to parse, caused by: object field starting or
+					// ending with a [.] makes object resolution ambiguous: [.1.3.6.1.2.1.1.6.0], illegal_argument_exception
+					sname := name
+					if string(sname[0]) == "." {
+						sname = sname[1:]
+					}
+					stringFields[sname] = string(bytes)
 				}
-				tags[e.oidText] = fmt.Sprintf("%v", v.Value)
+
+				if v, ok := counterFields[name]; ok {
+					counterFields[name] = v.(uint64) + 1
+				} else {
+					counterFields[name] = uint64(1)
+				}
+			} else {
+				numericFields[name] = value
 			}
 		}
 
-		if metricName == "" {
-			s.Log.Errorf("parsing packet: %+v", packet)
-			return
+		if packet.Version == gosnmp.Version3 {
+			if packet.ContextName != "" {
+				tags["context_name"] = packet.ContextName
+			}
+			if packet.ContextEngineID != "" {
+				// SNMP RFCs like 3411 and 5343 show engine ID as a hex string
+				tags["engine_id"] = fmt.Sprintf("%x", packet.ContextEngineID)
+			}
+		} else if packet.Community != "" {
+			tags["community"] = packet.Community
 		}
-		fields[metricName] = 1
-		s.acc.AddFields("snmp_trap", fields, tags, tm)
+
+		if s.CircRouteNumeric != "" {
+			if k, v, found := strings.Cut(s.CircRouteNumeric, ":"); found {
+				tags[k] = v
+			}
+		}
+
+		if len(numericFields) > 0 {
+			s.acc.AddFields("snmp_trap", numericFields, tags, tm)
+		}
+		if len(stringFields) > 0 {
+			stringTags := make(map[string]string)
+			for k, v := range tags {
+				stringTags[k] = v
+			}
+			if s.CircRouteText != "" {
+				if k, v, found := strings.Cut(s.CircRouteText, ":"); found {
+					stringTags[k] = v
+				}
+			}
+			s.acc.AddFields("snmp_trap", stringFields, stringTags, tm)
+		}
+		if len(counterFields) > 0 {
+			s.acc.AddCounter("snmp_trap", counterFields, tags, tm)
+		}
 	}
 }
+
+// func makeTrapHandler(s *SnmpTrap) gosnmp.TrapHandlerFunc {
+// 	return func(packet *gosnmp.SnmpPacket, addr *net.UDPAddr) {
+// 		tm := s.timeFunc()
+// 		fields := map[string]interface{}{}
+// 		tags := map[string]string{}
+
+// 		tags["version"] = packet.Version.String()
+// 		tags["source"] = addr.IP.String()
+
+// 		if packet.Version == gosnmp.Version1 {
+// 			// Follow the procedure described in RFC 2576 3.1 to
+// 			// translate a v1 trap to v2.
+// 			var trapOid string
+
+// 			if packet.GenericTrap >= 0 && packet.GenericTrap < 6 {
+// 				trapOid = ".1.3.6.1.6.3.1.1.5." + strconv.Itoa(packet.GenericTrap+1)
+// 			} else if packet.GenericTrap == 6 {
+// 				trapOid = packet.Enterprise + ".0." + strconv.Itoa(packet.SpecificTrap)
+// 			}
+
+// 			if trapOid != "" {
+// 				e, err := s.lookup(trapOid)
+// 				if err != nil {
+// 					s.Log.Errorf("Error resolving V1 OID: %v", err)
+// 					return
+// 				}
+// 				setTrapOid(tags, trapOid, e)
+// 			}
+
+// 			if packet.AgentAddress != "" {
+// 				tags["agent_address"] = packet.AgentAddress
+// 			}
+
+// 			fields["sysUpTimeInstance"] = packet.Timestamp
+// 		}
+
+// 		// ok.. i think this will handle a packet with multiple variables.
+// 		// i'm not clear on whether it is always 3 or if other variables can
+// 		// be added to a trap with additional meta information
+// 		metricName := ""
+// 		for _, v := range packet.Variables {
+// 			if v.Name == ".1.3.6.1.2.1.1.3.0" { // sysUptime, skipping it for now
+// 				continue
+// 			}
+
+// 			switch v.Type {
+// 			case gosnmp.ObjectIdentifier:
+// 				val, ok := v.Value.(string)
+// 				if !ok {
+// 					s.Log.Errorf("getting value OID")
+// 					return
+// 				}
+
+// 				e, err := s.lookup(val)
+// 				if err != nil {
+// 					s.Log.Errorf("resolving value OID: %s", err)
+// 					return
+// 				}
+
+// 				// i think we should only get one snmpTrapOID in a "packet"
+// 				// any other variables should be meta. otherwise, there doesn't
+// 				// seem that there would be a way to distinguish "what" the trap
+// 				// was regarding...
+// 				if v.Name == ".1.3.6.1.6.3.1.1.4.1.0" && metricName == "" {
+// 					metricName = e.oidText
+// 					tags["oid"] = val
+// 					tags["mib"] = e.mibName
+// 				} else {
+// 					// otherwise, just add it as a set of tags, so we can figure
+// 					// out where to go from here
+// 					tags["oid"] = val
+// 					tags["name"] = e.oidText
+// 					tags["mib"] = e.mibName
+// 				}
+// 			case gosnmp.OctetString:
+// 				e, err := s.lookup(v.Name)
+// 				if err != nil {
+// 					s.Log.Errorf("resolving OID: %s", err)
+// 					return
+// 				}
+// 				bytes := v.Value.([]byte)
+// 				tags[e.oidText] = string(bytes)
+// 			default:
+// 				e, err := s.lookup(v.Name)
+// 				if err != nil {
+// 					s.Log.Errorf("resolving OID: %s", err)
+// 					return
+// 				}
+// 				tags[e.oidText] = fmt.Sprintf("%v", v.Value)
+// 			}
+// 		}
+
+// 		if metricName == "" {
+// 			s.Log.Errorf("parsing packet: %+v", packet)
+// 			return
+// 		}
+// 		fields[metricName] = 1
+// 		s.acc.AddFields("snmp_trap", fields, tags, tm)
+// 	}
+// }
 
 func (s *SnmpTrap) lookup(oid string) (e mibEntry, err error) {
 	s.cacheLock.Lock()

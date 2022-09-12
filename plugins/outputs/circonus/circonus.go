@@ -31,23 +31,24 @@ var (
 type Circonus struct {
 	startTime time.Time
 	sync.RWMutex
-	Log                cua.Logger
-	DebugAPI           *bool   `toml:"debug_api"`
-	TraceMetrics       *string `toml:"trace_metrics"`
-	processors         processors
-	DebugChecks        map[string]string `toml:"debug_checks"` // optional: use when instructed by circonus support
-	metricDestinations map[string]*metricDestination
-	CacheDir           string   `toml:"cache_dir"`         // optional: where to cache the check bundle configurations - must be read/write for user running cua
-	APITLSCA           string   `toml:"api_tls_ca"`        // optional: override agent.circonus api ca cert file
-	APIApp             string   `toml:"api_app"`           // optional: override agent.circonus api app (default: circonus-unified-agent)
-	APIURL             string   `toml:"api_url"`           // optional: override agent.circonus api url (default: https://api.circonus.com/v2)
-	Broker             string   `toml:"broker"`            // optional: override agent.circonus broker ID - numeric portion of _cid from broker api object (default is selected: enterprise or public httptrap broker)
-	APIToken           string   `toml:"api_token"`         // optional: override agent.circonus api token
-	CheckSearchTags    []string `toml:"check_search_tags"` // optional: set of tags to use when searching for checks (default: service:circonus-unified-agentd)
-	PoolSize           int      `toml:"pool_size"`         // size of the processor pool for a given output instance - default 2
-	DebugMetrics       bool     `toml:"debug_metrics"`     // output the metrics as they are being parsed, use to verify proper parsing/tags/etc.
-	SubOutput          bool     `toml:"sub_output"`        // a dedicated, special purpose, output, don't send internal cua version, etc.
-	CacheConfigs       bool     `toml:"cache_configs"`     // optional: cache check bundle configurations - efficient for large number of inputs
+	Log                 cua.Logger
+	DebugAPI            *bool   `toml:"debug_api"`
+	TraceMetrics        *string `toml:"trace_metrics"`
+	processors          processors
+	DebugChecks         map[string]string `toml:"debug_checks"` // optional: use when instructed by circonus support
+	metricDestinations  map[string]*metricDestination
+	CacheDir            string   `toml:"cache_dir"`              // optional: where to cache the check bundle configurations - must be read/write for user running cua
+	APITLSCA            string   `toml:"api_tls_ca"`             // optional: override agent.circonus api ca cert file
+	APIApp              string   `toml:"api_app"`                // optional: override agent.circonus api app (default: circonus-unified-agent)
+	APIURL              string   `toml:"api_url"`                // optional: override agent.circonus api url (default: https://api.circonus.com/v2)
+	Broker              string   `toml:"broker"`                 // optional: override agent.circonus broker ID - numeric portion of _cid from broker api object (default is selected: enterprise or public httptrap broker)
+	APIToken            string   `toml:"api_token"`              // optional: override agent.circonus api token
+	CheckSearchTags     []string `toml:"check_search_tags"`      // optional: set of tags to use when searching for checks (default: service:circonus-unified-agentd)
+	PoolSize            int      `toml:"pool_size"`              // size of the processor pool for a given output instance - default 2
+	DebugMetrics        bool     `toml:"debug_metrics"`          // output the metrics as they are being parsed, use to verify proper parsing/tags/etc.
+	SubOutput           bool     `toml:"sub_output"`             // a dedicated, special purpose, output, don't send internal cua version, etc.
+	CacheConfigs        bool     `toml:"cache_configs"`          // optional: cache check bundle configurations - efficient for large number of inputs
+	AllowSNMPTrapEvents bool     `toml:"allow_snmp_trap_events"` // optional: send snmp_trap text events to circonus - may result in high billing costs
 }
 
 // processors handle incoming batches

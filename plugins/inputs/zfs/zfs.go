@@ -14,6 +14,7 @@ type Zfs struct {
 	sysctl         Sysctl     //nolint:structcheck,unused
 	zpool          Zpool      //nolint:structcheck,unused
 	KstatPath      string
+	ZpoolPath      string
 	KstatMetrics   []string
 	PoolMetrics    bool
 	DatasetMetrics bool
@@ -32,6 +33,9 @@ var sampleConfig = `
   # This was addressed in ZFSonLinux 0.7.0 and later.
   # See https://github.com/zfsonlinux/zfs/issues/362 for a potential workaround
   # if your distribution does not support unprivileged access to /dev/zfs.
+
+  ## Path for zpool command, the default is:
+  # zpoolPath = "/usr/sbin/zpool"
 
   ## ZFS kstat path. Ignored on FreeBSD
   ## If not specified, then default is:

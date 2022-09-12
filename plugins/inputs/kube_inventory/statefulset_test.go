@@ -7,8 +7,9 @@ import (
 	"time"
 
 	"github.com/circonus-labs/circonus-unified-agent/testutil"
-	v1 "github.com/ericchiang/k8s/apis/apps/v1"
-	metav1 "github.com/ericchiang/k8s/apis/meta/v1"
+
+	appsv1 "k8s.io/api/apps/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestStatefulSet(t *testing.T) {
@@ -18,16 +19,16 @@ func TestStatefulSet(t *testing.T) {
 	now := time.Now()
 	now = time.Date(now.Year(), now.Month(), now.Day(), now.Hour(), 1, 36, 0, now.Location())
 	tests := []struct {
-		name     string
 		handler  *mockHandler
 		output   *testutil.Accumulator
+		name     string
 		hasError bool
 	}{
 		{
 			name: "no statefulsets",
 			handler: &mockHandler{
 				responseMap: map[string]interface{}{
-					"/statefulsets/": &v1.StatefulSetList{},
+					"/statefulsets/": &appsv1.StatefulSetList{},
 				},
 			},
 			hasError: false,
@@ -36,17 +37,17 @@ func TestStatefulSet(t *testing.T) {
 			name: "collect statefulsets",
 			handler: &mockHandler{
 				responseMap: map[string]interface{}{
-					"/statefulsets/": &v1.StatefulSetList{
-						Items: []*v1.StatefulSet{
+					"/statefulsets/": &appsv1.StatefulSetList{
+						Items: []appsv1.StatefulSet{
 							{
-								Status: &v1.StatefulSetStatus{
-									Replicas:           toInt32Ptr(2),
-									CurrentReplicas:    toInt32Ptr(4),
-									ReadyReplicas:      toInt32Ptr(1),
-									UpdatedReplicas:    toInt32Ptr(3),
-									ObservedGeneration: toInt64Ptr(119),
+								Status: appsv1.StatefulSetStatus{
+									Replicas:           2,
+									CurrentReplicas:    4,
+									ReadyReplicas:      1,
+									UpdatedReplicas:    3,
+									ObservedGeneration: 119,
 								},
-								Spec: &v1.StatefulSetSpec{
+								Spec: appsv1.StatefulSetSpec{
 									Replicas: toInt32Ptr(3),
 									Selector: &metav1.LabelSelector{
 										MatchLabels: map[string]string{
@@ -55,15 +56,15 @@ func TestStatefulSet(t *testing.T) {
 										},
 									},
 								},
-								Metadata: &metav1.ObjectMeta{
-									Generation: toInt64Ptr(332),
-									Namespace:  toStrPtr("ns1"),
-									Name:       toStrPtr("sts1"),
+								ObjectMeta: metav1.ObjectMeta{
+									Generation: 332,
+									Namespace:  "ns1",
+									Name:       "sts1",
 									Labels: map[string]string{
 										"lab1": "v1",
 										"lab2": "v2",
 									},
-									CreationTimestamp: &metav1.Time{Seconds: toInt64Ptr(now.Unix())},
+									CreationTimestamp: metav1.Time{Time: now},
 								},
 							},
 						},
@@ -104,11 +105,8 @@ func TestStatefulSet(t *testing.T) {
 		}
 		_ = ks.createSelectorFilters()
 		acc := new(testutil.Accumulator)
-		for _, ss := range ((v.handler.responseMap["/statefulsets/"]).(*v1.StatefulSetList)).Items {
-			ks.gatherStatefulSet(*ss, acc)
-			// if err != nil {
-			// 	t.Errorf("Failed to gather ss - %s", err.Error())
-			// }
+		for _, ss := range ((v.handler.responseMap["/statefulsets/"]).(appsv1.StatefulSetList)).Items {
+			ks.gatherStatefulSet(ss, acc)
 		}
 
 		err := acc.FirstError()
@@ -142,17 +140,17 @@ func TestStatefulSetSelectorFilter(t *testing.T) {
 	now = time.Date(now.Year(), now.Month(), now.Day(), now.Hour(), 1, 36, 0, now.Location())
 
 	responseMap := map[string]interface{}{
-		"/statefulsets/": &v1.StatefulSetList{
-			Items: []*v1.StatefulSet{
+		"/statefulsets/": &appsv1.StatefulSetList{
+			Items: []appsv1.StatefulSet{
 				{
-					Status: &v1.StatefulSetStatus{
-						Replicas:           toInt32Ptr(2),
-						CurrentReplicas:    toInt32Ptr(4),
-						ReadyReplicas:      toInt32Ptr(1),
-						UpdatedReplicas:    toInt32Ptr(3),
-						ObservedGeneration: toInt64Ptr(119),
+					Status: appsv1.StatefulSetStatus{
+						Replicas:           2,
+						CurrentReplicas:    4,
+						ReadyReplicas:      1,
+						UpdatedReplicas:    3,
+						ObservedGeneration: 119,
 					},
-					Spec: &v1.StatefulSetSpec{
+					Spec: appsv1.StatefulSetSpec{
 						Replicas: toInt32Ptr(3),
 						Selector: &metav1.LabelSelector{
 							MatchLabels: map[string]string{
@@ -161,15 +159,15 @@ func TestStatefulSetSelectorFilter(t *testing.T) {
 							},
 						},
 					},
-					Metadata: &metav1.ObjectMeta{
-						Generation: toInt64Ptr(332),
-						Namespace:  toStrPtr("ns1"),
-						Name:       toStrPtr("sts1"),
+					ObjectMeta: metav1.ObjectMeta{
+						Generation: 332,
+						Namespace:  "ns1",
+						Name:       "sts1",
 						Labels: map[string]string{
 							"lab1": "v1",
 							"lab2": "v2",
 						},
-						CreationTimestamp: &metav1.Time{Seconds: toInt64Ptr(now.Unix())},
+						CreationTimestamp: metav1.Time{Time: now},
 					},
 				},
 			},
@@ -177,12 +175,12 @@ func TestStatefulSetSelectorFilter(t *testing.T) {
 	}
 
 	tests := []struct {
-		name     string
 		handler  *mockHandler
-		hasError bool
+		expected map[string]string
+		name     string
 		include  []string
 		exclude  []string
-		expected map[string]string
+		hasError bool
 	}{
 		{
 			name: "nil filters equals all selectors",
@@ -279,11 +277,8 @@ func TestStatefulSetSelectorFilter(t *testing.T) {
 		ks.SelectorExclude = v.exclude
 		_ = ks.createSelectorFilters()
 		acc := new(testutil.Accumulator)
-		for _, ss := range ((v.handler.responseMap["/statefulsets/"]).(*v1.StatefulSetList)).Items {
-			ks.gatherStatefulSet(*ss, acc)
-			// if err != nil {
-			// 	t.Errorf("Failed to gather ss - %s", err.Error())
-			// }
+		for _, ss := range ((v.handler.responseMap["/statefulsets/"]).(appsv1.StatefulSetList)).Items {
+			ks.gatherStatefulSet(ss, acc)
 		}
 
 		// Grab selector tags

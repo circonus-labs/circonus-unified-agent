@@ -11,12 +11,14 @@ import (
 )
 
 // Check bundle config caching
-func loadCheckConfig(id string) *apiclient.CheckBundle {
+
+// loadCheckConfig will determine if caching is enabled and attempt to load the check bundle, returns check bundle and whether successful.
+func loadCheckConfig(id string) (*apiclient.CheckBundle, bool) {
 	if !ch.circCfg.CacheConfigs {
-		return nil
+		return nil, false
 	}
 	if id == "" || ch.circCfg.CacheDir == "" {
-		return nil
+		return nil, false
 	}
 
 	path := ch.circCfg.CacheDir
@@ -27,19 +29,20 @@ func loadCheckConfig(id string) *apiclient.CheckBundle {
 		if !os.IsNotExist(err) {
 			ch.logger.Warnf("unable to read %s: %s", checkConfigFile, err)
 		}
-		return nil
+		return nil, false
 	}
 
 	var bundle apiclient.CheckBundle
 	if err := json.Unmarshal(data, &bundle); err != nil {
 		ch.logger.Warnf("parsing check config %s: %s", checkConfigFile, err)
-		return nil
+		return nil, false
 	}
 	ch.logger.Infof("using cached config: %s - %s", checkConfigFile, bundle.Config[apiclicfg.SubmissionURL])
 
-	return &bundle
+	return &bundle, true
 }
 
+// saveCheckConfig will determine if caching is enabled and attempt to save the check bundle as a json blob.
 func saveCheckConfig(id string, bundle *apiclient.CheckBundle) {
 	if !ch.circCfg.CacheConfigs {
 		return

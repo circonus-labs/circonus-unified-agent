@@ -7,9 +7,10 @@ import (
 	"time"
 
 	"github.com/circonus-labs/circonus-unified-agent/testutil"
-	v1 "github.com/ericchiang/k8s/apis/apps/v1"
-	metav1 "github.com/ericchiang/k8s/apis/meta/v1"
-	"github.com/ericchiang/k8s/util/intstr"
+
+	appsv1 "k8s.io/api/apps/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 func TestDeployment(t *testing.T) {
@@ -33,16 +34,16 @@ func TestDeployment(t *testing.T) {
 	}
 
 	tests := []struct {
-		name     string
 		handler  *mockHandler
 		output   *testutil.Accumulator
+		name     string
 		hasError bool
 	}{
 		{
 			name: "no deployments",
 			handler: &mockHandler{
 				responseMap: map[string]interface{}{
-					"/deployments/": &v1.DeploymentList{},
+					"/deployments/": &appsv1.DeploymentList{},
 				},
 			},
 			hasError: false,
@@ -51,24 +52,24 @@ func TestDeployment(t *testing.T) {
 			name: "collect deployments",
 			handler: &mockHandler{
 				responseMap: map[string]interface{}{
-					"/deployments/": &v1.DeploymentList{
-						Items: []*v1.Deployment{
+					"/deployments/": &appsv1.DeploymentList{
+						Items: []appsv1.Deployment{
 							{
-								Status: &v1.DeploymentStatus{
-									Replicas:            toInt32Ptr(3),
-									AvailableReplicas:   toInt32Ptr(1),
-									UnavailableReplicas: toInt32Ptr(4),
-									UpdatedReplicas:     toInt32Ptr(2),
-									ObservedGeneration:  toInt64Ptr(9121),
+								Status: appsv1.DeploymentStatus{
+									Replicas:            3,
+									AvailableReplicas:   1,
+									UnavailableReplicas: 4,
+									UpdatedReplicas:     2,
+									ObservedGeneration:  9121,
 								},
-								Spec: &v1.DeploymentSpec{
-									Strategy: &v1.DeploymentStrategy{
-										RollingUpdate: &v1.RollingUpdateDeployment{
+								Spec: appsv1.DeploymentSpec{
+									Strategy: appsv1.DeploymentStrategy{
+										RollingUpdate: &appsv1.RollingUpdateDeployment{
 											MaxUnavailable: &intstr.IntOrString{
-												IntVal: toInt32Ptr(30),
+												IntVal: 3,
 											},
 											MaxSurge: &intstr.IntOrString{
-												IntVal: toInt32Ptr(20),
+												IntVal: 20,
 											},
 										},
 									},
@@ -80,15 +81,15 @@ func TestDeployment(t *testing.T) {
 										},
 									},
 								},
-								Metadata: &metav1.ObjectMeta{
-									Generation: toInt64Ptr(11221),
-									Namespace:  toStrPtr("ns1"),
-									Name:       toStrPtr("deploy1"),
+								ObjectMeta: metav1.ObjectMeta{
+									Generation: 11221,
+									Namespace:  "ns1",
+									Name:       "deploy1",
 									Labels: map[string]string{
 										"lab1": "v1",
 										"lab2": "v2",
 									},
-									CreationTimestamp: &metav1.Time{Seconds: toInt64Ptr(now.Unix())},
+									CreationTimestamp: metav1.Time{Time: now},
 								},
 							},
 						},
@@ -112,11 +113,8 @@ func TestDeployment(t *testing.T) {
 		}
 		_ = ks.createSelectorFilters()
 		acc := new(testutil.Accumulator)
-		for _, deployment := range ((v.handler.responseMap["/deployments/"]).(*v1.DeploymentList)).Items {
-			ks.gatherDeployment(*deployment, acc)
-			// if err != nil {
-			// 	t.Errorf("Failed to gather deployment - %s", err.Error())
-			// }
+		for _, deployment := range ((v.handler.responseMap["/deployments/"]).(*appsv1.DeploymentList)).Items {
+			ks.gatherDeployment(deployment, acc)
 		}
 
 		err := acc.FirstError()
@@ -150,24 +148,24 @@ func TestDeploymentSelectorFilter(t *testing.T) {
 	now = time.Date(now.Year(), now.Month(), now.Day(), now.Hour(), 1, 36, 0, now.Location())
 
 	responseMap := map[string]interface{}{
-		"/deployments/": &v1.DeploymentList{
-			Items: []*v1.Deployment{
+		"/deployments/": &appsv1.DeploymentList{
+			Items: []appsv1.Deployment{
 				{
-					Status: &v1.DeploymentStatus{
-						Replicas:            toInt32Ptr(3),
-						AvailableReplicas:   toInt32Ptr(1),
-						UnavailableReplicas: toInt32Ptr(4),
-						UpdatedReplicas:     toInt32Ptr(2),
-						ObservedGeneration:  toInt64Ptr(9121),
+					Status: appsv1.DeploymentStatus{
+						Replicas:            3,
+						AvailableReplicas:   1,
+						UnavailableReplicas: 4,
+						UpdatedReplicas:     2,
+						ObservedGeneration:  9121,
 					},
-					Spec: &v1.DeploymentSpec{
-						Strategy: &v1.DeploymentStrategy{
-							RollingUpdate: &v1.RollingUpdateDeployment{
+					Spec: appsv1.DeploymentSpec{
+						Strategy: appsv1.DeploymentStrategy{
+							RollingUpdate: &appsv1.RollingUpdateDeployment{
 								MaxUnavailable: &intstr.IntOrString{
-									IntVal: toInt32Ptr(30),
+									IntVal: 30,
 								},
 								MaxSurge: &intstr.IntOrString{
-									IntVal: toInt32Ptr(20),
+									IntVal: 20,
 								},
 							},
 						},
@@ -179,15 +177,15 @@ func TestDeploymentSelectorFilter(t *testing.T) {
 							},
 						},
 					},
-					Metadata: &metav1.ObjectMeta{
-						Generation: toInt64Ptr(11221),
-						Namespace:  toStrPtr("ns1"),
-						Name:       toStrPtr("deploy1"),
+					ObjectMeta: metav1.ObjectMeta{
+						Generation: 11221,
+						Namespace:  "ns1",
+						Name:       "deploy1",
 						Labels: map[string]string{
 							"lab1": "v1",
 							"lab2": "v2",
 						},
-						CreationTimestamp: &metav1.Time{Seconds: toInt64Ptr(now.Unix())},
+						CreationTimestamp: metav1.Time{Time: now},
 					},
 				},
 			},
@@ -195,12 +193,12 @@ func TestDeploymentSelectorFilter(t *testing.T) {
 	}
 
 	tests := []struct {
-		name     string
 		handler  *mockHandler
-		hasError bool
+		expected map[string]string
+		name     string
 		include  []string
 		exclude  []string
-		expected map[string]string
+		hasError bool
 	}{
 		{
 			name: "nil filters equals all selectors",
@@ -297,11 +295,8 @@ func TestDeploymentSelectorFilter(t *testing.T) {
 		ks.SelectorExclude = v.exclude
 		_ = ks.createSelectorFilters()
 		acc := new(testutil.Accumulator)
-		for _, deployment := range ((v.handler.responseMap["/deployments/"]).(*v1.DeploymentList)).Items {
-			ks.gatherDeployment(*deployment, acc)
-			// if err != nil {
-			// 	t.Errorf("Failed to gather deployment - %s", err.Error())
-			// }
+		for _, deployment := range ((v.handler.responseMap["/deployments/"]).(*appsv1.DeploymentList)).Items {
+			ks.gatherDeployment(deployment, acc)
 		}
 
 		// Grab selector tags

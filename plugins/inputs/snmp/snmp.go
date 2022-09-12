@@ -124,7 +124,8 @@ type Snmp struct {
 	Tables            []Table                  `toml:"table"`
 	Fields            []Field                  `toml:"field"` // Name & Fields are the elements of a Table. agent chokes if we try to embed a Table. So instead we have to embed the fields of a Table, and construct a Table during runtime.
 	connectionCache   []snmpConnection
-	Agents            []string `toml:"agents"`
+	Agents            []string          `toml:"agents"`
+	CheckTags         map[string]string `toml:"check_tags"` // direct metrics mode - list of tags to add to check when created
 	Tags              map[string]string
 	snmp.ClientConfig
 	flushDelay     time.Duration // direct metrics mode - send directly to circonus (bypassing output)
@@ -155,6 +156,7 @@ func (s *Snmp) init() error {
 			Broker:       s.Broker,
 			DebugAPI:     s.DebugAPI,
 			TraceMetrics: s.TraceMetrics,
+			CheckTags:    s.CheckTags,
 		}
 		dest, err := circmgr.NewMetricDestination(opts, s.Log)
 		if err != nil {

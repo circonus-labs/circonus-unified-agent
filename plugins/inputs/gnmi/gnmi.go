@@ -24,6 +24,7 @@ import (
 	"github.com/openconfig/gnmi/proto/gnmi"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -204,7 +205,7 @@ func (c *GNMI) subscribeGNMI(ctx context.Context, address string, tlscfg *tls.Co
 	if tlscfg != nil {
 		opt = grpc.WithTransportCredentials(credentials.NewTLS(tlscfg))
 	} else {
-		opt = grpc.WithInsecure()
+		opt = grpc.WithTransportCredentials(insecure.NewCredentials())
 	}
 
 	client, err := grpc.DialContext(ctx, address, opt)

@@ -26,6 +26,21 @@ information.
 [[inputs.snmp_trap]]
   instance_id = "" # unique instance identifier (REQUIRED)
 
+  ## Route numeric metrics to a specific output using a tag
+  ## e.g. circ_routing:circonus
+  ## In the desired output plugin use tagpass to accept
+  ## the metrics and in other output plugins use tagdrop
+  ## to ignore them.
+  # circ_route_numeric = ""
+  ## Route text metrics to a specifc output using a tag
+  ## e.g. circ_routing:elastic - in the elasticsearch output
+  ## plugin use tagpass to accept these metrics, and in the 
+  ## other output plugins use tagdrop to ignore these metrics.
+  ## Note: if this is blank, no text metrics will be generated.
+  # circ_route_text = ""
+  ## Use numeric OIDs for metric names
+  # numeric_oid_metric_name = false
+
   ## Transport, local address, and port to listen on.  Transport must
   ## be "udp://".  Omit local address to listen on all interfaces.
   ##   example: "udp://127.0.0.1:1234"
@@ -78,6 +93,16 @@ setcap cap_net_bind_service=+ep /usr/bin/circonus-unified-agent
 
 On Mac OS, listening on privileged ports is unrestricted on versions
 10.14 and later.
+
+### Metric routing
+
+Use tags to route metrics to specific outputs - e.g. sending text traps to elasticsearch or opensearch.
+
+1. Set the `circ_route_text` to a specific tag e.g. `circ_routing:elastic`.
+2. Use `tagpass` to accept the metric in the elasticsearch output plugin e.g. `tagpass = { circ_routing = ["elastic"] }` optionally, use `tagexclude = ["circ_routing"]` to remove the tag from the metric before it is sent.
+3. Use `tagdrop` in other output plugins to drop these metrics e.g. `tagdrop = { circ_routing = ["elastic"] }`
+
+> Note regarding text traps - if `circ_route_text` is not set to route text metrics to an alternate output plugin (not circonus) the text metrics will not be created. Only numeric counters will be generated for text traps, numeric traps will no be affected. If `numeric_oid_metric_name` is set to true, the `.` at the beginning of an OID will be removed so that elasticsearch will accept the data (e.g. .1.3.6.1.6.3.1.1.5.1 -> 1.3.6.1.6.3.1.1.5.1).
 
 ### Metrics
 

@@ -20,11 +20,11 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
 	dialout "github.com/cisco-ie/nx-telemetry-proto/mdt_dialout"
 	telemetry "github.com/cisco-ie/nx-telemetry-proto/telemetry_bis"
-	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"     // Register GRPC gzip decoder to support compressed telemetry
 	_ "google.golang.org/grpc/encoding/gzip" //nolint:golint
 	"google.golang.org/grpc/peer"
+	"google.golang.org/protobuf/proto"
 )
 
 const (
@@ -34,29 +34,23 @@ const (
 
 // CiscoTelemetryMDT plugin for IOS XR, IOS XE and NXOS platforms
 type CiscoTelemetryMDT struct {
-	// Common configuration
-	Transport      string
-	ServiceAddress string            `toml:"service_address"`
-	MaxMsgSize     int               `toml:"max_msg_size"`
+	wg    sync.WaitGroup
+	mutex sync.Mutex
+	// not used but required for mdt_dialout pkg update
+	dialout.UnimplementedGRPCMdtDialoutServer
+	Log            cua.Logger
+	acc            cua.Accumulator
+	listener       net.Listener
+	extraTags      map[string]map[string]struct{}
+	warned         map[string]struct{}
+	grpcServer     *grpc.Server
 	Aliases        map[string]string `toml:"aliases"`
-	EmbeddedTags   []string          `toml:"embedded_tags"`
-
-	Log cua.Logger
-
-	// GRPC TLS settings
+	aliases        map[string]string
+	Transport      string
+	ServiceAddress string `toml:"service_address"`
 	internaltls.ServerConfig
-
-	// Internal listener / client handle
-	grpcServer *grpc.Server
-	listener   net.Listener
-
-	// Internal state
-	aliases   map[string]string
-	warned    map[string]struct{}
-	extraTags map[string]map[string]struct{}
-	mutex     sync.Mutex
-	acc       cua.Accumulator
-	wg        sync.WaitGroup
+	EmbeddedTags []string `toml:"embedded_tags"`
+	MaxMsgSize   int      `toml:"max_msg_size"`
 }
 
 // Start the Cisco MDT service

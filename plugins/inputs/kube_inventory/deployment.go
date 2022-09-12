@@ -2,10 +2,10 @@ package kubeinventory
 
 import (
 	"context"
-	"time"
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
-	v1 "github.com/ericchiang/k8s/apis/apps/v1"
+
+	appsv1 "k8s.io/api/apps/v1"
 )
 
 func collectDeployments(ctx context.Context, acc cua.Accumulator, ki *KubernetesInventory) {
@@ -15,25 +15,21 @@ func collectDeployments(ctx context.Context, acc cua.Accumulator, ki *Kubernetes
 		return
 	}
 	for _, d := range list.Items {
-		ki.gatherDeployment(*d, acc)
-		// if err = ki.gatherDeployment(*d, acc); err != nil {
-		// 	acc.AddError(err)
-		// 	return
-		// }
+		ki.gatherDeployment(d, acc)
 	}
 }
 
-func (ki *KubernetesInventory) gatherDeployment(d v1.Deployment, acc cua.Accumulator) {
+func (ki *KubernetesInventory) gatherDeployment(d appsv1.Deployment, acc cua.Accumulator) {
 	fields := map[string]interface{}{
-		"replicas_available":   d.Status.GetAvailableReplicas(),
-		"replicas_unavailable": d.Status.GetUnavailableReplicas(),
-		"created":              time.Unix(d.Metadata.CreationTimestamp.GetSeconds(), int64(d.Metadata.CreationTimestamp.GetNanos())).UnixNano(),
+		"replicas_available":   d.Status.AvailableReplicas,
+		"replicas_unavailable": d.Status.UnavailableReplicas,
+		"created":              d.GetCreationTimestamp().UnixNano(),
 	}
 	tags := map[string]string{
-		"deployment_name": d.Metadata.GetName(),
-		"namespace":       d.Metadata.GetNamespace(),
+		"deployment_name": d.Name,
+		"namespace":       d.Namespace,
 	}
-	for key, val := range d.GetSpec().GetSelector().GetMatchLabels() {
+	for key, val := range d.Spec.Selector.MatchLabels {
 		if ki.selectorFilter.Match(key) {
 			tags["selector_"+key] = val
 		}

@@ -4,8 +4,11 @@
 package zfs
 
 import (
+	"bytes"
 	"context"
+	"errors"
 	"fmt"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -13,6 +16,16 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/internal"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
+)
+
+const (
+	unknown int = iota
+	online
+	degraded
+	faulted
+	offline
+	removed
+	unavail
 )
 
 type poolInfo struct {
@@ -104,6 +117,10 @@ func (z *Zfs) Gather(ctx context.Context, acc cua.Accumulator) error {
 				return err
 			}
 		}
+		_, err := z.gatherPoolListStats(acc)
+		if err != nil {
+			return err
+		}
 	}
 
 	fields := make(map[string]interface{})
@@ -137,4 +154,129 @@ func init() {
 	inputs.Add("zfs", func() cua.Input {
 		return &Zfs{}
 	})
+}
+
+func (z *Zfs) gatherPoolListStats(acc cua.Accumulator) (string, error) {
+	if !z.PoolMetrics {
+		return "", nil
+	}
+
+	zpoolpath := z.ZpoolPath
+	if len(zpoolpath) == 0 {
+		zpoolpath = "/usr/sbin/zpool"
+	}
+
+	lines, err := zpoolList(zpoolpath)
+	if err != nil {
+		return "", err
+	}
+
+	pools := []string{}
+	for _, line := range lines {
+		col := strings.Split(line, "\t")
+
+		pools = append(pools, col[0])
+	}
+
+	for _, line := range lines {
+		col := strings.Split(line, "\t")
+		if len(col) != 8 {
+			continue
+		}
+
+		tags := map[string]string{"pool": col[0]}
+		fields := map[string]interface{}{}
+
+		health := unknown
+		switch col[1] {
+		case "ONLINE":
+			health = online
+		case "DEGRADED":
+			health = degraded
+		case "FAULTED":
+			health = faulted
+		case " OFFLINE":
+			health = offline
+		case "REMOVED":
+			health = removed
+		case "UNAVAIL":
+			health = unavail
+		}
+		fields["health"] = health
+
+		if health == unavail {
+
+			fields["size"] = int64(0)
+
+		} else {
+
+			size, err := strconv.ParseInt(col[2], 10, 64)
+			if err != nil {
+				return "", fmt.Errorf("Error parsing size: %w", err)
+			}
+			fields["size"] = size
+
+			alloc, err := strconv.ParseInt(col[3], 10, 64)
+			if err != nil {
+				return "", fmt.Errorf("Error parsing allocation: %w", err)
+			}
+			fields["allocated"] = alloc
+
+			free, err := strconv.ParseInt(col[4], 10, 64)
+			if err != nil {
+				return "", fmt.Errorf("Error parsing free: %w", err)
+			}
+			fields["free"] = free
+
+			frag, err := strconv.ParseInt(strings.TrimSuffix(col[5], "%"), 10, 0)
+			if err != nil { // This might be - for RO devs
+				frag = 0
+			}
+			fields["fragmentation"] = frag
+
+			capval, err := strconv.ParseInt(col[6], 10, 0)
+			if err != nil {
+				return "", fmt.Errorf("Error parsing capacity: %w", err)
+			}
+			fields["capacity"] = capval
+
+			dedup, err := strconv.ParseFloat(strings.TrimSuffix(col[7], "x"), 32)
+			if err != nil {
+				return "", fmt.Errorf("Error parsing dedupratio: %w", err)
+			}
+			fields["dedupratio"] = dedup
+		}
+
+		acc.AddFields("zfs_pool", fields, tags)
+	}
+
+	return strings.Join(pools, "::"), nil
+}
+
+func run(command string, args ...string) ([]string, error) {
+	cmd := exec.Command(command, args...)
+	var outbuf, errbuf bytes.Buffer
+	cmd.Stdout = &outbuf
+	cmd.Stderr = &errbuf
+	err := cmd.Run()
+
+	stdout := strings.TrimSpace(outbuf.String())
+	stderr := strings.TrimSpace(errbuf.String())
+
+	var exitErr *exec.ExitError
+	if err != nil {
+		if errors.As(err, &exitErr) {
+			return nil, fmt.Errorf("%s error: %s: %w", command, stderr, exitErr)
+		}
+		return nil, fmt.Errorf("%s error: %w", command, err)
+	}
+	return strings.Split(stdout, "\n"), nil
+}
+
+func zpoolList(zpoolpath string) ([]string, error) {
+	zpoolcmd := "zpool"
+	if len(zpoolpath) != 0 {
+		zpoolcmd = zpoolpath
+	}
+	return run(zpoolcmd, []string{"list", "-Hp", "-o", "name,health,size,alloc,free,fragmentation,capacity,dedupratio"}...)
 }

@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -16,6 +17,9 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/internal"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/common/tls"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
+
+	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/apimachinery/pkg/labels"
 )
 
 const acceptHeader = `application/vnd.google.protobuf;proto=io.prometheus.client.MetricFamily;encoding=delimited;q=0.7,text/plain;version=0.0.4;q=0.3,*/*;q=0.1`
@@ -35,6 +39,9 @@ type Prometheus struct {
 
 	// Field Selector/s for Kubernetes
 	KubernetesFieldSelector string `toml:"kubernetes_field_selector"`
+
+	// Consul SD configuration
+	ConsulConfig ConsulConfig `toml:"consul"`
 
 	// Bearer Token authorization file path
 	BearerToken       string `toml:"bearer_token"`
@@ -56,39 +63,58 @@ type Prometheus struct {
 
 	client *http.Client
 
+	headers map[string]string
+
 	// Should we scrape Kubernetes services for prometheus annotations
-	MonitorPods    bool   `toml:"monitor_kubernetes_pods"`
-	PodNamespace   string `toml:"monitor_kubernetes_pods_namespace"`
-	lock           sync.Mutex
-	kubernetesPods map[string]URLAndAddress
-	cancel         context.CancelFunc
-	wg             sync.WaitGroup
+	MonitorPods           bool   `toml:"monitor_kubernetes_pods"`
+	PodScrapeScope        string `toml:"pod_scrape_scope"`
+	NodeIP                string `toml:"node_ip"`
+	PodScrapeInterval     int    `toml:"pod_scrape_interval"`
+	PodNamespace          string `toml:"monitor_kubernetes_pods_namespace"`
+	PodNamespaceLabelName string `toml:"pod_namespace_label_name"`
+	lock                  sync.Mutex
+	kubernetesPods        map[string]URLAndAddress
+	cancel                context.CancelFunc
+	wg                    sync.WaitGroup
+
+	// Only for monitor_kubernetes_pods=true and pod_scrape_scope="node"
+	podLabelSelector  labels.Selector
+	podFieldSelector  fields.Selector
+	isNodeScrapeScope bool
+
+	// Only for monitor_kubernetes_pods=true
+	CacheRefreshInterval int `toml:"cache_refresh_interval"`
+
+	// List of consul services to scrape
+	consulServices map[string]URLAndAddress
 }
 
 var sampleConfig = `
+# Read metrics from one or many prometheus clients
+[[inputs.prometheus]]
   ## instance_id is required on input plugins
   instance_id = "prometheus"
   ## An array of urls to scrape metrics from.
   urls = ["http://localhost:9100/metrics"]
-
-  ## Metric version controls the mapping from Prometheus metrics into
-  ## circonus metrics.  When using the prometheus_client output, use the same
-  ## value in both plugins to ensure metrics are round-tripped without
-  ## modification.
-  ##
-  ##   example: metric_version = 1; deprecated in 1.13
-  ##            metric_version = 2; recommended version
+  
+  ## Metric version controls the mapping from Prometheus metrics into Telegraf metrics.
+  ## See "Metric Format Configuration" in plugins/inputs/prometheus/README.md for details.
+  ## Valid options: 1, 2
   # metric_version = 1
-
+  
   ## Url tag name (tag containing scrapped url. optional, default is "url")
-  # url_tag = "scrapeUrl"
-
+  # url_tag = "url"
+  
+  ## Whether the timestamp of the scraped metrics will be ignored.
+  ## If set to true, the gather time will be used.
+  # ignore_timestamp = false
+  
   ## An array of Kubernetes services to scrape metrics from.
   # kubernetes_services = ["http://my-service-dns.my-namespace:9100/metrics"]
-
+  
   ## Kubernetes config file to create client from.
   # kube_config = "/path/to/kubernetes.config"
-
+  
   ## Scrape Kubernetes pods for the following prometheus annotations:
   ## - prometheus.io/scrape: Enable scraping for this pod
   ## - prometheus.io/scheme: If the metrics endpoint is secured then you will need to
@@ -96,32 +122,67 @@ var sampleConfig = `
   ## - prometheus.io/path: If the metrics path is not /metrics, define it with this annotation.
   ## - prometheus.io/port: If port is not 9102 use this annotation
   # monitor_kubernetes_pods = true
+  
+  ## Get the list of pods to scrape with either the scope of
+  ## - cluster: the kubernetes watch api (default, no need to specify)
+  ## - node: the local cadvisor api; for scalability. Note that the config node_ip or the environment variable NODE_IP must be set to the host IP.
+  # pod_scrape_scope = "cluster"
+  
+  ## Only for node scrape scope: node IP of the node that telegraf is running on.
+  ## Either this config or the environment variable NODE_IP must be set.
+  # node_ip = "10.180.1.1"
+ 
+  ## Only for node scrape scope: interval in seconds for how often to get updated pod list for scraping.
+  ## Default is 60 seconds.
+  # pod_scrape_interval = 60
+  
   ## Restricts Kubernetes monitoring to a single namespace
   ##   ex: monitor_kubernetes_pods_namespace = "default"
   # monitor_kubernetes_pods_namespace = ""
+  ## The name of the label for the pod that is being scraped.
+  ## Default is 'namespace' but this can conflict with metrics that have the label 'namespace'
+  # pod_namespace_label_name = "namespace"
   # label selector to target pods which have the label
   # kubernetes_label_selector = "env=dev,app=nginx"
   # field selector to target pods
   # eg. To scrape pods on a specific node
   # kubernetes_field_selector = "spec.nodeName=$HOSTNAME"
 
+  # cache refresh interval to set the interval for re-sync of pods list. 
+  # Default is 60 minutes.
+  # cache_refresh_interval = 60
+
+  ## Scrape Services available in Consul Catalog
+  # [inputs.prometheus.consul]
+  #   enabled = true
+  #   agent = "http://localhost:8500"
+  #   query_interval = "5m"
+
+  #   [[inputs.prometheus.consul.query]]
+  #     name = "a service name"
+  #     tag = "a service tag"
+  #     url = 'http://{{if ne .ServiceAddress ""}}{{.ServiceAddress}}{{else}}{{.Address}}{{end}}:{{.ServicePort}}/{{with .ServiceMeta.metrics_path}}{{.}}{{else}}metrics{{end}}'
+  #     [inputs.prometheus.consul.query.tags]
+  #       host = "{{.Node}}"
+  
   ## Use bearer token for authorization. ('bearer_token' takes priority)
   # bearer_token = "/path/to/bearer/token"
   ## OR
   # bearer_token_string = "abc_123"
-
+  
   ## HTTP Basic Authentication username and password. ('bearer_token' and
   ## 'bearer_token_string' take priority)
   # username = ""
   # password = ""
-
+  
   ## Specify timeout duration for slower prometheus clients (default is 3s)
   # response_timeout = "3s"
-
+  
   ## Optional TLS Config
   # tls_ca = /path/to/cafile
   # tls_cert = /path/to/certfile
   # tls_key = /path/to/keyfile
+  
   ## Use TLS but skip chain & host verification
   # insecure_skip_verify = false
 `
@@ -135,8 +196,40 @@ func (p *Prometheus) Description() string {
 }
 
 func (p *Prometheus) Init() error {
-	if p.MetricVersion != 2 {
-		p.Log.Warnf("Use of deprecated configuration: 'metric_version = 1'; please update to 'metric_version = 2'")
+	// Config processing for node scrape scope for monitor_kubernetes_pods
+	p.isNodeScrapeScope = strings.EqualFold(p.PodScrapeScope, "node")
+	if p.isNodeScrapeScope {
+		// Need node IP to make cAdvisor call for pod list. Check if set in config and valid IP address
+		if p.NodeIP == "" || net.ParseIP(p.NodeIP) == nil {
+			p.Log.Infof("The config node_ip is empty or invalid. Using NODE_IP env var as default.")
+
+			// Check if set as env var and is valid IP address
+			envVarNodeIP := os.Getenv("NODE_IP")
+			if envVarNodeIP == "" || net.ParseIP(envVarNodeIP) == nil {
+				return errors.New("the node_ip config and the environment variable NODE_IP are not set or invalid; " +
+					"cannot get pod list for monitor_kubernetes_pods using node scrape scope")
+			}
+
+			p.NodeIP = envVarNodeIP
+		}
+
+		// Parse label and field selectors - will be used to filter pods after cAdvisor call
+		var err error
+		p.podLabelSelector, err = labels.Parse(p.KubernetesLabelSelector)
+		if err != nil {
+			return fmt.Errorf("error parsing the specified label selector(s): %w", err)
+		}
+		p.podFieldSelector, err = fields.ParseSelector(p.KubernetesFieldSelector)
+		if err != nil {
+			return fmt.Errorf("error parsing the specified field selector(s): %w", err)
+		}
+		isValid, invalidSelector := fieldSelectorIsSupported(p.podFieldSelector)
+		if !isValid {
+			return fmt.Errorf("the field selector %s is not supported for pods", invalidSelector)
+		}
+
+		p.Log.Infof("Using pod scrape scope at node level to get pod list using cAdvisor.")
+		p.Log.Infof("Using the label selector: %v and field selector: %v", p.podLabelSelector, p.podFieldSelector)
 	}
 
 	return nil
@@ -166,8 +259,8 @@ func (p *Prometheus) AddressToURL(u *url.URL, address string) *url.URL {
 type URLAndAddress struct {
 	OriginalURL *url.URL
 	URL         *url.URL
-	Address     string
 	Tags        map[string]string
+	Address     string
 }
 
 func (p *Prometheus) GetAllURLs() (map[string]URLAndAddress, error) {
@@ -183,6 +276,10 @@ func (p *Prometheus) GetAllURLs() (map[string]URLAndAddress, error) {
 
 	p.lock.Lock()
 	defer p.lock.Unlock()
+	// add all services collected from consul
+	for k, v := range p.consulServices {
+		allURLs[k] = v
+	}
 	// loop through all pods scraped via the prometheus annotation on the pods
 	for k, v := range p.kubernetesPods {
 		allURLs[k] = v
@@ -220,6 +317,10 @@ func (p *Prometheus) Gather(ctx context.Context, acc cua.Accumulator) error {
 			return err
 		}
 		p.client = client
+		p.headers = map[string]string{
+			"User-Agent": internal.ProductToken(),
+			"Accept":     acceptHeader,
+		}
 	}
 
 	var wg sync.WaitGroup
@@ -297,7 +398,7 @@ func (p *Prometheus) gatherURL(u URLAndAddress, acc cua.Accumulator) error {
 		}
 	}
 
-	req.Header.Add("Accept", acceptHeader)
+	p.addHeaders(req)
 
 	switch {
 	case p.BearerToken != "":
@@ -373,20 +474,57 @@ func (p *Prometheus) gatherURL(u URLAndAddress, acc cua.Accumulator) error {
 	return nil
 }
 
+func (p *Prometheus) addHeaders(req *http.Request) {
+	for header, value := range p.headers {
+		req.Header.Add(header, value)
+	}
+}
+
+/* Check if the field selector specified is valid.
+ * See ToSelectableFields() for list of fields that are selectable:
+ * https://github.com/kubernetes/kubernetes/release-1.20/pkg/registry/core/pod/strategy.go
+ */
+func fieldSelectorIsSupported(fieldSelector fields.Selector) (bool, string) {
+	supportedFieldsToSelect := map[string]bool{
+		"spec.nodeName":            true,
+		"spec.restartPolicy":       true,
+		"spec.schedulerName":       true,
+		"spec.serviceAccountName":  true,
+		"status.phase":             true,
+		"status.podIP":             true,
+		"status.nominatedNodeName": true,
+	}
+
+	for _, requirement := range fieldSelector.Requirements() {
+		if !supportedFieldsToSelect[requirement.Field] {
+			return false, requirement.Field
+		}
+	}
+
+	return true, ""
+}
+
 // Start will start the Kubernetes scraping if enabled in the configuration
-func (p *Prometheus) Start(ctx context.Context, a cua.Accumulator) error {
+func (p *Prometheus) Start(_, a cua.Accumulator) error {
+	var ctx context.Context
+	p.wg = sync.WaitGroup{}
+	ctx, p.cancel = context.WithCancel(context.Background())
+
+	if p.ConsulConfig.Enabled && len(p.ConsulConfig.Queries) > 0 {
+		if err := p.startConsul(ctx); err != nil {
+			return err
+		}
+	}
 	if p.MonitorPods {
-		var pctx context.Context
-		pctx, p.cancel = context.WithCancel(ctx)
-		return p.start(pctx)
+		if err := p.startK8s(ctx); err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
 func (p *Prometheus) Stop() {
-	if p.MonitorPods {
-		p.cancel()
-	}
+	p.cancel()
 	p.wg.Wait()
 }
 
@@ -395,6 +533,7 @@ func init() {
 		return &Prometheus{
 			ResponseTimeout: internal.Duration{Duration: time.Second * 3},
 			kubernetesPods:  map[string]URLAndAddress{},
+			consulServices:  map[string]URLAndAddress{},
 			URLTag:          "url",
 		}
 	})

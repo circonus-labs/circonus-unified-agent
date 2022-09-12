@@ -20,7 +20,9 @@ func (c *Circonus) metricProcessor(id int, metrics []cua.Metric, buf bytes.Buffe
 	numMetrics := int64(0)
 	for _, m := range metrics {
 		switch m.Type() {
-		case cua.Counter, cua.Gauge, cua.Summary:
+		case cua.Counter:
+			numMetrics += c.buildCounters(m)
+		case cua.Gauge, cua.Summary:
 			numMetrics += c.buildNumerics(m)
 		case cua.Untyped:
 			fields := m.FieldList()
@@ -125,9 +127,15 @@ func (c *Circonus) handleGeneric(m cua.Metric) int64 {
 		}
 		switch v := field.Value.(type) {
 		case string:
+			if !c.AllowSNMPTrapEvents && m.Origin() == "snmp_trap" {
+				c.Log.Warn("snmp_trap attempting to send text events to circonus skipping metric(s) - see 'allow_snmp_trap_events' oprion")
+				continue
+			}
 			if err := dest.metrics.TextSet(mn, tags, v, &batchTS); err != nil {
 				c.Log.Warnf("setting text (%s) (%s) (%#v): %s", mn, tags.String(), v, err)
+				continue
 			}
+			numMetrics++
 		case bool: // boolean needs to be converted to 0=false, 1=true
 			val := 0
 			if v {
@@ -135,13 +143,16 @@ func (c *Circonus) handleGeneric(m cua.Metric) int64 {
 			}
 			if err := dest.metrics.GaugeSet(mn, tags, val, &batchTS); err != nil {
 				c.Log.Warnf("setting (boolean) gauge (%s) (%s) (%#v): %s", mn, tags.String(), v, err)
+				continue
 			}
+			numMetrics++
 		default: // treat it as a numeric
 			if err := dest.metrics.GaugeSet(mn, tags, v, &batchTS); err != nil {
 				c.Log.Warnf("setting gauge (%s) (%s) (%#v): %s", mn, tags.String(), v, err)
+				continue
 			}
+			numMetrics++
 		}
-		numMetrics++
 	}
 
 	dest.queuedMetrics += numMetrics
@@ -157,6 +168,44 @@ func (c *Circonus) buildNumerics(m cua.Metric) int64 {
 // buildTexts constructs text metrics from a cua metric.
 func (c *Circonus) buildTexts(m cua.Metric) int64 {
 	return c.handleGeneric(m)
+}
+
+// buildCounters constructs counter metrics from a cua metric.
+func (c *Circonus) buildCounters(m cua.Metric) int64 {
+	dest := c.getMetricDestination(m)
+	if dest == nil {
+		c.Log.Warnf("no metric destination found for metric (%#v)", m)
+		return 0
+	}
+
+	numMetrics := int64(0)
+	tags := c.convertTags(m)
+
+	for _, field := range m.FieldList() {
+		mn := strings.TrimSuffix(field.Key, "__value")
+		if c.DebugMetrics {
+			c.Log.Infof("%s %v %v %T\n", mn, tags.String(), field.Value, field.Value)
+		}
+		switch v := field.Value.(type) {
+		case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, float32, float64:
+			val, ok := v.(uint64)
+			if ok {
+				if err := dest.metrics.CounterIncrementByValue(mn, tags, val); err != nil {
+					c.Log.Warnf("incrementing counter (%s) (%s) (%#v): %s", mn, tags.String(), v, err)
+					continue
+				}
+				numMetrics++
+			} else {
+				c.Log.Warnf("incrementing counter (%s) (%s) (%#v): unable to convert to int64", mn, tags.String(), v)
+			}
+		default:
+			c.Log.Warnf("increment counter (%s) (%s) (%#v): %s", mn, tags.String(), v, "no handler for unknown type")
+		}
+	}
+
+	dest.queuedMetrics += numMetrics
+
+	return numMetrics
 }
 
 // buildHistogram constructs histogram metrics from a cua metric.
@@ -182,7 +231,8 @@ func (c *Circonus) buildHistogram(m cua.Metric) int64 {
 		}
 
 		if err := dest.metrics.HistogramRecordCountForValue(mn, tags, field.Value.(int64), v); err != nil {
-			c.Log.Warnf("setting gauge (%s %s): %s", mn, tags.String(), err)
+			c.Log.Warnf("recording histogram (%s %s): %s", mn, tags.String(), err)
+			continue
 		}
 		numMetrics++
 	}
@@ -215,7 +265,8 @@ func (c *Circonus) buildCumulativeHistogram(m cua.Metric) int64 {
 		}
 
 		if err := dest.metrics.CumulativeHistogramRecordCountForValue(mn, tags, field.Value.(int64), v); err != nil {
-			c.Log.Warnf("setting gauge (%s %s): %s", mn, tags.String(), err)
+			c.Log.Warnf("recording cumlative histogram (%s %s): %s", mn, tags.String(), err)
+			continue
 		}
 
 		numMetrics++

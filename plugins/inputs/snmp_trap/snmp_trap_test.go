@@ -155,26 +155,19 @@ func TestReceiveTrap(t *testing.T) {
 	// If the first pdu isn't type TimeTicks, gosnmp.SendTrap() will
 	// prepend one with time.Now()
 	var tests = []struct {
-		name string
-
-		// send
-		version gosnmp.SnmpVersion
-		trap    gosnmp.SnmpTrap // include pdus
-		// V3 auth and priv parameters
-		secName   string // v3 username
-		secLevel  string // v3 security level
-		authProto string // Auth protocol: "", MD5 or SHA
-		authPass  string // Auth passphrase
-		privProto string // Priv protocol: "", DES or AES
-		privPass  string // Priv passphrase
-
-		// V3 sender context
-		contextName string
-		engineID    string
-
-		// receive
-		entries []entry
-		metrics []cua.Metric
+		secName     string       // v3 username
+		secLevel    string       // v3 security level
+		authProto   string       // Auth protocol: "", MD5 or SHA
+		authPass    string       // Auth passphrase
+		name        string       // name
+		privProto   string       // Priv protocol: "", DES or AES
+		privPass    string       // Priv passphrase
+		contextName string       // V3 sender context
+		engineID    string       // V3 sender context
+		entries     []entry      // receive
+		metrics     []cua.Metric // receive
+		trap        gosnmp.SnmpTrap
+		version     gosnmp.SnmpVersion
 	}{
 		// ordinary v2c coldStart trap
 		{

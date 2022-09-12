@@ -42,6 +42,11 @@ check configuration click [here][docs].
   ## Optional: explicit broker id or blank (default blank, auto select)
   ## example:
   # broker = "/broker/35"
+
+  ## Allow snmp trap text event metrics to flow through to circonus.
+  ## This is off by default, and snmp trap text events will be dropped.
+  ## Enabling this will result in increased billing costs.
+  # allow_snmp_trap_events = false
 ```
 
 ### Configuration Options

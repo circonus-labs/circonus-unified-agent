@@ -21,6 +21,9 @@ from `sysctl`, `zfs`, and `zpool` on FreeBSD.
   # See https://github.com/zfsonlinux/zfs/issues/362 for a potential workaround
   # if your distribution does not support unprivileged access to /dev/zfs.
 
+  ## Path for zpool command, the default is:
+  # zpoolPath = "/usr/sbin/zpool"
+
   ## ZFS kstat path. Ignored on FreeBSD
   ## If not specified, then default is:
   # kstatPath = "/proc/spl/kstat/zfs"

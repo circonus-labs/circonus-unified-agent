@@ -10,9 +10,10 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/testutil"
 	dialout "github.com/cisco-ie/nx-telemetry-proto/mdt_dialout"
 	telemetry "github.com/cisco-ie/nx-telemetry-proto/telemetry_bis"
-	"github.com/golang/protobuf/proto"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/protobuf/proto"
 )
 
 func TestHandleTelemetryTwoSimple(t *testing.T) {
@@ -522,7 +523,7 @@ func TestGRPCDialoutError(t *testing.T) {
 	require.NoError(t, err)
 
 	addr := c.Address()
-	conn, _ := grpc.Dial(addr.String(), grpc.WithInsecure())
+	conn, _ := grpc.Dial(addr.String(), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	client := dialout.NewGRPCMdtDialoutClient(conn)
 	stream, _ := client.MdtDialout(context.Background())
 
@@ -545,7 +546,7 @@ func TestGRPCDialoutMultiple(t *testing.T) {
 	telemetry := mockTelemetryMessage()
 
 	addr := c.Address()
-	conn, _ := grpc.Dial(addr.String(), grpc.WithInsecure(), grpc.WithBlock())
+	conn, _ := grpc.Dial(addr.String(), grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
 	client := dialout.NewGRPCMdtDialoutClient(conn)
 	stream, _ := client.MdtDialout(context.TODO())
 
@@ -553,7 +554,7 @@ func TestGRPCDialoutMultiple(t *testing.T) {
 	args := &dialout.MdtDialoutArgs{Data: data, ReqId: 456}
 	_ = stream.Send(args)
 
-	conn2, _ := grpc.Dial(addr.String(), grpc.WithInsecure(), grpc.WithBlock())
+	conn2, _ := grpc.Dial(addr.String(), grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
 	client2 := dialout.NewGRPCMdtDialoutClient(conn2)
 	stream2, _ := client2.MdtDialout(context.TODO())
 

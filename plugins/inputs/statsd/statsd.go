@@ -169,15 +169,16 @@ type Statsd struct {
 	accept                 chan bool
 	in                     chan input
 	done                   chan struct{}
-	TraceMetrics           *string `toml:"trace_metrics"`
+	TraceMetrics           *string `toml:"trace_metrics"` // direct metrics
 	UDPlistener            *net.UDPConn
 	TCPlistener            *net.TCPListener
+	CheckTags              map[string]string // direct metrics - list of tags to add to check when created
 	conns                  map[string]*net.TCPConn
-	DebugAPI               *bool `toml:"debug_api"`
+	DebugAPI               *bool `toml:"debug_api"` // direct metrics
 	metricDestination      *trapmetrics.TrapMetrics
 	TCPKeepAlivePeriod     *internal.Duration `toml:"tcp_keep_alive_period"`
 	bufPool                sync.Pool
-	Broker                 string `toml:"broker"`
+	Broker                 string `toml:"broker"` // direct metrics
 	MetricSeparator        string
 	ServiceAddress         string
 	Protocol               string `toml:"protocol"`
@@ -363,6 +364,7 @@ func (s *Statsd) Start(ctx context.Context, ac cua.Accumulator) error {
 		Broker:       s.Broker,
 		DebugAPI:     s.DebugAPI,
 		TraceMetrics: s.TraceMetrics,
+		CheckTags:    s.CheckTags,
 	}
 
 	dest, err := circmgr.NewMetricDestination(opts, s.Log)

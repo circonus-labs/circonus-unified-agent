@@ -74,6 +74,7 @@ type InputConfig struct {
 	NameOverride      string
 	MeasurementPrefix string
 	MeasurementSuffix string
+	CheckTags         map[string]string
 	Filter            Filter
 	Precision         time.Duration
 	Interval          time.Duration

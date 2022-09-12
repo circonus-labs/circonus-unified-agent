@@ -4,7 +4,8 @@ import (
 	"context"
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
-	v1 "github.com/ericchiang/k8s/apis/core/v1"
+
+	corev1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -20,39 +21,37 @@ func collectNodes(ctx context.Context, acc cua.Accumulator, ki *KubernetesInvent
 		return
 	}
 	for _, n := range list.Items {
-		ki.gatherNode(*n, acc)
-		// if err = ki.gatherNode(*n, acc); err != nil {
-		// 	acc.AddError(err)
-		// 	return
-		// }
+		ki.gatherNode(n, acc)
 	}
 }
 
-func (ki *KubernetesInventory) gatherNode(n v1.Node, acc cua.Accumulator) {
+func (ki *KubernetesInventory) gatherNode(n corev1.Node, acc cua.Accumulator) {
 	fields := map[string]interface{}{}
 	tags := map[string]string{
-		"node_name": *n.Metadata.Name,
+		"node_name": n.Name,
 	}
 
 	for resourceName, val := range n.Status.Capacity {
 		switch resourceName {
 		case resourceCPU:
-			fields["capacity_cpu_cores"] = atoi(val.GetString_())
+			fields["capacity_cpu_cores"] = convertQuantity(string(val.Format), 1)
+			fields["capicity_millicpu_cores"] = convertQuantity(string(val.Format), 1000)
 		case resourceMemory:
-			fields["capacity_memory_bytes"] = convertQuantity(val.GetString_(), 1)
+			fields["capacity_memory_bytes"] = convertQuantity(string(val.Format), 1)
 		case resourcePods:
-			fields["capacity_pods"] = atoi(val.GetString_())
+			fields["capacity_pods"] = atoi(string(val.Format))
 		}
 	}
 
 	for resourceName, val := range n.Status.Allocatable {
 		switch resourceName {
 		case resourceCPU:
-			fields["allocatable_cpu_cores"] = atoi(val.GetString_())
+			fields["allocatable_cpu_cores"] = convertQuantity(string(val.Format), 1)
+			fields["allocatable_millicpu_cores"] = convertQuantity(string(val.Format), 1000)
 		case resourceMemory:
-			fields["allocatable_memory_bytes"] = convertQuantity(val.GetString_(), 1)
+			fields["allocatable_memory_bytes"] = convertQuantity(string(val.Format), 1)
 		case resourcePods:
-			fields["allocatable_pods"] = atoi(val.GetString_())
+			fields["allocatable_pods"] = atoi(string(val.Format))
 		}
 	}
 

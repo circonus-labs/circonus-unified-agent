@@ -7,8 +7,10 @@ import (
 	"time"
 
 	"github.com/circonus-labs/circonus-unified-agent/testutil"
-	v1 "github.com/ericchiang/k8s/apis/core/v1"
-	metav1 "github.com/ericchiang/k8s/apis/meta/v1"
+
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 func TestService(t *testing.T) {
@@ -17,18 +19,18 @@ func TestService(t *testing.T) {
 	now = time.Date(now.Year(), now.Month(), now.Day(), now.Hour(), 1, 36, 0, now.Location())
 
 	tests := []struct {
-		name     string
 		handler  *mockHandler
 		output   *testutil.Accumulator
-		hasError bool
+		name     string
 		include  []string
 		exclude  []string
+		hasError bool
 	}{
 		{
 			name: "no service",
 			handler: &mockHandler{
 				responseMap: map[string]interface{}{
-					"/service/": &v1.ServiceList{},
+					"/service/": &corev1.ServiceList{},
 				},
 			},
 			hasError: false,
@@ -37,30 +39,32 @@ func TestService(t *testing.T) {
 			name: "collect service",
 			handler: &mockHandler{
 				responseMap: map[string]interface{}{
-					"/service/": &v1.ServiceList{
-						Items: []*v1.Service{
+					"/service/": &corev1.ServiceList{
+						Items: []corev1.Service{
 							{
-								Spec: &v1.ServiceSpec{
-									Ports: []*v1.ServicePort{
+								Spec: corev1.ServiceSpec{
+									Ports: []corev1.ServicePort{
 										{
-											Port:       toInt32Ptr(8080),
-											TargetPort: toIntStrPtrI(1234),
-											Name:       toStrPtr("diagnostic"),
-											Protocol:   toStrPtr("TCP"),
+											Port: 8080,
+											TargetPort: intstr.IntOrString{
+												IntVal: 1234,
+											},
+											Name:     "diagnostic",
+											Protocol: "TCP",
 										},
 									},
 									ExternalIPs: []string{"1.0.0.127"},
-									ClusterIP:   toStrPtr("127.0.0.1"),
+									ClusterIP:   "127.0.0.1",
 									Selector: map[string]string{
 										"select1": "s1",
 										"select2": "s2",
 									},
 								},
-								Metadata: &metav1.ObjectMeta{
-									Generation:        toInt64Ptr(12),
-									Namespace:         toStrPtr("ns1"),
-									Name:              toStrPtr("checker"),
-									CreationTimestamp: &metav1.Time{Seconds: toInt64Ptr(now.Unix())},
+								ObjectMeta: metav1.ObjectMeta{
+									Generation:        12,
+									Namespace:         "ns1",
+									Name:              "checker",
+									CreationTimestamp: metav1.Time{Time: now},
 								},
 							},
 						},
@@ -102,11 +106,8 @@ func TestService(t *testing.T) {
 		ks.SelectorExclude = v.exclude
 		_ = ks.createSelectorFilters()
 		acc := new(testutil.Accumulator)
-		for _, service := range ((v.handler.responseMap["/service/"]).(*v1.ServiceList)).Items {
-			ks.gatherService(*service, acc)
-			// if err != nil {
-			// 	t.Errorf("Failed to gather service - %s", err.Error())
-			// }
+		for _, service := range ((v.handler.responseMap["/service/"]).(corev1.ServiceList)).Items {
+			ks.gatherService(service, acc)
 		}
 
 		err := acc.FirstError()
@@ -140,30 +141,32 @@ func TestServiceSelectorFilter(t *testing.T) {
 	now = time.Date(now.Year(), now.Month(), now.Day(), now.Hour(), 1, 36, 0, now.Location())
 
 	responseMap := map[string]interface{}{
-		"/service/": &v1.ServiceList{
-			Items: []*v1.Service{
+		"/service/": &corev1.ServiceList{
+			Items: []corev1.Service{
 				{
-					Spec: &v1.ServiceSpec{
-						Ports: []*v1.ServicePort{
+					Spec: corev1.ServiceSpec{
+						Ports: []corev1.ServicePort{
 							{
-								Port:       toInt32Ptr(8080),
-								TargetPort: toIntStrPtrI(1234),
-								Name:       toStrPtr("diagnostic"),
-								Protocol:   toStrPtr("TCP"),
+								Port: 8080,
+								TargetPort: intstr.IntOrString{
+									IntVal: 1234,
+								},
+								Name:     "diagnostic",
+								Protocol: "TCP",
 							},
 						},
 						ExternalIPs: []string{"1.0.0.127"},
-						ClusterIP:   toStrPtr("127.0.0.1"),
+						ClusterIP:   "127.0.0.1",
 						Selector: map[string]string{
 							"select1": "s1",
 							"select2": "s2",
 						},
 					},
-					Metadata: &metav1.ObjectMeta{
-						Generation:        toInt64Ptr(12),
-						Namespace:         toStrPtr("ns1"),
-						Name:              toStrPtr("checker"),
-						CreationTimestamp: &metav1.Time{Seconds: toInt64Ptr(now.Unix())},
+					ObjectMeta: metav1.ObjectMeta{
+						Generation:        12,
+						Namespace:         "ns1",
+						Name:              "checker",
+						CreationTimestamp: metav1.Time{Time: now},
 					},
 				},
 			},
@@ -171,12 +174,12 @@ func TestServiceSelectorFilter(t *testing.T) {
 	}
 
 	tests := []struct {
-		name     string
 		handler  *mockHandler
-		hasError bool
+		expected map[string]string
+		name     string
 		include  []string
 		exclude  []string
-		expected map[string]string
+		hasError bool
 	}{
 		{
 			name: "nil filters equals all selectors",
@@ -273,11 +276,8 @@ func TestServiceSelectorFilter(t *testing.T) {
 		ks.SelectorExclude = v.exclude
 		_ = ks.createSelectorFilters()
 		acc := new(testutil.Accumulator)
-		for _, service := range ((v.handler.responseMap["/service/"]).(*v1.ServiceList)).Items {
-			ks.gatherService(*service, acc)
-			// if err != nil {
-			// 	t.Errorf("Failed to gather service - %s", err.Error())
-			// }
+		for _, service := range ((v.handler.responseMap["/service/"]).(corev1.ServiceList)).Items {
+			ks.gatherService(service, acc)
 		}
 
 		// Grab selector tags

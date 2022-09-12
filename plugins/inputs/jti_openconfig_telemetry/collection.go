@@ -3,9 +3,9 @@ package jtiopenconfigtelemetry
 import "sort"
 
 type DataGroup struct {
-	numKeys int
 	tags    map[string]string
 	data    map[string]interface{}
+	numKeys int
 }
 
 // Sort the data groups by number of keys
@@ -56,7 +56,11 @@ func (a CollectionByKeys) Insert(tags map[string]string, data map[string]interfa
 			group.data[k] = v
 		}
 	} else {
-		a = append(a, DataGroup{len(tags), tags, data})
+		a = append(a, DataGroup{
+			numKeys: len(tags),
+			tags:    tags,
+			data:    data,
+		})
 	}
 
 	return a

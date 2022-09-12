@@ -10,14 +10,15 @@ import (
 )
 
 type metric struct {
-	tm             time.Time
-	name           string
-	originInstance string
-	origin         string
-	fields         []*cua.Field
-	tags           []*cua.Tag
-	tp             cua.ValueType
-	aggregate      bool
+	tm              time.Time
+	name            string
+	originInstance  string
+	origin          string
+	originCheckTags map[string]string
+	fields          []*cua.Field
+	tags            []*cua.Tag
+	tp              cua.ValueType
+	aggregate       bool
 }
 
 func New(
@@ -69,14 +70,15 @@ func New(
 // removed.
 func FromMetric(other cua.Metric) cua.Metric {
 	m := &metric{
-		name:           other.Name(),
-		tags:           make([]*cua.Tag, len(other.TagList())),
-		fields:         make([]*cua.Field, len(other.FieldList())),
-		tm:             other.Time(),
-		tp:             other.Type(),
-		aggregate:      other.IsAggregate(),
-		origin:         other.Origin(),
-		originInstance: other.OriginInstance(),
+		name:            other.Name(),
+		tags:            make([]*cua.Tag, len(other.TagList())),
+		fields:          make([]*cua.Field, len(other.FieldList())),
+		tm:              other.Time(),
+		tp:              other.Type(),
+		aggregate:       other.IsAggregate(),
+		origin:          other.Origin(),
+		originInstance:  other.OriginInstance(),
+		originCheckTags: make(map[string]string),
 	}
 
 	for i, tag := range other.TagList() {
@@ -86,6 +88,11 @@ func FromMetric(other cua.Metric) cua.Metric {
 	for i, field := range other.FieldList() {
 		m.fields[i] = &cua.Field{Key: field.Key, Value: field.Value}
 	}
+
+	for k, v := range other.OriginCheckTags() {
+		m.originCheckTags[k] = v
+	}
+
 	return m
 }
 
@@ -236,14 +243,15 @@ func (m *metric) SetTime(t time.Time) {
 
 func (m *metric) Copy() cua.Metric {
 	m2 := &metric{
-		name:           m.name,
-		tags:           make([]*cua.Tag, len(m.tags)),
-		fields:         make([]*cua.Field, len(m.fields)),
-		tm:             m.tm,
-		tp:             m.tp,
-		aggregate:      m.aggregate,
-		origin:         m.origin,
-		originInstance: m.originInstance,
+		name:            m.name,
+		tags:            make([]*cua.Tag, len(m.tags)),
+		fields:          make([]*cua.Field, len(m.fields)),
+		tm:              m.tm,
+		tp:              m.tp,
+		aggregate:       m.aggregate,
+		origin:          m.origin,
+		originInstance:  m.originInstance,
+		originCheckTags: make(map[string]string),
 	}
 
 	for i, tag := range m.tags {
@@ -253,6 +261,11 @@ func (m *metric) Copy() cua.Metric {
 	for i, field := range m.fields {
 		m2.fields[i] = &cua.Field{Key: field.Key, Value: field.Value}
 	}
+
+	for k, v := range m.originCheckTags {
+		m2.originCheckTags[k] = v
+	}
+
 	return m2
 }
 
@@ -397,4 +410,18 @@ func (m *metric) OriginInstance() string {
 }
 func (m *metric) SetOriginInstance(instanceID string) {
 	m.originInstance = instanceID
+}
+
+func (m *metric) OriginCheckTags() map[string]string {
+	ret := make(map[string]string)
+	for k, v := range m.originCheckTags {
+		ret[k] = v
+	}
+	return ret
+}
+func (m *metric) SetOriginCheckTags(checkTags map[string]string) {
+	m.originCheckTags = make(map[string]string)
+	for k, v := range checkTags {
+		m.originCheckTags[k] = v
+	}
 }

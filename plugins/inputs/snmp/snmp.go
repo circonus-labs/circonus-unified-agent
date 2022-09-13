@@ -200,12 +200,16 @@ func (s *Snmp) init() error {
 
 // Table holds the configuration for a SNMP table.
 type Table struct {
-	Name        string   // Name will be the name of the measurement.
-	Oid         string   // OID for automatic field population. If provided, init() will populate Fields with all the table columns of the given OID.
-	InheritTags []string // Which tags to inherit from the top-level config.
-	Fields      []Field  `toml:"field"` // Fields is the tags and values to look up.
-	IndexAsTag  bool     // Adds each row's table index as a tag.
-	initialized bool
+	Name                 string   // Name will be the name of the measurement.
+	Oid                  string   // OID for automatic field population. If provided, init() will populate Fields with all the table columns of the given OID.
+	InheritTags          []string // Which tags to inherit from the top-level config.
+	Fields               []Field  `toml:"field"` // Fields is the tags and values to look up.
+	IndexAsTag           bool     // Adds each row's table index as a tag.
+	CalcErrorRate32Bit   bool     `toml:"calc_error_rate_32bit"`   // applies to ifTables only (requires ifInErrors and ifOutErrors fields)
+	CalcErrorRate64Bit   bool     `toml:"calc_error_rate_64bit"`   // applies to ifTables only (requires ifInErrors and ifOutErrors fields + ifHCInMulticastPkts and ifHCOutMulticastPkts)
+	CalcDiscardRate32Bit bool     `toml:"calc_discard_rate_32bit"` // applies to ifTables only (requires ifInDiscards and ifOutDiscards fields)
+	CalcDiscardRate64Bit bool     `toml:"calc_discard_rate_64bit"` // applies to ifTables only (requires ifInDiscards and ifOutDiscards fields + ifHCInMulticastPkts and ifHCOutMulticastPkts)
+	initialized          bool
 }
 
 // Init() builds & initializes the nested fields.
@@ -730,6 +734,21 @@ func (t Table) Build(gs snmpConnection, walk bool) (*RTable, error) {
 		Rows: make([]RTableRow, 0, len(rows)),
 	}
 	for _, r := range rows {
+		if t.CalcDiscardRate32Bit || t.CalcDiscardRate64Bit || t.CalcErrorRate32Bit || t.CalcErrorRate64Bit {
+			dr32, dr64, er32, er64 := calcRatios(t, r)
+			if dr32 != nil {
+				r.Fields["discard_rate_32bit"] = *dr32
+			}
+			if dr64 != nil {
+				r.Fields["discard_rate_64bit"] = *dr64
+			}
+			if er32 != nil {
+				r.Fields["error_rate_32bit"] = *er32
+			}
+			if er64 != nil {
+				r.Fields["error_rate_64bit"] = *er64
+			}
+		}
 		rt.Rows = append(rt.Rows, r)
 	}
 	return &rt, nil
@@ -1267,4 +1286,179 @@ func snmpTranslateCall(oid string) *TranslateItem {
 	}
 
 	return stc
+}
+
+func calcRatios(t Table, tr RTableRow) (*float32, *float64, *float32, *float64) {
+	var er32, dr32 *float32
+	var er64, dr64 *float64
+
+	ifInDiscards, haveInDiscards := tr.Fields["ifInDiscards"]
+	if !haveInDiscards {
+		ifInDiscards = 0
+	}
+
+	ifOutDiscards, haveOutDiscards := tr.Fields["ifOutDiscards"]
+	if !haveOutDiscards {
+		ifOutDiscards = 0
+	}
+
+	ifInErrors, haveInErrors := tr.Fields["ifInErrors"]
+	if !haveInErrors {
+		ifInErrors = 0
+	}
+
+	ifOutErrors, haveOutErrors := tr.Fields["ifOutErrors"]
+	if !haveOutErrors {
+		ifOutErrors = 0
+	}
+
+	ifInUcastPkts, ok := tr.Fields["ifInUcastPkts"]
+	if !ok {
+		ifInUcastPkts = 0
+	}
+
+	ifOutUcastPkts, ok := tr.Fields["ifOutUcastPkts"]
+	if !ok {
+		ifOutUcastPkts = 0
+	}
+
+	ifInUnknownProtos, ok := tr.Fields["ifInUnknownProtos"]
+	if !ok {
+		ifInUnknownProtos = 0
+	}
+
+	ifHCInMulticastPkts, is64bit := tr.Fields["ifHCInMulticastPkts"]
+	if !is64bit {
+		ifHCInMulticastPkts = 0
+	}
+
+	ifHCOutMulticastPkts, ok := tr.Fields["ifHCOutMulticastPkts"]
+	if !ok {
+		ifHCOutMulticastPkts = 0
+	}
+
+	ifHCInBroadcastPkts, ok := tr.Fields["ifHCInBroadcastPkts"]
+	if !ok {
+		ifHCInBroadcastPkts = 0
+	}
+
+	ifHCOutBroadcastPkts, ok := tr.Fields["ifHCOutBroadcastPkts"]
+	if !ok {
+		ifHCOutBroadcastPkts = 0
+	}
+
+	discards32 := (convertToFloat32(ifInDiscards) + convertToFloat32(ifOutDiscards)) * 100
+	errors32 := (convertToFloat32(ifInErrors) + convertToFloat32(ifOutErrors)) * 100
+	divisor32 := convertToFloat32(ifInUcastPkts) +
+		convertToFloat32(ifOutUcastPkts) +
+		convertToFloat32(ifInDiscards) +
+		convertToFloat32(ifOutDiscards) +
+		convertToFloat32(ifInErrors) +
+		convertToFloat32(ifOutErrors) +
+		convertToFloat32(ifInUnknownProtos) +
+		convertToFloat32(ifHCInBroadcastPkts) +
+		convertToFloat32(ifHCOutBroadcastPkts)
+
+	discards64 := (convertToFloat64(ifInDiscards) + convertToFloat64(ifOutDiscards)) * 100
+	errors64 := (convertToFloat64(ifInErrors) + convertToFloat64(ifOutErrors)) * 100
+	divisor64 := convertToFloat64(ifInUcastPkts) +
+		convertToFloat64(ifOutUcastPkts) +
+		convertToFloat64(ifInDiscards) +
+		convertToFloat64(ifOutDiscards) +
+		convertToFloat64(ifInErrors) +
+		convertToFloat64(ifOutErrors) +
+		convertToFloat64(ifInUnknownProtos) +
+		convertToFloat64(ifHCInBroadcastPkts) +
+		convertToFloat64(ifHCOutBroadcastPkts) +
+		convertToFloat64(ifHCInMulticastPkts) +
+		convertToFloat64(ifHCOutMulticastPkts)
+
+	if t.CalcDiscardRate32Bit || t.CalcDiscardRate64Bit {
+		if haveInDiscards && haveOutDiscards {
+			if t.CalcDiscardRate32Bit {
+				v := float32(0)
+				dr32 = &v
+				if divisor32 > 0 {
+					v := discards32 / divisor32
+					dr32 = &v
+				}
+			}
+			if t.CalcDiscardRate64Bit && is64bit {
+				v := float64(0)
+				dr64 = &v
+				if divisor64 > 0 {
+					v := discards64 / divisor64
+					dr64 = &v
+				}
+			}
+		}
+	}
+
+	if t.CalcErrorRate32Bit || t.CalcErrorRate64Bit {
+		if haveInErrors && haveOutErrors {
+			if t.CalcErrorRate32Bit {
+				v := float32(0)
+				er32 = &v
+				if divisor32 > 0 {
+					v := errors32 / divisor32
+					er32 = &v
+				}
+			}
+			if t.CalcErrorRate64Bit && is64bit {
+				v := float64(0)
+				er64 = &v
+				if divisor64 > 0 {
+					v := errors64 / divisor64
+					er64 = &v
+				}
+			}
+		}
+	}
+
+	return dr32, dr64, er32, er64
+}
+
+func convertToFloat32(unk interface{}) float32 {
+	switch i := unk.(type) {
+	case float64:
+		return float32(i)
+	case float32:
+		return i
+	case int64:
+		return float32(i)
+	case int32:
+		return float32(i)
+	case int:
+		return float32(i)
+	case uint64:
+		return float32(i)
+	case uint32:
+		return float32(i)
+	case uint:
+		return float32(i)
+	}
+
+	return 0
+}
+func convertToFloat64(unk interface{}) float64 {
+	switch i := unk.(type) {
+	case float64:
+		return i
+	case float32:
+		return float64(i)
+	case int64:
+		return float64(i)
+	case int32:
+		return float64(i)
+	case int:
+		return float64(i)
+	case uint64:
+		return float64(i)
+	case uint32:
+		return float64(i)
+	case uint:
+		return float64(i)
+	}
+
+	return 0
 }

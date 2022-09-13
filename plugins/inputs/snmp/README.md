@@ -201,6 +201,15 @@ One [metric][] is created for each row of the SNMP table.
     ## required as any index columns are automatically added as tags.
     # index_as_tag = false
 
+    ## Calculate discard rate for ifTables (32bit) (requires ifInDiscards and ifOutDiscards fields)
+    # calc_discard_rate_32bit = false
+    ## Calculate discard rate for ifTables (64bit) (requires ifInDiscards and ifOutDiscards fields + ifHCInMulticastPkts and ifHCOutMulticastPkts)
+    # calc_discard_rate_64bit = false
+    ## Calculate error rate for ifTables (32bit) (requires ifInErrors and ifOutErrors fields)
+    # calc_error_rate_32bit = false
+    ## Calculate error rate for ifTables (64bit) (requires ifInErrors and ifOutErrors fields + ifHCInMulticastPkts and ifHCOutMulticastPkts)
+    # calc_error_rate_64bit = false
+
     [[inputs.snmp.table.field]]
       ## OID to get. May be a numeric or textual module-qualified OID.
       oid = "IF-MIB::ifDescr"

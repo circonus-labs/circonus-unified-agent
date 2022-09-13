@@ -1,5 +1,6 @@
 # v0.0.47
 
+* feat: (snmp) Add CUA post-processing for a subset of SNMP metrics in the most efficient way to derive error and discard rate metrics. [CIRC-9100]
 * feat: (snmp_trap) enable sending text traps to (open|elastic)search, counters and numeric traps to circonus [CIRC-8918]
 * feat: (zfs) add additional zpool metrics for linux [CIRC-9131]
 * feat: allow all input plugins to create checks with custom check tags from config [CIRC-9004] [CIRC-8780]

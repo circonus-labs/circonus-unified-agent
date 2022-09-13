@@ -186,20 +186,15 @@ func (c *Circonus) buildCounters(m cua.Metric) int64 {
 		if c.DebugMetrics {
 			c.Log.Infof("%s %v %v %T\n", mn, tags.String(), field.Value, field.Value)
 		}
-		switch v := field.Value.(type) {
-		case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, float32, float64:
-			val, ok := v.(uint64)
-			if ok {
-				if err := dest.metrics.CounterIncrementByValue(mn, tags, val); err != nil {
-					c.Log.Warnf("incrementing counter (%s) (%s) (%#v): %s", mn, tags.String(), v, err)
-					continue
-				}
-				numMetrics++
-			} else {
-				c.Log.Warnf("incrementing counter (%s) (%s) (%#v): unable to convert to int64", mn, tags.String(), v)
+		val, ok := toUint64(field.Value)
+		if ok {
+			if err := dest.metrics.CounterIncrementByValue(mn, tags, val); err != nil {
+				c.Log.Warnf("incrementing counter (%s) (%s) (%#v): %s", mn, tags.String(), val, err)
+				continue
 			}
-		default:
-			c.Log.Warnf("increment counter (%s) (%s) (%#v): %s", mn, tags.String(), v, "no handler for unknown type")
+			numMetrics++
+		} else {
+			c.Log.Warnf("handling counter (%s) (%s) (%#v): unable to convert to uint64", mn, tags.String(), field.Value)
 		}
 	}
 
@@ -336,4 +331,35 @@ func (c *Circonus) getMetricProjectTag(m cua.Metric) string {
 		}
 	}
 	return ""
+}
+
+func toUint64(unk interface{}) (uint64, bool) {
+	switch v := unk.(type) {
+	case int:
+		return uint64(v), true
+	case int8:
+		return uint64(v), true
+	case int16:
+		return uint64(v), true
+	case int32:
+		return uint64(v), true
+	case int64:
+		return uint64(v), true
+	case uint:
+		return uint64(v), true
+	case uint8:
+		return uint64(v), true
+	case uint16:
+		return uint64(v), true
+	case uint32:
+		return uint64(v), true
+	case uint64:
+		return v, true
+	case float32:
+		return uint64(v), true
+	case float64:
+		return uint64(v), true
+	default:
+		return 0, false
+	}
 }

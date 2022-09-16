@@ -19,12 +19,12 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/selfstat"
 	googlepbduration "github.com/golang/protobuf/ptypes/duration"
 	googlepbts "github.com/golang/protobuf/ptypes/timestamp"
+	"golang.org/x/oauth2/google"
 	"google.golang.org/api/iterator"
+	"google.golang.org/api/option"
 	distributionpb "google.golang.org/genproto/googleapis/api/distribution"
 	metricpb "google.golang.org/genproto/googleapis/api/metric"
 	monitoringpb "google.golang.org/genproto/googleapis/monitoring/v3"
-	"google.golang.org/api/option"
-	"golang.org/x/oauth2/google"
 )
 
 const (
@@ -462,9 +462,9 @@ func (s *Stackdriver) initializeStackdriverClient(ctx context.Context) error {
 	if s.CredentialsFile != "" {
 		credsOpt = option.WithCredentialsFile(s.CredentialsFile)
 	} else {
-		creds, err := google.FindDefaultCredentials(context.Background(), monitoring.DefaultAuthScopes())
+		creds, err := google.FindDefaultCredentials(context.Background())
 		if err != nil {
-			return nil, fmt.Errorf(
+			return fmt.Errorf(
 				"unable to find GCP Application Default Credentials: %w."+
 					"Either set ADC or provide CredentialsFile config", err)
 		}

@@ -18,7 +18,9 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/selfstat"
 	googlepbduration "github.com/golang/protobuf/ptypes/duration"
 	googlepbts "github.com/golang/protobuf/ptypes/timestamp"
+	"golang.org/x/oauth2/google"
 	"google.golang.org/api/iterator"
+	"google.golang.org/api/option"
 	distributionpb "google.golang.org/genproto/googleapis/api/distribution"
 	metricpb "google.golang.org/genproto/googleapis/api/metric"
 	monitoringpb "google.golang.org/genproto/googleapis/monitoring/v3"
@@ -29,6 +31,11 @@ const (
 	description      = "Gather timeseries from Google Cloud Platform v3 monitoring API"
 	sampleConfig     = `
   instance_id = "" # unique instance identifier (REQUIRED)
+
+	## Optional. Filepath for GCP credentials JSON file to authorize calls to
+  ## Stackdriver APIs. If not set explicitly, the agent will attempt to use
+  ## Application Default Credentials, which is preferred.
+  # credentials_file = "path/to/my/creds.json"
 
   ## GCP Project
   project = "erudite-bloom-151019"
@@ -119,6 +126,7 @@ type (
 	// Stackdriver is the Google Stackdriver config info.
 	Stackdriver struct {
 		Project                         string                `toml:"project"`
+		CredentialsFile                 string                `toml:"credentials_file"`
 		RateLimit                       int                   `toml:"rate_limit"`
 		Window                          internal.Duration     `toml:"window"`
 		Delay                           internal.Duration     `toml:"delay"`
@@ -446,8 +454,22 @@ func (c *timeSeriesConfCache) IsValid() bool {
 }
 
 func (s *Stackdriver) initializeStackdriverClient(ctx context.Context) error {
+	var credsOpt option.ClientOption
+	if s.CredentialsFile != "" {
+		s.Log.Infof("Using %s credentials for stackdriver input plugin", s.CredentialsFile)
+		credsOpt = option.WithCredentialsFile(s.CredentialsFile)
+	} else {
+		s.Log.Infof("Using %s credentials for stackdriver input plugin", "default")
+		creds, err := google.FindDefaultCredentials(context.Background())
+		if err != nil {
+			return fmt.Errorf(
+				"unable to find GCP Application Default Credentials: %w."+
+					"Either set ADC or provide CredentialsFile config", err)
+		}
+		credsOpt = option.WithCredentials(creds)
+	}
 	if s.client == nil {
-		client, err := monitoring.NewMetricClient(ctx)
+		client, err := monitoring.NewMetricClient(ctx, credsOpt)
 		if err != nil {
 			return fmt.Errorf("failed to create stackdriver monitoring client: %w", err)
 		}

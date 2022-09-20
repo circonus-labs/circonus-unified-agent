@@ -15,6 +15,11 @@ costs.
   ## GCP Project
   project = "erudite-bloom-151019"
 
+  ## Optional. Filepath for GCP credentials JSON file to authorize calls to
+  ## monitoring APIs. If not set explicitly, the agent will attempt to use
+  ## Application Default Credentials, which is preferred.
+  # credentials_file = "path/to/my/creds.json"
+
   ## Include timeseries that start with the given metric type.
   metric_type_prefix_include = [
     "compute.googleapis.com/",

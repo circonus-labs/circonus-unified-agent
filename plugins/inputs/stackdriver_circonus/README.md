@@ -17,6 +17,11 @@ costs.
   ## GCP Project
   project = "erudite-bloom-151019"
 
+  ## Optional. Filepath for GCP credentials JSON file to authorize calls to
+  ## monitoring APIs. If not set explicitly, the agent will attempt to use
+  ## Application Default Credentials, which is preferred.
+  # credentials_file = "path/to/my/creds.json"
+  
   ## Most metrics are updated no more than once per minute; it is recommended
   ## to override the agent level interval with a value of 1m or greater.
   interval = "1m"

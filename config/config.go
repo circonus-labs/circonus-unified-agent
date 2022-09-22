@@ -1347,6 +1347,7 @@ func (c *Config) buildInput(name string, tbl *ast.Table) (*models.InputConfig, e
 	}
 	// mgm:add `check_tags` - add to check bundle on creation ONLY
 	c.getFieldStringMap(tbl, "check_tags", &cp.CheckTags)
+	c.getFieldString(tbl, "check_target", &cp.CheckTarget)
 
 	cp.Tags = make(map[string]string)
 	if node, ok := tbl.Fields["tags"]; ok {

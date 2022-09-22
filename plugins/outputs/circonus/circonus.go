@@ -149,7 +149,7 @@ func (c *Circonus) Connect() error {
 			PluginID:   "agent",
 			InstanceID: config.DefaultInstanceID(),
 		}
-		if err := c.initMetricDestination(meta); err != nil {
+		if err := c.initMetricDestination(meta, map[string]string{}, ""); err != nil {
 			c.Log.Errorf("unable to initialize circonus metric destination (%s)", err)
 			return err
 		}
@@ -166,7 +166,7 @@ func (c *Circonus) Connect() error {
 					PluginID:   "host",
 					InstanceID: config.DefaultInstanceID(),
 				}
-				if err := c.initMetricDestination(meta); err != nil {
+				if err := c.initMetricDestination(meta, map[string]string{}, ""); err != nil {
 					c.Log.Errorf("unable to initialize circonus metric destination (%s)", err)
 					return err
 				}

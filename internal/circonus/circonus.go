@@ -45,6 +45,7 @@ type MetricMeta struct {
 type MetricDestConfig struct {
 	DebugAPI     *bool             // allow override of api debugging per output
 	TraceMetrics *string           // allow override of metric tracing per output
+	CheckTarget  string            // check target
 	CheckTags    map[string]string // tags for a specific instance of a check
 	APIToken     string            // allow override of api token for a specific plugin (dm input or circonus output)
 	Broker       string            // allow override of broker for a specific plugin (dm input or circonus output)
@@ -373,6 +374,9 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 	}
 
 	checkTarget := hostname
+	if opts.CheckTarget != "" {
+		checkTarget = opts.CheckTarget
+	}
 
 	instanceLogger := &Logshim{
 		logh:     logger,

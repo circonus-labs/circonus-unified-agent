@@ -146,4 +146,8 @@ type Metric interface {
 	OriginCheckTags() map[string]string
 	// SetOriginCheckTags sets the origin check tags
 	SetOriginCheckTags(map[string]string)
+	// OriginCheckTarget gets the origin check target
+	OriginCheckTarget() string
+	// SetOriginCheckTarget sets the origin check target
+	SetOriginCheckTarget(string)
 }

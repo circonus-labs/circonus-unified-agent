@@ -121,6 +121,7 @@ type Snmp struct {
 	Name              string                   // Name & Fields are the elements of a Table.
 	AgentHostTag      string                   `toml:"agent_host_tag"` // The tag used to name the agent host
 	InstanceID        string                   `toml:"instance_id"`    // direct metrics mode - send directly to circonus (bypassing output)
+	CheckTarget       string                   `toml:"check_target"`   // direct metrics mode - check target setting
 	Tables            []Table                  `toml:"table"`
 	Fields            []Field                  `toml:"field"` // Name & Fields are the elements of a Table. agent chokes if we try to embed a Table. So instead we have to embed the fields of a Table, and construct a Table during runtime.
 	connectionCache   []snmpConnection
@@ -157,6 +158,7 @@ func (s *Snmp) init() error {
 			DebugAPI:     s.DebugAPI,
 			TraceMetrics: s.TraceMetrics,
 			CheckTags:    s.CheckTags,
+			CheckTarget:  s.CheckTarget,
 		}
 		dest, err := circmgr.NewMetricDestination(opts, s.Log)
 		if err != nil {

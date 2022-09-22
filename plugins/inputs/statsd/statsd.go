@@ -178,7 +178,8 @@ type Statsd struct {
 	metricDestination      *trapmetrics.TrapMetrics
 	TCPKeepAlivePeriod     *internal.Duration `toml:"tcp_keep_alive_period"`
 	bufPool                sync.Pool
-	Broker                 string `toml:"broker"` // direct metrics
+	CheckTarget            string `toml:"check_target"` // direct metrics - check target
+	Broker                 string `toml:"broker"`       // direct metrics
 	MetricSeparator        string
 	ServiceAddress         string
 	Protocol               string `toml:"protocol"`
@@ -365,6 +366,7 @@ func (s *Statsd) Start(ctx context.Context, ac cua.Accumulator) error {
 		DebugAPI:     s.DebugAPI,
 		TraceMetrics: s.TraceMetrics,
 		CheckTags:    s.CheckTags,
+		CheckTarget:  s.CheckTarget,
 	}
 
 	dest, err := circmgr.NewMetricDestination(opts, s.Log)

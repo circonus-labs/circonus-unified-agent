@@ -72,7 +72,7 @@ func (c *Circonus) getMetricDestination(m cua.Metric) *metricDestination {
 		return d
 	}
 
-	if err := c.initMetricDestination(metricMeta); err != nil {
+	if err := c.initMetricDestination(metricMeta, m.OriginCheckTags(), m.OriginCheckTarget()); err != nil {
 		c.Log.Errorf("error initializing metric destination: %s", err)
 		os.Exit(1) //nolint:gocritic
 	}
@@ -87,7 +87,7 @@ func (c *Circonus) getMetricDestination(m cua.Metric) *metricDestination {
 	return nil
 }
 
-func (c *Circonus) initMetricDestination(metricMeta circmgr.MetricMeta) error {
+func (c *Circonus) initMetricDestination(metricMeta circmgr.MetricMeta, checkTags map[string]string, checkTarget string) error {
 	c.Lock()
 	defer c.Unlock()
 
@@ -97,6 +97,8 @@ func (c *Circonus) initMetricDestination(metricMeta circmgr.MetricMeta) error {
 		Broker:       c.Broker,
 		DebugAPI:     c.DebugAPI,
 		TraceMetrics: c.TraceMetrics,
+		CheckTarget:  checkTarget,
+		CheckTags:    checkTags,
 	}
 
 	dest, err := circmgr.NewMetricDestination(&opts, c.Log)

@@ -1,3 +1,8 @@
+# v0.0.48
+
+* feat: add `check_target` to generic input plugin config to allow creating configs that can be migrated to different CUA instances [CIRC-9205]
+* feat: (stackdriver) Add optional `credentials_file` config setting
+
 # v0.0.47
 
 * feat: (snmp) Add CUA post-processing for a subset of SNMP metrics in the most efficient way to derive error and discard rate metrics. [CIRC-9100]

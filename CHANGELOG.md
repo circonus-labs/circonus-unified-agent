@@ -1,3 +1,10 @@
+# v0.0.49
+
+* feat: all service definitions use common conf.d and include `--config-directory` command line parameter [CIRC-9216]
+* feat: common `conf.d` dir included in packages [CIRC-9216]
+* fix(stackdriver_circonus): return support for `metric_type_prefix_include` and exclude
+* fix(lint): struct alignment
+
 # v0.0.48
 
 * feat: add `check_target` to generic input plugin config to allow creating configs that can be migrated to different CUA instances [CIRC-9205]

@@ -23,12 +23,11 @@ type Call struct {
 }
 
 type MockStackdriverClient struct {
+	sync.Mutex
 	ListMetricDescriptorsF func(ctx context.Context, req *monitoringpb.ListMetricDescriptorsRequest) (<-chan *metricpb.MetricDescriptor, error)
 	ListTimeSeriesF        func(ctx context.Context, req *monitoringpb.ListTimeSeriesRequest) (<-chan *monitoringpb.TimeSeries, error)
 	CloseF                 func() error
-
-	calls []*Call
-	sync.Mutex
+	calls                  []*Call
 }
 
 func (m *MockStackdriverClient) ListMetricDescriptors(

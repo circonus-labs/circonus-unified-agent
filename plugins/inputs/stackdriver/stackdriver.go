@@ -122,81 +122,77 @@ var (
 	defaultDelay    = internal.Duration{Duration: 5 * time.Minute}
 )
 
-type (
-	// Stackdriver is the Google Stackdriver config info.
-	Stackdriver struct {
-		Project                         string                `toml:"project"`
-		CredentialsFile                 string                `toml:"credentials_file"`
-		RateLimit                       int                   `toml:"rate_limit"`
-		Window                          internal.Duration     `toml:"window"`
-		Delay                           internal.Duration     `toml:"delay"`
-		CacheTTL                        internal.Duration     `toml:"cache_ttl"`
-		MetricTypePrefixInclude         []string              `toml:"metric_type_prefix_include"`
-		MetricTypePrefixExclude         []string              `toml:"metric_type_prefix_exclude"`
-		GatherRawDistributionBuckets    bool                  `toml:"gather_raw_distribution_buckets"`
-		DistributionAggregationAligners []string              `toml:"distribution_aggregation_aligners"`
-		Filter                          *ListTimeSeriesFilter `toml:"filter"`
+// Stackdriver is the Google Stackdriver config info.
+type Stackdriver struct {
+	prevEnd                         time.Time
+	client                          metricClient
+	Log                             cua.Logger
+	timeSeriesConfCache             *timeSeriesConfCache
+	Filter                          *ListTimeSeriesFilter `toml:"filter"`
+	Project                         string                `toml:"project"`
+	CredentialsFile                 string                `toml:"credentials_file"`
+	DistributionAggregationAligners []string              `toml:"distribution_aggregation_aligners"`
+	MetricTypePrefixExclude         []string              `toml:"metric_type_prefix_exclude"`
+	MetricTypePrefixInclude         []string              `toml:"metric_type_prefix_include"`
+	CacheTTL                        internal.Duration     `toml:"cache_ttl"`
+	Delay                           internal.Duration     `toml:"delay"`
+	Window                          internal.Duration     `toml:"window"`
+	RateLimit                       int                   `toml:"rate_limit"`
+	GatherRawDistributionBuckets    bool                  `toml:"gather_raw_distribution_buckets"`
+}
 
-		Log cua.Logger
+// ListTimeSeriesFilter contains resource labels and metric labels
+type ListTimeSeriesFilter struct {
+	ResourceLabels []*Label `json:"resource_labels"`
+	MetricLabels   []*Label `json:"metric_labels"`
+}
 
-		client              metricClient
-		timeSeriesConfCache *timeSeriesConfCache
-		prevEnd             time.Time
-	}
+// Label contains key and value
+type Label struct {
+	Key   string `toml:"key"`
+	Value string `toml:"value"`
+}
 
-	// ListTimeSeriesFilter contains resource labels and metric labels
-	ListTimeSeriesFilter struct {
-		ResourceLabels []*Label `json:"resource_labels"`
-		MetricLabels   []*Label `json:"metric_labels"`
-	}
+// TimeSeriesConfCache caches generated timeseries configurations
+type timeSeriesConfCache struct {
+	Generated       time.Time
+	TimeSeriesConfs []*timeSeriesConf
+	TTL             time.Duration
+}
 
-	// Label contains key and value
-	Label struct {
-		Key   string `toml:"key"`
-		Value string `toml:"value"`
-	}
+// Internal structure which holds our configuration for a particular GCP time
+// series.
+type timeSeriesConf struct {
+	// The GCP API request that we'll use to fetch data for this time series.
+	listTimeSeriesRequest *monitoringpb.ListTimeSeriesRequest
+	// The influx measurement name this time series maps to
+	measurement string
+	// The prefix to use before any influx field names that we'll write for
+	// this time series. (Or, if we only decide to write one field name, this
+	// field just holds the value of the field name.)
+	fieldKey string
+}
 
-	// TimeSeriesConfCache caches generated timeseries configurations
-	timeSeriesConfCache struct {
-		Generated       time.Time
-		TimeSeriesConfs []*timeSeriesConf
-		TTL             time.Duration
-	}
+// stackdriverMetricClient is a metric client for stackdriver
+type stackdriverMetricClient struct {
+	log  cua.Logger
+	conn *monitoring.MetricClient
 
-	// Internal structure which holds our configuration for a particular GCP time
-	// series.
-	timeSeriesConf struct {
-		// The GCP API request that we'll use to fetch data for this time series.
-		listTimeSeriesRequest *monitoringpb.ListTimeSeriesRequest
-		// The influx measurement name this time series maps to
-		measurement string
-		// The prefix to use before any influx field names that we'll write for
-		// this time series. (Or, if we only decide to write one field name, this
-		// field just holds the value of the field name.)
-		fieldKey string
-	}
+	listMetricDescriptorsCalls selfstat.Stat
+	listTimeSeriesCalls        selfstat.Stat
+}
 
-	// stackdriverMetricClient is a metric client for stackdriver
-	stackdriverMetricClient struct {
-		log  cua.Logger
-		conn *monitoring.MetricClient
+// metricClient is convenient for testing
+type metricClient interface {
+	ListMetricDescriptors(ctx context.Context, req *monitoringpb.ListMetricDescriptorsRequest) (<-chan *metricpb.MetricDescriptor, error)
+	ListTimeSeries(ctx context.Context, req *monitoringpb.ListTimeSeriesRequest) (<-chan *monitoringpb.TimeSeries, error)
+	Close() error
+}
 
-		listMetricDescriptorsCalls selfstat.Stat
-		listTimeSeriesCalls        selfstat.Stat
-	}
-
-	// metricClient is convenient for testing
-	metricClient interface {
-		ListMetricDescriptors(ctx context.Context, req *monitoringpb.ListMetricDescriptorsRequest) (<-chan *metricpb.MetricDescriptor, error)
-		ListTimeSeries(ctx context.Context, req *monitoringpb.ListTimeSeriesRequest) (<-chan *monitoringpb.TimeSeries, error)
-		Close() error
-	}
-
-	lockedSeriesGrouper struct {
-		sync.Mutex
-		*cuametric.SeriesGrouper
-	}
-)
+type lockedSeriesGrouper struct {
+	sync.Mutex
+	*cuametric.SeriesGrouper
+}
 
 func (g *lockedSeriesGrouper) Add(
 	measurement string,

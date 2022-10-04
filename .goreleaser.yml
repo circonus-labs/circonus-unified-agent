@@ -139,6 +139,52 @@ nfpms:
             postinstall: "builds/rpm/post-install.sh"
             postremove: "builds/rpm/post-remove.sh"
 
+brews:
+  - tap:
+      owner: circonus-labs
+      name: homebrew-circonus-unified-agent
+    folder: Formula
+    goarm: "7"
+    homepage: https://circonus.com
+    description: Circonus Unified Agent
+    license: MIT
+    caveats: |
+      1. Edit #{etc}/example-circonus-unified-agent.conf to add your API key. 
+      2. Save as circonus-unified-agent.conf.
+      3. Start the service
+
+    test: |
+      system "#{sbin}/circonus-unified-agentd --version"
+
+    install: |
+      sbin.install "circonus-unified-agentd"
+      etc.install "example-circonus-unified-agent.conf"
+      (etc"/conf.d").mkpath
+
+    plist: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+        <dict>
+          <key>Label</key>
+          <string>com.circonus.circonus-unified-agent</string>
+          <key>ServiceDescription</key>
+          <string>Circonus Unified Agent Binary</string>
+          <key>Program</key>
+          <string>#{sbin}/circonus-unified-agentd</string>
+          <key>ProgramArguments</key>
+          <array>
+              <string>--config=#{etc}/circonus-unified-agent.conf</string>
+              <string>--config-directory=#{etc}/conf.d</string>
+          </array>
+          <key>RunAtLoad</key>
+          <false/>
+          <key>KeepAlive</key>
+          <true/>
+        </dict>
+      </plist>
+
+
 archives:
     -   
         id: default

@@ -11,7 +11,7 @@ costs.
 ## Configuration
 
 ```toml
-[[inputs.stackdriver]]
+[[inputs.stackdriver_circonus]]
   instance_id = "" # unique instance identifier (REQUIRED)
 
   ## GCP Project
@@ -21,7 +21,15 @@ costs.
   ## monitoring APIs. If not set explicitly, the agent will attempt to use
   ## Application Default Credentials, which is preferred.
   # credentials_file = "path/to/my/creds.json"
-  
+
+  ## Include timeseries that start with the given metric type.
+  metric_type_prefix_include = [
+    "compute.googleapis.com/",
+  ]
+
+  ## Exclude timeseries that start with the given metric type.
+  # metric_type_prefix_exclude = []
+
   ## Most metrics are updated no more than once per minute; it is recommended
   ## to override the agent level interval with a value of 1m or greater.
   interval = "1m"

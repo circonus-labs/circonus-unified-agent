@@ -41,6 +41,14 @@ const (
   ## GCP Project
   project = "erudite-bloom-151019"
 
+  ## Include timeseries that start with the given metric type.
+  metric_type_prefix_include = [
+    "compute.googleapis.com/",
+  ]
+
+  ## Exclude timeseries that start with the given metric type.
+  # metric_type_prefix_exclude = []
+
   ## Many metrics are updated once per minute; it is recommended to override
   ## the agent level interval with a value of 1m or greater.
   interval = "1m"
@@ -124,14 +132,14 @@ type Stackdriver struct {
 	Filter                          *ListTimeSeriesFilter `toml:"filter"`
 	CredentialsFile                 string                `toml:"credentials_file"`
 	Project                         string                `toml:"project"`
-	MetricTypePrefixExclude         []string
-	MetricTypePrefixInclude         []string
-	DistributionAggregationAligners []string          `toml:"distribution_aggregation_aligners"`
-	CacheTTL                        internal.Duration `toml:"cache_ttl"`
-	Delay                           internal.Duration `toml:"delay"`
-	Window                          internal.Duration `toml:"window"`
-	RateLimit                       int               `toml:"rate_limit"`
-	GatherRawDistributionBuckets    bool              `toml:"gather_raw_distribution_buckets"`
+	MetricTypePrefixInclude         []string              `toml:"metric_type_prefix_include"`
+	MetricTypePrefixExclude         []string              `toml:"metric_type_prefix_exclude"`
+	DistributionAggregationAligners []string              `toml:"distribution_aggregation_aligners"`
+	CacheTTL                        internal.Duration     `toml:"cache_ttl"`
+	Delay                           internal.Duration     `toml:"delay"`
+	Window                          internal.Duration     `toml:"window"`
+	RateLimit                       int                   `toml:"rate_limit"`
+	GatherRawDistributionBuckets    bool                  `toml:"gather_raw_distribution_buckets"`
 }
 
 // ListTimeSeriesFilter contains resource labels and metric labels
@@ -522,6 +530,9 @@ func (s *Stackdriver) includeMetricType(metricType string) bool {
 	k := metricType
 	inc := s.MetricTypePrefixInclude
 	exc := s.MetricTypePrefixExclude
+	if len(inc) == 0 {
+		inc = circmgr.GCPMetricTypePrefixInclude()
+	}
 
 	return includeExcludeHelper(k, inc, exc)
 }
@@ -832,8 +843,6 @@ func init() {
 			CacheTTL:                        defaultCacheTTL,
 			RateLimit:                       defaultRateLimit,
 			Delay:                           defaultDelay,
-			MetricTypePrefixInclude:         circmgr.GCPMetricTypePrefixInclude(),
-			MetricTypePrefixExclude:         []string{},
 			GatherRawDistributionBuckets:    true,
 			DistributionAggregationAligners: []string{},
 		}

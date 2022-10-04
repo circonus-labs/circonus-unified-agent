@@ -27,12 +27,13 @@ load_rc_config $name
 : ${circonus_unified_agentd_enable:="YES"}
 : ${circonus_unified_agentd_flags:="--quiet"}
 : ${circonus_unified_agentd_conf:="/opt/circonus/unified-agent/etc/circonus-unified-agent.conf"}
+: ${cua_conf_dir:="/opt/circonus/unified-agent/etc/conf.d"}
 
 #daemon
 start_precmd=circonus_unified_agentd_prestart
 pidfile="/var/run/${name}.pid"
 command=/usr/sbin/daemon
-command_args="-crP ${pidfile} /opt/circonus/unified-agent/sbin/circonus-unified-agentd ${circonus_unified_agentd_flags_flags} --config=${circonus_unified_agentd_conf} >> /var/log/circonus_unified_agentd.log 2>&1"
+command_args="-crP ${pidfile} /opt/circonus/unified-agent/sbin/circonus-unified-agentd ${circonus_unified_agentd_flags} --config=${circonus_unified_agentd_conf} --config-directory=${cua_conf_dir} >> /var/log/circonus_unified_agentd.log 2>&1"
 
 echo ${command_args}
 

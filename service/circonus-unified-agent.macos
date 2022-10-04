@@ -10,9 +10,8 @@
         <string>/opt/circonus/unified-agent/sbin/circonus-unified-agentd</string>
         <key>ProgramArguments</key>
         <array>
-            <string>/opt/circonus/unified-agent/sbin/circonus-unified-agentd</string>
-            <string>--config</string>
-            <string>/opt/circonus/unified-agent/etc/circonus-unified-agent.conf</string>
+            <string>--config=/opt/circonus/unified-agent/etc/circonus-unified-agent.conf</string>
+            <string>--config-directory=/opt/circonus/unified-agent/etc/conf.d</string>
         </array>
         <key>RunAtLoad</key>
         <false/>

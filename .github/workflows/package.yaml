@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Invoke packaging hook
-        uses: distributhor/workflow-webhook@v2
+        uses: distributhor/workflow-webhook@v3
         env:
           webhook_url: ${{ secrets.WEBHOOK_URL }}?token=${{ secrets.JENKINS_WEBHOOK_TOKEN }}
           webhook_secret: ${{ secrets.JENKINS_WEBHOOK_TOKEN }}

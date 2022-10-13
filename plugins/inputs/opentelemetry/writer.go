@@ -1,0 +1,33 @@
+package opentelemetry
+
+import (
+	"context"
+	"fmt"
+	"time"
+
+	"github.com/influxdata/influxdb-observability/common"
+
+	"github.com/circonus-labs/circonus-unified-agent/cua"
+)
+
+type writeToAccumulator struct {
+	accumulator cua.Accumulator
+}
+
+func (w *writeToAccumulator) WritePoint(_ context.Context, measurement string, tags map[string]string, fields map[string]interface{}, ts time.Time, vType common.InfluxMetricValueType) error {
+	switch vType {
+	case common.InfluxMetricValueTypeUntyped:
+		w.accumulator.AddFields(measurement, fields, tags, ts)
+	case common.InfluxMetricValueTypeGauge:
+		w.accumulator.AddGauge(measurement, fields, tags, ts)
+	case common.InfluxMetricValueTypeSum:
+		w.accumulator.AddCounter(measurement, fields, tags, ts)
+	// case common.InfluxMetricValueTypeHistogram:
+	// 	w.accumulator.AddHistogram(measurement, fields, tags, ts)
+	case common.InfluxMetricValueTypeSummary:
+		w.accumulator.AddSummary(measurement, fields, tags, ts)
+	default:
+		return fmt.Errorf("unrecognized InfluxMetricValueType %q", vType)
+	}
+	return nil
+}

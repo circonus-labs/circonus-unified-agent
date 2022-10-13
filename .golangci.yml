@@ -35,7 +35,7 @@ linters:
     - ifshort
     - interfacer
     - maligned
-    # - nosnakecase
+    - nosnakecase
     - scopelint
     - structcheck
     - varcheck

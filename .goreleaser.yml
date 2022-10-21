@@ -149,41 +149,26 @@ brews:
     description: Circonus Unified Agent
     license: MIT
     caveats: |
-      1. Edit #{etc}/example-circonus-unified-agent.conf to add your API key. 
-      2. Save as circonus-unified-agent.conf.
-      3. Start the service
+      1. Edit #{etc}/circonus-unified-agent.conf to add your API key. 
+      2. Run brew service start circonus-unified-agent
+
+      Or, if upgrading, brew service restart circonus-unified-agent
 
     test: |
       system "#{sbin}/circonus-unified-agentd --version"
 
     install: |
-      sbin.install "circonus-unified-agentd"
-      etc.install "example-circonus-unified-agent.conf"
-      (etc"/conf.d").mkpath
+      sbin.install "sbin/circonus-unified-agentd"
+      etc.install "etc/example-circonus-unified-agent.conf" => "circonus-unified-agent.conf"
+      (etc"/conf.d").install "etc/conf.d/readme.md"
+      doc.install README.md
+      doc.install LICENSE
 
-    plist: |
-      <?xml version="1.0" encoding="UTF-8"?>
-      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-      <plist version="1.0">
-        <dict>
-          <key>Label</key>
-          <string>com.circonus.circonus-unified-agent</string>
-          <key>ServiceDescription</key>
-          <string>Circonus Unified Agent Binary</string>
-          <key>Program</key>
-          <string>#{sbin}/circonus-unified-agentd</string>
-          <key>ProgramArguments</key>
-          <array>
-              <string>--config=#{etc}/circonus-unified-agent.conf</string>
-              <string>--config-directory=#{etc}/conf.d</string>
-          </array>
-          <key>RunAtLoad</key>
-          <false/>
-          <key>KeepAlive</key>
-          <true/>
-        </dict>
-      </plist>
-
+    service: |
+      run [sbin/"circonus-unified-agentd", "--config", etc/"circonus-unified-agent.conf", "--config-dir", etc/"conf.d"]
+      keep_alive true
+      log_path var/"log/circonus-unified-agent.log"
+      error_log_path var/"log/circonus-unified-agent.log"
 
 archives:
     -   

@@ -128,7 +128,7 @@ func (c *Circonus) handleGeneric(m cua.Metric) int64 {
 		switch v := field.Value.(type) {
 		case string:
 			if !c.AllowSNMPTrapEvents && m.Origin() == "snmp_trap" {
-				c.Log.Warn("snmp_trap attempting to send text events to circonus skipping metric(s) - see 'allow_snmp_trap_events' oprion")
+				c.Log.Warn("snmp_trap attempting to send text events to circonus skipping metric(s) - see 'allow_snmp_trap_events' option")
 				continue
 			}
 			if err := dest.metrics.TextSet(mn, tags, v, &batchTS); err != nil {

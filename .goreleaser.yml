@@ -139,6 +139,37 @@ nfpms:
             postinstall: "builds/rpm/post-install.sh"
             postremove: "builds/rpm/post-remove.sh"
 
+brews:
+  - tap:
+      owner: circonus-labs
+      name: homebrew-circonus-unified-agent
+    folder: Formula
+    goarm: "7"
+    homepage: https://circonus.com
+    description: Circonus Unified Agent
+    license: MIT
+    caveats: |
+      1. Edit #{etc}/circonus-unified-agent.conf to add your API key. 
+      2. Run brew service start circonus-unified-agent
+
+      Or, if upgrading, brew service restart circonus-unified-agent
+
+    test: |
+      system "#{sbin}/circonus-unified-agentd --version"
+
+    install: |
+      sbin.install "sbin/circonus-unified-agentd"
+      etc.install "etc/example-circonus-unified-agent.conf" => "circonus-unified-agent.conf"
+      (etc"/conf.d").install "etc/conf.d/readme.md"
+      doc.install README.md
+      doc.install LICENSE
+
+    service: |
+      run [sbin/"circonus-unified-agentd", "--config", etc/"circonus-unified-agent.conf", "--config-dir", etc/"conf.d"]
+      keep_alive true
+      log_path var/"log/circonus-unified-agent.log"
+      error_log_path var/"log/circonus-unified-agent.log"
+
 archives:
     -   
         id: default

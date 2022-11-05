@@ -1,3 +1,14 @@
+# **unreleased**
+
+* feat: Update golangci-lint.yml v1.49 -> v1.50
+* fix(lint): indention
+* fix(input.system): remove reference to gopsutil host.Warnings which is been moved to an internal package in gopsutil...
+* build(deps): bump github.com/circonus-labs/go-trapmetrics from v0.0.9 to v0.0.10 [CIRC-9378]
+* build(deps): bump github.com/shirou/gopsutil/v3 from 3.22.9 to 3.22.10
+* build(deps): bump golangci/golangci-lint-action from 3.2.0 to 3.3.0
+* build(deps): bump distributhor/workflow-webhook from 2 to 3
+* feat(stackdriver_circonus): re-enable `metric_type_prefix_include`
+
 # v0.0.49
 
 * feat: all service definitions use common conf.d and include `--config-directory` command line parameter [CIRC-9216]

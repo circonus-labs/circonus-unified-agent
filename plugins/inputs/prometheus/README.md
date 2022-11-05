@@ -12,12 +12,7 @@ in Prometheus format.
   instance_id = "prometheus"
   ## An array of urls to scrape metrics from.
   urls = ["http://localhost:9100/metrics"]
-  
-  ## Metric version controls the mapping from Prometheus metrics into circonus metrics.
-  ## See "Metric Format Configuration" in plugins/inputs/prometheus/README.md for details.
-  ## Valid options: 1, 2
-  # metric_version = 1
-  
+    
   ## Url tag name (tag containing scrapped url. optional, default is "url")
   # url_tag = "url"
   
@@ -104,35 +99,6 @@ in Prometheus format.
   ```
 
 `urls` can contain a unix socket as well. If a different path is required (default is `/metrics` for both http[s] and unix) for a unix socket, add `path` as a query parameter as follows: `unix:///var/run/prometheus.sock?path=/custom/metrics`
-
-### Metric Format Configuration
-
-The `metric_version` setting controls how circonus-unified-agent translates prometheus format
-metrics to circonus-unified-agent metrics. There are two options.
-
-With `metric_version = 1`, the prometheus metric name becomes the circonus-unified-agent
-metric name. Prometheus labels become circonus-unified-agent tags. Prometheus values become
-circonus-unified-agent field values. The fields have generic keys based on the type of the
-prometheus metric. This option produces metrics that are dense (not
-sparse). Denseness is a useful property for some outputs, including those that
-are more efficient with row-oriented data.
-
-`metric_version = 2` differs in a few ways. The prometheus metric name becomes a
-circonus-unified-agent field key. Metrics hold more than one value and the field keys aren't
-generic. The resulting metrics are sparse, but for some outputs they may be
-easier to process or query, including those that are more efficient with
-column-oriented data. The circonus-unified-agent metric name is the same for all metrics in
-the input instance. It can be set with the `name_override` setting and defaults
-to "prometheus". To have multiple metric names, you can use multiple instances
-of the plugin, each with its own `name_override`.
-
-`metric_version = 2` uses the same histogram format as the [histogram
-aggregator](../../aggregators/histogram/README.md)
-
-The Example Outputs sections shows examples for both options.
-
-When using this plugin along with the prometheus_client output, use the same
-option in both to ensure metrics are round-tripped without modification.
 
 #### Kubernetes Service Discovery
 
@@ -305,17 +271,6 @@ cpu_usage_user{cpu="cpu3"} 1.5045135406226022
 ```
 
 **Output**
-
-```
-go_gc_duration_seconds,url=http://example.org:9273/metrics 1=0.001336611,count=14,sum=0.004527551,0=0.000057965,0.25=0.000083812,0.5=0.000286537,0.75=0.000365303 1505776733000000000
-go_goroutines,url=http://example.org:9273/metrics gauge=21 1505776695000000000
-cpu_usage_user,cpu=cpu0,url=http://example.org:9273/metrics gauge=1.513622603430151 1505776751000000000
-cpu_usage_user,cpu=cpu1,url=http://example.org:9273/metrics gauge=5.829145728641773 1505776751000000000
-cpu_usage_user,cpu=cpu2,url=http://example.org:9273/metrics gauge=2.119071644805144 1505776751000000000
-cpu_usage_user,cpu=cpu3,url=http://example.org:9273/metrics gauge=1.5228426395944945 1505776751000000000
-```
-
-**Output (when metric_version = 2)**
 
 ```
 prometheus,quantile=1,url=http://example.org:9273/metrics go_gc_duration_seconds=0.005574303 1556075100000000000

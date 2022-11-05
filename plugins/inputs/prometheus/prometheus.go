@@ -96,12 +96,7 @@ var sampleConfig = `
   instance_id = "prometheus"
   ## An array of urls to scrape metrics from.
   urls = ["http://localhost:9100/metrics"]
-  
-  ## Metric version controls the mapping from Prometheus metrics into Telegraf metrics.
-  ## See "Metric Format Configuration" in plugins/inputs/prometheus/README.md for details.
-  ## Valid options: 1, 2
-  # metric_version = 1
-  
+    
   ## Url tag name (tag containing scrapped url. optional, default is "url")
   # url_tag = "url"
   
@@ -230,6 +225,10 @@ func (p *Prometheus) Init() error {
 
 		p.Log.Infof("Using pod scrape scope at node level to get pod list using cAdvisor.")
 		p.Log.Infof("Using the label selector: %v and field selector: %v", p.podLabelSelector, p.podFieldSelector)
+	}
+
+	if p.MetricVersion != 0 {
+		p.Log.Warnf("metric_version is no longer supported only v2 will be used. Current setting of %d will be ignored.", p.MetricVersion)
 	}
 
 	return nil
@@ -433,11 +432,13 @@ func (p *Prometheus) gatherURL(u URLAndAddress, acc cua.Accumulator) error {
 		return fmt.Errorf("error reading body: %w", err)
 	}
 
-	if p.MetricVersion == 2 {
-		metrics, err = ParseV2(body, resp.Header)
-	} else {
-		metrics, err = Parse(body, resp.Header)
-	}
+	// Circonus uses fields as metrics, making the fields be the metric type does not provide
+	// any value as types are not good metric names.
+	// if p.MetricVersion == 2 {
+	metrics, err = ParseV2(body, resp.Header)
+	// } else {
+	// metrics, err = Parse(body, resp.Header)
+	// }
 
 	if err != nil {
 		return fmt.Errorf("error reading metrics for %s: %w", u.URL, err)

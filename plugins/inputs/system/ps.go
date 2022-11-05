@@ -178,7 +178,7 @@ func (s *SysPS) Temperature() ([]host.TemperatureStat, error) {
 	if err != nil {
 		// var hwerr *host.Warnings
 		// if errors.As(err, &hwerr) {
-			return temp, fmt.Errorf("temp sensors: %w", err)
+		return temp, fmt.Errorf("temp sensors: %w", err)
 		// }
 	}
 	return temp, nil

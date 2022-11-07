@@ -11,11 +11,11 @@
 Vagrantfile
 .vagrant
 console.log
-test.conf
 /cache.d
 /trace.d
 install/README_backup.md
 tmp/
 .vscode/launch.json
-conf.conf
+/*.conf
+!/etc/*.conf
 cmd/circonus-unified-agent/__debug_bin

@@ -1,5 +1,9 @@
 # **unreleased**
 
+# 0.0.50
+
+* feat: initial brew tap for macOS installs
+* fix(prometheus): ignore metric version setting only v2 format is useful for circonus
 * feat: Update golangci-lint.yml v1.49 -> v1.50
 * fix(lint): indention
 * fix(input.system): remove reference to gopsutil host.Warnings which is been moved to an internal package in gopsutil...

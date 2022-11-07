@@ -333,7 +333,7 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 		checkDisplayName = strings.Join(cdn, " ")
 	default:
 		if opts.CheckDisplayName != "" && !strings.Contains(opts.CheckDisplayName, "{{") {
-			// bypass templating if not interpolation strings in check display name
+			// bypass templating if no interpolation strings in check display name
 			checkDisplayName = opts.CheckDisplayName
 		} else {
 			cdnVars := map[string]interface{}{

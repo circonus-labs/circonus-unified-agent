@@ -339,8 +339,10 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 			cdnVars := map[string]interface{}{
 				"CheckTarget": checkTarget,
 				"PluginID":    pluginID,
-				"InstanceID":  instanceID,
 				"HostOS":      runtime.GOOS,
+			}
+			if instanceID != pluginID {
+				cdnVars["InstanceID"] = instanceID
 			}
 			t := fasttemplate.New("{{CheckTarget}} {{PluginID}} {{InstanceID}}", "{{", "}}")
 			if opts.CheckDisplayName != "" {
@@ -351,7 +353,7 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 				}
 				t = ct
 			}
-			checkDisplayName = t.ExecuteString(cdnVars)
+			checkDisplayName = strings.TrimSpace(strings.ReplaceAll(t.ExecuteString(cdnVars), "  ", ""))
 		}
 	}
 

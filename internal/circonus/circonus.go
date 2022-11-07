@@ -20,6 +20,7 @@ import (
 	"github.com/circonus-labs/go-trapcheck"
 	"github.com/circonus-labs/go-trapmetrics"
 	"github.com/shirou/gopsutil/v3/host"
+	"github.com/valyala/fasttemplate"
 )
 
 var ch *Circonus
@@ -43,14 +44,14 @@ type MetricMeta struct {
 }
 
 type MetricDestConfig struct {
-	DebugAPI     *bool             // allow override of api debugging per output
-	TraceMetrics *string           // allow override of metric tracing per output
-	CheckTarget  string            // check target
-	CheckTags    map[string]string // tags for a specific instance of a check
-	APIToken     string            // allow override of api token for a specific plugin (dm input or circonus output)
-	Broker       string            // allow override of broker for a specific plugin (dm input or circonus output)
-	Hostname     string            // allow override of hostname for a specific plugin (dm input or circonus output)
-	MetricMeta   MetricMeta
+	DebugAPI         *bool             // allow override of api debugging per output
+	TraceMetrics     *string           // allow override of metric tracing per output
+	CheckDisplayName string            // check display name
+	CheckTarget      string            // check target
+	CheckTags        map[string]string // tags for a specific instance of a check
+	APIToken         string            // allow override of api token for a specific plugin (dm input or circonus output)
+	Broker           string            // allow override of broker for a specific plugin (dm input or circonus output)
+	MetricMeta       MetricMeta
 }
 
 // Logshim is for api and traps - it uses the info level and
@@ -146,17 +147,12 @@ func Initialize(cfg *config.CirconusConfig, err error) error {
 		}
 	}
 
-	// if len(c.circCfg.CheckSearchTags) == 0 {
-	// 	_, an := filepath.Split(os.Args[0])
-	// 	c.circCfg.CheckSearchTags = []string{"_service:" + an}
-	// }
-
-	if c.circCfg.Hostname == "" {
+	if c.circCfg.CheckTarget == "" {
 		hn, err := os.Hostname()
 		if err != nil || hn == "" {
 			hn = "unknown"
 		}
-		c.circCfg.Hostname = hn
+		c.circCfg.CheckTarget = hn
 	}
 
 	c.logger = models.NewLogger("agent", "circ_metric_dest_mgr", "")
@@ -271,13 +267,13 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 	instanceID := opts.MetricMeta.InstanceID
 	metricGroupID := opts.MetricMeta.MetricGroupID
 	projectID := opts.MetricMeta.ProjectID
-	hostname := opts.Hostname
 	customTags := MapToTags(opts.CheckTags)
 
 	destKey := opts.MetricMeta.Key()
 
-	if hostname == "" && ch.circCfg.Hostname != "" {
-		hostname = ch.circCfg.Hostname
+	checkTarget := ch.circCfg.CheckTarget
+	if opts.CheckTarget != "" { // set on input plugin
+		checkTarget = opts.CheckTarget
 	}
 
 	debugCheckSet := false
@@ -321,25 +317,37 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 	}
 	checkType = append(checkType, runtime.GOOS)
 
-	var checkDisplayName []string
+	checkDisplayName := ""
 	switch pluginID {
 	case "stackdriver_circonus":
-		checkDisplayName = []string{"GCP"}
+		cdn := []string{"GCP"}
 		if instanceID != "" && instanceID != pluginID {
-			checkDisplayName = append(checkDisplayName, instanceID)
+			cdn = append(cdn, instanceID)
 		}
 		if projectID != "" {
-			checkDisplayName = append(checkDisplayName, projectID)
+			cdn = append(cdn, projectID)
 		}
 		if metricGroupID != "" {
-			checkDisplayName = append(checkDisplayName, gcpMetricGroupLookup(metricGroupID))
+			cdn = append(cdn, gcpMetricGroupLookup(metricGroupID))
 		}
+		checkDisplayName = strings.Join(cdn, " ")
 	default:
-		checkDisplayName = []string{hostname, pluginID}
-		if instanceID != "" && instanceID != pluginID {
-			checkDisplayName = append(checkDisplayName, instanceID)
+		cdnVars := map[string]interface{}{
+			"CheckTarget": checkTarget,
+			"PluginID":    pluginID,
+			"InstanceID":  instanceID,
+			"HostOS":      runtime.GOOS,
 		}
-		checkDisplayName = append(checkDisplayName, "("+runtime.GOOS+")")
+		t := fasttemplate.New("{{CheckTarget}} {{PluginID}} {{InstanceID}}", "{{", "}}")
+		if opts.CheckDisplayName != "" {
+			ct, err := fasttemplate.NewTemplate(opts.CheckDisplayName, "{{", "}}")
+			if err != nil {
+				logger.Errorf("compiling custom template %s: %s", opts.CheckDisplayName, err)
+				return nil, fmt.Errorf("compiling custom template %s: %w", opts.CheckDisplayName, err)
+			}
+			t = ct
+		}
+		checkDisplayName = t.ExecuteString(cdnVars)
 	}
 
 	// tags used to SEARCH for a specific check
@@ -371,11 +379,6 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 
 	if len(ch.circCfg.CheckTags) != 0 {
 		checkTags = append(checkTags, ch.circCfg.CheckTags...)
-	}
-
-	checkTarget := hostname
-	if opts.CheckTarget != "" {
-		checkTarget = opts.CheckTarget
 	}
 
 	instanceLogger := &Logshim{
@@ -444,7 +447,7 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 
 		cc = &apiclient.CheckBundle{
 			Type:        strings.Join(checkType, ":"),
-			DisplayName: strings.Join(checkDisplayName, " "),
+			DisplayName: checkDisplayName,
 			Target:      checkTarget,
 			Tags:        tags,
 		}

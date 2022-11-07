@@ -150,4 +150,8 @@ type Metric interface {
 	OriginCheckTarget() string
 	// SetOriginCheckTarget sets the origin check target
 	SetOriginCheckTarget(string)
+	// OriginCheckDisplayName gets the origin check display name
+	OriginCheckDisplayName() string
+	// SetOriginCheckDisplayName sets the origin check display name
+	SetOriginCheckDisplayName(string)
 }

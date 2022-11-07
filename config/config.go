@@ -212,6 +212,8 @@ type AgentConfig struct {
 // TraceMetrics    - optional: output json sent to broker (path to write files to or `-` for logger)
 // DebugChecks     - optional: use when instructed by circonus support
 // CheckSearchTags - optional: set of tags to use when searching for checks (default: service:circonus-unified-agentd)
+// CheckTags       - optional: set of tags to apply when creating a check
+// CheckTarget     - optional: set the check_target statically (instead of using hostname)
 type CirconusConfig struct {
 	DebugChecks     map[string]string `toml:"debug_checks"`
 	TraceMetrics    string            `toml:"trace_metrics"`
@@ -221,7 +223,7 @@ type CirconusConfig struct {
 	APITLSCA        string            `toml:"api_tls_ca"`
 	CacheDir        string            `toml:"cache_dir"`
 	Broker          string            `toml:"broker"`
-	Hostname        string            `toml:"-"`
+	CheckTarget     string            `toml:"check_target"`
 	CheckSearchTags []string          `toml:"check_search_tags"`
 	CheckTags       []string          `toml:"check_tags"`
 	DebugAPI        bool              `toml:"debug_api"`
@@ -865,8 +867,8 @@ func (c *Config) LoadConfigData(data []byte) error {
 		return fmt.Errorf("hostname must contain only ASCII characters, %s is invalid. You can set the hostname in the CUA config in the [agent] section", c.Agent.Hostname)
 	}
 
-	if c.Agent.Circonus.Hostname == "" {
-		c.Agent.Circonus.Hostname = c.Agent.Hostname
+	if c.Agent.Circonus.CheckTarget == "" {
+		c.Agent.Circonus.CheckTarget = c.Agent.Hostname
 	}
 
 	// mgm: ignore omit hostname - do not set host:hostname tag on each metric

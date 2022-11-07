@@ -104,6 +104,7 @@ require (
 	github.com/tbrandon/mbserver v0.0.0-20170611213546-993e1772cc62
 	github.com/testcontainers/testcontainers-go v0.13.0
 	github.com/tidwall/gjson v1.14.1
+	github.com/valyala/fasttemplate v1.2.2
 	github.com/vjeantet/grok v1.0.1
 	github.com/vmware/govmomi v0.19.0
 	github.com/wvanbergen/kafka v0.0.0-20171203153745-e2edea948ddf

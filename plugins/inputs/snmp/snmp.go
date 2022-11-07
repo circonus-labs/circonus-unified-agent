@@ -121,12 +121,13 @@ type Snmp struct {
 	Name              string                   // Name & Fields are the elements of a Table.
 	AgentHostTag      string                   `toml:"agent_host_tag"` // The tag used to name the agent host
 	InstanceID        string                   `toml:"instance_id"`    // direct metrics mode - send directly to circonus (bypassing output)
-	CheckTarget       string                   `toml:"check_target"`   // direct metrics mode - check target setting
 	Tables            []Table                  `toml:"table"`
 	Fields            []Field                  `toml:"field"` // Name & Fields are the elements of a Table. agent chokes if we try to embed a Table. So instead we have to embed the fields of a Table, and construct a Table during runtime.
 	connectionCache   []snmpConnection
 	Agents            []string          `toml:"agents"`
-	CheckTags         map[string]string `toml:"check_tags"` // direct metrics mode - list of tags to add to check when created
+	CheckDisplayName  string            `toml:"check_display_name"` // direct metrics mode - check display name
+	CheckTarget       string            `toml:"check_target"`       // direct metrics mode - check target setting
+	CheckTags         map[string]string `toml:"check_tags"`         // direct metrics mode - list of tags to add to check when created
 	Tags              map[string]string
 	snmp.ClientConfig
 	flushDelay     time.Duration // direct metrics mode - send directly to circonus (bypassing output)
@@ -154,11 +155,12 @@ func (s *Snmp) init() error {
 				PluginID:   "snmp",
 				InstanceID: s.InstanceID,
 			},
-			Broker:       s.Broker,
-			DebugAPI:     s.DebugAPI,
-			TraceMetrics: s.TraceMetrics,
-			CheckTags:    s.CheckTags,
-			CheckTarget:  s.CheckTarget,
+			Broker:           s.Broker,
+			DebugAPI:         s.DebugAPI,
+			TraceMetrics:     s.TraceMetrics,
+			CheckTags:        s.CheckTags,
+			CheckTarget:      s.CheckTarget,
+			CheckDisplayName: s.CheckDisplayName,
 		}
 		dest, err := circmgr.NewMetricDestination(opts, s.Log)
 		if err != nil {

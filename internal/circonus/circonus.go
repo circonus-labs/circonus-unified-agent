@@ -332,22 +332,27 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 		}
 		checkDisplayName = strings.Join(cdn, " ")
 	default:
-		cdnVars := map[string]interface{}{
-			"CheckTarget": checkTarget,
-			"PluginID":    pluginID,
-			"InstanceID":  instanceID,
-			"HostOS":      runtime.GOOS,
-		}
-		t := fasttemplate.New("{{CheckTarget}} {{PluginID}} {{InstanceID}}", "{{", "}}")
-		if opts.CheckDisplayName != "" {
-			ct, err := fasttemplate.NewTemplate(opts.CheckDisplayName, "{{", "}}")
-			if err != nil {
-				logger.Errorf("compiling custom template %s: %s", opts.CheckDisplayName, err)
-				return nil, fmt.Errorf("compiling custom template %s: %w", opts.CheckDisplayName, err)
+		if opts.CheckDisplayName != "" && !strings.Contains(opts.CheckDisplayName, "{{") {
+			// bypass templating if not interpolation strings in check display name
+			checkDisplayName = opts.CheckDisplayName
+		} else {
+			cdnVars := map[string]interface{}{
+				"CheckTarget": checkTarget,
+				"PluginID":    pluginID,
+				"InstanceID":  instanceID,
+				"HostOS":      runtime.GOOS,
 			}
-			t = ct
+			t := fasttemplate.New("{{CheckTarget}} {{PluginID}} {{InstanceID}}", "{{", "}}")
+			if opts.CheckDisplayName != "" {
+				ct, err := fasttemplate.NewTemplate(opts.CheckDisplayName, "{{", "}}")
+				if err != nil {
+					logger.Errorf("compiling custom template %s: %s", opts.CheckDisplayName, err)
+					return nil, fmt.Errorf("compiling custom template %s: %w", opts.CheckDisplayName, err)
+				}
+				t = ct
+			}
+			checkDisplayName = t.ExecuteString(cdnVars)
 		}
-		checkDisplayName = t.ExecuteString(cdnVars)
 	}
 
 	// tags used to SEARCH for a specific check

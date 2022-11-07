@@ -74,6 +74,7 @@ type InputConfig struct {
 	NameOverride      string
 	MeasurementPrefix string
 	MeasurementSuffix string
+	CheckDisplayName  string
 	CheckTarget       string
 	CheckTags         map[string]string
 	Filter            Filter
@@ -118,6 +119,7 @@ func (r *RunningInput) MakeMetric(metric cua.Metric) cua.Metric {
 	m.SetOriginInstance(r.Config.InstanceID)
 	m.SetOriginCheckTags(r.Config.CheckTags)
 	m.SetOriginCheckTarget(r.Config.CheckTarget)
+	m.SetOriginCheckDisplayName(r.Config.CheckDisplayName)
 
 	r.Config.Filter.Modify(metric)
 	if len(metric.FieldList()) == 0 {

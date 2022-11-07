@@ -1,6 +1,12 @@
 # **unreleased**
 
-# 0.0.50
+# v0.1.0
+
+* feat: add global `check_target` setting [CIRC-9380]
+* fix: use `check_target` in check display name [CIRC-9302]
+* feat: add input plugin `check_display_name` default `"{{CheckTarget}} {{PluginID}} {{InstanceID}}"` [CIRC-9302]
+
+# v0.0.50
 
 * feat: initial brew tap for macOS installs
 * fix(prometheus): ignore metric version setting only v2 format is useful for circonus

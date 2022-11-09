@@ -2102,9 +2102,9 @@ func (c *Config) LoadDefaultPlugins() error {
 	return nil
 }
 
-func (c *Config) GetGlobalCirconusConfig() (*CirconusConfig, error) {
+func (c *Config) GetGlobalCirconusConfig() *CirconusConfig {
 	if c.Agent.Circonus.APIToken == "" {
-		return nil, fmt.Errorf("invalid agent.circonus config, missing api_token")
+		log.Printf("W! invalid agent.circonus config, missing api_token -- may cause problems if all inputs/outputs not configured explicitly")
 	}
-	return &c.Agent.Circonus, nil
+	return &c.Agent.Circonus
 }

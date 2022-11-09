@@ -79,7 +79,7 @@ func (c *Circonus) Init() error {
 			cfg.TraceMetrics = *c.TraceMetrics
 		}
 
-		if err := circmgr.Initialize(cfg, nil); err != nil {
+		if err := circmgr.Initialize(cfg); err != nil {
 			return err
 		}
 	}

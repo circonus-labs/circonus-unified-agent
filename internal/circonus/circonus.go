@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"log"
 	"os"
 	"regexp"
 	"runtime"
@@ -85,12 +86,9 @@ func (l Logshim) Errorf(fmt string, args ...interface{}) {
 	l.logh.Errorf(l.prefix+": "+fmt, args...)
 }
 
-func Initialize(cfg *config.CirconusConfig, err error) error {
+func Initialize(cfg *config.CirconusConfig) error {
 	if ch != nil {
 		return nil // already initialized
-	}
-	if err != nil {
-		return err
 	}
 	if cfg == nil {
 		return fmt.Errorf("circonus metric destination management module: invalid circonus config (nil)")
@@ -104,7 +102,7 @@ func Initialize(cfg *config.CirconusConfig, err error) error {
 	}
 
 	if c.circCfg.APIToken == "" {
-		return fmt.Errorf("circonus metric destination management module: unable to initialize, API Token is required")
+		log.Print("W! circonus metric destination management module: unable to initialize, API Token is required")
 	}
 
 	if c.circCfg.APIApp == "" {

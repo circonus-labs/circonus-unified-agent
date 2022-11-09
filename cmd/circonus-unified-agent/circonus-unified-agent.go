@@ -148,12 +148,9 @@ func runAgent(ctx context.Context,
 	if err := c.LoadDefaultPlugins(); err != nil {
 		return fmt.Errorf("loading defaults: %w", err)
 	}
-	// mgm: initialize the internal circonus cgm instance creator used by high-perf
-	// input plugins (ending in "_hp"). these input plugins send directly to circonus
-	// and DO NOT go through the normal agent pipeline (no aggregators, processors,
-	// parsers, outputs, etc.)
+	// mgm: initialize the internal circonus config.
 	if err := circonus.Initialize(c.GetGlobalCirconusConfig()); err != nil {
-		log.Printf("E! %s", err)
+		log.Fatalf("E! unable to initialize circonus %s", err)
 	}
 	if len(c.Tags) > 0 {
 		circonus.AddGlobalTags(c.Tags)

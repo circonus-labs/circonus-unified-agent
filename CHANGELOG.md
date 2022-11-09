@@ -1,5 +1,18 @@
 # **unreleased**
 
+# v0.2.0
+
+* fix: call to circmgr.Initialize
+* fix: log warning on invalid circmgr config - don't return error
+* feat: log fatal error if circmgr cannot be initialized
+* fix: emit a warn message and return what `agent.circonus` config settings there are
+* fix: clarify message when no `agent.circonus.api_token` set
+* doc: `outputs.circonus.api_token` is not required, `agent.circonus.api_token` is required. clarify documentation.
+* fix: add new common settings (`check_target`, `check_tags`, `check_display_name`) for input plugins
+* fix: docker images
+* fix: gitignore test configs `*.conf`
+* feat: gitignore test configs in `etc/conf.d/*.conf`
+
 # v0.1.0
 
 * feat: add global `check_target` setting [CIRC-9380]

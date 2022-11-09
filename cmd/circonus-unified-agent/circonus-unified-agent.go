@@ -153,7 +153,7 @@ func runAgent(ctx context.Context,
 	// and DO NOT go through the normal agent pipeline (no aggregators, processors,
 	// parsers, outputs, etc.)
 	if err := circonus.Initialize(c.GetGlobalCirconusConfig()); err != nil {
-		log.Printf("E! CMDM %s", err)
+		log.Printf("E! %s", err)
 	}
 	if len(c.Tags) > 0 {
 		circonus.AddGlobalTags(c.Tags)

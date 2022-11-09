@@ -18,4 +18,5 @@ tmp/
 .vscode/launch.json
 /*.conf
 !/etc/*.conf
+/etc/conf.d/*.conf
 cmd/circonus-unified-agent/__debug_bin

@@ -102,7 +102,7 @@ func Initialize(cfg *config.CirconusConfig) error {
 	}
 
 	if c.circCfg.APIToken == "" {
-		log.Print("W! circonus metric destination management module: unable to initialize, API Token is required")
+		log.Print("W! circonus metric destination management module may not function properly without a valid API Token")
 	}
 
 	if c.circCfg.APIApp == "" {

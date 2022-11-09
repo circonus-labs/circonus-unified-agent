@@ -11,7 +11,7 @@ check configuration click [here][docs].
 ```toml
 [[outputs.circonus]]
   ## Circonus API token must be provided to use this plugin:
-  api_token = ""
+  # api_token = ""
 
   ## Circonus API application (associated with token):
   ## example:

@@ -1,5 +1,9 @@
 # **unreleased**
 
+# v0.2.1
+
+* fix: homebrew tap
+
 # v0.2.0
 
 * fix: call to circmgr.Initialize

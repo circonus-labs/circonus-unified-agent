@@ -145,7 +145,7 @@ brews:
     description: Circonus Unified Agent
     license: MIT
     caveats: |
-      1. Edit #{etc}/circonus-unified-agent.conf to add your API key. 
+      1. Edit #{pkgetc}/circonus-unified-agent.conf to add your API key. 
       2. Run brew service start circonus-unified-agent
 
       Or, if upgrading, brew service restart circonus-unified-agent
@@ -155,13 +155,12 @@ brews:
 
     install: |
       sbin.install "sbin/circonus-unified-agentd"
-      etc.install "etc/example-circonus-unified-agent.conf" => "circonus-unified-agent.conf"
-      (etc"/conf.d").install "etc/conf.d/readme.md"
-      doc.install README.md
-      doc.install LICENSE
+      pkgetc.install "etc/example-circonus-unified-agent.conf" => "circonus-unified-agent.conf"
+      (pkgetc/"conf.d").mkpath
+      doc.install "README.md", "LICENSE"
 
     service: |
-      run [sbin/"circonus-unified-agentd", "--config", etc/"circonus-unified-agent.conf", "--config-dir", etc/"conf.d"]
+      run [opt_sbin/"circonus-unified-agentd", "--config", etc/"circonus-unified-agent/circonus-unified-agent.conf", "--config-dir", etc/"circonus-unified-agent/conf.d"]
       keep_alive true
       log_path var/"log/circonus-unified-agent.log"
       error_log_path var/"log/circonus-unified-agent.log"

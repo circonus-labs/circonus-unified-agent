@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/circonus-labs/circonus-unified-agent/cua"
+	"github.com/circonus-labs/circonus-unified-agent/models"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/parsers/collectd"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/parsers/csv"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/parsers/dropwizard"
@@ -367,5 +368,6 @@ func NewJSONPathParser(jsonv2config []JSONV2Config) (Parser, error) {
 	}
 	return &json_v2.Parser{
 		Configs: configs,
+		Log:     models.NewLogger("parsers", "json_v2", ""),
 	}, nil
 }

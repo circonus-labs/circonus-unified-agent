@@ -15,7 +15,7 @@ import (
 	"github.com/circonus-labs/circonus-unified-agent/internal"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/common/tls"
 	"github.com/circonus-labs/circonus-unified-agent/plugins/inputs"
-	"github.com/kubernetes/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 const (

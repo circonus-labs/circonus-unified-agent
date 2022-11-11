@@ -1,5 +1,9 @@
 # **unreleased**
 
+# v0.2.3
+
+* fix: instructions `brew services` not `brew servcie`
+
 # v0.2.2
 
 * fix: typo in brew service definition

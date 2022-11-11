@@ -1,139 +1,177 @@
 project_name: circonus-unified-agent
 
 before:
-    hooks:
-        - go mod tidy
-        - ./build_lint.sh
+  hooks:
+    - go mod tidy
+    - ./build_lint.sh
         
 builds:
-    -
-        id: cua
-        main: ./cmd/circonus-unified-agent
-        binary: sbin/circonus-unified-agentd
-        env:
-            - CGO_ENABLED=0
-        goos:
-            - linux
-            - windows
-            - freebsd
-            - darwin
-        goarch:
-            - amd64
-            - arm64
-        ignore:
-            - goarch: 386
-            - goos: openbsd
-              goarch: arm64
-            - goos: windows
-              goarch: arm64
-        ldflags:
-            - -s
-            - -w
-            - -extldflags "-static"
-            - -X github.com/circonus-labs/circonus-unified-agent/internal/release.version={{.Version}}
-            - -X github.com/circonus-labs/circonus-unified-agent/internal/release.commit={{.ShortCommit}}
-            - -X github.com/circonus-labs/circonus-unified-agent/internal/release.branch={{.Branch}}
-            - -X github.com/circonus-labs/circonus-unified-agent/internal/release.buildDate={{.Date}}
-            - -X github.com/circonus-labs/circonus-unified-agent/internal/release.buildTag={{.Tag}}
-dockers:
-    -
-        goos: linux
-        goarch: amd64
-        goarm: ''
-        ids: ['cua']
-        image_templates:
-          - "circonus/{{.ProjectName}}:{{.Tag}}-amd64"
-          - "circonus/{{.ProjectName}}:latest-amd64"
-        skip_push: false
-        dockerfile: builds/docker/x86_64/Dockerfile
-        build_flag_templates:
-            - "--pull"
-            - "--label=org.label-schema.schema-version=1.0"
-            - "--label=org.label-schema.version={{.Version}}"
-            - "--label=org.label-schema.name={{.ProjectName}}"
-            - "--label=org.opencontainers.image.created={{.Date}}"
-            - "--label=org.opencontainers.image.title={{.ProjectName}}"
-            - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-            - "--label=org.opencontainers.image.version={{.Version}}"
-            - "--platform=linux/amd64"
-        extra_files:
-            - etc/example-circonus-unified-agent.conf
-    -
-        goos: linux
+  - id: cua
+    main: ./cmd/circonus-unified-agent
+    binary: sbin/circonus-unified-agentd
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - freebsd
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goarch: 386
+      - goos: openbsd
         goarch: arm64
-        goarm: ''
-        ids: ['cua']
-        image_templates:
-          - "circonus/{{.ProjectName}}:{{.Tag}}-arm64"
-          - "circonus/{{.ProjectName}}:latest-arm64"
-        skip_push: false
-        dockerfile: builds/docker/arm64/Dockerfile
-        build_flag_templates:
-            - "--pull"
-            - "--label=org.label-schema.schema-version=1.0"
-            - "--label=org.label-schema.version={{.Version}}"
-            - "--label=org.label-schema.name={{.ProjectName}}"
-            - "--label=org.opencontainers.image.created={{.Date}}"
-            - "--label=org.opencontainers.image.title={{.ProjectName}}"
-            - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-            - "--label=org.opencontainers.image.version={{.Version}}"
-            - "--platform=linux/arm64"
-        extra_files:
-            - etc/example-circonus-unified-agent.conf
+      - goos: windows
+        goarch: arm64
+    ldflags:
+      - -s
+      - -w
+      - -extldflags "-static"
+      - -X github.com/circonus-labs/circonus-unified-agent/internal/release.version={{.Version}}
+      - -X github.com/circonus-labs/circonus-unified-agent/internal/release.commit={{.ShortCommit}}
+      - -X github.com/circonus-labs/circonus-unified-agent/internal/release.branch={{.Branch}}
+      - -X github.com/circonus-labs/circonus-unified-agent/internal/release.buildDate={{.Date}}
+      - -X github.com/circonus-labs/circonus-unified-agent/internal/release.buildTag={{.Tag}}
+
+  - id: cua-macos_amd64
+    main: ./cmd/circonus-unified-agent
+    binary: sbin/circonus-unified-agentd
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+    goarch:
+      - amd64
+    ldflags:
+      - -s
+      - -w
+      - -extldflags "-static"
+      - -X github.com/circonus-labs/circonus-unified-agent/internal/release.version={{.Version}}
+      - -X github.com/circonus-labs/circonus-unified-agent/internal/release.commit={{.ShortCommit}}
+      - -X github.com/circonus-labs/circonus-unified-agent/internal/release.branch={{.Branch}}
+      - -X github.com/circonus-labs/circonus-unified-agent/internal/release.buildDate={{.Date}}
+      - -X github.com/circonus-labs/circonus-unified-agent/internal/release.buildTag={{.Tag}}
+
+  - id: cua-macos_arm64
+    main: ./cmd/circonus-unified-agent
+    binary: sbin/circonus-unified-agentd
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+    goarch:
+      - arm64
+    ldflags:
+      - -s
+      - -w
+      - -extldflags "-static"
+      - -X github.com/circonus-labs/circonus-unified-agent/internal/release.version={{.Version}}
+      - -X github.com/circonus-labs/circonus-unified-agent/internal/release.commit={{.ShortCommit}}
+      - -X github.com/circonus-labs/circonus-unified-agent/internal/release.branch={{.Branch}}
+      - -X github.com/circonus-labs/circonus-unified-agent/internal/release.buildDate={{.Date}}
+      - -X github.com/circonus-labs/circonus-unified-agent/internal/release.buildTag={{.Tag}}
+
+dockers:
+  - id: cua-amd64
+    goos: linux
+    goarch: amd64
+    goarm: ''
+    ids: ['cua']
+    image_templates:
+      - "circonus/{{.ProjectName}}:{{.Tag}}-amd64"
+      - "circonus/{{.ProjectName}}:latest-amd64"
+    skip_push: false
+    dockerfile: builds/docker/x86_64/Dockerfile
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.label-schema.schema-version=1.0"
+      - "--label=org.label-schema.version={{.Version}}"
+      - "--label=org.label-schema.name={{.ProjectName}}"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--platform=linux/amd64"
+    extra_files:
+      - etc/example-circonus-unified-agent.conf
+
+  - id: cua-arm64
+    goos: linux
+    goarch: arm64
+    goarm: ''
+    ids: ['cua']
+    image_templates:
+      - "circonus/{{.ProjectName}}:{{.Tag}}-arm64"
+      - "circonus/{{.ProjectName}}:latest-arm64"
+    skip_push: false
+    dockerfile: builds/docker/arm64/Dockerfile
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.label-schema.schema-version=1.0"
+      - "--label=org.label-schema.version={{.Version}}"
+      - "--label=org.label-schema.name={{.ProjectName}}"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--platform=linux/arm64"
+    extra_files:
+      - etc/example-circonus-unified-agent.conf
 
 docker_manifests:
-    - name_template: "circonus/{{.ProjectName}}:latest"
-      image_templates:
-        - "circonus/{{.ProjectName}}:latest-amd64"
-        - "circonus/{{.ProjectName}}:latest-arm64"
-    - name_template: "circonus/{{.ProjectName}}:{{.Tag}}"
-      image_templates:
-        - "circonus/{{.ProjectName}}:{{.Tag}}-amd64"
-        - "circonus/{{.ProjectName}}:{{.Tag}}-arm64"
+  - name_template: "circonus/{{.ProjectName}}:latest"
+    image_templates:
+      - "circonus/{{.ProjectName}}:latest-amd64"
+      - "circonus/{{.ProjectName}}:latest-arm64"
+  - name_template: "circonus/{{.ProjectName}}:{{.Tag}}"
+    image_templates:
+      - "circonus/{{.ProjectName}}:{{.Tag}}-amd64"
+      - "circonus/{{.ProjectName}}:{{.Tag}}-arm64"
 
 nfpms:
-    - vendor: Circonus, Inc.
-      homepage: https://circonus.commit
-      maintainer: Circonus <support@circonus.com>
-      description: Circonus Unified Agent
-      license: MIT
-      file_name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Arch }}"
-      replacements:
-        darwin: macOS
-      formats:
-        - deb
-        - rpm
-      bindir: /opt/circonus/unified-agent
-      contents:
-        - src: "LICENSE"
-          dst: "/opt/circonus/unified-agent/LICENSE"
-        - src: "README.md"
-          dst: "/opt/circonus/unified-agent/README.md"
-        - src: "CHANGELOG.md"
-          dst: "/opt/circonus/unified-agent/CHANGELOG.md"
-        - src: "service/circonus-unified-agent.linux.service"
-          dst: "/opt/circonus/unified-agent/service/circonus-unified-agent.service"
-        - src: "service/circonus-unified-agent.linux.init"
-          dst: "/opt/circonus/unified-agent/service/circonus-unified-agent.init"
-        - src: "etc/example-circonus-unified-agent.conf" 
-          dst: "/opt/circonus/unified-agent/etc/circonus-unified-agent.conf"
-          type: "config|noreplace"
-        - dst: "/opt/circonus/unified-agent/etc/config.d"
-          type: "dir"
-        - src: "external_plugins"
-          dst: "/opt/circonus/unified-agent/external_plugins"
-      overrides:
-        deb:
-          scripts:
-            preinstall: "builds/deb/pre-install.sh"
-            postinstall: "builds/deb/post-install.sh"
-            preremove: "builds/deb/pre-remove.sh"
-            postremove: "builds/deb/post-remove.sh"
-        rpm:
-          scripts:
-            preinstall: "builds/rpm/pre-install.sh"
-            postinstall: "builds/rpm/post-install.sh"
-            postremove: "builds/rpm/post-remove.sh"
+  - vendor: Circonus, Inc.
+    homepage: https://circonus.commit
+    maintainer: Circonus <support@circonus.com>
+    description: Circonus Unified Agent
+    license: MIT
+    file_name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Arch }}"
+    replacements:
+      darwin: macOS
+    formats:
+      - deb
+      - rpm
+    bindir: /opt/circonus/unified-agent
+    contents:
+      - src: "LICENSE"
+        dst: "/opt/circonus/unified-agent/LICENSE"
+      - src: "README.md"
+        dst: "/opt/circonus/unified-agent/README.md"
+      - src: "CHANGELOG.md"
+        dst: "/opt/circonus/unified-agent/CHANGELOG.md"
+      - src: "service/circonus-unified-agent.linux.service"
+        dst: "/opt/circonus/unified-agent/service/circonus-unified-agent.service"
+      - src: "service/circonus-unified-agent.linux.init"
+        dst: "/opt/circonus/unified-agent/service/circonus-unified-agent.init"
+      - src: "etc/example-circonus-unified-agent.conf" 
+        dst: "/opt/circonus/unified-agent/etc/circonus-unified-agent.conf"
+        type: "config|noreplace"
+      - dst: "/opt/circonus/unified-agent/etc/config.d"
+        type: "dir"
+      - src: "external_plugins"
+        dst: "/opt/circonus/unified-agent/external_plugins"
+    overrides:
+      deb:
+        scripts:
+          preinstall: "builds/deb/pre-install.sh"
+          postinstall: "builds/deb/post-install.sh"
+          preremove: "builds/deb/pre-remove.sh"
+          postremove: "builds/deb/post-remove.sh"
+      rpm:
+        scripts:
+          preinstall: "builds/rpm/pre-install.sh"
+          postinstall: "builds/rpm/post-install.sh"
+          postremove: "builds/rpm/post-remove.sh"
 
 brews:
   - tap:
@@ -166,32 +204,30 @@ brews:
       error_log_path var/"log/circonus-unified-agent.log"
 
 archives:
-    -   
-        id: default
-        name_template: "{{.ProjectName}}_{{.Version}}_{{.Os}}_{{.Arch}}"
-        format: tar.gz
-        replacements:
-          amd64: x86_64
-        format_overrides:
-          -
-            goos: windows
-            format: zip
-        files:
-          - LICENSE
-          - README.md
-          - CHANGELOG.md
-          - etc/example-circonus-unified-agent.conf
-          - etc/example-circonus-unified-agent_windows.conf
-          - etc/**/*
-          - service/*
-          - external_plugins/**/*
+  - id: default
+    name_template: "{{.ProjectName}}_{{.Version}}_{{.Os}}_{{.Arch}}"
+    format: tar.gz
+    replacements:
+      amd64: x86_64
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - LICENSE
+      - README.md
+      - CHANGELOG.md
+      - etc/example-circonus-unified-agent.conf
+      - etc/example-circonus-unified-agent_windows.conf
+      - etc/**/*
+      - service/*
+      - external_plugins/**/*
 
 release:
-    github:
-        owner: circonus-labs
-        name: circonus-unified-agent
-    draft: false
-    prerelease: auto
+  github:
+      owner: circonus-labs
+      name: circonus-unified-agent
+  draft: false
+  prerelease: auto
 
 checksum:
-    name_template: "{{.ProjectName}}_checksums.txt"
+  name_template: "{{.ProjectName}}_checksums.txt"

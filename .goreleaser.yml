@@ -146,9 +146,9 @@ brews:
     license: MIT
     caveats: |
       1. Edit #{pkgetc}/circonus-unified-agent.conf to add your API key. 
-      2. Run brew service start circonus-unified-agent
+      2. Run brew services start circonus-unified-agent
 
-      Or, if upgrading, brew service restart circonus-unified-agent
+      Or, if upgrading, brew services restart circonus-unified-agent
 
     test: |
       system "#{sbin}/circonus-unified-agentd --version"

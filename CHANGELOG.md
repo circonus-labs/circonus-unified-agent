@@ -1,5 +1,11 @@
 # **unreleased**
 
+# v0.2.2
+
+* fix: typo in brew service definition
+* fix: `proto: duplicate proto type registered` message on startup
+* feat: add logger to parser.json_v2
+
 # v0.2.1
 
 * fix: homebrew tap

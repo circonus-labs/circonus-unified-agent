@@ -72,6 +72,14 @@ builds:
       - -X github.com/circonus-labs/circonus-unified-agent/internal/release.buildDate={{.Date}}
       - -X github.com/circonus-labs/circonus-unified-agent/internal/release.buildTag={{.Tag}}
 
+universal_binaries:
+  - id: macos_universal
+    ids:
+      - cua-macos_amd64
+      - cua-macos_arm64
+    name_template: sbin/circonus-unified-agentd
+    replace: false
+
 dockers:
   - id: cua-amd64
     goos: linux
@@ -218,9 +226,20 @@ archives:
       - CHANGELOG.md
       - etc/example-circonus-unified-agent.conf
       - etc/example-circonus-unified-agent_windows.conf
-      - etc/**/*
+      - etc/logrotate.d/circonus-unified-agent
+      - etc/conf.d/README.md
       - service/*
       - external_plugins/**/*
+
+signs:
+  - id: macos
+    cmd: xcrun
+    args: [ "codesign", "-s ", "{{ .Env.AC_APPID }}", "-f", "-v", "--timestamp", "--options", "runtime" ]
+    artifacts: binary
+    ids:
+      - cua-amd64
+      - cua-arm64
+      - macos_universal
 
 release:
   github:

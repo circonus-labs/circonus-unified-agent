@@ -1,5 +1,10 @@
 # **unreleased**
 
+# v0.2.4
+
+* feat: signed darwin binaries
+* feat: universal darwin binary
+
 # v0.2.3
 
 * fix: instructions `brew services` not `brew servcie`

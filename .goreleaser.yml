@@ -52,6 +52,8 @@ builds:
       - -X github.com/circonus-labs/circonus-unified-agent/internal/release.branch={{.Branch}}
       - -X github.com/circonus-labs/circonus-unified-agent/internal/release.buildDate={{.Date}}
       - -X github.com/circonus-labs/circonus-unified-agent/internal/release.buildTag={{.Tag}}
+    hooks:
+      post: ./macos_sign.sh {{ .Path }}
 
   - id: cua-macos_arm64
     main: ./cmd/circonus-unified-agent
@@ -71,6 +73,8 @@ builds:
       - -X github.com/circonus-labs/circonus-unified-agent/internal/release.branch={{.Branch}}
       - -X github.com/circonus-labs/circonus-unified-agent/internal/release.buildDate={{.Date}}
       - -X github.com/circonus-labs/circonus-unified-agent/internal/release.buildTag={{.Tag}}
+    hooks:
+      post: ./macos_sign.sh {{ .Path }}
 
 universal_binaries:
   - id: macos_universal
@@ -79,6 +83,8 @@ universal_binaries:
       - cua-macos_arm64
     name_template: sbin/circonus-unified-agentd
     replace: false
+    hooks:
+      post: ./macos_sign.sh {{ .Path }}
 
 dockers:
   - id: cua-amd64
@@ -231,15 +237,15 @@ archives:
       - service/*
       - external_plugins/**/*
 
-signs:
-  - id: macos
-    cmd: xcrun
-    args: [ "codesign", "-s ", "{{ .Env.AC_APPID }}", "-f", "-v", "--timestamp", "--options", "runtime" ]
-    artifacts: binary
-    ids:
-      - cua-amd64
-      - cua-arm64
-      - macos_universal
+# signs:
+#   - id: macos
+#     cmd: xcrun
+#     args: [ "codesign", "-s ", "{{ .Env.AC_APPID }}", "-f", "-v", "--timestamp", "--options", "runtime" ]
+#     artifacts: binary
+#     ids:
+#       - cua-amd64
+#       - cua-arm64
+#       - macos_universal
 
 release:
   github:

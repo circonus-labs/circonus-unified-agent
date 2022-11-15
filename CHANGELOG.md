@@ -1,5 +1,9 @@
 # **unreleased**
 
+# v0.2.5
+
+* fix: sign binaries immediately after build, before archives built not after
+
 # v0.2.4
 
 * feat: signed darwin binaries

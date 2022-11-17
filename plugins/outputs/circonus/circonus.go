@@ -43,6 +43,7 @@ type Circonus struct {
 	APIURL              string   `toml:"api_url"`                // optional: override agent.circonus api url (default: https://api.circonus.com/v2)
 	Broker              string   `toml:"broker"`                 // optional: override agent.circonus broker ID - numeric portion of _cid from broker api object (default is selected: enterprise or public httptrap broker)
 	APIToken            string   `toml:"api_token"`              // optional: override agent.circonus api token
+	AgentTarget         string   `toml:"agent_check_target"`     // optional: send agent metrics to a dedicated check if there are multiple agents on the same host
 	CheckSearchTags     []string `toml:"check_search_tags"`      // optional: set of tags to use when searching for checks (default: service:circonus-unified-agentd)
 	PoolSize            int      `toml:"pool_size"`              // size of the processor pool for a given output instance - default 2
 	DebugMetrics        bool     `toml:"debug_metrics"`          // output the metrics as they are being parsed, use to verify proper parsing/tags/etc.
@@ -149,7 +150,8 @@ func (c *Circonus) Connect() error {
 			PluginID:   "agent",
 			InstanceID: config.DefaultInstanceID(),
 		}
-		if err := c.initMetricDestination(meta, map[string]string{}, "", ""); err != nil {
+
+		if err := c.initMetricDestination(meta, map[string]string{}, c.AgentTarget, ""); err != nil {
 			c.Log.Errorf("unable to initialize circonus metric destination (%s)", err)
 			return err
 		}

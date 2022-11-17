@@ -197,10 +197,10 @@ brews:
     description: Circonus Unified Agent
     license: MIT
     caveats: |
-      1. Edit #{pkgetc}/circonus-unified-agent.conf to add your API key. 
-      2. Run brew services start circonus-unified-agent
+      1. Edit #{plist_name} and add your API token in API_TOKEN environment variable setting
+      2. Run "brew services start circonus-unified-agent"
 
-      Or, if upgrading, brew services restart circonus-unified-agent
+      Or, if upgrading, run "brew services restart circonus-unified-agent"
 
     test: |
       system "#{sbin}/circonus-unified-agentd --version"
@@ -236,16 +236,6 @@ archives:
       - etc/conf.d/README.md
       - service/*
       - external_plugins/**/*
-
-# signs:
-#   - id: macos
-#     cmd: xcrun
-#     args: [ "codesign", "-s ", "{{ .Env.AC_APPID }}", "-f", "-v", "--timestamp", "--options", "runtime" ]
-#     artifacts: binary
-#     ids:
-#       - cua-amd64
-#       - cua-arm64
-#       - macos_universal
 
 release:
   github:

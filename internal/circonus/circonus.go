@@ -450,11 +450,15 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 			tags = append(tags, cleanTags...)
 		}
 
+		info := release.GetInfo()
+		notes := fmt.Sprintf("%s-%s", info.Name, info.Version)
+
 		cc = &apiclient.CheckBundle{
 			Type:        strings.Join(checkType, ":"),
 			DisplayName: checkDisplayName,
 			Target:      checkTarget,
 			Tags:        tags,
+			Notes:       &notes,
 		}
 		if opts.Broker != "" {
 			cc.Brokers = []string{opts.Broker}

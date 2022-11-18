@@ -2,6 +2,8 @@ package kubeinventory
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/circonus-labs/circonus-unified-agent/plugins/common/tls"
@@ -21,17 +23,27 @@ type client struct {
 }
 
 func newClient(baseURL, namespace, bearerToken string, timeout time.Duration, tlsConfig tls.ClientConfig) (*client, error) {
-	c, err := kubernetes.NewForConfig(&rest.Config{
-		TLSClientConfig: rest.TLSClientConfig{
-			ServerName: baseURL,
-			Insecure:   tlsConfig.InsecureSkipVerify,
-			CAFile:     tlsConfig.TLSCA,
-			CertFile:   tlsConfig.TLSCert,
-			KeyFile:    tlsConfig.TLSKey,
-		},
-		BearerToken:   bearerToken,
-		ContentConfig: rest.ContentConfig{},
-	})
+	var cfg *rest.Config
+	if c, err := rest.InClusterConfig(); err != nil {
+		if !errors.Is(err, rest.ErrNotInCluster) {
+			return nil, fmt.Errorf("unable to configure k8s api client: %w", err)
+		}
+		cfg = &rest.Config{
+			TLSClientConfig: rest.TLSClientConfig{
+				ServerName: baseURL,
+				Insecure:   tlsConfig.InsecureSkipVerify,
+				CAFile:     tlsConfig.TLSCA,
+				CertFile:   tlsConfig.TLSCert,
+				KeyFile:    tlsConfig.TLSKey,
+			},
+			BearerToken:   bearerToken,
+			ContentConfig: rest.ContentConfig{},
+		}
+	} else {
+		cfg = c // use in-cluster config
+	}
+
+	c, err := kubernetes.NewForConfig(cfg)
 	if err != nil {
 		return nil, err
 	}

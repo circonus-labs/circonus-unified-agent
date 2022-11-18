@@ -34,8 +34,9 @@ avoid cardinality issues:
 [[inputs.kube_inventory]]
   instance_id = "" # unique instance identifier (REQUIRED)
 
-  ## URL for the Kubernetes API
-  url = "https://127.0.0.1"
+  ## URL for the Kubernetes API (if not supplied, will try
+  ## to use in-cluster config)
+  # url = "https://127.0.0.1"
 
   ## Namespace to use. Set to "" to use all namespaces.
   # namespace = "default"

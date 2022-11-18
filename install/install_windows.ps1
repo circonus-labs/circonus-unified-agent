@@ -56,7 +56,7 @@ New-Module -name circonus-install -ScriptBlock {
     Write-Host "Copying config..."
     Move-Item -Path "${installpath}\etc\example-circonus-unified-agent_windows.conf" -Destination "${installpath}\etc\circonus-unified-agent.conf"
     $file = "${installpath}\etc\circonus-unified-agent.conf"
-    (Get-Content $file) -replace '  api_token = ".*"', "  api_token = `"${token}`"" | Set-Content $file
+    (Get-Content $file) -replace '${CUA_API_TOKEN}', ${token} | Set-Content $file
   }
 
   function Cleanup {

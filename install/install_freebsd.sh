@@ -152,7 +152,7 @@ __configure_agent() {
     [[ -f $cua_conf_file ]] || fail "config file (${cua_conf_file}) not found"
 
     log "\tSetting Circonus API key in configuration"
-    \sed -i -e "s/  api_token = \".*\"/  api_token = \"${cua_api_key}\"/" $cua_conf_file
+    \sed -i -e "s/\${CUA_API_TOKEN}/${cua_api_key}/" $cua_conf_file
     [[ $? -eq 0 ]] || fail "updating ${cua_conf_file} with api key"
 
     if [[ -n "${cua_api_app}" ]]; then

@@ -1,5 +1,9 @@
 # **unreleased**
 
+# v0.2.6
+
+* fix: sign with corp cert now that it is working
+
 # v0.2.5
 
 * fix: sign binaries immediately after build, before archives built not after

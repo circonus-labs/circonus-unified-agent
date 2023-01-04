@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	_ "time/tzdata" // needed to bundle timezone info into the binary for Windows
+
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/internal"
 	"github.com/circonus-labs/circonus-unified-agent/metric"
@@ -17,25 +19,23 @@ import (
 type TimeFunc func() time.Time
 
 type Config struct {
-	ColumnNames       []string `toml:"csv_column_names"`
-	ColumnTypes       []string `toml:"csv_column_types"`
+	DefaultTags       map[string]string
+	TimeFunc          func() time.Time
+	Timezone          string   `toml:"csv_timezone"`
 	Comment           string   `toml:"csv_comment"`
 	Delimiter         string   `toml:"csv_delimiter"`
-	HeaderRowCount    int      `toml:"csv_header_row_count"`
 	MeasurementColumn string   `toml:"csv_measurement_column"`
 	MetricName        string   `toml:"metric_name"`
-	SkipColumns       int      `toml:"csv_skip_columns"`
-	SkipRows          int      `toml:"csv_skip_rows"`
-	TagColumns        []string `toml:"csv_tag_columns"`
 	TimestampColumn   string   `toml:"csv_timestamp_column"`
 	TimestampFormat   string   `toml:"csv_timestamp_format"`
-	Timezone          string   `toml:"csv_timezone"`
+	ColumnTypes       []string `toml:"csv_column_types"`
+	ColumnNames       []string `toml:"csv_column_names"`
+	TagColumns        []string `toml:"csv_tag_columns"`
+	HeaderRowCount    int      `toml:"csv_header_row_count"`
+	SkipRows          int      `toml:"csv_skip_rows"`
+	SkipColumns       int      `toml:"csv_skip_columns"`
 	TrimSpace         bool     `toml:"csv_trim_space"`
-
-	gotColumnNames bool
-
-	TimeFunc    func() time.Time
-	DefaultTags map[string]string
+	gotColumnNames    bool
 }
 
 // Parser is a CSV parser, you should use NewParser to create a new instance.

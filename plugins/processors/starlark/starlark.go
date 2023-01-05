@@ -113,10 +113,16 @@ func (s *Starlark) Init() error {
 func (s *Starlark) sourceProgram(builtins starlark.StringDict) (*starlark.Program, error) {
 	if s.Source != "" {
 		_, program, err := starlark.SourceProgram("processor.starlark", s.Source, builtins.Has)
-		return program, fmt.Errorf("source program (source:%s): %w", s.Source, err)
+		if err != nil {
+			return program, fmt.Errorf("source program (source:%s): %w", s.Source, err)
+		}
+		return program, nil
 	}
 	_, program, err := starlark.SourceProgram(s.Script, nil, builtins.Has)
-	return program, fmt.Errorf("source program (script:%s): %w", s.Script, err)
+	if err != nil {
+		return program, fmt.Errorf("source program (script:%s): %w", s.Script, err)
+	}
+	return program, nil
 }
 
 func (s *Starlark) SampleConfig() string {

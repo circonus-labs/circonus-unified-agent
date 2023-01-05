@@ -17,8 +17,8 @@ import (
 // Tests for runtime errors in the processors Init function.
 func TestInitError(t *testing.T) {
 	tests := []struct {
-		name   string
 		plugin *Starlark
+		name   string
 	}{
 		{
 			name: "source must define apply",
@@ -94,9 +94,9 @@ func TestApply(t *testing.T) {
 	var applyTests = []struct {
 		name             string
 		source           string
+		expectedErrorStr string
 		input            []cua.Metric
 		expected         []cua.Metric
-		expectedErrorStr string
 	}{
 		{
 			name: "drop metric",
@@ -251,9 +251,9 @@ func TestMetric(t *testing.T) {
 	var tests = []struct {
 		name             string
 		source           string
+		expectedErrorStr string
 		input            []cua.Metric
 		expected         []cua.Metric
-		expectedErrorStr string
 	}{
 		{
 			name: "create new metric",
@@ -2453,11 +2453,11 @@ def process(metric):
 
 func TestScript(t *testing.T) {
 	var tests = []struct {
-		name             string
 		plugin           *Starlark
+		name             string
+		expectedErrorStr string
 		input            []cua.Metric
 		expected         []cua.Metric
-		expectedErrorStr string
 	}{
 		{
 			name: "rename",

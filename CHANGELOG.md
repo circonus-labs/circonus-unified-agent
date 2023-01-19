@@ -1,5 +1,10 @@
 # **unreleased**
 
+# v0.2.7
+
+* fix: do not return error when there is no error
+* fix: embed tz info for windows
+
 # v0.2.6
 
 * fix: sign with corp cert now that it is working

@@ -568,6 +568,10 @@ func (c *CloudWatch) aggregateMetrics(
 		}
 		tags["region"] = c.Region
 
+		if len(result.Values) == 0 {
+			c.Log.Debugf("No values from AWS (sending null sample) for %s %s %v.Null values are normal if CloudWatch didn't receive data during this period.", namespace, *result.Label, tags)
+			_ = grouper.Add(namespace, tags, time.Now().UTC(), *result.Label, nil)
+		}
 		for i := range result.Values {
 			_ = grouper.Add(namespace, tags, *result.Timestamps[i], *result.Label, *result.Values[i])
 		}

@@ -150,8 +150,8 @@ nfpms:
     description: Circonus Unified Agent
     license: MIT
     file_name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Arch }}"
-    replacements:
-      darwin: macOS
+    # replacements:
+    #   darwin: macOS
     formats:
       - deb
       - rpm
@@ -219,10 +219,11 @@ brews:
 
 archives:
   - id: default
+    rlcp: true
     name_template: "{{.ProjectName}}_{{.Version}}_{{.Os}}_{{.Arch}}"
     format: tar.gz
-    replacements:
-      amd64: x86_64
+    # replacements:
+    #   amd64: x86_64
     format_overrides:
       - goos: windows
         format: zip

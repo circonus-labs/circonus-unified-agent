@@ -24,34 +24,31 @@ import (
 
 // CloudWatch contains the configuration and cache for the cloudwatch plugin.
 type CloudWatch struct {
-	Region           string          `toml:"region"`
+	windowEnd        time.Time
+	windowStart      time.Time
+	Log              cua.Logger `toml:"-"`
+	statFilter       filter.Filter
+	client           cloudwatchClient
+	queryDimensions  map[string]*map[string]string
+	metricCache      *metricCache
+	Token            string          `toml:"token"`
+	CredentialPath   string          `toml:"shared_credential_file"`
 	AccessKey        string          `toml:"access_key"`
 	SecretKey        string          `toml:"secret_key"`
+	Namespace        string          `toml:"namespace"`
 	RoleARN          string          `toml:"role_arn"`
 	Profile          string          `toml:"profile"`
-	CredentialPath   string          `toml:"shared_credential_file"`
-	Token            string          `toml:"token"`
+	RecentlyActive   string          `toml:"recently_active"`
 	EndpointURL      string          `toml:"endpoint_url"`
-	StatisticExclude []string        `toml:"statistic_exclude"`
+	Region           string          `toml:"region"`
 	StatisticInclude []string        `toml:"statistic_include"`
+	StatisticExclude []string        `toml:"statistic_exclude"`
+	Metrics          []*Metric       `toml:"metrics"`
+	Delay            config.Duration `toml:"delay"`
+	RateLimit        int             `toml:"ratelimit"`
+	CacheTTL         config.Duration `toml:"cache_ttl"`
+	Period           config.Duration `toml:"period"`
 	Timeout          config.Duration `toml:"timeout"`
-
-	Period         config.Duration `toml:"period"`
-	Delay          config.Duration `toml:"delay"`
-	Namespace      string          `toml:"namespace"`
-	Metrics        []*Metric       `toml:"metrics"`
-	CacheTTL       config.Duration `toml:"cache_ttl"`
-	RateLimit      int             `toml:"ratelimit"`
-	RecentlyActive string          `toml:"recently_active"`
-
-	Log cua.Logger `toml:"-"`
-
-	client          cloudwatchClient
-	statFilter      filter.Filter
-	metricCache     *metricCache
-	queryDimensions map[string]*map[string]string
-	windowStart     time.Time
-	windowEnd       time.Time
 }
 
 // Metric defines a simplified Cloudwatch metric.
@@ -70,10 +67,10 @@ type Dimension struct {
 
 // metricCache caches metrics, their filters, and generated queries.
 type metricCache struct {
-	ttl     time.Duration
 	built   time.Time
 	metrics []filteredMetric
 	queries []*cloudwatch.MetricDataQuery
+	ttl     time.Duration
 }
 
 type cloudwatchClient interface {
@@ -290,8 +287,8 @@ func (c *CloudWatch) initializeCloudWatch() error {
 }
 
 type filteredMetric struct {
-	metrics    []*cloudwatch.Metric
 	statFilter filter.Filter
+	metrics    []*cloudwatch.Metric
 }
 
 // getFilteredMetrics returns metrics specified in the config file or metrics listed from Cloudwatch.

@@ -8,6 +8,7 @@ import (
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/apache"
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/apcupsd"
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/aurora"
+	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/azure_monitor"
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/azure_storage_queue"
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/bcache"
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/beanstalkd"

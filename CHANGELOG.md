@@ -1,5 +1,14 @@
 # **unreleased**
 
+# v0.2.8
+
+* fix: deprecations
+* fix: struct alignment
+* feat(cloudwatch): Remove log warning for empty AWS values which spams the log file
+* feat(cloudwatch): Demote the null CloudWatch sample log message to debug
+* feat: add azure_monitor support
+* build(deps): bump github.com/shirou/gopsutil/v3 from 3.22.10 to 3.23.1
+
 # v0.2.7
 
 * fix: do not return error when there is no error

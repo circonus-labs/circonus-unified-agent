@@ -203,9 +203,7 @@ func (p *Postgresql) Gather(ctx context.Context, acc cua.Accumulator) error {
 			p.AdditionalTags = nil
 			if tagValue != "" {
 				tagList := strings.Split(tagValue, ",")
-				for t := range tagList {
-					p.AdditionalTags = append(p.AdditionalTags, tagList[t])
-				}
+				p.AdditionalTags = append(p.AdditionalTags, tagList...)
 			}
 
 			for rows.Next() {

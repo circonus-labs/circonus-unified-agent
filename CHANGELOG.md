@@ -2,6 +2,9 @@
 
 # v0.2.8
 
+* fix(postgres_extensible): S1011 remove loop
+* fix(shim): SA4009 overwrite arg
+* fix(internal): SA1019 math/rand.Read -> crypto/rand.Read (math/rand.Read deprecated in 1.20)
 * fix: deprecations
 * fix: struct alignment
 * feat(cloudwatch): Remove log warning for empty AWS values which spams the log file

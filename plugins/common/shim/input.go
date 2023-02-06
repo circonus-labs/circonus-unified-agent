@@ -25,7 +25,7 @@ func (s *Shim) AddInput(input cua.Input) error {
 	return nil
 }
 
-func (s *Shim) RunInput(ctx context.Context, pollInterval time.Duration) error {
+func (s *Shim) RunInput(_ context.Context, pollInterval time.Duration) error {
 	// context is used only to close the stdin reader. everything else cascades
 	// from that point and closes cleanly when it's done.
 	ctx, cancel := context.WithCancel(context.Background())

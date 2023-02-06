@@ -5,11 +5,12 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
+	"crypto/rand"
 	"errors"
 	"fmt"
 	"io"
 	"math"
-	"math/rand"
+	mrand "math/rand"
 	"os"
 	"os/exec"
 	"runtime"
@@ -180,7 +181,7 @@ func ReadLinesOffsetN(filename string, offset uint, n int) ([]string, error) {
 // RandomString returns a random string of alpha-numeric characters
 func RandomString(n int) string {
 	var bytes = make([]byte, n)
-	rand.Read(bytes) //nolint:gosec // G404
+	_, _ = rand.Read(bytes) //nolint:gosec // G404
 	for i, b := range bytes {
 		bytes[i] = alphanum[b%byte(len(alphanum))]
 	}
@@ -212,7 +213,7 @@ func RandomSleep(max time.Duration, shutdown chan struct{}) {
 		return
 	}
 
-	sleepns := rand.Int63n(max.Nanoseconds()) //nolint:gosec // G404
+	sleepns := mrand.Int63n(max.Nanoseconds()) //nolint:gosec // G404
 
 	t := time.NewTimer(time.Nanosecond * time.Duration(sleepns))
 	select {
@@ -230,7 +231,7 @@ func RandomDuration(max time.Duration) time.Duration {
 		return 0
 	}
 
-	sleepns := rand.Int63n(max.Nanoseconds()) //nolint:gosec // G404
+	sleepns := mrand.Int63n(max.Nanoseconds()) //nolint:gosec // G404
 
 	return time.Duration(sleepns)
 }

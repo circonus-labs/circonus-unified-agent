@@ -1,5 +1,11 @@
 # **unreleased**
 
+# v0.2.9
+
+* fix: don't exit if err accessing `conf.d` print warning
+* fix: clarify error when failure reading `conf.d`
+* fix: rpm/deb builder to use `conf.d` not `config.d`
+
 # v0.2.8
 
 * fix(postgres_extensible): S1011 remove loop

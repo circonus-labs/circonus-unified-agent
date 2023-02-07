@@ -170,7 +170,7 @@ nfpms:
       - src: "etc/example-circonus-unified-agent.conf" 
         dst: "/opt/circonus/unified-agent/etc/circonus-unified-agent.conf"
         type: "config|noreplace"
-      - dst: "/opt/circonus/unified-agent/etc/config.d"
+      - dst: "/opt/circonus/unified-agent/etc/conf.d"
         type: "dir"
       - src: "external_plugins"
         dst: "/opt/circonus/unified-agent/external_plugins"

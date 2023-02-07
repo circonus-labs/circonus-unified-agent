@@ -746,10 +746,10 @@ func PrintOutputConfig(name string) error {
 
 // LoadDirectory loads all toml config files found in the specified path, recursively.
 func (c *Config) LoadDirectory(path string) error {
-	walkfn := func(thispath string, info os.FileInfo, _ error) error {
-		if info == nil {
-			log.Printf("W! circonus-unified-agent is not permitted to read %s", thispath)
-			return nil
+	walkfn := func(thispath string, info os.FileInfo, err error) error {
+		if err == nil {
+			log.Printf("W! circonus-unified-agent failure accessing path %q: %v", thispath, err)
+			return err
 		}
 
 		if info.IsDir() {
@@ -764,7 +764,7 @@ func (c *Config) LoadDirectory(path string) error {
 		if len(name) < 6 || name[len(name)-5:] != ".conf" {
 			return nil
 		}
-		err := c.LoadConfig(thispath)
+		err = c.LoadConfig(thispath)
 		if err != nil {
 			return err
 		}

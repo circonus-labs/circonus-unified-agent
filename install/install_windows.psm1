@@ -33,7 +33,7 @@ Note: Provide an authorized app for the key or ensure api
     Write-Host "Determining latest release..."
     $tag = (Invoke-WebRequest $releases -UseBasicParsing | ConvertFrom-Json)[0].tag_name
     $tagrawv = $tag.substring(1)
-    $download = "https://github.com/${repo}/releases/download/${tag}/circonus-unified-agent_${tagrawv}_windows_x86_64.zip"
+    $download = "https://github.com/${repo}/releases/download/${tag}/circonus-unified-agent_${tagrawv}_windows_amd64.zip"
     return $download
   }
 
@@ -41,7 +41,7 @@ Note: Provide an authorized app for the key or ensure api
     param ($tag)
     Write-Host "Generating URL for release $tag"
     $tagrawv = $tag.substring(1)
-    $download = "https://github.com/${repo}/releases/download/${tag}/circonus-unified-agent_${tagrawv}_windows_x86_64.zip"
+    $download = "https://github.com/${repo}/releases/download/${tag}/circonus-unified-agent_${tagrawv}_windows_amd64.zip"
     return $download
   }
 

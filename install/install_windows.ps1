@@ -30,7 +30,7 @@ New-Module -name circonus-install -ScriptBlock {
     Write-Host "Determining latest release..."
     $tag = (Invoke-WebRequest $releases -UseBasicParsing | ConvertFrom-Json)[0].tag_name
     $tagrawv = $tag.substring(1)
-    $download = "https://github.com/${repo}/releases/download/${tag}/circonus-unified-agent_${tagrawv}_windows_x86_64.zip"
+    $download = "https://github.com/${repo}/releases/download/${tag}/circonus-unified-agent_${tagrawv}_windows_amd64.zip"
     return $download
   }
 

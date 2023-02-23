@@ -40,7 +40,7 @@ require (
 	github.com/docker/go-connections v0.4.0
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/go-logfmt/logfmt v0.4.0
-	github.com/go-ping/ping v0.0.0-20210506233800-ff8be3320020
+	github.com/go-ping/ping v1.1.0
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/goburrow/modbus v0.1.0

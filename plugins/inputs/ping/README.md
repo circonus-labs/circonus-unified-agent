@@ -73,6 +73,10 @@ native Go by the agent process, eliminating the need to execute the system
   ## Number of data bytes to be sent. Corresponds to the "-s"
   ## option of the ping command. This only works with the native method.
   # size = 56
+
+  ## disable rtt histograms (direct_metrics only - default false)
+  # no_rtt_histograms = false
+
 ```
 
 ### File Limit

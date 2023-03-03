@@ -26,9 +26,7 @@ func loadCheckConfig(id string) (*apiclient.CheckBundle, bool) {
 
 	data, err := os.ReadFile(checkConfigFile)
 	if err != nil {
-		if !os.IsNotExist(err) {
-			ch.logger.Warnf("unable to read %s: %s", checkConfigFile, err)
-		}
+		ch.logger.Warnf("unable to read %s: %s", checkConfigFile, err)
 		return nil, false
 	}
 
@@ -67,4 +65,5 @@ func saveCheckConfig(id string, bundle *apiclient.CheckBundle) {
 		ch.logger.Warnf("save check conf %s: %s", checkConfigFile, err)
 		return
 	}
+	ch.logger.Infof("saved check config to cache: %s", checkConfigFile)
 }

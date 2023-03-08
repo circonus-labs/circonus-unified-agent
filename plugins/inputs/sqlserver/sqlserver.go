@@ -161,6 +161,7 @@ func initQueries(s *SQLServer) error {
 		queries["SQLServerMemoryClerks"] = Query{ScriptName: "SQLServerMemoryClerks", Script: sqlServerMemoryClerks, ResultByRow: false}
 		queries["SQLServerSchedulers"] = Query{ScriptName: "SQLServerSchedulers", Script: sqlServerSchedulers, ResultByRow: false}
 		queries["SQLServerRequests"] = Query{ScriptName: "SQLServerRequests", Script: sqlServerRequests, ResultByRow: false}
+		queries["SqlStoredProcedures"] = Query{ScriptName: "SqlStoredProcedures", Script: sqlStoredProceduresV2, ResultByRow: false}
 		queries["SQLServerVolumeSpace"] = Query{ScriptName: "SQLServerVolumeSpace", Script: sqlServerVolumeSpace, ResultByRow: false}
 		queries["SQLServerCpu"] = Query{ScriptName: "SQLServerCpu", Script: sqlServerRingBufferCPU, ResultByRow: false}
 	default:
@@ -179,6 +180,7 @@ func initQueries(s *SQLServer) error {
 			queries["MemoryClerk"] = Query{ScriptName: "MemoryClerk", Script: sqlMemoryClerkV2, ResultByRow: false}
 			queries["Schedulers"] = Query{ScriptName: "Schedulers", Script: sqlServerSchedulersV2, ResultByRow: false}
 			queries["SqlRequests"] = Query{ScriptName: "SqlRequests", Script: sqlServerRequestsV2, ResultByRow: false}
+			queries["SqlStoredProcedures"] = Query{ScriptName: "SqlStoredProcedures", Script: sqlStoredProceduresV2, ResultByRow: false}
 			queries["VolumeSpace"] = Query{ScriptName: "VolumeSpace", Script: sqlServerVolumeSpaceV2, ResultByRow: false}
 			queries["Cpu"] = Query{ScriptName: "Cpu", Script: sqlServerCPUV2, ResultByRow: false}
 		} else {

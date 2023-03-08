@@ -1385,3 +1385,14 @@ FROM (
 
 END
 `
+
+const sqlStoredProceduresV2 string = `
+SELECT 'sqlserver_sp' AS [measurement],
+		REPLACE(@@SERVERNAME,'\',':') AS [sql_instance],
+		d.object_id, DB_NAME() as [database_name], OBJECT_NAME(object_id, database_id) 'proc_name',   
+    d.cached_time, d.last_execution_time, d.total_elapsed_time,  
+    d.total_elapsed_time/d.execution_count AS [avg_elapsed_time],  
+    d.last_elapsed_time, d.execution_count  
+FROM sys.dm_exec_procedure_stats AS d
+WHERE OBJECT_NAME(object_id, database_id) IS NOT NULL;
+`

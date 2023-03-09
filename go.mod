@@ -25,7 +25,7 @@ require (
 	github.com/bitly/go-hostpool v0.1.0 // indirect
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869
 	github.com/cenkalti/backoff v2.0.0+incompatible // indirect
-	github.com/circonus-labs/go-apiclient v0.7.18
+	github.com/circonus-labs/go-apiclient v0.7.23
 	github.com/circonus-labs/go-trapcheck v0.0.9
 	github.com/circonus-labs/go-trapmetrics v0.0.10
 	github.com/cisco-ie/nx-telemetry-proto v0.0.0-20220628142927-f4160bcb943c
@@ -59,7 +59,7 @@ require (
 	github.com/harlow/kinesis-consumer v0.3.1-0.20181230152818-2f58b136fee0
 	github.com/hashicorp/consul v1.2.1
 	github.com/hashicorp/go-msgpack v0.5.5 // indirect
-	github.com/hashicorp/go-retryablehttp v0.7.1
+	github.com/hashicorp/go-retryablehttp v0.7.2
 	github.com/hashicorp/go-rootcerts v0.0.0-20160503143440-6bb64b370b90 // indirect
 	github.com/hashicorp/go-version v1.3.0
 	github.com/hashicorp/memberlist v0.1.5 // indirect

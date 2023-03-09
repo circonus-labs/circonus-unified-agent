@@ -59,7 +59,8 @@ type Ping struct {
 	calcTimeout       time.Duration     // Pre-calculated timeout
 	Timeout           float64           // Per-ping timeout, in seconds. 0 means no timeout (ping -W <TIMEOUT>)
 	calcInterval      time.Duration     // Pre-calculated interval
-	DirectMetrics     bool              `toml:"direct_metrics"` // enable direct metrics
+	DirectMetrics     bool              `toml:"direct_metrics"`    // enable direct metrics
+	NoRTTHistograms   bool              `toml:"no_rtt_histograms"` // directr metrics mode - do not send rtt histograms
 	IPv6              bool              // Whether to resolve addresses using ipv6 or not.
 }
 
@@ -235,19 +236,21 @@ func (p *Ping) addStats(acc cua.Accumulator, fields map[string]interface{}, tags
 	}
 
 	if p.Count > 1 {
-		htags := make(trapmetrics.Tags, len(mtags)+1)
-		copy(htags, mtags)
-		htags = append(htags, trapmetrics.Tag{Category: "units", Value: "milliseconds"})
-		if stats != nil {
-			for pktNum, rtt := range stats.Rtts {
-				if err := p.metricDestination.HistogramRecordTiming("rtt", htags, float64(rtt)/float64(time.Millisecond)); err != nil {
-					p.Log.Warnf("setting histogram metric (rtt %d): %s", pktNum, err)
+		if !p.NoRTTHistograms {
+			htags := make(trapmetrics.Tags, len(mtags)+1)
+			copy(htags, mtags)
+			htags = append(htags, trapmetrics.Tag{Category: "units", Value: "milliseconds"})
+			if stats != nil {
+				for pktNum, rtt := range stats.Rtts {
+					if err := p.metricDestination.HistogramRecordTiming("rtt", htags, float64(rtt)/float64(time.Millisecond)); err != nil {
+						p.Log.Warnf("setting histogram metric (rtt %d): %s", pktNum, err)
+					}
 				}
-			}
-		} else if rtts != nil {
-			for pktNum, rtt := range *rtts {
-				if err := p.metricDestination.HistogramRecordTiming("rtt", htags, rtt); err != nil {
-					p.Log.Warnf("setting histogram metric (rtt %d): %s", pktNum, err)
+			} else if rtts != nil {
+				for pktNum, rtt := range *rtts {
+					if err := p.metricDestination.HistogramRecordTiming("rtt", htags, rtt); err != nil {
+						p.Log.Warnf("setting histogram metric (rtt %d): %s", pktNum, err)
+					}
 				}
 			}
 		}

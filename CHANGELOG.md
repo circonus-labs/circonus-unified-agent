@@ -1,5 +1,14 @@
 # **unreleased**
 
+# v0.2.10
+
+* feat(ping): add option `no_rtt_histograms`
+* feat(sqlserver): add support for sys.dm_exec_procedure_stats
+* build(deps): bump github.com/go-ping/ping from 0.0.0-20210506233800-ff8be3320020 to 1.1.0
+* build(deps): bump github.com/shirou/gopsutil/v3 from 3.23.1 to 3.23.2
+* fix: x86_64 -> amd64 in windows installer
+* feat: clarify cache check config usage messages
+
 # v0.2.9
 
 * fix: don't exit if err accessing `conf.d` print warning

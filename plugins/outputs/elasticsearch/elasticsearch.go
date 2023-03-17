@@ -54,6 +54,7 @@ type Elasticsearch struct {
 	ForceDocumentID     bool            `toml:"force_document_id"`
 	EnableSniffer       bool            `toml:"enable_sniffer"`
 	EnableGzip          bool            `toml:"enable_gzip"`
+	StripTagPrefix      bool            `toml:"strip_tag_prefix"`
 }
 
 const circonusTemplate = `
@@ -295,7 +296,13 @@ func (a *Elasticsearch) Write(metrics []cua.Metric) (int, error) {
 
 		m["@timestamp"] = metric.Time()
 		m["measurement_name"] = name
-		m["tag"] = metric.Tags()
+		if a.StripTagPrefix {
+			for k, v := range metric.Tags() {
+				m[k] = v
+			}
+		} else {
+			m["tag"] = metric.Tags()
+		}
 		m[name] = fields
 
 		br := elastic.NewBulkIndexRequest().Index(indexName).Doc(m)

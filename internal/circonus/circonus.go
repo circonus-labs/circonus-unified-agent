@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"unicode"
 
 	"github.com/circonus-labs/circonus-unified-agent/config"
 	"github.com/circonus-labs/circonus-unified-agent/cua"
@@ -198,6 +199,9 @@ func getAPIClient(opts *MetricDestConfig) (*apiclient.API, error) {
 		// only option which may currently be overridden is the api key
 		if opts.APIToken != "" {
 			cfg.TokenKey = opts.APIToken
+			if opts.DebugAPI != nil {
+				cfg.Debug = *opts.DebugAPI
+			}
 		}
 	}
 
@@ -272,6 +276,19 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 	checkTarget := ch.circCfg.CheckTarget
 	if opts.CheckTarget != "" { // set on input plugin
 		checkTarget = opts.CheckTarget
+	}
+
+	// ignore any non-printable characters
+	checkTarget = strings.Map(func(r rune) rune {
+		if unicode.IsPrint(r) {
+			return r
+		}
+		return -1
+	}, checkTarget)
+
+	// if check target was all non-printable chars and is now empty...
+	if checkTarget == "" {
+		log.Fatalf("check target is empty after processing cfg:'%v' opts:'%v'", ch.circCfg.CheckTarget, opts.CheckTarget) //nolint:gocritic
 	}
 
 	debugCheckSet := false

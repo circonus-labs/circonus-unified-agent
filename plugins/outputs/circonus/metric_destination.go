@@ -28,8 +28,8 @@ func (c *Circonus) getMetricDestination(m cua.Metric) *metricDestination {
 		if config.IsDefaultPlugin(pluginID) {
 			var hostDest *metricDestination
 			if config.DefaultPluginsEnabled() {
-				if hostDestination != nil {
-					hostDest = hostDestination
+				if c.hostDestination != nil {
+					hostDest = c.hostDestination
 				}
 			}
 			return hostDest
@@ -37,8 +37,8 @@ func (c *Circonus) getMetricDestination(m cua.Metric) *metricDestination {
 		// agent metrics - metrics the agent emits about itself - always enabled
 		if config.IsAgentPlugin(pluginID) {
 			var agentDest *metricDestination
-			if agentDestination != nil {
-				agentDest = agentDestination
+			if c.agentDestination != nil {
+				agentDest = c.agentDestination
 			}
 			return agentDest
 		}

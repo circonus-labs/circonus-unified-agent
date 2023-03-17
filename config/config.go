@@ -15,6 +15,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 	"unicode"
 
@@ -1192,6 +1193,12 @@ func (c *Config) addInput(name string, table *ast.Table) error {
 		name = "diskio"
 	}
 
+	if runtime.GOOS == "darwin" {
+		if name == "diskio" || name == "cpu" {
+			return nil
+		}
+	}
+
 	creator, ok := inputs.Inputs[name]
 	if !ok {
 		return fmt.Errorf("Undefined but requested input: %s", name)
@@ -1869,6 +1876,7 @@ object = [
 // for containerized agent instances. (they can be controlled
 // via an environment variable `ENABLE_DEFAULT_PLUGINS` - empty
 // or any value other than "false" will ENABLE the default plugins)
+var defaultPluginListMU sync.Mutex
 var defaultPluginList = map[string]circonusPlugin{
 	"cpu": {
 		Enabled: true,
@@ -1920,8 +1928,11 @@ ignore_fs = ["tmpfs", "devtmpfs", "devfs", "iso9660", "overlay", "aufs", "squash
 //
 
 func getDefaultPluginList() *map[string]circonusPlugin {
+
 	switch runtime.GOOS {
 	case "darwin":
+		defaultPluginListMU.Lock()
+		defer defaultPluginListMU.Unlock()
 		// disable plugins which don't work on darwin
 		if cfg, ok := defaultPluginList["cpu"]; ok {
 			cfg.Enabled = false
@@ -1962,6 +1973,8 @@ func IsDefaultPlugin(name string) bool {
 		name = "internal"
 	}
 
+	defaultPluginListMU.Lock()
+	defer defaultPluginListMU.Unlock()
 	if _, ok := (*plugList)[name]; ok {
 		return true
 	}
@@ -1978,6 +1991,8 @@ func (c *Config) disableDefaultPlugin(name string) {
 		return
 	}
 
+	defaultPluginListMU.Lock()
+	defer defaultPluginListMU.Unlock()
 	if cfg, ok := (*plugList)[name]; ok {
 		cfg.Enabled = false
 		(*plugList)[name] = cfg
@@ -1997,6 +2012,8 @@ func (c *Config) addDefaultPlugins() error {
 		return fmt.Errorf("no default plugin list available for GOOS %s", runtime.GOOS)
 	}
 
+	defaultPluginListMU.Lock()
+	defer defaultPluginListMU.Unlock()
 	for pluginName, pluginConfig := range *plugList {
 		if !pluginConfig.Enabled {
 			continue // user override in configuration

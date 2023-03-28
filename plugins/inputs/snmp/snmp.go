@@ -127,9 +127,11 @@ type Snmp struct {
 	Agents            []string          `toml:"agents"`
 	CheckDisplayName  string            `toml:"check_display_name"` // direct metrics mode - check display name
 	CheckTarget       string            `toml:"check_target"`       // direct metrics mode - check target setting
+	Deadline          string            `toml:"deadline"`           // snmp collection deadline
 	CheckTags         map[string]string `toml:"check_tags"`         // direct metrics mode - list of tags to add to check when created
 	Tags              map[string]string
 	snmp.ClientConfig
+	snmpDeadline   time.Duration
 	flushDelay     time.Duration // direct metrics mode - send directly to circonus (bypassing output)
 	FlushPoolSize  uint          `toml:"flush_pool_size"`
 	FlushQueueSize uint          `toml:"flush_queue_size"`
@@ -178,6 +180,14 @@ func (s *Snmp) init() error {
 			s.flushDelay = fd
 		}
 		initFlusherPool(s.Log, s.FlushPoolSize, s.FlushQueueSize)
+	}
+
+	if s.Deadline != "" {
+		d, err := time.ParseDuration(s.Deadline)
+		if err != nil {
+			return fmt.Errorf("parsing deadline '%s': %w", s.Deadline, err)
+		}
+		s.snmpDeadline = d
 	}
 
 	s.connectionCache = make([]snmpConnection, len(s.Agents))
@@ -435,13 +445,23 @@ func (s *Snmp) Gather(ctx context.Context, acc cua.Accumulator) error {
 		return err
 	}
 
+	var deadlineCtx context.Context
+	var deadlineCancel context.CancelFunc
+
+	if s.snmpDeadline > time.Duration(0) {
+		deadlineCtx, deadlineCancel = context.WithDeadline(ctx, time.Now().Add(s.snmpDeadline))
+		defer deadlineCancel()
+	} else {
+		deadlineCtx = ctx
+	}
+
 	var wg sync.WaitGroup
 	topDMTags := make(map[string]string)
 	for i, agent := range s.Agents {
 		wg.Add(1)
 		go func(i int, agent string) {
 			defer wg.Done()
-			gs, err := s.getConnection(i)
+			gs, err := s.getConnection(deadlineCtx, i)
 			if err != nil {
 				acc.AddError(fmt.Errorf("agent %s: %w", agent, err))
 				return
@@ -457,7 +477,7 @@ func (s *Snmp) Gather(ctx context.Context, acc cua.Accumulator) error {
 				}
 			}(agent)
 
-			if isDone(ctx) {
+			if isDone(deadlineCtx) {
 				return
 			}
 
@@ -473,7 +493,7 @@ func (s *Snmp) Gather(ctx context.Context, acc cua.Accumulator) error {
 			}
 			topDMTags = topTags
 
-			if isDone(ctx) {
+			if isDone(deadlineCtx) {
 				return
 			}
 
@@ -482,7 +502,7 @@ func (s *Snmp) Gather(ctx context.Context, acc cua.Accumulator) error {
 				if err := s.gatherTable(acc, gs, t, topTags, true); err != nil {
 					acc.AddError(fmt.Errorf("agent %s: gathering table %s: %w", agent, t.Name, err))
 				}
-				if isDone(ctx) {
+				if isDone(deadlineCtx) {
 					return
 				}
 			}
@@ -783,8 +803,9 @@ func (ls logShim) Printf(fmt string, args ...interface{}) {
 // result using `agentIndex` as the cache key.  This is done to allow multiple
 // connections to a single address.  It is an error to use a connection in
 // more than one goroutine.
-func (s *Snmp) getConnection(idx int) (snmpConnection, error) {
+func (s *Snmp) getConnection(ctx context.Context, idx int) (snmpConnection, error) {
 	if gs := s.connectionCache[idx]; gs != nil {
+		gs.(snmp.GosnmpWrapper).Context = ctx
 		return gs, nil
 	}
 
@@ -796,6 +817,9 @@ func (s *Snmp) getConnection(idx int) (snmpConnection, error) {
 	if err != nil {
 		return nil, fmt.Errorf("new wrapper: %w", err)
 	}
+
+	gs.Context = ctx
+
 	_ = gs.SetAgent(agent)
 	if err != nil {
 		return nil, fmt.Errorf("set agent: %w", err)

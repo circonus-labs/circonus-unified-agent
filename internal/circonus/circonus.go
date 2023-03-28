@@ -279,6 +279,7 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 	}
 
 	// ignore any non-printable characters
+	checkTarget = strings.TrimSpace(checkTarget) // strip whitespace from front/back of string
 	checkTarget = strings.Map(func(r rune) rune {
 		if unicode.IsPrint(r) {
 			return r

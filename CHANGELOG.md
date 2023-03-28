@@ -1,5 +1,15 @@
 # **unreleased**
 
+# v0.2.11
+
+* CIRC-10017 feat: multiple circonus outputs with full metrics to all (sub_output=false)
+* feat: add payload size metrics to agent check
+* build(deps): update go-trapcheck from v0.0.9 to v0.0.10
+* build(deps): update go-trapmetrics from v0.0.10 to v0.0.11
+* CIRC-10016 feat(elasticsearch): add option `strip_tag_prefix` to remote the `tag.` prefix from tag
+* CIRC-9909 feat: trim spaces from front/back of check target
+* CIRC-9909 feat: strip non-printable characters from check target
+
 # v0.2.10
 
 * feat(ping): add option `no_rtt_histograms`

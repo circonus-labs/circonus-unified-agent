@@ -44,18 +44,18 @@ func (c *Circonus) metricProcessor(id int, metrics []cua.Metric, buf bytes.Buffe
 		}
 	}
 
-	if agentDestination != nil {
-		if err := agentDestination.metrics.GaugeAdd(metricVolume+"_batch", nil, numMetrics, &start); err != nil {
+	if c.agentDestination != nil {
+		if err := c.agentDestination.metrics.GaugeAdd(metricVolume+"_batch", nil, numMetrics, &start); err != nil {
 			c.Log.Warnf("adding gauge (%s): %s", metricVolume+"_batch", err)
 		}
-		agentDestination.queuedMetrics++
-		if err := agentDestination.metrics.HistogramRecordValue(
+		c.agentDestination.queuedMetrics++
+		if err := c.agentDestination.metrics.HistogramRecordValue(
 			"cua_batch_queue_latency",
 			trapmetrics.Tags{{Category: "units", Value: "microseconds"}},
 			float64(time.Since(start).Nanoseconds()/int64(time.Microsecond))); err != nil {
 			c.Log.Warnf("adding histogram sample (cua_batch_queue_latency): %s", err)
 		}
-		agentDestination.queuedMetrics++
+		c.agentDestination.queuedMetrics++
 	}
 
 	c.Log.Debugf("processor %d, queued %d metrics for submission in %s", id, numMetrics, time.Since(start).String())
@@ -64,7 +64,8 @@ func (c *Circonus) metricProcessor(id int, metrics []cua.Metric, buf bytes.Buffe
 	var wg sync.WaitGroup
 	c.RLock()
 	ctx := context.Background()
-	for _, dest := range c.metricDestinations {
+	for key, dest := range c.metricDestinations {
+		c.Log.Debugf("checking %s %s for queued metrics", key, dest.id)
 		if dest.queuedMetrics == 0 {
 			continue
 		}
@@ -78,15 +79,21 @@ func (c *Circonus) metricProcessor(id int, metrics []cua.Metric, buf bytes.Buffe
 				c.Log.Warnf("submitting metrics (%s): %s", d.id, err)
 				return
 			}
-			if agentDestination != nil {
-				if err := agentDestination.metrics.HistogramRecordValue("cua_metrics_submitted", nil, float64(result.Stats)); err != nil {
+			if c.agentDestination != nil {
+				if err := c.agentDestination.metrics.HistogramRecordValue("cua_bytes_sent_gz", nil, float64(result.BytesSentGzip)); err != nil {
+					c.Log.Warnf("adding histogram sample (cua_bytes_sent_gz): %s", err)
+				}
+				if err := c.agentDestination.metrics.HistogramRecordValue("cua_bytes_sent", nil, float64(result.BytesSent)); err != nil {
+					c.Log.Warnf("adding histogram sample (cua_bytes_sent): %s", err)
+				}
+				if err := c.agentDestination.metrics.HistogramRecordValue("cua_metrics_submitted", nil, float64(result.Stats)); err != nil {
 					c.Log.Warnf("adding histogram sample (cua_metrics_submitted): %s", err)
 				}
-				agentDestination.queuedMetrics++
-				if err := agentDestination.metrics.HistogramRecordValue("cua_submit_latency", trapmetrics.Tags{{Category: "units", Value: "milliseconds"}}, float64(time.Since(subStart).Milliseconds())); err != nil {
+				c.agentDestination.queuedMetrics++
+				if err := c.agentDestination.metrics.HistogramRecordValue("cua_submit_latency", trapmetrics.Tags{{Category: "units", Value: "milliseconds"}}, float64(time.Since(subStart).Milliseconds())); err != nil {
 					c.Log.Warnf("adding histogram sample (cua_submit_latency): %s", err)
 				}
-				agentDestination.queuedMetrics++
+				c.agentDestination.queuedMetrics++
 			}
 		}(dest)
 	}
@@ -94,11 +101,11 @@ func (c *Circonus) metricProcessor(id int, metrics []cua.Metric, buf bytes.Buffe
 	wg.Wait()
 	c.RUnlock()
 
-	if agentDestination != nil {
-		if err := agentDestination.metrics.HistogramRecordValue("cua_processor_latency", trapmetrics.Tags{{Category: "units", Value: "milliseconds"}}, float64(time.Since(start).Milliseconds())); err != nil {
+	if c.agentDestination != nil {
+		if err := c.agentDestination.metrics.HistogramRecordValue("cua_processor_latency", trapmetrics.Tags{{Category: "units", Value: "milliseconds"}}, float64(time.Since(start).Milliseconds())); err != nil {
 			c.Log.Warnf("addindg histogram sample (cua_process_latency): %s", err)
 		}
-		agentDestination.queuedMetrics++
+		c.agentDestination.queuedMetrics++
 	}
 
 	c.Log.Debugf("processor %d, submit sent metrics in %s", id, time.Since(sendStart))

@@ -26,8 +26,8 @@ require (
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869
 	github.com/cenkalti/backoff v2.0.0+incompatible // indirect
 	github.com/circonus-labs/go-apiclient v0.7.23
-	github.com/circonus-labs/go-trapcheck v0.0.9
-	github.com/circonus-labs/go-trapmetrics v0.0.10
+	github.com/circonus-labs/go-trapcheck v0.0.10
+	github.com/circonus-labs/go-trapmetrics v0.0.11
 	github.com/cisco-ie/nx-telemetry-proto v0.0.0-20220628142927-f4160bcb943c
 	github.com/cockroachdb/apd v1.1.0 // indirect
 	github.com/couchbase/go-couchbase v0.0.0-20180501122049-16db1f1fe037
@@ -114,11 +114,11 @@ require (
 	github.com/yuin/gopher-lua v0.0.0-20180630135845-46796da1b0b4 // indirect
 	go.starlark.net v0.0.0-20200901195727-6e684ef5eeee
 	golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90 // indirect
-	golang.org/x/net v0.0.0-20220722155237-a158d28d115b
+	golang.org/x/net v0.8.0
 	golang.org/x/oauth2 v0.0.0-20220622183110-fd043fe589d2
-	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f
-	golang.org/x/sys v0.5.0
-	golang.org/x/text v0.3.7
+	golang.org/x/sync v0.1.0
+	golang.org/x/sys v0.6.0
+	golang.org/x/text v0.8.0
 	golang.zx2c4.com/wireguard v0.0.0-20210604143328-f9b48a961cd2 // indirect
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20210506160403-92e472f520a5
 	google.golang.org/api v0.91.0

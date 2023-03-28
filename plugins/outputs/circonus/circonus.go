@@ -21,11 +21,11 @@ const (
 	defaultWorkerPoolSize = 2
 )
 
-var (
-	agentDestination *metricDestination
-	hostDestination  *metricDestination
-	checkmu          sync.Mutex
-)
+// var (
+// 	agentDestination *metricDestination
+// 	hostDestination  *metricDestination
+// 	checkmu          sync.Mutex
+// )
 
 // Circonus values are used to output data to the Circonus platform.
 type Circonus struct {
@@ -35,21 +35,23 @@ type Circonus struct {
 	DebugAPI            *bool   `toml:"debug_api"`
 	TraceMetrics        *string `toml:"trace_metrics"`
 	processors          processors
-	DebugChecks         map[string]string `toml:"debug_checks"` // optional: use when instructed by circonus support
+	DebugChecks         map[string]string `toml:"debug_checks"`
 	metricDestinations  map[string]*metricDestination
-	CacheDir            string   `toml:"cache_dir"`              // optional: where to cache the check bundle configurations - must be read/write for user running cua
-	APITLSCA            string   `toml:"api_tls_ca"`             // optional: override agent.circonus api ca cert file
-	APIApp              string   `toml:"api_app"`                // optional: override agent.circonus api app (default: circonus-unified-agent)
-	APIURL              string   `toml:"api_url"`                // optional: override agent.circonus api url (default: https://api.circonus.com/v2)
-	Broker              string   `toml:"broker"`                 // optional: override agent.circonus broker ID - numeric portion of _cid from broker api object (default is selected: enterprise or public httptrap broker)
-	APIToken            string   `toml:"api_token"`              // optional: override agent.circonus api token
-	AgentTarget         string   `toml:"agent_check_target"`     // optional: send agent metrics to a dedicated check if there are multiple agents on the same host
-	CheckSearchTags     []string `toml:"check_search_tags"`      // optional: set of tags to use when searching for checks (default: service:circonus-unified-agentd)
-	PoolSize            int      `toml:"pool_size"`              // size of the processor pool for a given output instance - default 2
-	DebugMetrics        bool     `toml:"debug_metrics"`          // output the metrics as they are being parsed, use to verify proper parsing/tags/etc.
-	SubOutput           bool     `toml:"sub_output"`             // a dedicated, special purpose, output, don't send internal cua version, etc.
-	CacheConfigs        bool     `toml:"cache_configs"`          // optional: cache check bundle configurations - efficient for large number of inputs
-	AllowSNMPTrapEvents bool     `toml:"allow_snmp_trap_events"` // optional: send snmp_trap text events to circonus - may result in high billing costs
+	hostDestination     *metricDestination
+	agentDestination    *metricDestination
+	APIApp              string   `toml:"api_app"`
+	APIURL              string   `toml:"api_url"`
+	Broker              string   `toml:"broker"`
+	APIToken            string   `toml:"api_token"`
+	AgentTarget         string   `toml:"agent_check_target"`
+	APITLSCA            string   `toml:"api_tls_ca"`
+	CacheDir            string   `toml:"cache_dir"`
+	CheckSearchTags     []string `toml:"check_search_tags"`
+	PoolSize            int      `toml:"pool_size"`
+	DebugMetrics        bool     `toml:"debug_metrics"`
+	SubOutput           bool     `toml:"sub_output"`
+	CacheConfigs        bool     `toml:"cache_configs"`
+	AllowSNMPTrapEvents bool     `toml:"allow_snmp_trap_events"`
 }
 
 // processors handle incoming batches
@@ -136,8 +138,8 @@ var description = "Configuration for Circonus output plugin."
 // Conenct creates the initial check the plugin will use
 func (c *Circonus) Connect() error {
 
-	checkmu.Lock()
-	defer checkmu.Unlock()
+	// checkmu.Lock()
+	// defer checkmu.Unlock()
 
 	if c.metricDestinations == nil {
 		c.Lock()
@@ -145,25 +147,24 @@ func (c *Circonus) Connect() error {
 		c.Unlock()
 	}
 
-	if agentDestination == nil {
-		meta := circmgr.MetricMeta{
-			PluginID:   "agent",
-			InstanceID: config.DefaultInstanceID(),
-		}
-
-		if err := c.initMetricDestination(meta, map[string]string{}, c.AgentTarget, ""); err != nil {
-			c.Log.Errorf("unable to initialize circonus metric destination (%s)", err)
-			return err
-		}
-		destKey := meta.Key()
-		if d, ok := c.metricDestinations[destKey]; ok {
-			agentDestination = d
-		}
-	}
-
 	if !c.SubOutput {
+		if c.agentDestination == nil {
+			meta := circmgr.MetricMeta{
+				PluginID:   "agent",
+				InstanceID: config.DefaultInstanceID(),
+			}
+
+			if err := c.initMetricDestination(meta, map[string]string{}, c.AgentTarget, ""); err != nil {
+				c.Log.Errorf("unable to initialize circonus metric destination (%s)", err)
+				return err
+			}
+			destKey := meta.Key()
+			if d, ok := c.metricDestinations[destKey]; ok {
+				c.agentDestination = d
+			}
+		}
 		if config.DefaultPluginsEnabled() {
-			if hostDestination == nil {
+			if c.hostDestination == nil {
 				meta := circmgr.MetricMeta{
 					PluginID:   "host",
 					InstanceID: config.DefaultInstanceID(),
@@ -174,7 +175,7 @@ func (c *Circonus) Connect() error {
 				}
 				destKey := meta.Key()
 				if d, ok := c.metricDestinations[destKey]; ok {
-					hostDestination = d
+					c.hostDestination = d
 				}
 			}
 		}
@@ -198,18 +199,18 @@ func (c *Circonus) Connect() error {
 
 func (c *Circonus) emitAgentVersion() {
 	agentVersion := inter.Version()
-	if agentDestination != nil {
+	if c.agentDestination != nil {
 		ts := time.Now()
-		_ = agentDestination.metrics.TextSet("cua_version", nil, agentVersion, &ts)
-		agentDestination.queuedMetrics++
+		_ = c.agentDestination.metrics.TextSet("cua_version", nil, agentVersion, &ts)
+		c.agentDestination.queuedMetrics++
 	}
 }
 
 func (c *Circonus) emitRuntime() {
-	if agentDestination != nil {
+	if c.agentDestination != nil {
 		ts := time.Now()
-		_ = agentDestination.metrics.GaugeSet("cua_runtime", trapmetrics.Tags{{Category: "units", Value: "seconds"}}, time.Since(c.startTime).Seconds(), &ts)
-		agentDestination.queuedMetrics++
+		_ = c.agentDestination.metrics.GaugeSet("cua_runtime", trapmetrics.Tags{{Category: "units", Value: "seconds"}}, time.Since(c.startTime).Seconds(), &ts)
+		c.agentDestination.queuedMetrics++
 	}
 }
 

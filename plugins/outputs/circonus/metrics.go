@@ -80,6 +80,12 @@ func (c *Circonus) metricProcessor(id int, metrics []cua.Metric, buf bytes.Buffe
 				return
 			}
 			if c.agentDestination != nil {
+				if err := c.agentDestination.metrics.HistogramRecordValue("cua_bytes_sent_gz", nil, float64(result.BytesSentGzip)); err != nil {
+					c.Log.Warnf("adding histogram sample (cua_bytes_sent_gz): %s", err)
+				}
+				if err := c.agentDestination.metrics.HistogramRecordValue("cua_bytes_sent", nil, float64(result.BytesSent)); err != nil {
+					c.Log.Warnf("adding histogram sample (cua_bytes_sent): %s", err)
+				}
 				if err := c.agentDestination.metrics.HistogramRecordValue("cua_metrics_submitted", nil, float64(result.Stats)); err != nil {
 					c.Log.Warnf("adding histogram sample (cua_metrics_submitted): %s", err)
 				}

@@ -254,6 +254,19 @@ __configure_agent() {
         [[ $? -eq 0 ]] || fail "updating ${cua_conf_file} with api url"
     fi
 
+    local hn="$HOSTNAME"
+    if [[ -z "$hn" ]]; then
+        hn=$(hostname)
+    fi
+
+    if [[ -n "$hn" ]]; then
+        log "\tTurning on global ECS tag(s)"
+        \sed -i -e "s/  #GT# \"host.name\" = \"\${HOSTNAME}\"/  \"host.name\" = \"${hn}\"/" $cua_conf_file
+        [[ $? -eq 0 ]] || fail "updating ${cua_conf_file} with global ECS tag(s)"
+    else
+        log "\t!!!unable to determine host name using \$HOSTNAME or \$(hostname)!!!"
+    fi
+
     log "Restarting circonus-unified-agent service"
 
     \systemctl restart circonus-unified-agent

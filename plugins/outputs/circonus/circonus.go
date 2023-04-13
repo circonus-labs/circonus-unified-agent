@@ -31,27 +31,28 @@ const (
 type Circonus struct {
 	startTime time.Time
 	sync.RWMutex
-	Log                 cua.Logger
-	DebugAPI            *bool   `toml:"debug_api"`
-	TraceMetrics        *string `toml:"trace_metrics"`
-	processors          processors
-	DebugChecks         map[string]string `toml:"debug_checks"`
-	metricDestinations  map[string]*metricDestination
-	hostDestination     *metricDestination
-	agentDestination    *metricDestination
-	APIApp              string   `toml:"api_app"`
-	APIURL              string   `toml:"api_url"`
-	Broker              string   `toml:"broker"`
-	APIToken            string   `toml:"api_token"`
-	AgentTarget         string   `toml:"agent_check_target"`
-	APITLSCA            string   `toml:"api_tls_ca"`
-	CacheDir            string   `toml:"cache_dir"`
-	CheckSearchTags     []string `toml:"check_search_tags"`
-	PoolSize            int      `toml:"pool_size"`
-	DebugMetrics        bool     `toml:"debug_metrics"`
-	SubOutput           bool     `toml:"sub_output"`
-	CacheConfigs        bool     `toml:"cache_configs"`
-	AllowSNMPTrapEvents bool     `toml:"allow_snmp_trap_events"`
+	Log                  cua.Logger
+	DebugAPI             *bool   `toml:"debug_api"`
+	TraceMetrics         *string `toml:"trace_metrics"`
+	processors           processors
+	DebugChecks          map[string]string `toml:"debug_checks"`
+	metricDestinations   map[string]*metricDestination
+	hostDestination      *metricDestination
+	agentDestination     *metricDestination
+	agentDestinationTags trapmetrics.Tags
+	APIApp               string   `toml:"api_app"`
+	APIURL               string   `toml:"api_url"`
+	Broker               string   `toml:"broker"`
+	APIToken             string   `toml:"api_token"`
+	AgentTarget          string   `toml:"agent_check_target"`
+	APITLSCA             string   `toml:"api_tls_ca"`
+	CacheDir             string   `toml:"cache_dir"`
+	CheckSearchTags      []string `toml:"check_search_tags"`
+	PoolSize             int      `toml:"pool_size"`
+	DebugMetrics         bool     `toml:"debug_metrics"`
+	SubOutput            bool     `toml:"sub_output"`
+	CacheConfigs         bool     `toml:"cache_configs"`
+	AllowSNMPTrapEvents  bool     `toml:"allow_snmp_trap_events"`
 }
 
 // processors handle incoming batches
@@ -162,6 +163,12 @@ func (c *Circonus) Connect() error {
 			if d, ok := c.metricDestinations[destKey]; ok {
 				c.agentDestination = d
 			}
+			c.agentDestinationTags = make(trapmetrics.Tags, 0)
+			for _, tag := range circmgr.GetGlobalTags() {
+				if tag.Category != "__rollup" {
+					c.agentDestinationTags = append(c.agentDestinationTags, tag)
+				}
+			}
 		}
 		if config.DefaultPluginsEnabled() {
 			if c.hostDestination == nil {
@@ -201,7 +208,7 @@ func (c *Circonus) emitAgentVersion() {
 	agentVersion := inter.Version()
 	if c.agentDestination != nil {
 		ts := time.Now()
-		_ = c.agentDestination.metrics.TextSet("cua_version", nil, agentVersion, &ts)
+		_ = c.agentDestination.metrics.TextSet("cua_version", c.agentDestinationTags, agentVersion, &ts)
 		c.agentDestination.queuedMetrics++
 	}
 }
@@ -209,7 +216,10 @@ func (c *Circonus) emitAgentVersion() {
 func (c *Circonus) emitRuntime() {
 	if c.agentDestination != nil {
 		ts := time.Now()
-		_ = c.agentDestination.metrics.GaugeSet("cua_runtime", trapmetrics.Tags{{Category: "units", Value: "seconds"}}, time.Since(c.startTime).Seconds(), &ts)
+		tags := make(trapmetrics.Tags, 0)
+		tags = append(tags, c.agentDestinationTags...)
+		tags = append(tags, trapmetrics.Tag{Category: "units", Value: "seconds"})
+		_ = c.agentDestination.metrics.GaugeSet("cua_runtime", tags, time.Since(c.startTime).Seconds(), &ts)
 		c.agentDestination.queuedMetrics++
 	}
 }

@@ -1,5 +1,11 @@
 # **unreleased**
 
+# v0.2.12
+
+* CIRC-10071 feat(snmp): add deadline support to force timeout
+* C3-1007 feat(install): add global `host.name` tag on new installs for log correlation
+* build(deps): bump github.com/shirou/gopsutil/v3 from 3.23.2 to 3.23.3
+
 # v0.2.11
 
 * CIRC-10017 feat: multiple circonus outputs with full metrics to all (sub_output=false)

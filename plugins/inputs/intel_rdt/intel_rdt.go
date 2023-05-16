@@ -408,7 +408,7 @@ func parseCoresConfig(cores []string) ([]string, error) {
 		for _, coreStr := range separatedCores {
 			actualCores, err := validateAndParseCores(coreStr)
 			if err != nil {
-				return nil, fmt.Errorf("%s: %w", configError, err)
+				return nil, fmt.Errorf("%s: %w", configError, err) //nolint:errorlint
 			}
 			if checkForDuplicates(allCores, actualCores) {
 				return nil, fmt.Errorf("%w: %v", configError, "core value cannot be duplicated")

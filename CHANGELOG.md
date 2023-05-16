@@ -1,5 +1,15 @@
 # **unreleased**
 
+# v0.2.13
+
+* build(deps): bump github.com/circonus-labs/go-trapmetrics from 0.0.11 to 0.0.12
+* build(deps): bump github.com/circonus-labs/go-trapcheck from 0.0.10 to 0.0.11
+* fix(intel_rdt): nolint:errorlint
+* doc: config.d vs conf.d
+* fix: config.d vs conf.d rpm/deb post install scripts
+* fix: trim file paths when building
+* build(deps): bump github.com/shirou/gopsutil/v3 from 3.23.3 to 3.23.4
+
 # v0.2.12
 
 * CIRC-10071 feat(snmp): add deadline support to force timeout

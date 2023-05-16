@@ -37,8 +37,8 @@ if [[ ! -f /opt/circonus/unified-agent/etc/circonus-unified-agent.env ]]; then
 fi
 
 # Add .d configuration directory
-if [[ ! -d /opt/circonus/unified-agent/etc/config.d ]]; then
-    mkdir -p /opt/circonus/unified-agent/etc/config.d
+if [[ ! -d /opt/circonus/unified-agent/etc/conf.d ]]; then
+    mkdir -p /opt/circonus/unified-agent/etc/conf.d
 fi
 
 # If 'circonus-unified-agent.conf' is not present use package's sample (fresh install)

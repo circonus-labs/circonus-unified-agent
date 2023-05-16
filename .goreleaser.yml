@@ -73,6 +73,8 @@ builds:
       - -X github.com/circonus-labs/circonus-unified-agent/internal/release.branch={{.Branch}}
       - -X github.com/circonus-labs/circonus-unified-agent/internal/release.buildDate={{.Date}}
       - -X github.com/circonus-labs/circonus-unified-agent/internal/release.buildTag={{.Tag}}
+    gcflags:
+      - all=-trimpath={{.Env.PWD}}
     hooks:
       post: ./macos_sign.sh {{ .Path }}
 

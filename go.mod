@@ -26,8 +26,8 @@ require (
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869
 	github.com/cenkalti/backoff v2.0.0+incompatible // indirect
 	github.com/circonus-labs/go-apiclient v0.7.23
-	github.com/circonus-labs/go-trapcheck v0.0.10
-	github.com/circonus-labs/go-trapmetrics v0.0.11
+	github.com/circonus-labs/go-trapcheck v0.0.11
+	github.com/circonus-labs/go-trapmetrics v0.0.12
 	github.com/cisco-ie/nx-telemetry-proto v0.0.0-20220628142927-f4160bcb943c
 	github.com/cockroachdb/apd v1.1.0 // indirect
 	github.com/couchbase/go-couchbase v0.0.0-20180501122049-16db1f1fe037

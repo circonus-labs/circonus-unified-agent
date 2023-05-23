@@ -1,5 +1,9 @@
 # **unreleased**
 
+# v0.2.14
+
+* feat: increase default interval to 60s
+
 # v0.2.13
 
 * build(deps): bump github.com/circonus-labs/go-trapmetrics from 0.0.11 to 0.0.12

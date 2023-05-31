@@ -21,7 +21,10 @@ func (gsw GosnmpWrapper) Host() string {
 
 // Close returns the value of GoSNMP.Target.
 func (gsw GosnmpWrapper) Close() error {
-	return gsw.Conn.Close()
+	if gsw.Conn != nil {
+		return gsw.Conn.Close()
+	}
+	return nil
 }
 
 // Walk wraps GoSNMP.Walk() or GoSNMP.BulkWalk(), depending on whether the

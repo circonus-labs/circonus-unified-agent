@@ -1,5 +1,9 @@
 # **unreleased**
 
+# v0.2.15
+
+* fix: add check for nil conn in snmp wrapper before attempting close
+
 # v0.2.14
 
 * feat: increase default interval to 60s

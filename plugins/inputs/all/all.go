@@ -122,6 +122,7 @@ import (
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/openldap"
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/openntpd"
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/opensmtpd"
+	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/opentelemetry"
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/openweathermap"
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/passenger"
 	_ "github.com/circonus-labs/circonus-unified-agent/plugins/inputs/pf"

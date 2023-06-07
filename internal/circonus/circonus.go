@@ -28,14 +28,14 @@ import (
 var ch *Circonus
 
 type Circonus struct {
-	sync.Mutex
 	logger           cua.Logger
 	brokerTLSConfigs map[string]*tls.Config
 	circCfg          *config.CirconusConfig
 	apiCfg           *apiclient.Config
 	brokerCIDrx      string
 	globalTags       trapmetrics.Tags
-	ready            bool
+	sync.Mutex
+	ready bool
 }
 
 type MetricMeta struct {

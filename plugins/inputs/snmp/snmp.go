@@ -557,11 +557,40 @@ func (s *Snmp) Gather(ctx context.Context, acc cua.Accumulator) error {
 	return nil
 }
 
+func (s *Snmp) calcDerivedMetrics(rt *RTable) {
+	// memory
+	var mtr, mar float64
+	var havemtr, havemar bool
+	for _, r := range rt.Rows {
+		memTotalReal, haveMemTotalReal := r.Fields["memTotalReal"]
+		if haveMemTotalReal {
+			havemtr = true
+			mtr = memTotalReal.(float64)
+		}
+		memAvailReal, haveMemAvailReal := r.Fields["memAvailReal"]
+		if haveMemAvailReal {
+			havemar = true
+			mar = memAvailReal.(float64)
+		}
+		if havemtr && havemar {
+			r.Fields["memUsedPercent"] = (mar / mtr) * 100
+			havemtr = false
+			havemar = false
+			mtr = 0
+			mar = 0
+		}
+	}
+
+}
+
 func (s *Snmp) gatherTable(acc cua.Accumulator, gs snmpConnection, t Table, topTags map[string]string, walk bool) error {
 	rt, err := t.Build(gs, walk)
 	if err != nil {
 		return err
 	}
+
+	// calculate derived metrics
+	s.calcDerivedMetrics(rt)
 
 	for _, tr := range rt.Rows {
 		if !walk {

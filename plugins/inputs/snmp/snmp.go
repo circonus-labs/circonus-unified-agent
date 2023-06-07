@@ -135,8 +135,10 @@ type Snmp struct {
 	flushDelay     time.Duration // direct metrics mode - send directly to circonus (bypassing output)
 	FlushPoolSize  uint          `toml:"flush_pool_size"`
 	FlushQueueSize uint          `toml:"flush_queue_size"`
-	DirectMetrics  bool          `toml:"direct_metrics"` // direct metrics mode - send directly to circonus (bypassing output)
-	DebugSNMP      bool          `toml:"debug_snmp"`     // debug gosnmp
+	DirectMetrics  bool          `toml:"direct_metrics"`      // direct metrics mode - send directly to circonus (bypassing output)
+	DebugSNMP      bool          `toml:"debug_snmp"`          // debug gosnmp
+	CalcCPU        bool          `toml:"calc_cpu_metrics"`    // cpu_used, cpu_available, load
+	CalcMemory     bool          `toml:"calc_memory_metrics"` // memUsedPercent
 	initialized    bool
 }
 
@@ -565,59 +567,61 @@ func (s *Snmp) calcDerivedMetrics(rt *RTable) {
 	var rawUser, rawNice, rawSys, rawIdle float64
 	var haveUser, haveNice, haveSys, haveIdle bool
 	for _, r := range rt.Rows {
-		// memory
-		memTotalReal, memTotalRealOk := r.Fields["memTotalReal"]
-		if memTotalRealOk {
-			havemtr = true
-			mtr = memTotalReal.(float64)
+		if s.CalcMemory {
+			memTotalReal, memTotalRealOk := r.Fields["memTotalReal"]
+			if memTotalRealOk {
+				havemtr = true
+				mtr = memTotalReal.(float64)
+			}
+			memAvailReal, memAvailRealOk := r.Fields["memAvailReal"]
+			if memAvailRealOk {
+				havemar = true
+				mar = memAvailReal.(float64)
+			}
+			if havemtr && havemar {
+				r.Fields["memUsedPercent"] = (mar / mtr) * 100
+				havemtr = false
+				havemar = false
+				mtr = 0
+				mar = 0
+			}
 		}
-		memAvailReal, memAvailRealOk := r.Fields["memAvailReal"]
-		if memAvailRealOk {
-			havemar = true
-			mar = memAvailReal.(float64)
-		}
-		if havemtr && havemar {
-			r.Fields["memUsedPercent"] = (mar / mtr) * 100
-			havemtr = false
-			havemar = false
-			mtr = 0
-			mar = 0
-		}
-		// cpu
-		ssCpuRawUser, ssCpuRawUserOk := r.Fields["ssCpuRawUser"]
-		if ssCpuRawUserOk {
-			haveUser = true
-			rawUser = ssCpuRawUser.(float64)
-		}
-		ssCpuRawNice, ssCpuRawNiceOk := r.Fields["ssCpuRawNice"]
-		if ssCpuRawNiceOk {
-			haveNice = true
-			rawNice = ssCpuRawNice.(float64)
-		}
-		ssCpuRawSystem, ssCpuRawSystemOk := r.Fields["ssCpuRawSystem"]
-		if ssCpuRawSystemOk {
-			haveSys = true
-			rawSys = ssCpuRawSystem.(float64)
-		}
-		ssCpuRawIdle, ssCpuRawIdleOk := r.Fields["ssCpuRawIdle"]
-		if ssCpuRawIdleOk {
-			haveIdle = true
-			rawIdle = ssCpuRawIdle.(float64)
-		}
-		if haveUser && haveNice && haveSys && haveIdle {
-			usedCpu := uint64(rawUser + rawNice + rawSys)
-			availCpu := usedCpu + uint64(rawIdle)
-			r.Fields["used_cpu"] = usedCpu
-			r.Fields["available_cpu"] = availCpu
-			r.Fields["load"] = (float64(usedCpu) / float64(availCpu)) * 100
-			rawUser = 0
-			rawNice = 0
-			rawSys = 0
-			rawIdle = 0
-			haveUser = false
-			haveNice = false
-			haveSys = false
-			haveIdle = false
+		if s.CalcCPU {
+			ssCpuRawUser, ssCpuRawUserOk := r.Fields["ssCpuRawUser"]
+			if ssCpuRawUserOk {
+				haveUser = true
+				rawUser = ssCpuRawUser.(float64)
+			}
+			ssCpuRawNice, ssCpuRawNiceOk := r.Fields["ssCpuRawNice"]
+			if ssCpuRawNiceOk {
+				haveNice = true
+				rawNice = ssCpuRawNice.(float64)
+			}
+			ssCpuRawSystem, ssCpuRawSystemOk := r.Fields["ssCpuRawSystem"]
+			if ssCpuRawSystemOk {
+				haveSys = true
+				rawSys = ssCpuRawSystem.(float64)
+			}
+			ssCpuRawIdle, ssCpuRawIdleOk := r.Fields["ssCpuRawIdle"]
+			if ssCpuRawIdleOk {
+				haveIdle = true
+				rawIdle = ssCpuRawIdle.(float64)
+			}
+			if haveUser && haveNice && haveSys && haveIdle {
+				usedCpu := uint64(rawUser + rawNice + rawSys)
+				availCpu := usedCpu + uint64(rawIdle)
+				r.Fields["used_cpu"] = usedCpu
+				r.Fields["available_cpu"] = availCpu
+				r.Fields["load"] = (float64(usedCpu) / float64(availCpu)) * 100
+				rawUser = 0
+				rawNice = 0
+				rawSys = 0
+				rawIdle = 0
+				haveUser = false
+				haveNice = false
+				haveSys = false
+				haveIdle = false
+			}
 		}
 	}
 }

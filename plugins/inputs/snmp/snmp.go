@@ -561,14 +561,18 @@ func (s *Snmp) calcDerivedMetrics(rt *RTable) {
 	// memory
 	var mtr, mar float64
 	var havemtr, havemar bool
+	// cpu utilization
+	var rawUser, rawNice, rawSys, rawIdle float64
+	var haveUser, haveNice, haveSys, haveIdle bool
 	for _, r := range rt.Rows {
-		memTotalReal, haveMemTotalReal := r.Fields["memTotalReal"]
-		if haveMemTotalReal {
+		// memory
+		memTotalReal, memTotalRealOk := r.Fields["memTotalReal"]
+		if memTotalRealOk {
 			havemtr = true
 			mtr = memTotalReal.(float64)
 		}
-		memAvailReal, haveMemAvailReal := r.Fields["memAvailReal"]
-		if haveMemAvailReal {
+		memAvailReal, memAvailRealOk := r.Fields["memAvailReal"]
+		if memAvailRealOk {
 			havemar = true
 			mar = memAvailReal.(float64)
 		}
@@ -579,8 +583,43 @@ func (s *Snmp) calcDerivedMetrics(rt *RTable) {
 			mtr = 0
 			mar = 0
 		}
+		// cpu
+		ssCpuRawUser, ssCpuRawUserOk := r.Fields["ssCpuRawUser"]
+		if ssCpuRawUserOk {
+			haveUser = true
+			rawUser = ssCpuRawUser.(float64)
+		}
+		ssCpuRawNice, ssCpuRawNiceOk := r.Fields["ssCpuRawNice"]
+		if ssCpuRawNiceOk {
+			haveNice = true
+			rawNice = ssCpuRawNice.(float64)
+		}
+		ssCpuRawSystem, ssCpuRawSystemOk := r.Fields["ssCpuRawSystem"]
+		if ssCpuRawSystemOk {
+			haveSys = true
+			rawSys = ssCpuRawSystem.(float64)
+		}
+		ssCpuRawIdle, ssCpuRawIdleOk := r.Fields["ssCpuRawIdle"]
+		if ssCpuRawIdleOk {
+			haveIdle = true
+			rawIdle = ssCpuRawIdle.(float64)
+		}
+		if haveUser && haveNice && haveSys && haveIdle {
+			usedCpu := uint64(rawUser + rawNice + rawSys)
+			availCpu := usedCpu + uint64(rawIdle)
+			r.Fields["used_cpu"] = usedCpu
+			r.Fields["available_cpu"] = availCpu
+			r.Fields["load"] = (float64(usedCpu) / float64(availCpu)) * 100
+			rawUser = 0
+			rawNice = 0
+			rawSys = 0
+			rawIdle = 0
+			haveUser = false
+			haveNice = false
+			haveSys = false
+			haveIdle = false
+		}
 	}
-
 }
 
 func (s *Snmp) gatherTable(acc cua.Accumulator, gs snmpConnection, t Table, topTags map[string]string, walk bool) error {

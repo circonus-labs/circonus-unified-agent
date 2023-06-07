@@ -15,9 +15,9 @@ var flusherPool flusher
 var flusherPoolmu sync.Mutex
 
 type flusher struct {
-	wg          sync.WaitGroup
-	traps       chan trap
 	log         cua.Logger
+	traps       chan trap
+	wg          sync.WaitGroup
 	initialized bool
 }
 

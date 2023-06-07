@@ -1,5 +1,12 @@
 # **unreleased**
 
+# v0.2.16
+
+* feat(snmp): add used_cpu, available_cpu, and load derived metrics
+* feat(snmp): add memUsedPercent derived metric
+* fix(lint): struct alignment
+* build(deps): bump github.com/shirou/gopsutil/v3 from 3.23.4 to 3.23.5
+
 # v0.2.15
 
 * fix: add check for nil conn in snmp wrapper before attempting close

@@ -561,25 +561,25 @@ func (s *Snmp) Gather(ctx context.Context, acc cua.Accumulator) error {
 
 func (s *Snmp) calcDerivedMetrics(rt *RTable) {
 	// memory
-	var mtr, mar float64
+	var mtr, mar int
 	var havemtr, havemar bool
 	// cpu utilization
-	var rawUser, rawNice, rawSys, rawIdle float64
+	var rawUser, rawNice, rawSys, rawIdle uint
 	var haveUser, haveNice, haveSys, haveIdle bool
 	for _, r := range rt.Rows {
 		if s.CalcMemory {
 			memTotalReal, memTotalRealOk := r.Fields["memTotalReal"]
 			if memTotalRealOk {
 				havemtr = true
-				mtr = memTotalReal.(float64)
+				mtr = memTotalReal.(int)
 			}
 			memAvailReal, memAvailRealOk := r.Fields["memAvailReal"]
 			if memAvailRealOk {
 				havemar = true
-				mar = memAvailReal.(float64)
+				mar = memAvailReal.(int)
 			}
 			if havemtr && havemar {
-				r.Fields["memUsedPercent"] = (mar / mtr) * 100
+				r.Fields["memUsedPercent"] = (float64(mar) / float64(mtr)) * 100
 				havemtr = false
 				havemar = false
 				mtr = 0
@@ -590,26 +590,26 @@ func (s *Snmp) calcDerivedMetrics(rt *RTable) {
 			ssCpuRawUser, ssCpuRawUserOk := r.Fields["ssCpuRawUser"]
 			if ssCpuRawUserOk {
 				haveUser = true
-				rawUser = ssCpuRawUser.(float64)
+				rawUser = ssCpuRawUser.(uint)
 			}
 			ssCpuRawNice, ssCpuRawNiceOk := r.Fields["ssCpuRawNice"]
 			if ssCpuRawNiceOk {
 				haveNice = true
-				rawNice = ssCpuRawNice.(float64)
+				rawNice = ssCpuRawNice.(uint)
 			}
 			ssCpuRawSystem, ssCpuRawSystemOk := r.Fields["ssCpuRawSystem"]
 			if ssCpuRawSystemOk {
 				haveSys = true
-				rawSys = ssCpuRawSystem.(float64)
+				rawSys = ssCpuRawSystem.(uint)
 			}
 			ssCpuRawIdle, ssCpuRawIdleOk := r.Fields["ssCpuRawIdle"]
 			if ssCpuRawIdleOk {
 				haveIdle = true
-				rawIdle = ssCpuRawIdle.(float64)
+				rawIdle = ssCpuRawIdle.(uint)
 			}
 			if haveUser && haveNice && haveSys && haveIdle {
-				usedCpu := uint64(rawUser + rawNice + rawSys)
-				availCpu := usedCpu + uint64(rawIdle)
+				usedCpu := rawUser + rawNice + rawSys
+				availCpu := usedCpu + rawIdle
 				r.Fields["used_cpu"] = usedCpu
 				r.Fields["available_cpu"] = availCpu
 				r.Fields["load"] = (float64(usedCpu) / float64(availCpu)) * 100

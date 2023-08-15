@@ -1,21 +1,30 @@
 # **unreleased**
 
-# v0.2.16
+## v0.2.17
+
+* build(dep): update go-trapcheck v0.0.11 -> v0.0.12
+* build(dep): vulncheck x/net v0.8.0 -> v0.13.0
+* build(deps): bump github.com/shirou/gopsutil/v3 from 3.23.5 to 3.23.7
+* build(deps): bump golangci/golangci-lint-action from 3.4.0 to 3.6.0
+* fix: use correct types for the various raw metrics
+* feat(snmp): add `calc_cpu_metrics` and `calc_memory_metrics` options to control derived metric calculations
+
+## v0.2.16
 
 * feat(snmp): add used_cpu, available_cpu, and load derived metrics
 * feat(snmp): add memUsedPercent derived metric
 * fix(lint): struct alignment
 * build(deps): bump github.com/shirou/gopsutil/v3 from 3.23.4 to 3.23.5
 
-# v0.2.15
+## v0.2.15
 
 * fix: add check for nil conn in snmp wrapper before attempting close
 
-# v0.2.14
+## v0.2.14
 
 * feat: increase default interval to 60s
 
-# v0.2.13
+## v0.2.13
 
 * build(deps): bump github.com/circonus-labs/go-trapmetrics from 0.0.11 to 0.0.12
 * build(deps): bump github.com/circonus-labs/go-trapcheck from 0.0.10 to 0.0.11
@@ -25,13 +34,13 @@
 * fix: trim file paths when building
 * build(deps): bump github.com/shirou/gopsutil/v3 from 3.23.3 to 3.23.4
 
-# v0.2.12
+## v0.2.12
 
 * CIRC-10071 feat(snmp): add deadline support to force timeout
 * C3-1007 feat(install): add global `host.name` tag on new installs for log correlation
 * build(deps): bump github.com/shirou/gopsutil/v3 from 3.23.2 to 3.23.3
 
-# v0.2.11
+## v0.2.11
 
 * CIRC-10017 feat: multiple circonus outputs with full metrics to all (sub_output=false)
 * feat: add payload size metrics to agent check
@@ -41,7 +50,7 @@
 * CIRC-9909 feat: trim spaces from front/back of check target
 * CIRC-9909 feat: strip non-printable characters from check target
 
-# v0.2.10
+## v0.2.10
 
 * feat(ping): add option `no_rtt_histograms`
 * feat(sqlserver): add support for sys.dm_exec_procedure_stats
@@ -50,13 +59,13 @@
 * fix: x86_64 -> amd64 in windows installer
 * feat: clarify cache check config usage messages
 
-# v0.2.9
+## v0.2.9
 
 * fix: don't exit if err accessing `conf.d` print warning
 * fix: clarify error when failure reading `conf.d`
 * fix: rpm/deb builder to use `conf.d` not `config.d`
 
-# v0.2.8
+## v0.2.8
 
 * fix(postgres_extensible): S1011 remove loop
 * fix(shim): SA4009 overwrite arg
@@ -68,39 +77,39 @@
 * feat: add azure_monitor support
 * build(deps): bump github.com/shirou/gopsutil/v3 from 3.22.10 to 3.23.1
 
-# v0.2.7
+## v0.2.7
 
 * fix: do not return error when there is no error
 * fix: embed tz info for windows
 
-# v0.2.6
+## v0.2.6
 
 * fix: sign with corp cert now that it is working
 
-# v0.2.5
+## v0.2.5
 
 * fix: sign binaries immediately after build, before archives built not after
 
-# v0.2.4
+## v0.2.4
 
 * feat: signed darwin binaries
 * feat: universal darwin binary
 
-# v0.2.3
+## v0.2.3
 
 * fix: instructions `brew services` not `brew servcie`
 
-# v0.2.2
+## v0.2.2
 
 * fix: typo in brew service definition
 * fix: `proto: duplicate proto type registered` message on startup
 * feat: add logger to parser.json_v2
 
-# v0.2.1
+## v0.2.1
 
 * fix: homebrew tap
 
-# v0.2.0
+## v0.2.0
 
 * fix: call to circmgr.Initialize
 * fix: log warning on invalid circmgr config - don't return error
@@ -113,13 +122,13 @@
 * fix: gitignore test configs `*.conf`
 * feat: gitignore test configs in `etc/conf.d/*.conf`
 
-# v0.1.0
+## v0.1.0
 
 * feat: add global `check_target` setting [CIRC-9380]
 * fix: use `check_target` in check display name [CIRC-9302]
 * feat: add input plugin `check_display_name` default `"{{CheckTarget}} {{PluginID}} {{InstanceID}}"` [CIRC-9302]
 
-# v0.0.50
+## v0.0.50
 
 * feat: initial brew tap for macOS installs
 * fix(prometheus): ignore metric version setting only v2 format is useful for circonus
@@ -132,19 +141,19 @@
 * build(deps): bump distributhor/workflow-webhook from 2 to 3
 * feat(stackdriver_circonus): re-enable `metric_type_prefix_include`
 
-# v0.0.49
+## v0.0.49
 
 * feat: all service definitions use common conf.d and include `--config-directory` command line parameter [CIRC-9216]
 * feat: common `conf.d` dir included in packages [CIRC-9216]
 * fix(stackdriver_circonus): return support for `metric_type_prefix_include` and exclude
 * fix(lint): struct alignment
 
-# v0.0.48
+## v0.0.48
 
 * feat: add `check_target` to generic input plugin config to allow creating configs that can be migrated to different CUA instances [CIRC-9205]
 * feat: (stackdriver) Add optional `credentials_file` config setting
 
-# v0.0.47
+## v0.0.47
 
 * feat: (snmp) Add CUA post-processing for a subset of SNMP metrics in the most efficient way to derive error and discard rate metrics. [CIRC-9100]
 * feat: (snmp_trap) enable sending text traps to (open|elastic)search, counters and numeric traps to circonus [CIRC-8918]
@@ -205,16 +214,16 @@
 * fix(lint): structcheck, deadcode, varcheck deprecated
 * feat(lint): update golangci-lint to 1.49 [CIRC-9033]
 
-# v0.0.46
+## v0.0.46
 
 * feat(internal/circonus): Check tags are configurable via the `agent.circonus.check_tags` key in the agent config file
 * fix(internal/circonus): Check tags are agent self-managed for all plugins
 
-# v0.0.45
+## v0.0.45
 
 * add: (snmp) `timestamp` conversion for OIDs returning date/time strings (requires `timestamp_layout` to be set) [CIRC-8420]
 
-# v0.0.44
+## v0.0.44
 
 * upd: go-trapmetrrics v0.0.8
 * CIRC-8110 Oracle plugin fixes / updates
@@ -226,7 +235,7 @@
 * add: (snmp) string conversion option
 * doc: (snmp) update readme with new regexp conversion option
 
-# v0.0.43
+## v0.0.43
 
 * upd: go-trapcheck to v0.0.8 [CIRC-8241]
 * CIRC-8110 Normalize metric names
@@ -235,7 +244,7 @@
 * Update oracle_metrics.py produced metric names
 * build(deps): bump actions/setup-go from 2 to 3
 
-# v0.0.42
+## v0.0.42
 
 * upd: merge PR#47 - update prometheus to not error on success and examples for `instance_id`
 * upd: input plugins to document `instance_id` being required in README and example config in code
@@ -246,7 +255,7 @@
 * upd: build(deps): bump github.com/shirou/gopsutil/v3 from 3.22.1 to 3.22.2
 * upd: build(deps): bump golangci/golangci-lint-action from 2 to 3.1.0
 
-# v0.0.41
+## v0.0.41
 
 * add: --apiurl argument to installer [CIRC-7756]
 * add: processor support (amd64,x86_64,aarch64,arm64) oracle linux on arm specifically [CIRC-7730]
@@ -256,7 +265,7 @@
 * add: external plugin support
 * add: external plugin for oracle metrics [CIRC-7877]
 
-# v0.0.40
+## v0.0.40
 
 * fix(snmp): bad slice indexing for oid components
 * add(snmp): oid to snmp get error messages
@@ -264,16 +273,16 @@
 * fix: lint issues
 * build(deps): bump github.com/shirou/gopsutil/v3 from 3.21.12 to 3.22.1
 
-# v0.0.39
+## v0.0.39
 
 * add: input plugin to pull circonus httptrap stream tag formatted metrics [CIRC-7530]
 
-# v0.0.38
+## v0.0.38
 
 * build(deps): bump github.com/shirou/gopsutil/v3 from 3.21.11 to 3.21.12
 * fix: goreleaser-nfpm stuttering sbin dir
 
-# v0.0.37
+## v0.0.37
 
 * fix: deprecated syntax rpm/deb
 * fix: lint issues
@@ -281,11 +290,11 @@
 * upd: build(deps): bump github.com/shirou/gopsutil/v3 from 3.21.8 to 3.21.11
 * upd: build(deps): bump github.com/gosnmp/gosnmp from 1.32.0 to 1.34.0
 
-# v0.0.36
+## v0.0.36
 
 * fix: ensure example configs included in base os build archives
 
-# v0.0.35
+## v0.0.35
 
 * add: support SuSE variants (sles,suse,opensuse)
 * upd: gopsutil/v3 3.21.6->3.21.8
@@ -347,14 +356,14 @@
 * upd: (docker) remove deprecated option from config
 * upd: (docker) switch include source tag option to true in config, readme and example
 
-# v0.0.34
+## v0.0.34
 
 * fix: location of binary for rpm/deb
 * upd: (circmgr) remove redundant check tags
 * upd: (snmp) send collection duration as metric
 * fix: (snmp test) lint
 
-# v0.0.33
+## v0.0.33
 
 * add: check tags for host check with os meta data
 * add: (snmp) context awareness during collection
@@ -370,7 +379,7 @@
 * build(deps): bump github.com/shirou/gopsutil/v3 from 3.21.4 to 3.21.5
 * add: dependabot config
 
-# v0.0.32
+## v0.0.32
 
 * upd: switch trap packages to circonus-labs
 * fix: (config, example confs) win perf registry quota counter name
@@ -388,7 +397,7 @@
 * upd: CIRC-6586 MacOS service definition - convention is to use a fully qualified service name that matches the LaunchDaemon file name
 * upd: CIRC-6586 freebsd installer - remove escaping that prevented commands from being executed properly
 
-# v0.0.31
+## v0.0.31
 
 * upd: rename systemd/init service defs to indicate they are for linux
 * upd: dep (go-trapcheck, go-trapmetrics) - metric submission performance
@@ -399,18 +408,18 @@
 * upd: installer scripts to reference new home for service definitions
 * add: freebsd service definition
 
-# v0.0.30
+## v0.0.30
 
 * upd: add context to service input Start method
 
-# v0.0.29
+## v0.0.29
 
 * upd: deps (go-apiclient, go-trapcheck, go-trapmetrics)
 * fix: (circmgr) do not forward blank tags
 * upd: (circmgr) add `__os`, `__plugin_id`, and `__metric_group` check tags
 * upd: remove last deps on pkg/errors
 
-# v0.0.28
+## v0.0.28
 
 * add: (circmgr,circout,snmp,statsd) allow broker and api overrides in plugins (direct metric input and circonus output)
 * upd: (circmgr) validate broker settings (valid broker cid format)
@@ -419,12 +428,12 @@
 * upd: (circout) use broker and api key overrides if supplied
 * fix: (circout) don't force check prefix to host if not supplied in config
 
-# v0.0.27
+## v0.0.27
 
 * fix: (stackdriver_circonus) cancellation during collection, honor context through call stack
 * upd: (circmgr/circout) remove instance_id from check type
 
-# v0.0.26
+## v0.0.26
 
 * upd: (snmp) no separate check for dm vs non-dm
 * upd: (snmp) promote snmp dm plugin
@@ -444,19 +453,19 @@
 * fix: lint issues
 * upd: lint
 
-# v0.0.25
+## v0.0.25
 
 * upd: enable default linux plugins for darwin and freebsd
 
-# v0.0.24
+## v0.0.24
 
 * add: `snmp_dm` snmp input plugin with direct metrics (sends directly to circonus) for large number of plugin instances
 
-# v0.0.23
+## v0.0.23
 
 * add: `stackdriver_circonus` input plugin to support Stackdriver dashboards in UI
 
-# v0.0.22
+## v0.0.22
 
 > NOTE: portions of circonus configuration migrated to `[agent.circonus]` section -- see example configurations in `etc/`
 
@@ -481,7 +490,7 @@
 * upd: updating snmp_trap from soniah/gosnmp to gosnmp/gosnmp
 * upd: dep psutil v3
 
-# v0.0.21
+## v0.0.21
 
 * upd: only update metric counter for tracking metrics for non-sub output
 * add: latency metrics for metric processing
@@ -514,25 +523,25 @@
 * add: snmp automatic tag lookups
 * add: additional counters to the windows_perf_counters input plugin for Windows host monitoring service dashboard
 
-# v0.0.20
+## v0.0.20
 
 * add: darwin build back in temporarily
 * upd: clarify batch write msg with number of distinct metrics
 * upd: outputs return num distinct metrics written
 
-# v0.0.19
+## v0.0.19
 
 * upd : dependencies (cgm, go-apiclient)
 * add: search tag to cgm config
 * fix: no short-circuit for no default plugins
 
-# v0.0.18
+## v0.0.18
 
 * upd: disable creating host check if no default plugins for platform
 * fix: windows archive should use zip
 * doc: update circonus plugin docs
 
-# v0.0.17
+## v0.0.17
 
 * upd: changes for dashboard and support older rabbitmq vers lack of metrics
 * upd: zfs and rabbitmq
@@ -540,7 +549,7 @@
 * upd: turn on pool metrics by default
 * add: support text metrics mixed with numerics
 
-# v0.0.16
+## v0.0.16
 
 * add: simple installer script (rpm el7,el8 & deb u18,u20)
 * upd: disable deprecated linter
@@ -550,18 +559,18 @@
 * upd: ignore vagrant testing files
 * upd: collection interval 60s
 
-# v0.0.15
+## v0.0.15
 
 * upd: rearrange checks default,host,agent
 
-# v0.0.14
+## v0.0.14
 
 * upd: switch back to metric origin for check type
 * add: `input_metric_group` tag for plugins which produce multiple groups of metrics
 * upd: refactor tagging and metric dest methods to use the metric struct directly
 * fix: typo in rollup tag for memstats `__rollup` missing underscore
 
-# v0.0.13
+## v0.0.13
 
 * upd: replace deprecated ioutil methods
 * upd: go1.16
@@ -573,7 +582,7 @@
 * upd: only use default check if plugin AND instance are "defaults"
 * add: defaultInstanceID support
 
-# v0.0.12
+## v0.0.12
 
 * add: cgm interval as setting
 * fix: check for err != nil for abnormal exit msg
@@ -592,16 +601,16 @@
 * add: additional linters
 * upd: tool version
 
-# v0.0.11
+## v0.0.11
 
 * fix: cumulative histogram submission and honor metricKind settings (stackdriver)
 * add: a tag for metric_kind (stackdriver)
 
-# v0.0.10
+## v0.0.10
 
 * fix: health output missing in all
 
-# v0.0.9
+## v0.0.9
 
 * fix: lint error
 * upd: pem location
@@ -610,7 +619,7 @@
 * upd: mv queued metrics msg to debug
 * upd: dep (cgm)
 
-# v0.0.8
+## v0.0.8
 
 * upd: refactor metric debug above cgm add to catch metrics causing any errors
 * add: support for non-cumulative histograms into stackdriver input plugin
@@ -620,7 +629,7 @@
 * add: net as a default input
 * upd: syntax change in tool
 
-# v0.0.7
+## v0.0.7
 
 * upd: refactor default plugin handling in prep to support more platforms
 * upd: remove darwin build target
@@ -631,33 +640,33 @@
 * upd: dest guard for agent version
 * fix: env var syntax in example conf
 
-# v0.0.6
+## v0.0.6
 
 * upd: remove agent version tag from internal metrics (to reduce cardinality)
 * add: `cua_version` metric
 
-# v0.0.5
+## v0.0.5
 
 * add: windows default plugin placeholder
 * add: rollup tag to internal metrics
 
-# v0.0.4
+## v0.0.4
 
 * add: debug_metrics setting
 * fix: copy metric for origin and origin instance
 * upd: default plugins in example configuration
 * fix: ldflags typo
 
-# v0.0.3
+## v0.0.3
 
 * add: metric volume internal metric `cua_metrics_sent`
 * upd: cgm debug logging to use info
 * add: default plugins go to default check (cpu,mem,disk,diskio,swap,system,kernel,processes,internal)
 
-# v0.0.2
+## v0.0.2
 
 * add: `instance_id` required input plugin setting
 
-# v0.0.1
+## v0.0.1
 
 initial testing release

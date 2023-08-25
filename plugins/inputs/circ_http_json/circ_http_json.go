@@ -31,6 +31,8 @@ type CHJ struct {
 	InstanceID string `json:"instance_id"`
 	URL        string
 	TLSCAFile  string
+	Timeout    string
+	to         time.Duration
 	Debug      bool
 }
 
@@ -48,6 +50,15 @@ func (chj *CHJ) Init() error {
 			return fmt.Errorf("loading TLSCAFile: %w", err)
 		}
 	}
+
+	if chj.Timeout == "" {
+		chj.Timeout = "5s"
+	}
+	t, err := time.ParseDuration(chj.Timeout)
+	if err != nil {
+		return fmt.Errorf("parsing timeout %s: %w", chj.Timeout, err)
+	}
+	chj.to = t
 
 	opts := &circmgr.MetricDestConfig{
 		MetricMeta: circmgr.MetricMeta{
@@ -83,6 +94,9 @@ url = "" # required
 ## optional, turn on debugging for the *metric fetch* phase of the plugin
 ## metric submission, to the broker, will output via regular agent debug setting.
 debug = false
+
+## timeout for request
+# timeout = "5s"
 
 ## Optional: tls ca cert file and common name to use
 ## pass if URL is https and not using a public ca
@@ -123,6 +137,7 @@ func (chj *CHJ) getURL(ctx context.Context) ([]byte, error) {
 
 	if chj.tlsCfg != nil {
 		client = &http.Client{
+			Timeout: chj.to,
 			Transport: &http.Transport{
 				Proxy: http.ProxyFromEnvironment,
 				DialContext: (&net.Dialer{
@@ -140,6 +155,7 @@ func (chj *CHJ) getURL(ctx context.Context) ([]byte, error) {
 		}
 	} else {
 		client = &http.Client{
+			Timeout: chj.to,
 			Transport: &http.Transport{
 				Proxy: http.ProxyFromEnvironment,
 				DialContext: (&net.Dialer{

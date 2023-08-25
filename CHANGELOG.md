@@ -1,5 +1,9 @@
 # **unreleased**
 
+## v0.2.18
+
+* feat(circ_http_json): add timeout
+
 ## v0.2.17
 
 * build(dep): update go-trapcheck v0.0.11 -> v0.0.12

@@ -99,6 +99,7 @@ __parse_parameters() {
             else
                 fail "--url must be followed by an api url."
             fi
+            ;;
         (--arch)
             if [[ -n "${1:-}" ]]; then
                 pkg_arch="$1"

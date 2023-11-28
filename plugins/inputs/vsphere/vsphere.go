@@ -17,55 +17,50 @@ import (
 // VSphere is the top level type for the vSphere input plugin. It contains all the configuration
 // and a list of connected vSphere endpoints
 type VSphere struct {
-	Vcenters                []string
-	Username                string
-	Password                string
-	DatacenterInstances     bool
+	Log       cua.Logger
+	cancel    context.CancelFunc
+	Separator string
+	Username  string
+	Password  string
+	tls.ClientConfig
+	VMExclude               []string `toml:"vm_exclude"`
+	DatastoreMetricExclude  []string
 	DatacenterMetricInclude []string
-	DatacenterMetricExclude []string
-	DatacenterInclude       []string
-	DatacenterExclude       []string
-	ClusterInstances        bool
 	ClusterMetricInclude    []string
 	ClusterMetricExclude    []string
 	ClusterInclude          []string
 	ClusterExclude          []string
-	HostInstances           bool
+	DatacenterMetricExclude []string
 	HostMetricInclude       []string
 	HostMetricExclude       []string
 	HostInclude             []string
 	HostExclude             []string
-	VMInstances             bool     `toml:"vm_instances"`
+	endpoints               []*Endpoint
 	VMMetricInclude         []string `toml:"vm_metric_include"`
 	VMMetricExclude         []string `toml:"vm_metric_exclude"`
 	VMInclude               []string `toml:"vm_include"`
-	VMExclude               []string `toml:"vm_exclude"`
-	DatastoreInstances      bool
+	Vcenters                []string
+	IPAddresses             []string
 	DatastoreMetricInclude  []string
-	DatastoreMetricExclude  []string
+	DatacenterExclude       []string
 	DatastoreInclude        []string
 	DatastoreExclude        []string
-	Separator               string
+	DatacenterInclude       []string
 	CustomAttributeInclude  []string
 	CustomAttributeExclude  []string
-	UseIntSamples           bool
-	IPAddresses             []string
-
+	ObjectDiscoveryInterval internal.Duration
+	Timeout                 internal.Duration
 	MaxQueryObjects         int
 	MaxQueryMetrics         int
 	CollectConcurrency      int
 	DiscoverConcurrency     int
 	ForceDiscoverOnInit     bool
-	ObjectDiscoveryInterval internal.Duration
-	Timeout                 internal.Duration
-
-	endpoints []*Endpoint
-	cancel    context.CancelFunc
-
-	// Mix in the TLS/SSL goodness from core
-	tls.ClientConfig
-
-	Log cua.Logger
+	UseIntSamples           bool
+	DatastoreInstances      bool
+	VMInstances             bool `toml:"vm_instances"`
+	HostInstances           bool
+	ClusterInstances        bool
+	DatacenterInstances     bool
 }
 
 var sampleConfig = `

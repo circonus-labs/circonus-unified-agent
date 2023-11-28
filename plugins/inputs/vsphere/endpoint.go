@@ -45,64 +45,64 @@ type queryJob func(queryChunk)
 // Endpoint is a high-level representation of a connected vCenter endpoint. It is backed by the lower
 // level Client type.
 type Endpoint struct {
-	Parent            *VSphere
-	URL               *url.URL
-	resourceKinds     map[string]*resourceKind
-	hwMarks           *TSCache
+	customAttrFilter  filter.Filter
+	log               cua.Logger
+	clientFactory     *ClientFactory
+	metricNameLookup  map[int32]string
 	lun2ds            map[string]string
 	discoveryTicker   *time.Ticker
-	collectMux        sync.RWMutex
-	initialized       bool
-	clientFactory     *ClientFactory
-	busy              sync.Mutex
+	URL               *url.URL
+	Parent            *VSphere
+	hwMarks           *TSCache
 	customFields      map[int32]string
-	customAttrFilter  filter.Filter
-	customAttrEnabled bool
-	metricNameLookup  map[int32]string
+	resourceKinds     map[string]*resourceKind
+	collectMux        sync.RWMutex
 	metricNameMux     sync.RWMutex
-	log               cua.Logger
+	busy              sync.Mutex
+	customAttrEnabled bool
+	initialized       bool
 }
 
 type resourceKind struct {
+	lastColl         time.Time
+	latestSample     time.Time
+	filters          filter.Filter
+	getObjects       func(context.Context, *Endpoint, *ResourceFilter) (objectMap, error)
+	objects          objectMap
 	name             string
 	vcName           string
 	pKey             string
 	parentTag        string
-	enabled          bool
-	realTime         bool
-	sampling         int32
-	objects          objectMap
-	filters          filter.Filter
-	paths            []string
-	excludePaths     []string
-	collectInstances bool
-	getObjects       func(context.Context, *Endpoint, *ResourceFilter) (objectMap, error)
-	include          []string
-	simple           bool
-	metrics          performance.MetricList
 	parent           string
-	latestSample     time.Time
-	lastColl         time.Time
+	excludePaths     []string
+	include          []string
+	metrics          performance.MetricList
+	paths            []string
+	sampling         int32
+	collectInstances bool
+	enabled          bool
+	simple           bool
+	realTime         bool
 }
 
 type metricEntry struct {
-	tags   map[string]string
-	name   string
 	ts     time.Time
+	tags   map[string]string
 	fields map[string]interface{}
+	name   string
 }
 
 type objectMap map[string]*objectRef
 
 type objectRef struct {
-	name         string
-	altID        string
-	ref          types.ManagedObjectReference
-	parentRef    *types.ManagedObjectReference // Pointer because it must be nillable
-	guest        string
-	dcname       string
+	parentRef    *types.ManagedObjectReference
 	customValues map[string]string
 	lookup       map[string]string
+	ref          types.ManagedObjectReference
+	name         string
+	altID        string
+	guest        string
+	dcname       string
 }
 
 func (e *Endpoint) getParent(obj *objectRef, res *resourceKind) (*objectRef, bool) {
@@ -275,7 +275,7 @@ func (e *Endpoint) startDiscovery(ctx context.Context) {
 	}()
 }
 
-func (e *Endpoint) initalDiscovery(ctx context.Context) {
+func (e *Endpoint) initialDiscovery(ctx context.Context) {
 	err := e.discover(ctx)
 	if err != nil && !errors.Is(err, context.Canceled) {
 		e.log.Errorf("Discovery for %s: %s", e.URL.Host, err.Error())
@@ -301,7 +301,7 @@ func (e *Endpoint) init(ctx context.Context) error {
 
 	if e.Parent.ObjectDiscoveryInterval.Duration > 0 {
 		e.Parent.Log.Debug("Running initial discovery")
-		e.initalDiscovery(ctx)
+		e.initialDiscovery(ctx)
 	}
 	e.initialized = true
 	return nil
@@ -596,6 +596,7 @@ func getDatacenters(ctx context.Context, e *Endpoint, filter *ResourceFilter) (o
 	}
 	m := make(objectMap, len(resources))
 	for _, r := range resources {
+		r := r
 		m[r.ExtensibleManagedObject.Reference().Value] = &objectRef{
 			name:         r.Name,
 			ref:          r.ExtensibleManagedObject.Reference(),
@@ -618,6 +619,7 @@ func getClusters(ctx context.Context, e *Endpoint, filter *ResourceFilter) (obje
 	cache := make(map[string]*types.ManagedObjectReference)
 	m := make(objectMap, len(resources))
 	for _, r := range resources {
+		r := r
 		// Wrap in a function to make defer work correctly.
 		err := func() error {
 			// We're not interested in the immediate parent (a folder), but the data center.
@@ -667,6 +669,7 @@ func getHosts(ctx context.Context, e *Endpoint, filter *ResourceFilter) (objectM
 	}
 	m := make(objectMap)
 	for _, r := range resources {
+		r := r
 		m[r.ExtensibleManagedObject.Reference().Value] = &objectRef{
 			name:         r.Name,
 			ref:          r.ExtensibleManagedObject.Reference(),
@@ -687,6 +690,7 @@ func getVMs(ctx context.Context, e *Endpoint, filter *ResourceFilter) (objectMap
 	}
 	m := make(objectMap)
 	for _, r := range resources {
+		r := r
 		if r.Runtime.PowerState != "poweredOn" {
 			continue
 		}
@@ -701,6 +705,7 @@ func getVMs(ctx context.Context, e *Endpoint, filter *ResourceFilter) (objectMap
 
 		// Collect network information
 		for _, net := range r.Guest.Net {
+			net := net
 			if net.DeviceConfigId == -1 {
 				continue
 			}
@@ -777,6 +782,7 @@ func getDatastores(ctx context.Context, e *Endpoint, filter *ResourceFilter) (ob
 	}
 	m := make(objectMap)
 	for _, r := range resources {
+		r := r
 		lunID := ""
 		if r.Info != nil {
 			info := r.Info.GetDatastoreInfo()

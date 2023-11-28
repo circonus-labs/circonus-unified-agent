@@ -6,10 +6,10 @@ import (
 	"time"
 )
 
-// TSCache is a cache of timestamps used to determine the validity of datapoints
+// TSCache is a cache of timestamps used to determine the validity of data points
 type TSCache struct {
-	ttl   time.Duration
 	table map[string]time.Time
+	ttl   time.Duration
 	mux   sync.RWMutex
 }
 

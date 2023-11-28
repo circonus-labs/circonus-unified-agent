@@ -31,21 +31,21 @@ const absoluteMaxMetrics = 10000
 // is periodically recycled to avoid authentication expiration issues.
 type ClientFactory struct {
 	client *Client
-	mux    sync.Mutex
 	url    *url.URL
 	parent *VSphere
+	mux    sync.Mutex
 }
 
 // Client represents a connection to vSphere and is backed by a govmomi connection
 type Client struct {
+	log       cua.Logger
 	Client    *govmomi.Client
 	Views     *view.Manager
 	Root      *view.ContainerView
 	Perf      *performance.Manager
-	Valid     bool
 	Timeout   time.Duration
 	closeGate sync.Once
-	log       cua.Logger
+	Valid     bool
 }
 
 // NewClientFactory creates a new ClientFactory and prepares it for use.

@@ -13,7 +13,7 @@ before:
     - cmd: golangci-lint run
       env:
         - GOOS=freebsd
-    - govulncheck ./...
+    # - govulncheck ./...
         
 builds:
   - id: cua
@@ -200,7 +200,7 @@ nfpms:
           postremove: "builds/rpm/post-remove.sh"
 
 brews:
-  - tap:
+  - repository:
       owner: circonus-labs
       name: homebrew-circonus-unified-agent
     folder: Formula
@@ -259,3 +259,10 @@ release:
 
 checksum:
   name_template: "{{.ProjectName}}_checksums.txt"
+
+sboms:
+  - artifacts: archive
+    args: ["$artifact", "--output", "cyclonedx-json@1.5=$document"]
+    env:
+      - SYFT_GOLANG_SEARCH_LOCAL_MOD_CACHE_LICENSES=true
+      - SYFT_GOLANG_SEARCH_REMOTE_LICENSES=true

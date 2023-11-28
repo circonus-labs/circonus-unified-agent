@@ -3,7 +3,17 @@ project_name: circonus-unified-agent
 before:
   hooks:
     - go mod tidy
-    - ./build_lint.sh
+    - golangci-lint run
+    - cmd: golangci-lint run
+      env:
+        - GOOS=linux
+    - cmd: golangci-lint run
+      env:
+        - GOOS=windows
+    - cmd: golangci-lint run
+      env:
+        - GOOS=freebsd
+    - govulncheck ./...
         
 builds:
   - id: cua

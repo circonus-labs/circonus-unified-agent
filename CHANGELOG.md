@@ -1,5 +1,55 @@
 # **unreleased**
 
+## v0.3.0
+
+* fix(deps): update deps for vulnerabilities
+* build: add after hook for `grype` on generated sboms
+* build(brew): deprecated syntax tap->repository
+* build: add .sbom for archive artifacts
+* build(deps): bump github.com/nats-io/nats-server/v2 from 2.8.4 to 2.10.5
+* build(deps): bump golang.org/x/net from 0.15.0 to 0.19.0
+* fix(lint): G601: Implicit memory aliasing in for loop, struct alignment, typos
+* build: update before hooks for `go mod tidy`, `govulncheck` and `golangci-lint` (darwin/linux/windows/freebsd)
+* build(deps): bump github.com/gosnmp/gosnmp from 1.36.1 to 1.37.0
+* build(deps): bump github.com/shirou/gopsutil/v3 from 3.23.9 to 3.23.10
+* build(deps): bump actions/checkout from 3 to 4
+* fix: [OP-1938] Fixed missing semi-colons for the --apiurl option
+
+```text
+NAME                              INSTALLED                              FIXED-IN      TYPE       VULNERABILITY        SEVERITY
+github.com/containerd/containerd  v1.5.9                                 1.5.10        go-module  GHSA-crp2-qrr5-8pq7  High
+github.com/containerd/containerd  v1.5.9                                 1.5.18        go-module  GHSA-hmfx-3pcx-653p  Medium
+github.com/containerd/containerd  v1.5.9                                 1.5.13        go-module  GHSA-5ffw-gxpp-mxpf  Medium
+github.com/containerd/containerd  v1.5.9                                 1.5.16        go-module  GHSA-2qjp-425j-52j9  Medium
+github.com/containerd/containerd  v1.5.9                                 1.5.18        go-module  GHSA-259w-8hf6-59c2  Medium
+github.com/docker/distribution    v2.7.1+incompatible                    2.8.2-beta.1  go-module  GHSA-hqxw-f8mx-cpmw  High
+github.com/docker/distribution    v2.7.1+incompatible                    2.8.0         go-module  GHSA-qq97-vm5h-rrhg  Low
+github.com/docker/docker          v20.10.11+incompatible                 20.10.24      go-module  GHSA-232p-vwff-86mp  High
+github.com/docker/docker          v20.10.11+incompatible                 24.0.7        go-module  GHSA-jq35-85cj-fj4p  Medium
+github.com/docker/docker          v20.10.11+incompatible                 20.10.24      go-module  GHSA-6wrf-mxfj-pf5p  Medium
+github.com/docker/docker          v20.10.11+incompatible                 20.10.24      go-module  GHSA-33pg-m6jh-5237  Medium
+github.com/hashicorp/consul       v1.2.1                                 1.6.6         go-module  GHSA-rqjq-mrgx-85hp  High
+github.com/hashicorp/consul       v1.2.1                                 1.4.4         go-module  GHSA-q7fx-wm2p-qfj8  High
+github.com/hashicorp/consul       v1.2.1                                 1.9.17        go-module  GHSA-q6h7-4qgw-2j9p  High
+github.com/hashicorp/consul       v1.2.1                                 1.8.15        go-module  GHSA-ccw8-7688-vqx4  High
+github.com/hashicorp/consul       v1.2.1                                 1.10.1        go-module  GHSA-8h2g-r292-j8xh  High
+github.com/hashicorp/consul       v1.2.1                                 1.10.1        go-module  GHSA-25gf-8qrr-g78r  High
+github.com/hashicorp/consul       v1.2.1                                 1.6.3         go-module  GHSA-23jv-v6qj-3fhh  High
+github.com/hashicorp/consul       v1.2.1                                 1.11.9        go-module  GHSA-m69r-9g56-7mv8  Medium
+github.com/hashicorp/consul       v1.2.1                                 1.14.5        go-module  GHSA-c57c-7hrj-6q6v  Medium
+github.com/hashicorp/consul       v1.2.1                                 1.7.14        go-module  GHSA-8xmx-h8rq-h94j  Medium
+github.com/hashicorp/consul       v1.2.1                                 1.8.15        go-module  GHSA-6hw5-6gcx-phmw  Medium
+github.com/hashicorp/consul       v1.2.1                                 1.4.1         go-module  GHSA-4qvx-qq5w-695p  Medium
+github.com/miekg/dns              v1.1.25-0.20191211073109-8ebf2e419df7  1.1.25        go-module  GHSA-44r7-7p62-q3fr  Medium
+github.com/opencontainers/runc    v1.0.2                                 1.1.5         go-module  GHSA-vpvm-3wq2-2wvm  High
+github.com/opencontainers/runc    v1.0.2                                 1.0.3         go-module  GHSA-v95c-p5hm-xq8f  Medium
+github.com/opencontainers/runc    v1.0.2                                 1.1.5         go-module  GHSA-g2j6-57v7-gm8c  Medium
+github.com/opencontainers/runc    v1.0.2                                 1.1.2         go-module  GHSA-f3fp-gc8g-vw66  Medium
+github.com/opencontainers/runc    v1.0.2                                 1.1.5         go-module  GHSA-m8cg-xc2p-r3fc  Low
+google.golang.org/grpc            v1.48.0                                1.56.3        go-module  GHSA-m425-mq94-257g  High
+google.golang.org/grpc            v1.48.0                                1.56.3        go-module  GHSA-qppj-fm5r-hxr3  Medium
+```
+
 ## v0.2.18
 
 * feat(circ_http_json): add timeout
@@ -101,7 +151,7 @@
 
 ## v0.2.3
 
-* fix: instructions `brew services` not `brew servcie`
+* fix: instructions `brew services` not `brew service`
 
 ## v0.2.2
 
@@ -180,7 +230,7 @@
 * feat(dep): SA1019: grpc.WithInsecure is deprecated: use WithTransportCredentials and insecure.NewCredentials() instead. Will be supported throughout 1.x.
 * feat(dep): SA1019: "cloud.google.com/go/monitoring/apiv3" is deprecated: Please use cloud.google.com/go/monitoring/apiv3/v2.
 * feat(dep): SA1019: "github.com/golang/protobuf/proto" is deprecated: Use the "google.golang.org/protobuf/proto" package instead.
-* fix(lint): struct alignent
+* fix(lint): struct alignment
 * feat(dep): upd github.com/circonus-labs/go-apiclient v0.7.17->v0.7.18
 * feat(dep): upd github.com/circonus-labs/go-trapcheck v0.0.8->v0.0.9
 * feat(dep): upd github.com/circonus-labs/go-trapmemtrics v0.0.8->v0.0.9

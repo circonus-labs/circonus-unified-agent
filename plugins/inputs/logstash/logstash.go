@@ -53,18 +53,15 @@ const sampleConfig = `
 `
 
 type Logstash struct {
-	URL string `toml:"url"`
-
-	SinglePipeline bool     `toml:"single_pipeline"`
-	Collect        []string `toml:"collect"`
-
-	Username string            `toml:"username"`
-	Password string            `toml:"password"`
 	Headers  map[string]string `toml:"headers"`
-	Timeout  internal.Duration `toml:"timeout"`
+	client   *http.Client
+	URL      string `toml:"url"`
+	Username string `toml:"username"`
+	Password string `toml:"password"`
 	tls.ClientConfig
-
-	client *http.Client
+	Collect        []string          `toml:"collect"`
+	Timeout        internal.Duration `toml:"timeout"`
+	SinglePipeline bool              `toml:"single_pipeline"`
 }
 
 // NewLogstash create an instance of the plugin with default settings
@@ -114,17 +111,17 @@ type PipelinesStats struct {
 
 type PipelineStats struct {
 	ID       string   `json:"id"`
-	Pipeline Pipeline `json:"pipeline"`
 	Name     string   `json:"name"`
 	Host     string   `json:"host"`
 	Version  string   `json:"version"`
+	Pipeline Pipeline `json:"pipeline"`
 }
 
 type Pipeline struct {
-	Events  interface{}     `json:"events"`
-	Plugins PipelinePlugins `json:"plugins"`
-	Reloads interface{}     `json:"reloads"`
 	Queue   PipelineQueue   `json:"queue"`
+	Events  interface{}     `json:"events"`
+	Reloads interface{}     `json:"reloads"`
+	Plugins PipelinePlugins `json:"plugins"`
 }
 
 type Plugin struct {
@@ -140,10 +137,10 @@ type PipelinePlugins struct {
 }
 
 type PipelineQueue struct {
-	Events   float64     `json:"events"`
-	Type     string      `json:"type"`
 	Capacity interface{} `json:"capacity"`
 	Data     interface{} `json:"data"`
+	Type     string      `json:"type"`
+	Events   float64     `json:"events"`
 }
 
 const jvmStats = "/_node/stats/jvm"
@@ -384,6 +381,7 @@ func (logstash *Logstash) gatherPipelinesStats(url string, accumulator cua.Accum
 	}
 
 	for pipelineName, pipeline := range pipelinesStats.Pipelines {
+		pipeline := pipeline
 		tags := map[string]string{
 			"node_id":      pipelinesStats.ID,
 			"node_name":    pipelinesStats.Name,

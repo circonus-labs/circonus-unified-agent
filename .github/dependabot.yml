@@ -20,6 +20,7 @@ updates:
       - dependency-name: "google.golang.org/grpc"
       - dependency-name: "golang.org/x/net"
       - dependency-name: "github.com/nats-io/nats-server/v2"
+      - dependency-name: "github.com/openzipkin/zipkin-go-opentracing"
       
   - package-ecosystem: "github-actions"
     directory: "/"

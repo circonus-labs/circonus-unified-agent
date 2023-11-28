@@ -17,6 +17,9 @@ updates:
       - dependency-name: "github.com/shirou/gopsutil/v3"
       - dependency-name: "github.com/go-ping/ping"
       - dependency-name: "github.com/gosnmp/gosnmp"
+      - dependency-name: "google.golang.org/grpc"
+      - dependency-name: "golang.org/x/net"
+      - dependency-name: "github.com/nats-io/nats-server/v2"
       
   - package-ecosystem: "github-actions"
     directory: "/"

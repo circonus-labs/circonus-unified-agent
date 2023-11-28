@@ -23,7 +23,9 @@ import (
 	"google.golang.org/api/option"
 	distributionpb "google.golang.org/genproto/googleapis/api/distribution"
 	metricpb "google.golang.org/genproto/googleapis/api/metric"
-	monitoringpb "google.golang.org/genproto/googleapis/monitoring/v3"
+
+	// monitoringpb "google.golang.org/genproto/googleapis/monitoring/v3"
+	"cloud.google.com/go/monitoring/apiv3/v2/monitoringpb"
 )
 
 const (
@@ -190,8 +192,8 @@ type metricClient interface {
 }
 
 type lockedSeriesGrouper struct {
-	sync.Mutex
 	*cuametric.SeriesGrouper
+	sync.Mutex
 }
 
 func (g *lockedSeriesGrouper) Add(

@@ -6,7 +6,6 @@ import (
 
 	"github.com/circonus-labs/circonus-unified-agent/testutil"
 
-	corev1 "k8s.io/api/core/v1"
 	netv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -40,8 +39,8 @@ func TestIngress(t *testing.T) {
 						Items: []netv1.Ingress{
 							{
 								Status: netv1.IngressStatus{
-									LoadBalancer: corev1.LoadBalancerStatus{
-										Ingress: []corev1.LoadBalancerIngress{
+									LoadBalancer: netv1.IngressLoadBalancerStatus{
+										Ingress: []netv1.IngressLoadBalancerIngress{
 											{
 												Hostname: "chron-1",
 												IP:       "1.0.0.127",

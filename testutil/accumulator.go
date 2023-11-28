@@ -38,15 +38,15 @@ func (p *Metric) String() string {
 
 // Accumulator defines a mocked out accumulator
 type Accumulator struct {
-	sync.Mutex
 	*sync.Cond
 	TimeFunc  func() time.Time
 	delivered chan cua.DeliveryInfo
 	Errors    []error
 	Metrics   []*Metric
 	nMetrics  uint64
-	Discard   bool
-	debug     bool
+	sync.Mutex
+	Discard bool
+	debug   bool
 }
 
 func (a *Accumulator) NMetrics() uint64 {

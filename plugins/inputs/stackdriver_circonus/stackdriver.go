@@ -10,6 +10,7 @@ import (
 	"time"
 
 	monitoring "cloud.google.com/go/monitoring/apiv3/v2"
+	"cloud.google.com/go/monitoring/apiv3/v2/monitoringpb"
 	"github.com/circonus-labs/circonus-unified-agent/cua"
 	"github.com/circonus-labs/circonus-unified-agent/internal"
 	circmgr "github.com/circonus-labs/circonus-unified-agent/internal/circonus"
@@ -24,7 +25,6 @@ import (
 	"google.golang.org/api/option"
 	distributionpb "google.golang.org/genproto/googleapis/api/distribution"
 	metricpb "google.golang.org/genproto/googleapis/api/metric"
-	monitoringpb "google.golang.org/genproto/googleapis/monitoring/v3"
 )
 
 const (
@@ -190,8 +190,8 @@ type metricClient interface {
 }
 
 type lockedSeriesGrouper struct {
-	sync.Mutex
 	*cuametric.SeriesGrouper
+	sync.Mutex
 }
 
 func (g *lockedSeriesGrouper) Add(

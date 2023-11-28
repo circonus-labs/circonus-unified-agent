@@ -6,6 +6,7 @@ package testutil
 import (
 	"context"
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/docker/go-connections/nat"
@@ -118,7 +119,7 @@ func (c *Container) LookupMappedPorts() error {
 	return nil
 }
 
-func (c *Container) Exec(cmds []string) (int, error) {
+func (c *Container) Exec(cmds []string) (int, io.Reader, error) {
 	return c.container.Exec(c.ctx, cmds)
 }
 

@@ -112,7 +112,7 @@ func (p *Prometheus) watchPod(ctx context.Context, clientset *kubernetes.Clients
 	informerfactory := informers.NewSharedInformerFactory(clientset, resyncinterval)
 
 	podinformer := informerfactory.Core().V1().Pods()
-	podinformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+	_, _ = podinformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(newObj interface{}) {
 			key, err := cache.MetaNamespaceKeyFunc(newObj)
 			if err != nil {

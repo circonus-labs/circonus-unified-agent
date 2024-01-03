@@ -257,6 +257,27 @@ release:
   draft: false
   prerelease: auto
 
+changelog:
+  use: git
+  sort: desc
+  abbrev: 0
+  groups:
+    - title: Features
+      regexp: "^.*feat[(\\w)]*:+.*$"
+      order: 0
+    - title: 'Bug fixes'
+      regexp: "^.*fix[(\\w)]*:+.*$"
+      order: 1
+    - title: 'Dependencies'
+      regexp: "^.*build(deps):+.*$"
+      order: 2
+    - title: Others
+      order: 999
+  filters:
+    exclude:
+      - '^docs:'
+      - typo
+
 checksum:
   name_template: "{{.ProjectName}}_checksums.txt"
 

@@ -1,5 +1,14 @@
 # **unreleased**
 
+## v0.3.1
+
+* feat: add SubmissionTimeout config option for global and direct metric plugins (circ_http_json, snmp, ping)
+* build(deps): bump github.com/circonus/go-trapcheck from 0.0.12 to 0.0.15
+* build(deps): bump github.com/circonus/go-trapmetrics from 0.0.12 to 0.0.15
+* build(deps): bump github.com/circonus/go-apiclient from 0.7.23 to 0.7.24
+* build(deps): bump github.com/shirou/gopsutil/v3 from 3.23.11 to 3.23.12
+* build(deps): bump github.com/nats-io/nats-server/v2 from 2.10.6 to 2.10.7
+
 ## v0.3.0
 
 * fix(deps): update deps for vulnerabilities

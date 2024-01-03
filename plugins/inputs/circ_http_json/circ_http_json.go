@@ -112,14 +112,10 @@ func (chj *CHJ) Gather(ctx context.Context, _ cua.Accumulator) error {
 		return fmt.Errorf("instance_id: %s -- no metric destination configured", chj.InstanceID)
 	}
 
-	start := time.Now()
-
 	data, err := chj.getURL(ctx)
 	if err != nil {
 		return fmt.Errorf("instance_id: %s -- fetching metrics from %s: %w", chj.InstanceID, chj.URL, err)
 	}
-
-	chj.Log.Infof("got metrics (%d bytes) from %s in %s", len(data), chj.URL, time.Since(start).String())
 
 	if err := chj.hasStreamtags(data); err != nil {
 		return fmt.Errorf("instance_id: %s -- no streamtags found in metrics", chj.InstanceID)
@@ -129,14 +125,9 @@ func (chj *CHJ) Gather(ctx context.Context, _ cua.Accumulator) error {
 	// 	return fmt.Errorf("instance_id: %s -- invalid json from %s: %w", chj.InstanceID, chj.URL, err)
 	// }
 
-	start2 := time.Now()
-
 	if _, err := chj.dest.FlushRawJSON(ctx, data); err != nil {
 		return fmt.Errorf("instance_id: %s -- flushing metrics: %w", chj.InstanceID, err)
 	}
-	chj.Log.Infof("sent metrics (%d bytes) in %s", len(data), time.Since(start2).String())
-
-	chj.Log.Infof("total fetch and submission time %s", time.Since(start).String())
 
 	return nil
 }

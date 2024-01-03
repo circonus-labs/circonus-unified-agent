@@ -1,5 +1,7 @@
 package snmp
 
+/* cSpell:disable */
+
 import (
 	"bufio"
 	"bytes"
@@ -127,6 +129,7 @@ type Snmp struct {
 	Agents            []string          `toml:"agents"`
 	CheckDisplayName  string            `toml:"check_display_name"` // direct metrics mode - check display name
 	CheckTarget       string            `toml:"check_target"`       // direct metrics mode - check target setting
+	SubmissionTimeout string            `toml:"submission_timeout"` // direct metrics mode - timeout for submitting metrics to broker
 	Deadline          string            `toml:"deadline"`           // snmp collection deadline
 	CheckTags         map[string]string `toml:"check_tags"`         // direct metrics mode - list of tags to add to check when created
 	Tags              map[string]string
@@ -159,12 +162,13 @@ func (s *Snmp) init() error {
 				PluginID:   "snmp",
 				InstanceID: s.InstanceID,
 			},
-			Broker:           s.Broker,
-			DebugAPI:         s.DebugAPI,
-			TraceMetrics:     s.TraceMetrics,
-			CheckTags:        s.CheckTags,
-			CheckTarget:      s.CheckTarget,
-			CheckDisplayName: s.CheckDisplayName,
+			Broker:            s.Broker,
+			DebugAPI:          s.DebugAPI,
+			TraceMetrics:      s.TraceMetrics,
+			CheckTags:         s.CheckTags,
+			CheckTarget:       s.CheckTarget,
+			CheckDisplayName:  s.CheckDisplayName,
+			SubmissionTimeout: s.SubmissionTimeout,
 		}
 		dest, err := circmgr.NewMetricDestination(opts, s.Log)
 		if err != nil {

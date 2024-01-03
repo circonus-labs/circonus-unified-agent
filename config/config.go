@@ -1,5 +1,7 @@
 package config
 
+/* cSpell:disable */
+
 import (
 	"bytes"
 	"fmt"
@@ -216,20 +218,21 @@ type AgentConfig struct {
 // CheckTags       - optional: set of tags to apply when creating a check
 // CheckTarget     - optional: set the check_target statically (instead of using hostname)
 type CirconusConfig struct {
-	DebugChecks     map[string]string `toml:"debug_checks"`
-	TraceMetrics    string            `toml:"trace_metrics"`
-	APIURL          string            `toml:"api_url"`
-	APIToken        string            `toml:"api_token"`
-	APIApp          string            `toml:"api_app"`
-	APITLSCA        string            `toml:"api_tls_ca"`
-	CacheDir        string            `toml:"cache_dir"`
-	Broker          string            `toml:"broker"`
-	CheckTarget     string            `toml:"check_target"`
-	CheckSearchTags []string          `toml:"check_search_tags"`
-	CheckTags       []string          `toml:"check_tags"`
-	DebugAPI        bool              `toml:"debug_api"`
-	CacheNoVerify   bool              `toml:"cache_no_verify"`
-	CacheConfigs    bool              `toml:"cache_configs"`
+	DebugChecks       map[string]string `toml:"debug_checks"`
+	TraceMetrics      string            `toml:"trace_metrics"`
+	APIURL            string            `toml:"api_url"`
+	APIToken          string            `toml:"api_token"`
+	APIApp            string            `toml:"api_app"`
+	APITLSCA          string            `toml:"api_tls_ca"`
+	CacheDir          string            `toml:"cache_dir"`
+	Broker            string            `toml:"broker"`
+	SubmissionTimeout string            `toml:"submission_timeout"`
+	CheckTarget       string            `toml:"check_target"`
+	CheckSearchTags   []string          `toml:"check_search_tags"`
+	CheckTags         []string          `toml:"check_tags"`
+	DebugAPI          bool              `toml:"debug_api"`
+	CacheNoVerify     bool              `toml:"cache_no_verify"`
+	CacheConfigs      bool              `toml:"cache_configs"`
 }
 
 // InputNames returns a list of strings of the configured inputs.

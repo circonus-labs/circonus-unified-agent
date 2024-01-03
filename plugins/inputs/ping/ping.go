@@ -1,5 +1,7 @@
 package ping
 
+/* cSpell:disable */
+
 import (
 	"context"
 	"errors"
@@ -30,38 +32,75 @@ const (
 // for unit test purposes (see ping_test.go)
 type HostPinger func(binary string, timeout float64, args ...string) (string, error)
 
+/*
+	type Ping struct {
+		wg                sync.WaitGroup           // wg is used to wait for ping with multiple URLs
+		Log               cua.Logger               `toml:"-"`
+		metricDestination *trapmetrics.TrapMetrics // for Direct Metrics
+		pingHost          HostPinger               // host ping function
+		Size              *int                     // Packet size
+		nativePingFunc    NativePingFunc
+		Privileged        *bool   // Privileged mode
+		DebugAPI          *bool   `toml:"debug_api"`     // direct metrics mode - send directly to circonus (bypassing output)
+		TraceMetrics      *string `toml:"trace_metrics"` // direct metrics mode - send directly to circonus (bypassing output)
+		sourceAddress     string
+		Broker            string            `toml:"broker"`
+		Binary            string            // Ping executable binary
+		Method            string            // Method defines how to ping (native or exec)
+		Interface         string            // Interface or source address to send ping from (ping -I/-S <INTERFACE/SRC_ADDR>)
+		InstanceID        string            `toml:"instance_id"`
+		CheckDisplayName  string            `toml:"check_display_name"` // direct metrics mode - check display name
+		CheckTarget       string            `toml:"check_target"`       // direct metrics mode - check target
+		SubmissionTimeout string            `toml:"submission_timeout"` // direct metrics mode - timeout for submitting metrics to broker
+		CheckTags         map[string]string `toml:"check_tags"`         // direct metrics mode - list of tags to add to check when created
+		Tags              map[string]string // need static inpupt tags for direct metrics
+		Urls              []string          // URLs to ping
+		Percentiles       []int             // Calculate the given percentiles when using native method
+		Arguments         []string          // Arguments for ping command. When arguments is not empty, system binary will be used and other options (ping_interval, timeout, etc) will be ignored
+		Deadline          int               // Ping deadline, in seconds. 0 means no deadline. (ping -w <DEADLINE>)
+		Count             int               // Number of pings to send (ping -c <COUNT>)
+		PingInterval      float64           `toml:"ping_interval"` // Interval at which to ping (ping -i <INTERVAL>)
+		calcTimeout       time.Duration     // Pre-calculated timeout
+		Timeout           float64           // Per-ping timeout, in seconds. 0 means no timeout (ping -W <TIMEOUT>)
+		calcInterval      time.Duration     // Pre-calculated interval
+		DirectMetrics     bool              `toml:"direct_metrics"`    // enable direct metrics
+		NoRTTHistograms   bool              `toml:"no_rtt_histograms"` // directr metrics mode - do not send rtt histograms
+		IPv6              bool              // Whether to resolve addresses using ipv6 or not.
+	}
+*/
 type Ping struct {
-	wg                sync.WaitGroup           // wg is used to wait for ping with multiple URLs
-	Log               cua.Logger               `toml:"-"`
-	metricDestination *trapmetrics.TrapMetrics // for Direct Metrics
-	pingHost          HostPinger               // host ping function
-	Size              *int                     // Packet size
+	Log               cua.Logger        `toml:"-"`
+	CheckTags         map[string]string `toml:"check_tags"`
+	metricDestination *trapmetrics.TrapMetrics
+	pingHost          HostPinger
+	Size              *int
 	nativePingFunc    NativePingFunc
-	Privileged        *bool   // Privileged mode
-	DebugAPI          *bool   `toml:"debug_api"`     // direct metrics mode - send directly to circonus (bypassing output)
-	TraceMetrics      *string `toml:"trace_metrics"` // direct metrics mode - send directly to circonus (bypassing output)
+	Privileged        *bool
+	DebugAPI          *bool   `toml:"debug_api"`
+	TraceMetrics      *string `toml:"trace_metrics"`
+	Tags              map[string]string
+	CheckTarget       string `toml:"check_target"`
+	Method            string
+	Interface         string
+	InstanceID        string `toml:"instance_id"`
+	CheckDisplayName  string `toml:"check_display_name"`
+	Binary            string
+	SubmissionTimeout string `toml:"submission_timeout"`
+	Broker            string `toml:"broker"`
 	sourceAddress     string
-	Broker            string            `toml:"broker"`
-	Binary            string            // Ping executable binary
-	Method            string            // Method defines how to ping (native or exec)
-	Interface         string            // Interface or source address to send ping from (ping -I/-S <INTERFACE/SRC_ADDR>)
-	InstanceID        string            `toml:"instance_id"`
-	CheckDisplayName  string            `toml:"check_display_name"` // direct metrics mode - check display name
-	CheckTarget       string            `toml:"check_target"`       // direct metrics mode - check target
-	CheckTags         map[string]string `toml:"check_tags"`         // direct metrics mode - list of tags to add to check when created
-	Tags              map[string]string // need static inpupt tags for direct metrics
-	Urls              []string          // URLs to ping
-	Percentiles       []int             // Calculate the given percentiles when using native method
-	Arguments         []string          // Arguments for ping command. When arguments is not empty, system binary will be used and other options (ping_interval, timeout, etc) will be ignored
-	Deadline          int               // Ping deadline, in seconds. 0 means no deadline. (ping -w <DEADLINE>)
-	Count             int               // Number of pings to send (ping -c <COUNT>)
-	PingInterval      float64           `toml:"ping_interval"` // Interval at which to ping (ping -i <INTERVAL>)
-	calcTimeout       time.Duration     // Pre-calculated timeout
-	Timeout           float64           // Per-ping timeout, in seconds. 0 means no timeout (ping -W <TIMEOUT>)
-	calcInterval      time.Duration     // Pre-calculated interval
-	DirectMetrics     bool              `toml:"direct_metrics"`    // enable direct metrics
-	NoRTTHistograms   bool              `toml:"no_rtt_histograms"` // directr metrics mode - do not send rtt histograms
-	IPv6              bool              // Whether to resolve addresses using ipv6 or not.
+	Arguments         []string
+	Urls              []string
+	Percentiles       []int
+	wg                sync.WaitGroup
+	Deadline          int
+	Count             int
+	PingInterval      float64 `toml:"ping_interval"`
+	calcTimeout       time.Duration
+	Timeout           float64
+	calcInterval      time.Duration
+	DirectMetrics     bool `toml:"direct_metrics"`
+	NoRTTHistograms   bool `toml:"no_rtt_histograms"`
+	IPv6              bool
 }
 
 func (*Ping) Description() string {
@@ -397,12 +436,13 @@ func (p *Ping) Init() error {
 				PluginID:   "ping",
 				InstanceID: p.InstanceID,
 			},
-			Broker:           p.Broker,
-			DebugAPI:         p.DebugAPI,
-			TraceMetrics:     p.TraceMetrics,
-			CheckTags:        p.CheckTags,
-			CheckTarget:      p.CheckTarget,
-			CheckDisplayName: p.CheckDisplayName,
+			Broker:            p.Broker,
+			DebugAPI:          p.DebugAPI,
+			TraceMetrics:      p.TraceMetrics,
+			CheckTags:         p.CheckTags,
+			CheckTarget:       p.CheckTarget,
+			CheckDisplayName:  p.CheckDisplayName,
+			SubmissionTimeout: p.SubmissionTimeout,
 		}
 		dest, err := circmgr.NewMetricDestination(opts, p.Log)
 		if err != nil {

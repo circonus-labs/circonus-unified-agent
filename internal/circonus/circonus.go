@@ -46,14 +46,15 @@ type MetricMeta struct {
 }
 
 type MetricDestConfig struct {
-	DebugAPI         *bool             // allow override of api debugging per output
-	TraceMetrics     *string           // allow override of metric tracing per output
-	CheckDisplayName string            // check display name
-	CheckTarget      string            // check target
-	CheckTags        map[string]string // tags for a specific instance of a check
-	APIToken         string            // allow override of api token for a specific plugin (dm input or circonus output)
-	Broker           string            // allow override of broker for a specific plugin (dm input or circonus output)
-	MetricMeta       MetricMeta
+	DebugAPI          *bool             // allow override of api debugging per output
+	TraceMetrics      *string           // allow override of metric tracing per output
+	CheckDisplayName  string            // check display name
+	CheckTarget       string            // check target
+	SubmissionTimeout string            // submission timeout for this specific check
+	CheckTags         map[string]string // tags for a specific instance of a check
+	APIToken          string            // allow override of api token for a specific plugin (dm input or circonus output)
+	Broker            string            // allow override of broker for a specific plugin (dm input or circonus output)
+	MetricMeta        MetricMeta
 }
 
 // Logshim is for api and traps - it uses the info level and
@@ -349,7 +350,7 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 		checkDisplayName = strings.Join(cdn, " ")
 	default:
 		if opts.CheckDisplayName != "" && !strings.Contains(opts.CheckDisplayName, "{{") {
-			// bypass templating if no interpolation strings in check display name
+			// bypass template if no interpolation strings in check display name
 			checkDisplayName = opts.CheckDisplayName
 		} else {
 			cdnVars := map[string]interface{}{
@@ -420,10 +421,21 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 
 	// Trap Check
 	tc := &trapcheck.Config{
-		Client:          circAPI,
-		Logger:          instanceLogger,
-		CheckSearchTags: searchTags,
-		TraceMetrics:    traceMetrics,
+		Client:            circAPI,
+		Logger:            instanceLogger,
+		CheckSearchTags:   searchTags,
+		TraceMetrics:      traceMetrics,
+		SubmissionTimeout: ch.circCfg.SubmissionTimeout,
+	}
+
+	// override global setting if a timeout provided
+	// in opts for this specific check.
+	if opts.SubmissionTimeout != "" {
+		tc.SubmissionTimeout = opts.SubmissionTimeout
+	}
+
+	if tc.SubmissionTimeout != "" {
+		ch.logger.Infof("setting SubmissionTimeout to %s", tc.SubmissionTimeout)
 	}
 
 	var cc *apiclient.CheckBundle
@@ -529,8 +541,8 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 	// cache thrashing in fault when check tags change. Custom check tags (from config) are
 	// applied when a check is created, not whenever the agent restarts. The logic is here
 	// to update custom tags - when/if the impact to fault is mitigated. To implement, just
-	// remove the `if pluginID == "host" {` constraint and revert the hard flase setting
-	// above on udpateCustomTags to the commented out checkForTagDelta call.
+	// remove the `if pluginID == "host" {` constraint and revert the hard false setting
+	// above on updateCustomTags to the commented out checkForTagDelta call.
 	if pluginID == "host" {
 		// the common tags are the main check tags (global tags in conf, os tags for host,
 		// and generic plugin tags common to all plugins)
@@ -556,7 +568,7 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 				}
 			}
 			if b, err := updateCheckTags(circAPI, bundle, tags, logger); err != nil {
-				logger.Warnf("circonus metric destination management moudle: updating check tags %s", err)
+				logger.Warnf("circonus metric destination management module: updating check tags %s", err)
 			} else if b != nil {
 				saveCheckConfig(destKey, b)
 			}
@@ -565,7 +577,7 @@ func NewMetricDestination(opts *MetricDestConfig, logger cua.Logger) (*trapmetri
 
 	// if checks are going to a non-public trap
 	// cache the brokerTLS to use for other checks
-	// so that the api isn't hit for evevry check to pull the broker
+	// so that the api isn't hit for every check to pull the broker
 	if _, ok := ch.brokerTLSConfigs[bundle.Brokers[0]]; !ok {
 		t, err := tch.GetBrokerTLSConfig()
 		if err != nil {

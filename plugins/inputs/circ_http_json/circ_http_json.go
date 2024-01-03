@@ -23,17 +23,18 @@ import (
 // NOTE: this input only supports direct metrics - they do NOT go through a regular output plugin
 
 type CHJ struct {
-	Log        cua.Logger
-	dest       *trapmetrics.TrapMetrics
-	tlsCfg     *tls.Config
-	instLogger *Logshim
-	TLSCN      string
-	InstanceID string `json:"instance_id"`
-	URL        string
-	TLSCAFile  string
-	Timeout    string
-	to         time.Duration
-	Debug      bool
+	Log               cua.Logger
+	dest              *trapmetrics.TrapMetrics
+	tlsCfg            *tls.Config
+	instLogger        *Logshim
+	TLSCN             string
+	InstanceID        string `toml:"instance_id"`
+	URL               string
+	TLSCAFile         string
+	Timeout           string
+	SubmissionTimeout string `toml:"submission_timeout"`
+	to                time.Duration
+	Debug             bool
 }
 
 func (chj *CHJ) Init() error {
@@ -65,6 +66,7 @@ func (chj *CHJ) Init() error {
 			PluginID:   "circ_http_json",
 			InstanceID: chj.InstanceID,
 		},
+		SubmissionTimeout: chj.SubmissionTimeout,
 	}
 	dest, err := circmgr.NewMetricDestination(opts, chj.Log)
 	if err != nil {
@@ -110,10 +112,14 @@ func (chj *CHJ) Gather(ctx context.Context, _ cua.Accumulator) error {
 		return fmt.Errorf("instance_id: %s -- no metric destination configured", chj.InstanceID)
 	}
 
+	start := time.Now()
+
 	data, err := chj.getURL(ctx)
 	if err != nil {
 		return fmt.Errorf("instance_id: %s -- fetching metrics from %s: %w", chj.InstanceID, chj.URL, err)
 	}
+
+	chj.Log.Infof("got metrics (%d bytes) from %s in %s", len(data), chj.URL, time.Since(start).String())
 
 	if err := chj.hasStreamtags(data); err != nil {
 		return fmt.Errorf("instance_id: %s -- no streamtags found in metrics", chj.InstanceID)
@@ -123,9 +129,14 @@ func (chj *CHJ) Gather(ctx context.Context, _ cua.Accumulator) error {
 	// 	return fmt.Errorf("instance_id: %s -- invalid json from %s: %w", chj.InstanceID, chj.URL, err)
 	// }
 
+	start2 := time.Now()
+
 	if _, err := chj.dest.FlushRawJSON(ctx, data); err != nil {
 		return fmt.Errorf("instance_id: %s -- flushing metrics: %w", chj.InstanceID, err)
 	}
+	chj.Log.Infof("sent metrics (%d bytes) in %s", len(data), time.Since(start2).String())
+
+	chj.Log.Infof("total fetch and submission time %s", time.Since(start).String())
 
 	return nil
 }
@@ -172,20 +183,43 @@ func (chj *CHJ) getURL(ctx context.Context) ([]byte, error) {
 	}
 
 	rinfo := release.GetInfo()
+
 	req, err := retryablehttp.NewRequest("GET", chj.URL, nil)
 	if err != nil {
 		return nil, err
 	}
+
 	req = req.WithContext(ctx)
 	req.Header.Set("User-Agent", rinfo.Name+"/"+rinfo.Version)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Connection", "close")
 
+	retries := 0
+
 	retryClient := retryablehttp.NewClient()
 	retryClient.HTTPClient = client
 	retryClient.Logger = chj.instLogger
 	defer retryClient.HTTPClient.CloseIdleConnections()
+
+	retryClient.RetryMax = 4
+	retryClient.RetryWaitMin = 1 * time.Second
+	retryClient.RetryWaitMax = 5 * time.Second
+
+	retryClient.RequestLogHook = func(l retryablehttp.Logger, r *http.Request, attempt int) {
+		if attempt > 0 {
+			l.Printf("retrying... %s %d", r.URL.String(), attempt)
+			retries++
+		}
+	}
+
+	retryClient.ResponseLogHook = func(l retryablehttp.Logger, r *http.Response) {
+		if r.StatusCode != http.StatusOK {
+			l.Printf("non-200 response %s: %s", r.Request.URL.String(), r.Status)
+		} else if r.StatusCode == http.StatusOK && retries > 0 {
+			l.Printf("succeeded after %d attempt(s)", retries+1) // add one for first failed attempt
+		}
+	}
 
 	resp, err := retryClient.Do(req)
 	if resp != nil {

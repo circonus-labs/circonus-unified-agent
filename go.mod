@@ -20,9 +20,9 @@ require (
 	github.com/aws/aws-sdk-go v1.43.21
 	github.com/benbjohnson/clock v1.0.3
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869
-	github.com/circonus-labs/go-apiclient v0.7.23
-	github.com/circonus-labs/go-trapcheck v0.0.12
-	github.com/circonus-labs/go-trapmetrics v0.0.12
+	github.com/circonus-labs/go-apiclient v0.7.24
+	github.com/circonus-labs/go-trapcheck v0.0.15
+	github.com/circonus-labs/go-trapmetrics v0.0.15
 	github.com/cisco-ie/nx-telemetry-proto v0.0.0-20220628142927-f4160bcb943c
 	github.com/couchbase/go-couchbase v0.0.0-20180501122049-16db1f1fe037
 	github.com/denisenkom/go-mssqldb v0.0.0-20190707035753-2be1aa521ff4
@@ -47,7 +47,7 @@ require (
 	github.com/gosnmp/gosnmp v1.37.0
 	github.com/harlow/kinesis-consumer v0.3.1-0.20181230152818-2f58b136fee0
 	github.com/hashicorp/consul/api v1.18.0
-	github.com/hashicorp/go-retryablehttp v0.7.2
+	github.com/hashicorp/go-retryablehttp v0.7.5
 	github.com/hashicorp/go-version v1.3.0
 	github.com/influxdata/go-syslog/v2 v2.0.1
 	github.com/influxdata/tail v1.0.1-0.20200707181643-03a791b270e4
@@ -168,7 +168,7 @@ require (
 	github.com/google/gnostic v0.5.7-v3refs // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
-	github.com/google/uuid v1.3.1 // indirect
+	github.com/google/uuid v1.5.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.2.3 // indirect
 	github.com/googleapis/gax-go/v2 v2.7.1 // indirect
 	github.com/hailocab/go-hostpool v0.0.0-20160125115350-e80d13ce29ed // indirect
@@ -219,7 +219,7 @@ require (
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.0-rc5 // indirect
 	github.com/opencontainers/runc v1.1.5 // indirect
-	github.com/openhistogram/circonusllhist v0.3.0 // indirect
+	github.com/openhistogram/circonusllhist v0.4.0 // indirect
 	github.com/opentracing-contrib/go-observer v0.0.0-20170622124052-a52f23424492 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/pierrec/lz4 v2.5.2+incompatible // indirect

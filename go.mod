@@ -63,7 +63,7 @@ require (
 	github.com/miekg/dns v1.1.41
 	github.com/moby/ipvs v1.0.2
 	github.com/multiplay/go-ts3 v1.0.0
-	github.com/nats-io/nats-server/v2 v2.10.7
+	github.com/nats-io/nats-server/v2 v2.10.9
 	github.com/nats-io/nats.go v1.31.0
 	github.com/nsqio/go-nsq v1.0.8
 	github.com/olivere/elastic/v7 v7.0.32
@@ -214,7 +214,7 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/naoina/go-stringutil v0.1.0 // indirect
 	github.com/nats-io/jwt/v2 v2.5.3 // indirect
-	github.com/nats-io/nkeys v0.4.6 // indirect
+	github.com/nats-io/nkeys v0.4.7 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.0-rc5 // indirect

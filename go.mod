@@ -87,10 +87,10 @@ require (
 	github.com/wvanbergen/kafka v0.0.0-20171203153745-e2edea948ddf
 	github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c
 	go.starlark.net v0.0.0-20200901195727-6e684ef5eeee
-	golang.org/x/net v0.20.0
+	golang.org/x/net v0.21.0
 	golang.org/x/oauth2 v0.7.0
 	golang.org/x/sync v0.3.0
-	golang.org/x/sys v0.16.0
+	golang.org/x/sys v0.17.0
 	golang.org/x/text v0.14.0
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20210506160403-92e472f520a5
 	google.golang.org/api v0.114.0
@@ -246,10 +246,10 @@ require (
 	github.com/yuin/gopher-lua v0.0.0-20180630135845-46796da1b0b4 // indirect
 	github.com/yusufpapurcu/wmi v1.2.3 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	golang.org/x/crypto v0.18.0 // indirect
+	golang.org/x/crypto v0.19.0 // indirect
 	golang.org/x/exp v0.0.0-20230510235704-dd950f8aeaea // indirect
 	golang.org/x/mod v0.9.0 // indirect
-	golang.org/x/term v0.16.0 // indirect
+	golang.org/x/term v0.17.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/tools v0.7.0 // indirect
 	golang.zx2c4.com/wireguard v0.0.0-20210604143328-f9b48a961cd2 // indirect
